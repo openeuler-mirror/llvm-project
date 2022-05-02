@@ -178,6 +178,7 @@ fi
 mkdir -p "$build_prefix" && cd "$build_prefix"
 cmake $CMAKE_OPTIONS \
       -DCOMPILER_RT_BUILD_SANITIZERS=on \
+      -DLLVM_ENABLE_CLASSIC_FLANG=on       \
       -DLLVM_ENABLE_PROJECTS=$enabled_projects \
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
       -DLLVM_USE_LINKER=gold \
