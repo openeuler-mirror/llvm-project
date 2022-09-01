@@ -55,6 +55,11 @@
   #endif
 #endif
 
+#if defined(__PGIC__)
+  #undef _LIBUNWIND_HIDE_SYMBOLS
+  #define _LIBUNWIND_HIDE_SYMBOLS
+#endif
+
 #if defined(_LIBUNWIND_HIDE_SYMBOLS)
   // The CMake file passes -fvisibility=hidden to control ELF/Mach-O visibility.
   #define _LIBUNWIND_EXPORT
@@ -72,6 +77,10 @@
 #define STR(a) #a
 #define XSTR(a) STR(a)
 #define SYMBOL_NAME(name) XSTR(__USER_LABEL_PREFIX__) #name
+
+#if defined(__PGIC__) && defined(__linux__)
+  #define __ELF__
+#endif
 
 #if defined(__APPLE__)
 #if defined(_LIBUNWIND_HIDE_SYMBOLS)

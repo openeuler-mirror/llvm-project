@@ -606,7 +606,9 @@ inline bool LocalAddressSpace::findUnwindSections(pint_t targetAddr,
   return static_cast<bool>(found);
 #endif
 
+#ifndef __PGIC__
   return false;
+#endif
 }
 
 inline bool LocalAddressSpace::findOtherFDE(pint_t targetAddr, pint_t &fde) {

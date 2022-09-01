@@ -795,7 +795,9 @@ bool CFI_Parser<A>::parseFDEInstructions(A &addressSpace,
         break;
 
 #else
+#ifndef __PGIC__
         (void)arch;
+#endif
 #endif
 
       default:
