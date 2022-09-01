@@ -7,45 +7,45 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___BITS
-#define _LIBCPP___BITS
+#ifndef _LIBCUDACXX___BITS
+#define _LIBCUDACXX___BITS
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#ifndef _LIBCPP_COMPILER_MSVC
+#ifndef _LIBCUDACXX_COMPILER_MSVC
 
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
-int __libcpp_ctz(unsigned __x)           _NOEXCEPT { return __builtin_ctz(__x); }
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+int __LIBCUDACXX_ctz(unsigned __x)           _NOEXCEPT { return __builtin_ctz(__x); }
 
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
-int __libcpp_ctz(unsigned long __x)      _NOEXCEPT { return __builtin_ctzl(__x); }
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+int __LIBCUDACXX_ctz(unsigned long __x)      _NOEXCEPT { return __builtin_ctzl(__x); }
 
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
-int __libcpp_ctz(unsigned long long __x) _NOEXCEPT { return __builtin_ctzll(__x); }
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+int __LIBCUDACXX_ctz(unsigned long long __x) _NOEXCEPT { return __builtin_ctzll(__x); }
 
 
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
-int __libcpp_clz(unsigned __x)           _NOEXCEPT { return __builtin_clz(__x); }
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+int __LIBCUDACXX_clz(unsigned __x)           _NOEXCEPT { return __builtin_clz(__x); }
 
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
-int __libcpp_clz(unsigned long __x)      _NOEXCEPT { return __builtin_clzl(__x); }
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+int __LIBCUDACXX_clz(unsigned long __x)      _NOEXCEPT { return __builtin_clzl(__x); }
 
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
-int __libcpp_clz(unsigned long long __x) _NOEXCEPT { return __builtin_clzll(__x); }
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+int __LIBCUDACXX_clz(unsigned long long __x) _NOEXCEPT { return __builtin_clzll(__x); }
 
-#  ifndef _LIBCPP_HAS_NO_INT128
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
-int __libcpp_clz(__uint128_t __x) _NOEXCEPT {
+#  ifndef _LIBCUDACXX_HAS_NO_INT128
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+int __LIBCUDACXX_clz(__uint128_t __x) _NOEXCEPT {
   // The function is written in this form due to C++ constexpr limitations.
   // The algorithm:
   // - Test whether any bit in the high 64-bits is set
@@ -61,20 +61,20 @@ int __libcpp_clz(__uint128_t __x) _NOEXCEPT {
 }
 #  endif
 
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
-int __libcpp_popcount(unsigned __x)           _NOEXCEPT { return __builtin_popcount(__x); }
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+int __LIBCUDACXX_popcount(unsigned __x)           _NOEXCEPT { return __builtin_popcount(__x); }
 
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
-int __libcpp_popcount(unsigned long __x)      _NOEXCEPT { return __builtin_popcountl(__x); }
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+int __LIBCUDACXX_popcount(unsigned long __x)      _NOEXCEPT { return __builtin_popcountl(__x); }
 
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
-int __libcpp_popcount(unsigned long long __x) _NOEXCEPT { return __builtin_popcountll(__x); }
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+int __LIBCUDACXX_popcount(unsigned long long __x) _NOEXCEPT { return __builtin_popcountll(__x); }
 
-#else  // _LIBCPP_COMPILER_MSVC
+#else  // _LIBCUDACXX_COMPILER_MSVC
 
 // Precondition:  __x != 0
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_ctz(unsigned __x) {
+inline _LIBCUDACXX_INLINE_VISIBILITY
+int __LIBCUDACXX_ctz(unsigned __x) {
   static_assert(sizeof(unsigned) == sizeof(unsigned long), "");
   static_assert(sizeof(unsigned long) == 4, "");
   unsigned long __where;
@@ -83,16 +83,16 @@ int __libcpp_ctz(unsigned __x) {
   return 32;
 }
 
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_ctz(unsigned long __x) {
+inline _LIBCUDACXX_INLINE_VISIBILITY
+int __LIBCUDACXX_ctz(unsigned long __x) {
     static_assert(sizeof(unsigned long) == sizeof(unsigned), "");
     return __ctz(static_cast<unsigned>(__x));
 }
 
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_ctz(unsigned long long __x) {
+inline _LIBCUDACXX_INLINE_VISIBILITY
+int __LIBCUDACXX_ctz(unsigned long long __x) {
     unsigned long __where;
-#if defined(_LIBCPP_HAS_BITSCAN64)
+#if defined(_LIBCUDACXX_HAS_BITSCAN64)
   if (_BitScanForward64(&__where, __x))
     return static_cast<int>(__where);
 #else
@@ -106,8 +106,8 @@ int __libcpp_ctz(unsigned long long __x) {
 }
 
 // Precondition:  __x != 0
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_clz(unsigned __x) {
+inline _LIBCUDACXX_INLINE_VISIBILITY
+int __LIBCUDACXX_clz(unsigned __x) {
   static_assert(sizeof(unsigned) == sizeof(unsigned long), "");
   static_assert(sizeof(unsigned long) == 4, "");
   unsigned long __where;
@@ -116,16 +116,16 @@ int __libcpp_clz(unsigned __x) {
   return 32; // Undefined Behavior.
 }
 
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_clz(unsigned long __x) {
+inline _LIBCUDACXX_INLINE_VISIBILITY
+int __LIBCUDACXX_clz(unsigned long __x) {
     static_assert(sizeof(unsigned) == sizeof(unsigned long), "");
-    return __libcpp_clz(static_cast<unsigned>(__x));
+    return __LIBCUDACXX_clz(static_cast<unsigned>(__x));
 }
 
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_clz(unsigned long long __x) {
+inline _LIBCUDACXX_INLINE_VISIBILITY
+int __LIBCUDACXX_clz(unsigned long long __x) {
   unsigned long __where;
-#if defined(_LIBCPP_HAS_BITSCAN64)
+#if defined(_LIBCUDACXX_HAS_BITSCAN64)
   if (_BitScanReverse64(&__where, __x))
     return static_cast<int>(63 - __where);
 #else
@@ -138,25 +138,25 @@ int __libcpp_clz(unsigned long long __x) {
   return 64; // Undefined Behavior.
 }
 
-inline _LIBCPP_INLINE_VISIBILITY int __libcpp_popcount(unsigned __x) {
+inline _LIBCUDACXX_INLINE_VISIBILITY int __LIBCUDACXX_popcount(unsigned __x) {
   static_assert(sizeof(unsigned) == 4, "");
   return __popcnt(__x);
 }
 
-inline _LIBCPP_INLINE_VISIBILITY int __libcpp_popcount(unsigned long __x) {
+inline _LIBCUDACXX_INLINE_VISIBILITY int __LIBCUDACXX_popcount(unsigned long __x) {
   static_assert(sizeof(unsigned long) == 4, "");
   return __popcnt(__x);
 }
 
-inline _LIBCPP_INLINE_VISIBILITY int __libcpp_popcount(unsigned long long __x) {
+inline _LIBCUDACXX_INLINE_VISIBILITY int __LIBCUDACXX_popcount(unsigned long long __x) {
   static_assert(sizeof(unsigned long long) == 8, "");
   return __popcnt64(__x);
 }
 
-#endif // _LIBCPP_COMPILER_MSVC
+#endif // _LIBCUDACXX_COMPILER_MSVC
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___BITS
+#endif // _LIBCUDACXX___BITS

@@ -20,9 +20,9 @@
 #include <coroutine>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_COROUTINE)
- #   error "<coroutine> was expected to define _LIBCPP_COROUTINE"
+#if !defined(_LIBCUDACXX_COROUTINE)
+ #   error "<coroutine> was expected to define _LIBCUDACXX_COROUTINE"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<coroutine> should include <compare> in C++20 and later"
 #endif

@@ -6,19 +6,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___COROUTINE_COROUTINE_TRAITS_H
-#define _LIBCPP___COROUTINE_COROUTINE_TRAITS_H
+#ifndef _LIBCUDACXX___COROUTINE_COROUTINE_TRAITS_H
+#define _LIBCUDACXX___COROUTINE_COROUTINE_TRAITS_H
 
 #include <__config>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_CXX20_COROUTINES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_CXX20_COROUTINES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // [coroutine.traits]
 // [coroutine.traits.primary]
@@ -46,8 +46,8 @@ struct coroutine_traits
 {
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // __LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_CXX20_COROUTINES)
+#endif // __LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_CXX20_COROUTINES)
 
-#endif // _LIBCPP___COROUTINE_COROUTINE_TRAITS_H
+#endif // _LIBCUDACXX___COROUTINE_COROUTINE_TRAITS_H

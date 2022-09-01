@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___NUMERIC_TRANSFORM_EXCLUSIVE_SCAN_H
-#define _LIBCPP___NUMERIC_TRANSFORM_EXCLUSIVE_SCAN_H
+#ifndef _LIBCUDACXX___NUMERIC_TRANSFORM_EXCLUSIVE_SCAN_H
+#define _LIBCUDACXX___NUMERIC_TRANSFORM_EXCLUSIVE_SCAN_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 
 template <class _InputIterator, class _OutputIterator, class _Tp,
           class _BinaryOp, class _UnaryOp>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _OutputIterator
 transform_exclusive_scan(_InputIterator __first, _InputIterator __last,
                            _OutputIterator __result, _Tp __init,
@@ -42,8 +42,8 @@ transform_exclusive_scan(_InputIterator __first, _InputIterator __last,
     return __result;
 }
 
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___NUMERIC_TRANSFORM_EXCLUSIVE_SCAN_H
+#endif // _LIBCUDACXX___NUMERIC_TRANSFORM_EXCLUSIVE_SCAN_H

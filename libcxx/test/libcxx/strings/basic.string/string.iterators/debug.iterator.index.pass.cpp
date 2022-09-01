@@ -11,7 +11,7 @@
 // Index iterator out of bounds.
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <string>
 #include <cassert>
@@ -25,7 +25,7 @@ int main(int, char**) {
     C c(1, '\0');
     C::iterator i = c.begin();
     assert(i[0] == 0);
-    TEST_LIBCPP_ASSERT_FAILURE(i[1], "Attempted to subscript an iterator outside its valid range");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(i[1], "Attempted to subscript an iterator outside its valid range");
   }
 
   {
@@ -33,7 +33,7 @@ int main(int, char**) {
     C c(1, '\0');
     C::iterator i = c.begin();
     assert(i[0] == 0);
-    TEST_LIBCPP_ASSERT_FAILURE(i[1], "Attempted to subscript an iterator outside its valid range");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(i[1], "Attempted to subscript an iterator outside its valid range");
   }
 
   return 0;

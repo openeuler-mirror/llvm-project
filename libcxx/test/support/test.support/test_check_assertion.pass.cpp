@@ -9,7 +9,7 @@
 // REQUIRES: has-unix-headers
 // UNSUPPORTED: c++03
 // XFAIL: use_system_cxx_lib && target={{.+}}-apple-macosx{{10.9|10.10|10.11|10.12|10.13|10.14|10.15|11.0|12.0}}
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_ASSERTIONS=1
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_ASSERTIONS=1
 
 #include <cassert>
 #include <cstdio>
@@ -39,13 +39,13 @@ inline bool TestDeathTest(const char* stmt, Func&& func, DeathTest::ResultKind E
 
 #define TEST_DEATH_TEST_MATCHES(RK, Matcher, ...) assert((TestDeathTest(#__VA_ARGS__, [&]() { __VA_ARGS__; }, RK, Matcher)))
 
-void my_libcpp_assert() {
-  _LIBCPP_ASSERT(false, "other");
+void my_LIBCUDACXX_assert() {
+  _LIBCUDACXX_ASSERT(false, "other");
 }
 
 void test_no_match_found() {
   AssertionInfoMatcher ExpectMatch("my message");
-  TEST_DEATH_TEST_MATCHES(DeathTest::RK_MatchFailure, ExpectMatch, my_libcpp_assert());
+  TEST_DEATH_TEST_MATCHES(DeathTest::RK_MatchFailure, ExpectMatch, my_LIBCUDACXX_assert());
 }
 
 void test_did_not_die() {

@@ -29,7 +29,7 @@ template <class T>
 constexpr bool test()
 {
     ASSERT_SAME_TYPE(decltype(std::bit_floor(T())), T);
-    LIBCPP_ASSERT_NOEXCEPT(std::bit_floor(T()));
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::bit_floor(T()));
     T max = std::numeric_limits<T>::max();
 
     assert(std::bit_floor(T(0)) == T(0));

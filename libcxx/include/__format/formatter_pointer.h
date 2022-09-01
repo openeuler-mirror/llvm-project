@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMATTER_POINTER_H
-#define _LIBCPP___FORMAT_FORMATTER_POINTER_H
+#ifndef _LIBCUDACXX___FORMAT_FORMATTER_POINTER_H
+#define _LIBCUDACXX___FORMAT_FORMATTER_POINTER_H
 
 #include <__availability>
 #include <__config>
@@ -21,27 +21,27 @@
 #include <cstddef>
 #include <cstdint>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <__formatter::__char_type _CharT>
-struct _LIBCPP_TEMPLATE_VIS __formatter_pointer {
+struct _LIBCUDACXX_TEMPLATE_VIS __formatter_pointer {
 public:
   constexpr __formatter_pointer() { __parser_.__alignment_ = __format_spec::__alignment::__right; }
 
-  _LIBCPP_HIDE_FROM_ABI constexpr auto
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr auto
   parse(basic_format_parse_context<_CharT>& __parse_ctx) -> decltype(__parse_ctx.begin()) {
     auto __result = __parser_.__parse(__parse_ctx, __format_spec::__fields_pointer);
     __format_spec::__process_display_type_pointer(__parser_.__type_);
     return __result;
   }
 
-  _LIBCPP_HIDE_FROM_ABI auto format(const void* __ptr, auto& __ctx) const -> decltype(__ctx.out()) {
+  _LIBCUDACXX_HIDE_FROM_ABI auto format(const void* __ptr, auto& __ctx) const -> decltype(__ctx.out()) {
     __format_spec::__parsed_specifications<_CharT> __specs = __parser_.__get_parsed_std_specifications(__ctx);
     __specs.__std_.__alternate_form_                       = true;
     __specs.__std_.__type_                                 = __format_spec::__type::__hexadecimal_lower_case;
@@ -57,17 +57,17 @@ public:
 // - template<> struct formatter<void*, charT>;
 // - template<> struct formatter<const void*, charT>;
 template <__formatter::__char_type _CharT>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT formatter<nullptr_t, _CharT>
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT formatter<nullptr_t, _CharT>
     : public __formatter_pointer<_CharT> {};
 template <__formatter::__char_type _CharT>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT formatter<void*, _CharT> : public __formatter_pointer<_CharT> {
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT formatter<void*, _CharT> : public __formatter_pointer<_CharT> {
 };
 template <__formatter::__char_type _CharT>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT formatter<const void*, _CharT>
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT formatter<const void*, _CharT>
     : public __formatter_pointer<_CharT> {};
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_FORMATTER_POINTER_H
+#endif // _LIBCUDACXX___FORMAT_FORMATTER_POINTER_H

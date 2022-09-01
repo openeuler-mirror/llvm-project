@@ -6,7 +6,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-format
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-format
 
 // <format>
 
@@ -24,7 +24,7 @@
 int main(int, char**) {
   [[maybe_unused]] auto store = std::make_format_args(42, nullptr, false, 1.0);
 
-  LIBCPP_STATIC_ASSERT(
+  LIBCUDACXX_STATIC_ASSERT(
       std::same_as<decltype(store), std::__format_arg_store<std::format_context, int, nullptr_t, bool, double>>);
 
   return 0;

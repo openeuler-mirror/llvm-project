@@ -7,26 +7,26 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANGES_DANGLING_H
-#define _LIBCPP___RANGES_DANGLING_H
+#ifndef _LIBCUDACXX___RANGES_DANGLING_H
+#define _LIBCUDACXX___RANGES_DANGLING_H
 
 #include <__config>
 #include <__ranges/access.h>
 #include <__ranges/concepts.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace ranges {
 struct dangling {
   dangling() = default;
-  _LIBCPP_HIDE_FROM_ABI constexpr dangling(auto&&...) noexcept {}
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr dangling(auto&&...) noexcept {}
 };
 
 template <range _Rp>
@@ -35,8 +35,8 @@ using borrowed_iterator_t = _If<borrowed_range<_Rp>, iterator_t<_Rp>, dangling>;
 // borrowed_subrange_t defined in <__ranges/subrange.h>
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_DANGLING_H
+#endif // _LIBCUDACXX___RANGES_DANGLING_H

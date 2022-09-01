@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_STACK
-#define _LIBCPP_STACK
+#ifndef _LIBCUDACXX_STACK
+#define _LIBCUDACXX_STACK
 
 /*
     stack synopsis
@@ -107,7 +107,7 @@ template <class T, class Container>
 #include <type_traits>
 #include <version>
 
-#ifndef _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
+#ifndef _LIBCUDACXX_REMOVE_TRANSITIVE_INCLUDES
 #  include <functional>
 #endif
 
@@ -115,26 +115,26 @@ template <class T, class Container>
 #include <compare>
 #include <initializer_list>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-template <class _Tp, class _Container = deque<_Tp> > class _LIBCPP_TEMPLATE_VIS stack;
+template <class _Tp, class _Container = deque<_Tp> > class _LIBCUDACXX_TEMPLATE_VIS stack;
 
 template <class _Tp, class _Container>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator==(const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y);
 
 template <class _Tp, class _Container>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator< (const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y);
 
 template <class _Tp, class _Container /*= deque<_Tp>*/>
-class _LIBCPP_TEMPLATE_VIS stack
+class _LIBCUDACXX_TEMPLATE_VIS stack
 {
 public:
     typedef _Container                               container_type;
@@ -148,112 +148,112 @@ protected:
     container_type c;
 
 public:
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     stack()
         _NOEXCEPT_(is_nothrow_default_constructible<container_type>::value)
         : c() {}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     stack(const stack& __q) : c(__q.c) {}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     stack& operator=(const stack& __q) {c = __q.c; return *this;}
 
 
-#ifndef _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
     stack(stack&& __q)
         _NOEXCEPT_(is_nothrow_move_constructible<container_type>::value)
-        : c(_VSTD::move(__q.c)) {}
+        : c(_CUDA_VSTD::move(__q.c)) {}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     stack& operator=(stack&& __q)
         _NOEXCEPT_(is_nothrow_move_assignable<container_type>::value)
-        {c = _VSTD::move(__q.c); return *this;}
+        {c = _CUDA_VSTD::move(__q.c); return *this;}
 
-    _LIBCPP_INLINE_VISIBILITY
-    explicit stack(container_type&& __c) : c(_VSTD::move(__c)) {}
-#endif // _LIBCPP_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
+    explicit stack(container_type&& __c) : c(_CUDA_VSTD::move(__c)) {}
+#endif // _LIBCUDACXX_CXX03_LANG
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit stack(const container_type& __c) : c(__c) {}
 
     template <class _Alloc>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         explicit stack(const _Alloc& __a,
                        __enable_if_t<uses_allocator<container_type, _Alloc>::value>* = 0)
             : c(__a) {}
     template <class _Alloc>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         stack(const container_type& __c, const _Alloc& __a,
               __enable_if_t<uses_allocator<container_type, _Alloc>::value>* = 0)
             : c(__c, __a) {}
     template <class _Alloc>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         stack(const stack& __s, const _Alloc& __a,
               __enable_if_t<uses_allocator<container_type, _Alloc>::value>* = 0)
             : c(__s.c, __a) {}
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
     template <class _Alloc>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         stack(container_type&& __c, const _Alloc& __a,
               __enable_if_t<uses_allocator<container_type, _Alloc>::value>* = 0)
-            : c(_VSTD::move(__c), __a) {}
+            : c(_CUDA_VSTD::move(__c), __a) {}
     template <class _Alloc>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         stack(stack&& __s, const _Alloc& __a,
               __enable_if_t<uses_allocator<container_type, _Alloc>::value>* = 0)
-            : c(_VSTD::move(__s.c), __a) {}
-#endif // _LIBCPP_CXX03_LANG
+            : c(_CUDA_VSTD::move(__s.c), __a) {}
+#endif // _LIBCUDACXX_CXX03_LANG
 
-#if _LIBCPP_STD_VER > 20
+#if _LIBCUDACXX_STD_VER > 20
     template <class _InputIterator,
               class = __enable_if_t<__is_cpp17_input_iterator<_InputIterator>::value>>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     stack(_InputIterator __first, _InputIterator __last) : c(__first, __last) {}
 
     template <class _InputIterator,
               class _Alloc,
               class = __enable_if_t<__is_cpp17_input_iterator<_InputIterator>::value>,
               class = __enable_if_t<uses_allocator<container_type, _Alloc>::value>>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     stack(_InputIterator __first, _InputIterator __last, const _Alloc& __alloc) : c(__first, __last, __alloc) {}
 #endif
 
-    _LIBCPP_NODISCARD_AFTER_CXX17 _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_NODISCARD_AFTER_CXX17 _LIBCUDACXX_INLINE_VISIBILITY
     bool empty()     const      {return c.empty();}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     size_type size() const      {return c.size();}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     reference top()             {return c.back();}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     const_reference top() const {return c.back();}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void push(const value_type& __v) {c.push_back(__v);}
-#ifndef _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY
-    void push(value_type&& __v) {c.push_back(_VSTD::move(__v));}
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void push(value_type&& __v) {c.push_back(_CUDA_VSTD::move(__v));}
 
     template <class... _Args>
-        _LIBCPP_INLINE_VISIBILITY
-#if _LIBCPP_STD_VER > 14
+        _LIBCUDACXX_INLINE_VISIBILITY
+#if _LIBCUDACXX_STD_VER > 14
         decltype(auto) emplace(_Args&&... __args)
-        { return c.emplace_back(_VSTD::forward<_Args>(__args)...);}
+        { return c.emplace_back(_CUDA_VSTD::forward<_Args>(__args)...);}
 #else
         void      emplace(_Args&&... __args)
-        {        c.emplace_back(_VSTD::forward<_Args>(__args)...);}
+        {        c.emplace_back(_CUDA_VSTD::forward<_Args>(__args)...);}
 #endif
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void pop() {c.pop_back();}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void swap(stack& __s)
         _NOEXCEPT_(__is_nothrow_swappable<container_type>::value)
     {
-        using _VSTD::swap;
+        using _CUDA_VSTD::swap;
         swap(c, __s.c);
     }
 
@@ -268,7 +268,7 @@ public:
     operator< (const stack<T1, _C1>& __x, const stack<T1, _C1>& __y);
 };
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template<class _Container,
          class = enable_if_t<!__is_allocator<_Container>::value>
 >
@@ -284,7 +284,7 @@ stack(_Container, _Alloc)
     -> stack<typename _Container::value_type, _Container>;
 #endif
 
-#if _LIBCPP_STD_VER > 20
+#if _LIBCUDACXX_STD_VER > 20
 template<class _InputIterator,
          class = __enable_if_t<__is_cpp17_input_iterator<_InputIterator>::value>>
 stack(_InputIterator, _InputIterator)
@@ -299,7 +299,7 @@ stack(_InputIterator, _InputIterator, _Alloc)
 #endif
 
 template <class _Tp, class _Container>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator==(const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 {
@@ -307,7 +307,7 @@ operator==(const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 }
 
 template <class _Tp, class _Container>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator< (const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 {
@@ -315,7 +315,7 @@ operator< (const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 }
 
 template <class _Tp, class _Container>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator!=(const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 {
@@ -323,7 +323,7 @@ operator!=(const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 }
 
 template <class _Tp, class _Container>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator> (const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 {
@@ -331,7 +331,7 @@ operator> (const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 }
 
 template <class _Tp, class _Container>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator>=(const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 {
@@ -339,7 +339,7 @@ operator>=(const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 }
 
 template <class _Tp, class _Container>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator<=(const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 {
@@ -347,7 +347,7 @@ operator<=(const stack<_Tp, _Container>& __x, const stack<_Tp, _Container>& __y)
 }
 
 template <class _Tp, class _Container>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 __enable_if_t<__is_swappable<_Container>::value, void>
 swap(stack<_Tp, _Container>& __x, stack<_Tp, _Container>& __y)
     _NOEXCEPT_(_NOEXCEPT_(__x.swap(__y)))
@@ -356,11 +356,11 @@ swap(stack<_Tp, _Container>& __x, stack<_Tp, _Container>& __y)
 }
 
 template <class _Tp, class _Container, class _Alloc>
-struct _LIBCPP_TEMPLATE_VIS uses_allocator<stack<_Tp, _Container>, _Alloc>
+struct _LIBCUDACXX_TEMPLATE_VIS uses_allocator<stack<_Tp, _Container>, _Alloc>
     : public uses_allocator<_Container, _Alloc>
 {
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STACK
+#endif // _LIBCUDACXX_STACK

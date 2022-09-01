@@ -375,7 +375,7 @@ int main(int, char**)
       const char* E = TC.expect;
       PathReserve(LHS, StrLen(E) + 5);
       {
-        LIBCPP_ONLY(DisableAllocationGuard g);
+        LIBCUDACXX_ONLY(DisableAllocationGuard g);
         path& Ref = (LHS += RHS);
         assert(&Ref == &LHS);
       }
@@ -387,15 +387,15 @@ int main(int, char**)
       const char* E = TC.expect;
       PathReserve(LHS, StrLen(E) + 5);
       {
-        LIBCPP_ONLY(DisableAllocationGuard g);
+        LIBCUDACXX_ONLY(DisableAllocationGuard g);
         path& Ref = (LHS += RHS);
         assert(&Ref == &LHS);
       }
       assert(LHS == E);
     }
-    LIBCPP_ONLY(doConcatSourceAllocTest<char>(TC));
+    LIBCUDACXX_ONLY(doConcatSourceAllocTest<char>(TC));
 #ifndef TEST_HAS_NO_WIDE_CHARACTERS
-    LIBCPP_ONLY(doConcatSourceAllocTest<wchar_t>(TC));
+    LIBCUDACXX_ONLY(doConcatSourceAllocTest<wchar_t>(TC));
 #endif
   }
   for (auto const& TC : CharTestCases) {

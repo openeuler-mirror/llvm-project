@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_PARTITION_POINT_H
-#define _LIBCPP___ALGORITHM_RANGES_PARTITION_POINT_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_PARTITION_POINT_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_PARTITION_POINT_H
 
 #include <__algorithm/half_positive.h>
 #include <__config>
@@ -23,13 +23,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __partition_point {
@@ -38,7 +38,7 @@ struct __fn {
 
   // TODO(ranges): delegate to the classic algorithm.
   template <class _Iter, class _Sent, class _Proj, class _Pred>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   static _Iter __partition_point_fn_impl(_Iter&& __first, _Sent&& __last, _Pred& __pred, _Proj& __proj) {
     auto __len = ranges::distance(__first, __last);
 
@@ -60,14 +60,14 @@ struct __fn {
 
   template <forward_iterator _Iter, sentinel_for<_Iter> _Sent, class _Proj = identity,
             indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   _Iter operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const {
     return __partition_point_fn_impl(std::move(__first), std::move(__last), __pred, __proj);
   }
 
   template <forward_range _Range, class _Proj = identity,
             indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   borrowed_iterator_t<_Range> operator()(_Range&& __range, _Pred __pred, _Proj __proj = {}) const {
     return __partition_point_fn_impl(ranges::begin(__range), ranges::end(__range), __pred, __proj);
   }
@@ -81,8 +81,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_PARTITION_POINT_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_PARTITION_POINT_H

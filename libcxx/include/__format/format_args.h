@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMAT_ARGS_H
-#define _LIBCPP___FORMAT_FORMAT_ARGS_H
+#ifndef _LIBCUDACXX___FORMAT_FORMAT_ARGS_H
+#define _LIBCUDACXX___FORMAT_FORMAT_ARGS_H
 
 #include <__availability>
 #include <__config>
@@ -18,21 +18,21 @@
 #include <cstddef>
 #include <cstdint>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <class _Context>
-class _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT basic_format_args {
+class _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT basic_format_args {
 public:
-  _LIBCPP_HIDE_FROM_ABI basic_format_args() noexcept = default;
+  _LIBCUDACXX_HIDE_FROM_ABI basic_format_args() noexcept = default;
 
   template <class... _Args>
-  _LIBCPP_HIDE_FROM_ABI basic_format_args(const __format_arg_store<_Context, _Args...>& __store) noexcept
+  _LIBCUDACXX_HIDE_FROM_ABI basic_format_args(const __format_arg_store<_Context, _Args...>& __store) noexcept
       : __size_(sizeof...(_Args)) {
     if constexpr (sizeof...(_Args) != 0) {
       if constexpr (__format::__use_packed_format_arg_store(sizeof...(_Args))) {
@@ -43,7 +43,7 @@ public:
     }
   }
 
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   basic_format_arg<_Context> get(size_t __id) const noexcept {
     if (__id >= __size_)
       return basic_format_arg<_Context>{};
@@ -54,7 +54,7 @@ public:
     return __args_[__id];
   }
 
-  _LIBCPP_HIDE_FROM_ABI size_t __size() const noexcept { return __size_; }
+  _LIBCUDACXX_HIDE_FROM_ABI size_t __size() const noexcept { return __size_; }
 
 private:
   size_t __size_{0};
@@ -72,8 +72,8 @@ private:
   };
 };
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_FORMAT_ARGS_H
+#endif // _LIBCUDACXX___FORMAT_FORMAT_ARGS_H

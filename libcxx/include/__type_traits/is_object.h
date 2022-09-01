@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_OBJECT_H
-#define _LIBCPP___TYPE_TRAITS_IS_OBJECT_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_OBJECT_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_OBJECT_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
@@ -16,37 +16,37 @@
 #include <__type_traits/is_scalar.h>
 #include <__type_traits/is_union.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 #if __has_builtin(__is_object)
 
 template<class _Tp>
-struct _LIBCPP_TEMPLATE_VIS is_object : _BoolConstant<__is_object(_Tp)> { };
+struct _LIBCUDACXX_TEMPLATE_VIS is_object : _BoolConstant<__is_object(_Tp)> { };
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr bool is_object_v = __is_object(_Tp);
 #endif
 
 #else // __has_builtin(__is_object)
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS is_object
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS is_object
     : public integral_constant<bool, is_scalar<_Tp>::value ||
                                      is_array<_Tp>::value  ||
                                      is_union<_Tp>::value  ||
                                      is_class<_Tp>::value  > {};
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr bool is_object_v = is_object<_Tp>::value;
 #endif
 
 #endif // __has_builtin(__is_object)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_OBJECT_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_OBJECT_H

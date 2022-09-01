@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_MAX_H
-#define _LIBCPP___ALGORITHM_RANGES_MAX_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_MAX_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_MAX_H
 
 #include <__algorithm/ranges_min_element.h>
 #include <__assert>
@@ -23,32 +23,32 @@
 #include <__utility/move.h>
 #include <initializer_list>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __max {
 struct __fn {
   template <class _Tp, class _Proj = identity,
             indirect_strict_weak_order<projected<const _Tp*, _Proj>> _Comp = ranges::less>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   const _Tp& operator()(const _Tp& __a, const _Tp& __b, _Comp __comp = {}, _Proj __proj = {}) const {
     return std::invoke(__comp, std::invoke(__proj, __a), std::invoke(__proj, __b)) ? __b : __a;
   }
 
   template <copyable _Tp, class _Proj = identity,
             indirect_strict_weak_order<projected<const _Tp*, _Proj>> _Comp = ranges::less>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   _Tp operator()(initializer_list<_Tp> __il, _Comp __comp = {}, _Proj __proj = {}) const {
-    _LIBCPP_ASSERT(__il.begin() != __il.end(), "initializer_list must contain at least one element");
+    _LIBCUDACXX_ASSERT(__il.begin() != __il.end(), "initializer_list must contain at least one element");
 
     auto __comp_lhs_rhs_swapped = [&](auto&& __lhs, auto&& __rhs) { return std::invoke(__comp, __rhs, __lhs); };
     return *ranges::__min_element_impl(__il.begin(), __il.end(), __comp_lhs_rhs_swapped, __proj);
@@ -57,12 +57,12 @@ struct __fn {
   template <input_range _Rp, class _Proj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rp>, _Proj>> _Comp = ranges::less>
     requires indirectly_copyable_storable<iterator_t<_Rp>, range_value_t<_Rp>*>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   range_value_t<_Rp> operator()(_Rp&& __r, _Comp __comp = {}, _Proj __proj = {}) const {
     auto __first = ranges::begin(__r);
     auto __last = ranges::end(__r);
 
-    _LIBCPP_ASSERT(__first != __last, "range must contain at least one element");
+    _LIBCUDACXX_ASSERT(__first != __last, "range must contain at least one element");
 
     if constexpr (forward_range<_Rp>) {
       auto __comp_lhs_rhs_swapped = [&](auto&& __lhs, auto&& __rhs) { return std::invoke(__comp, __rhs, __lhs); };
@@ -84,10 +84,10 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP_STD_VER > 17 && && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_MAX_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_MAX_H

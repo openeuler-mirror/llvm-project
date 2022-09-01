@@ -29,7 +29,7 @@ test(S s, typename S::size_type pos1, typename S::size_type n1, It f, It l, S ex
     typename S::const_iterator last = s.begin() + pos1 + n1;
     typename S::size_type xlen = last - first;
     s.replace(first, last, f, l);
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == expected);
     typename S::size_type rlen = std::distance(f, l);
     assert(s.size() == old_size - xlen + rlen);
@@ -56,7 +56,7 @@ test_exceptions(S s, typename S::size_type pos1, typename S::size_type n1, It f,
 
     // Part of "no effects" is that iterators and pointers
     // into the string must not have been invalidated.
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == original);
     assert(s.begin() == begin);
     assert(s.end() == end);

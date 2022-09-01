@@ -11,7 +11,7 @@
 // Add to iterator out of bounds.
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <string>
 #include <cassert>
@@ -27,7 +27,7 @@ int main(int, char**) {
     i += 1;
     assert(i == c.end());
     i = c.begin();
-    TEST_LIBCPP_ASSERT_FAILURE(i += 2, "Attempted to add/subtract an iterator outside its valid range");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(i += 2, "Attempted to add/subtract an iterator outside its valid range");
   }
 
   {
@@ -37,7 +37,7 @@ int main(int, char**) {
     i += 1;
     assert(i == c.end());
     i = c.begin();
-    TEST_LIBCPP_ASSERT_FAILURE(i += 2, "Attempted to add/subtract an iterator outside its valid range");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(i += 2, "Attempted to add/subtract an iterator outside its valid range");
   }
 
   return 0;

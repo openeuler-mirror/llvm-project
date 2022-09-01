@@ -27,7 +27,7 @@ _void_pointer_type = gdb.lookup_type("void").pointer()
 
 _long_int_type = gdb.lookup_type("unsigned long long")
 
-_libcpp_big_endian = False
+_LIBCUDACXX_big_endian = False
 
 def addr_as_long(addr):
     return int(addr.cast(_long_int_type))
@@ -971,7 +971,7 @@ def _register_libcxx_printers(event):
     # already generated as part of a larger data structure, and there is
     # no python api to get the endianness. Mixed-endianness debugging
     # rare enough that this workaround should be adequate.
-    _libcpp_big_endian = "big endian" in gdb.execute("show endian",
+    _LIBCUDACXX_big_endian = "big endian" in gdb.execute("show endian",
                                                      to_string=True)
 
     if not getattr(progspace, _libcxx_printer_name, False):

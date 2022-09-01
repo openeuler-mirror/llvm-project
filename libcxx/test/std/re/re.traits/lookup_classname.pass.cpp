@@ -44,7 +44,7 @@ test_w(const char_type* A,
     typedef forward_iterator<const char_type*> F;
     char_class_type result = t.lookup_classname(F(A), F(A + t.length(A)), icase);
     assert((result & expected) == expected);
-    LIBCPP_ASSERT((expected | std::regex_traits<char_type>::__regex_word) == result);
+    LIBCUDACXX_ASSERT((expected | std::regex_traits<char_type>::__regex_word) == result);
 
     const bool matches_underscore = t.isctype('_', result);
     if (result != expected)
@@ -57,16 +57,16 @@ int main(int, char**)
 {
 //  if __regex_word is not distinct from all the classes, bad things happen
 //  See https://llvm.org/PR26476 for an example.
-    LIBCPP_ASSERT((std::ctype_base::space  & std::regex_traits<char>::__regex_word) == 0);
-    LIBCPP_ASSERT((std::ctype_base::print  & std::regex_traits<char>::__regex_word) == 0);
-    LIBCPP_ASSERT((std::ctype_base::cntrl  & std::regex_traits<char>::__regex_word) == 0);
-    LIBCPP_ASSERT((std::ctype_base::upper  & std::regex_traits<char>::__regex_word) == 0);
-    LIBCPP_ASSERT((std::ctype_base::lower  & std::regex_traits<char>::__regex_word) == 0);
-    LIBCPP_ASSERT((std::ctype_base::alpha  & std::regex_traits<char>::__regex_word) == 0);
-    LIBCPP_ASSERT((std::ctype_base::digit  & std::regex_traits<char>::__regex_word) == 0);
-    LIBCPP_ASSERT((std::ctype_base::punct  & std::regex_traits<char>::__regex_word) == 0);
-    LIBCPP_ASSERT((std::ctype_base::xdigit & std::regex_traits<char>::__regex_word) == 0);
-    LIBCPP_ASSERT((std::ctype_base::blank  & std::regex_traits<char>::__regex_word) == 0);
+    LIBCUDACXX_ASSERT((std::ctype_base::space  & std::regex_traits<char>::__regex_word) == 0);
+    LIBCUDACXX_ASSERT((std::ctype_base::print  & std::regex_traits<char>::__regex_word) == 0);
+    LIBCUDACXX_ASSERT((std::ctype_base::cntrl  & std::regex_traits<char>::__regex_word) == 0);
+    LIBCUDACXX_ASSERT((std::ctype_base::upper  & std::regex_traits<char>::__regex_word) == 0);
+    LIBCUDACXX_ASSERT((std::ctype_base::lower  & std::regex_traits<char>::__regex_word) == 0);
+    LIBCUDACXX_ASSERT((std::ctype_base::alpha  & std::regex_traits<char>::__regex_word) == 0);
+    LIBCUDACXX_ASSERT((std::ctype_base::digit  & std::regex_traits<char>::__regex_word) == 0);
+    LIBCUDACXX_ASSERT((std::ctype_base::punct  & std::regex_traits<char>::__regex_word) == 0);
+    LIBCUDACXX_ASSERT((std::ctype_base::xdigit & std::regex_traits<char>::__regex_word) == 0);
+    LIBCUDACXX_ASSERT((std::ctype_base::blank  & std::regex_traits<char>::__regex_word) == 0);
 
     test("d", std::ctype_base::digit);
     test("D", std::ctype_base::digit);

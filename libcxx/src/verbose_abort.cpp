@@ -26,10 +26,10 @@ extern "C" void android_set_abort_message(const char* msg);
 #  include <CrashReporterClient.h>
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-_LIBCPP_WEAK
-void __libcpp_verbose_abort(char const* format, ...) {
+_LIBCUDACXX_WEAK
+void __LIBCUDACXX_verbose_abort(char const* format, ...) {
   // Write message to stderr. We do this before formatting into a
   // buffer so that we still get some information out if that fails.
   {
@@ -74,4 +74,4 @@ void __libcpp_verbose_abort(char const* format, ...) {
   std::abort();
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

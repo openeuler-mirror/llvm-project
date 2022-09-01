@@ -7,31 +7,31 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CHRONO_LITERALS_H
-#define _LIBCPP___CHRONO_LITERALS_H
+#ifndef _LIBCUDACXX___CHRONO_LITERALS_H
+#define _LIBCUDACXX___CHRONO_LITERALS_H
 
 #include <__chrono/day.h>
 #include <__chrono/year.h>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 inline namespace literals
 {
   inline namespace chrono_literals
   {
-    _LIBCPP_HIDE_FROM_ABI constexpr chrono::day operator ""d(unsigned long long __d) noexcept
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::day operator ""d(unsigned long long __d) noexcept
     {
         return chrono::day(static_cast<unsigned>(__d));
     }
 
-    _LIBCPP_HIDE_FROM_ABI constexpr chrono::year operator ""y(unsigned long long __y) noexcept
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::year operator ""y(unsigned long long __y) noexcept
     {
         return chrono::year(static_cast<int>(__y));
     }
@@ -42,8 +42,8 @@ namespace chrono { // hoist the literals into namespace std::chrono
    using namespace literals::chrono_literals;
 } // namespace chrono
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-#endif // _LIBCPP___CHRONO_LITERALS_H
+#endif // _LIBCUDACXX___CHRONO_LITERALS_H

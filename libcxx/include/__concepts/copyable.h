@@ -6,21 +6,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CONCEPTS_COPYABLE_H
-#define _LIBCPP___CONCEPTS_COPYABLE_H
+#ifndef _LIBCUDACXX___CONCEPTS_COPYABLE_H
+#define _LIBCUDACXX___CONCEPTS_COPYABLE_H
 
 #include <__concepts/assignable.h>
 #include <__concepts/constructible.h>
 #include <__concepts/movable.h>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [concepts.object]
 
@@ -32,8 +32,8 @@ concept copyable =
   assignable_from<_Tp&, const _Tp&> &&
   assignable_from<_Tp&, const _Tp>;
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___CONCEPTS_COPYABLE_H
+#endif // _LIBCUDACXX___CONCEPTS_COPYABLE_H

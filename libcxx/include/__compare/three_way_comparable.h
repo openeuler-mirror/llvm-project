@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___COMPARE_THREE_WAY_COMPARABLE_H
-#define _LIBCPP___COMPARE_THREE_WAY_COMPARABLE_H
+#ifndef _LIBCUDACXX___COMPARE_THREE_WAY_COMPARABLE_H
+#define _LIBCUDACXX___COMPARE_THREE_WAY_COMPARABLE_H
 
 #include <__compare/common_comparison_category.h>
 #include <__compare/ordering.h>
@@ -18,13 +18,13 @@
 #include <__config>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template<class _Tp, class _Cat>
 concept __compares_as =
@@ -51,8 +51,8 @@ concept three_way_comparable_with =
     { __u <=> __t } -> __compares_as<_Cat>;
   };
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___COMPARE_THREE_WAY_COMPARABLE_H
+#endif // _LIBCUDACXX___COMPARE_THREE_WAY_COMPARABLE_H

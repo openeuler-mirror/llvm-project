@@ -29,7 +29,7 @@ test(S s, typename S::size_type pos, typename S::size_type n1,
     if (pos <= old_size)
     {
         s.replace(pos, n1, str);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == expected);
         typename S::size_type xlen = std::min(n1, old_size - pos);
         typename S::size_type rlen = S::traits_type::length(str);

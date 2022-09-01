@@ -13,7 +13,7 @@
 //     iterator insert(const_iterator p, P&& x);
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <unordered_map>
 
@@ -25,7 +25,7 @@ int main(int, char**) {
     C c;
     C c2;
     C::const_iterator e = c2.end();
-    TEST_LIBCPP_ASSERT_FAILURE(
+    TEST_LIBCUDACXX_ASSERT_FAILURE(
         c.insert(e, P(3.5, 3)),
         "unordered container::emplace_hint(const_iterator, args...) called with an iterator not referring to this unordered container");
 

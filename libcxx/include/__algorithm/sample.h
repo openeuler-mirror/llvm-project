@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_SAMPLE_H
-#define _LIBCPP___ALGORITHM_SAMPLE_H
+#ifndef _LIBCUDACXX___ALGORITHM_SAMPLE_H
+#define _LIBCUDACXX___ALGORITHM_SAMPLE_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__algorithm/min.h>
@@ -19,19 +19,19 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy,
           class _PopulationIterator, class _PopulationSentinel, class _SampleIterator, class _Distance,
           class _UniformRandomNumberGenerator>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 _SampleIterator __sample(_PopulationIterator __first,
                          _PopulationSentinel __last, _SampleIterator __output_iter,
                          _Distance __n,
@@ -47,20 +47,20 @@ _SampleIterator __sample(_PopulationIterator __first,
     if (__r < __sz)
       __output_iter[__r] = *__first;
   }
-  return __output_iter + _VSTD::min(__n, __k);
+  return __output_iter + _CUDA_VSTD::min(__n, __k);
 }
 
 template <class _AlgPolicy,
           class _PopulationIterator, class _PopulationSentinel, class _SampleIterator, class _Distance,
           class _UniformRandomNumberGenerator>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 _SampleIterator __sample(_PopulationIterator __first,
                          _PopulationSentinel __last, _SampleIterator __output_iter,
                          _Distance __n,
                          _UniformRandomNumberGenerator& __g,
                          forward_iterator_tag) {
   _Distance __unsampled_sz = _IterOps<_AlgPolicy>::distance(__first, __last);
-  for (__n = _VSTD::min(__n, __unsampled_sz); __n != 0; ++__first) {
+  for (__n = _CUDA_VSTD::min(__n, __unsampled_sz); __n != 0; ++__first) {
     _Distance __r = uniform_int_distribution<_Distance>(0, --__unsampled_sz)(__g);
     if (__r < __n) {
       *__output_iter++ = *__first;
@@ -73,11 +73,11 @@ _SampleIterator __sample(_PopulationIterator __first,
 template <class _AlgPolicy,
           class _PopulationIterator, class _PopulationSentinel, class _SampleIterator, class _Distance,
           class _UniformRandomNumberGenerator>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 _SampleIterator __sample(_PopulationIterator __first,
                          _PopulationSentinel __last, _SampleIterator __output_iter,
                          _Distance __n, _UniformRandomNumberGenerator& __g) {
-  _LIBCPP_ASSERT(__n >= 0, "N must be a positive number.");
+  _LIBCUDACXX_ASSERT(__n >= 0, "N must be a positive number.");
 
   using _PopIterCategory = typename _IterOps<_AlgPolicy>::template __iterator_category<_PopulationIterator>;
   using _Difference = typename _IterOps<_AlgPolicy>::template __difference_type<_PopulationIterator>;
@@ -88,10 +88,10 @@ _SampleIterator __sample(_PopulationIterator __first,
       __g, _PopIterCategory());
 }
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _PopulationIterator, class _SampleIterator, class _Distance,
           class _UniformRandomNumberGenerator>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 _SampleIterator sample(_PopulationIterator __first,
                        _PopulationIterator __last, _SampleIterator __output_iter,
                        _Distance __n, _UniformRandomNumberGenerator&& __g) {
@@ -103,10 +103,10 @@ _SampleIterator sample(_PopulationIterator __first,
       std::move(__first), std::move(__last), std::move(__output_iter), __n, __g);
 }
 
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___ALGORITHM_SAMPLE_H
+#endif // _LIBCUDACXX___ALGORITHM_SAMPLE_H

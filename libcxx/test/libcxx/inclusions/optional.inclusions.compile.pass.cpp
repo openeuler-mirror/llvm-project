@@ -20,9 +20,9 @@
 #include <optional>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_OPTIONAL)
- #   error "<optional> was expected to define _LIBCPP_OPTIONAL"
+#if !defined(_LIBCUDACXX_OPTIONAL)
+ #   error "<optional> was expected to define _LIBCUDACXX_OPTIONAL"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<optional> should include <compare> in C++20 and later"
 #endif

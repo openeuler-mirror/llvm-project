@@ -57,8 +57,8 @@ using NonSimpleCommonRandomAccessSized = NonSimpleCommon;
 static_assert(std::ranges::common_range<Common<true>>);
 static_assert(std::ranges::random_access_range<SimpleCommon>);
 static_assert(std::ranges::sized_range<SimpleCommon>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<SimpleCommon>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleCommon>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<SimpleCommon>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleCommon>);
 
 template <bool Simple>
 struct CommonNonRandom : IntBufferView {
@@ -83,8 +83,8 @@ using NonSimpleCommonNonRandom = CommonNonRandom<false>;
 static_assert(std::ranges::common_range<SimpleCommonNonRandom>);
 static_assert(!std::ranges::random_access_range<SimpleCommonNonRandom>);
 static_assert(!std::ranges::sized_range<SimpleCommonNonRandom>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<SimpleCommonNonRandom>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleCommonNonRandom>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<SimpleCommonNonRandom>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleCommonNonRandom>);
 
 template <bool Simple>
 struct NonCommon : IntBufferView {
@@ -107,8 +107,8 @@ using NonSimpleNonCommon = NonCommon<false>;
 static_assert(!std::ranges::common_range<SimpleNonCommon>);
 static_assert(std::ranges::random_access_range<SimpleNonCommon>);
 static_assert(!std::ranges::sized_range<SimpleNonCommon>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<SimpleNonCommon>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleNonCommon>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<SimpleNonCommon>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleNonCommon>);
 
 template <bool Simple>
 struct NonCommonSized : IntBufferView {
@@ -134,8 +134,8 @@ using NonSimpleNonCommonRandomAcessSized = NonSimpleNonCommonSized;
 static_assert(!std::ranges::common_range<SimpleNonCommonSized>);
 static_assert(std::ranges::random_access_range<SimpleNonCommonSized>);
 static_assert(std::ranges::sized_range<SimpleNonCommonSized>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<SimpleNonCommonSized>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleNonCommonSized>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<SimpleNonCommonSized>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleNonCommonSized>);
 
 template <bool Simple>
 struct NonCommonNonRandom : IntBufferView {
@@ -164,8 +164,8 @@ using NonSimpleNonCommonNonRandom = NonCommonNonRandom<false>;
 static_assert(!std::ranges::common_range<SimpleNonCommonNonRandom>);
 static_assert(!std::ranges::random_access_range<SimpleNonCommonNonRandom>);
 static_assert(!std::ranges::sized_range<SimpleNonCommonNonRandom>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<SimpleNonCommonNonRandom>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleNonCommonNonRandom>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<SimpleNonCommonNonRandom>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleNonCommonNonRandom>);
 
 template <class Iter, class Sent = Iter, class NonConstIter = Iter, class NonConstSent = Sent>
 struct BasicView : IntBufferView {
@@ -230,7 +230,7 @@ static_assert(std::ranges::forward_range<ForwardSizedView>);
 static_assert(std::ranges::sized_range<ForwardSizedView>);
 static_assert(std::ranges::common_range<ForwardSizedView>);
 static_assert(!std::ranges::random_access_range<ForwardSizedView>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<ForwardSizedView>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<ForwardSizedView>);
 
 using NonSimpleForwardSizedView = BasicView<forward_sized_iterator<const int*>, forward_sized_iterator<const int*>,
                                             forward_sized_iterator<int*>, forward_sized_iterator<int*>>;
@@ -238,14 +238,14 @@ static_assert(std::ranges::forward_range<NonSimpleForwardSizedView>);
 static_assert(std::ranges::sized_range<NonSimpleForwardSizedView>);
 static_assert(std::ranges::common_range<NonSimpleForwardSizedView>);
 static_assert(!std::ranges::random_access_range<NonSimpleForwardSizedView>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleForwardSizedView>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleForwardSizedView>);
 
 using ForwardSizedNonCommon = BasicView<forward_sized_iterator<>, sized_sentinel<forward_sized_iterator<>>>;
 static_assert(std::ranges::forward_range<ForwardSizedNonCommon>);
 static_assert(std::ranges::sized_range<ForwardSizedNonCommon>);
 static_assert(!std::ranges::common_range<ForwardSizedNonCommon>);
 static_assert(!std::ranges::random_access_range<ForwardSizedNonCommon>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<ForwardSizedNonCommon>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<ForwardSizedNonCommon>);
 
 using NonSimpleForwardSizedNonCommon =
     BasicView<forward_sized_iterator<const int*>, sized_sentinel<forward_sized_iterator<const int*>>,
@@ -254,7 +254,7 @@ static_assert(std::ranges::forward_range<NonSimpleForwardSizedNonCommon>);
 static_assert(std::ranges::sized_range<NonSimpleForwardSizedNonCommon>);
 static_assert(!std::ranges::common_range<NonSimpleForwardSizedNonCommon>);
 static_assert(!std::ranges::random_access_range<NonSimpleForwardSizedNonCommon>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleForwardSizedNonCommon>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleForwardSizedNonCommon>);
 
 struct SizedRandomAccessView : IntBufferView {
   using IntBufferView::IntBufferView;
@@ -275,7 +275,7 @@ static_assert(!std::ranges::contiguous_range<NonSizedRandomAccessView>);
 static_assert(std::ranges::random_access_range<SizedRandomAccessView>);
 static_assert(!std::ranges::common_range<NonSizedRandomAccessView>);
 static_assert(!std::ranges::sized_range<NonSizedRandomAccessView>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<NonSizedRandomAccessView>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<NonSizedRandomAccessView>);
 
 using NonSimpleNonSizedRandomAccessView =
     BasicView<random_access_iterator<const int*>, sentinel_wrapper<random_access_iterator<const int*>>,
@@ -284,7 +284,7 @@ static_assert(!std::ranges::contiguous_range<NonSimpleNonSizedRandomAccessView>)
 static_assert(std::ranges::random_access_range<NonSimpleNonSizedRandomAccessView>);
 static_assert(!std::ranges::common_range<NonSimpleNonSizedRandomAccessView>);
 static_assert(!std::ranges::sized_range<NonSimpleNonSizedRandomAccessView>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleNonSizedRandomAccessView>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleNonSizedRandomAccessView>);
 
 using ContiguousCommonView = BasicView<int*>;
 static_assert(std::ranges::contiguous_range<ContiguousCommonView>);
@@ -328,20 +328,20 @@ using InputCommonView = BasicView<common_input_iterator<>>;
 static_assert(std::ranges::input_range<InputCommonView>);
 static_assert(!std::ranges::forward_range<InputCommonView>);
 static_assert(std::ranges::common_range<InputCommonView>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<InputCommonView>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<InputCommonView>);
 
 using NonSimpleInputCommonView = BasicView<common_input_iterator<const int*>, common_input_iterator<const int*>,
                                            common_input_iterator<int*>, common_input_iterator<int*>>;
 static_assert(std::ranges::input_range<NonSimpleInputCommonView>);
 static_assert(!std::ranges::forward_range<NonSimpleInputCommonView>);
 static_assert(std::ranges::common_range<NonSimpleInputCommonView>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleInputCommonView>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleInputCommonView>);
 
 using InputNonCommonView = BasicView<common_input_iterator<>, sentinel_wrapper<common_input_iterator<>>>;
 static_assert(std::ranges::input_range<InputNonCommonView>);
 static_assert(!std::ranges::forward_range<InputNonCommonView>);
 static_assert(!std::ranges::common_range<InputNonCommonView>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<InputNonCommonView>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<InputNonCommonView>);
 
 using NonSimpleInputNonCommonView =
     BasicView<common_input_iterator<const int*>, sentinel_wrapper<common_input_iterator<const int*>>,
@@ -349,14 +349,14 @@ using NonSimpleInputNonCommonView =
 static_assert(std::ranges::input_range<InputNonCommonView>);
 static_assert(!std::ranges::forward_range<InputNonCommonView>);
 static_assert(!std::ranges::common_range<InputNonCommonView>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleInputNonCommonView>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleInputNonCommonView>);
 
 using BidiCommonView = BasicView<bidirectional_iterator<int*>>;
 static_assert(!std::ranges::sized_range<BidiCommonView>);
 static_assert(std::ranges::bidirectional_range<BidiCommonView>);
 static_assert(!std::ranges::random_access_range<BidiCommonView>);
 static_assert(std::ranges::common_range<BidiCommonView>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<BidiCommonView>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<BidiCommonView>);
 
 using NonSimpleBidiCommonView = BasicView<bidirectional_iterator<const int*>, bidirectional_iterator<const int*>,
                                           bidirectional_iterator<int*>, bidirectional_iterator<int*>>;
@@ -364,7 +364,7 @@ static_assert(!std::ranges::sized_range<NonSimpleBidiCommonView>);
 static_assert(std::ranges::bidirectional_range<NonSimpleBidiCommonView>);
 static_assert(!std::ranges::random_access_range<NonSimpleBidiCommonView>);
 static_assert(std::ranges::common_range<NonSimpleBidiCommonView>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleBidiCommonView>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleBidiCommonView>);
 
 struct SizedBidiCommon : BidiCommonView {
   using BidiCommonView::BidiCommonView;
@@ -374,7 +374,7 @@ static_assert(std::ranges::sized_range<SizedBidiCommon>);
 static_assert(std::ranges::bidirectional_range<SizedBidiCommon>);
 static_assert(!std::ranges::random_access_range<SizedBidiCommon>);
 static_assert(std::ranges::common_range<SizedBidiCommon>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<SizedBidiCommon>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<SizedBidiCommon>);
 
 struct NonSimpleSizedBidiCommon : NonSimpleBidiCommonView {
   using NonSimpleBidiCommonView::NonSimpleBidiCommonView;
@@ -384,14 +384,14 @@ static_assert(std::ranges::sized_range<NonSimpleSizedBidiCommon>);
 static_assert(std::ranges::bidirectional_range<NonSimpleSizedBidiCommon>);
 static_assert(!std::ranges::random_access_range<NonSimpleSizedBidiCommon>);
 static_assert(std::ranges::common_range<NonSimpleSizedBidiCommon>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleSizedBidiCommon>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleSizedBidiCommon>);
 
 using BidiNonCommonView = BasicView<bidirectional_iterator<int*>, sentinel_wrapper<bidirectional_iterator<int*>>>;
 static_assert(!std::ranges::sized_range<BidiNonCommonView>);
 static_assert(std::ranges::bidirectional_range<BidiNonCommonView>);
 static_assert(!std::ranges::random_access_range<BidiNonCommonView>);
 static_assert(!std::ranges::common_range<BidiNonCommonView>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<BidiNonCommonView>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<BidiNonCommonView>);
 
 using NonSimpleBidiNonCommonView =
     BasicView<bidirectional_iterator<const int*>, sentinel_wrapper<bidirectional_iterator<const int*>>,
@@ -400,14 +400,14 @@ static_assert(!std::ranges::sized_range<NonSimpleBidiNonCommonView>);
 static_assert(std::ranges::bidirectional_range<NonSimpleBidiNonCommonView>);
 static_assert(!std::ranges::random_access_range<NonSimpleBidiNonCommonView>);
 static_assert(!std::ranges::common_range<NonSimpleBidiNonCommonView>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleBidiNonCommonView>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleBidiNonCommonView>);
 
 using SizedBidiNonCommonView = BasicView<bidirectional_iterator<int*>, sized_sentinel<bidirectional_iterator<int*>>>;
 static_assert(std::ranges::sized_range<SizedBidiNonCommonView>);
 static_assert(std::ranges::bidirectional_range<SizedBidiNonCommonView>);
 static_assert(!std::ranges::random_access_range<SizedBidiNonCommonView>);
 static_assert(!std::ranges::common_range<SizedBidiNonCommonView>);
-LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<SizedBidiNonCommonView>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<SizedBidiNonCommonView>);
 
 using NonSimpleSizedBidiNonCommonView =
     BasicView<bidirectional_iterator<const int*>, sized_sentinel<bidirectional_iterator<const int*>>,
@@ -416,7 +416,7 @@ static_assert(std::ranges::sized_range<NonSimpleSizedBidiNonCommonView>);
 static_assert(std::ranges::bidirectional_range<NonSimpleSizedBidiNonCommonView>);
 static_assert(!std::ranges::random_access_range<NonSimpleSizedBidiNonCommonView>);
 static_assert(!std::ranges::common_range<NonSimpleSizedBidiNonCommonView>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleSizedBidiNonCommonView>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleSizedBidiNonCommonView>);
 
 namespace adltest{
 struct iter_move_swap_iterator {

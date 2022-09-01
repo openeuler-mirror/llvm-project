@@ -11,7 +11,7 @@
 // iterator insert(const_iterator p, const value_type& x);
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <unordered_map>
 
@@ -26,11 +26,11 @@ int main(int, char**) {
     C::const_iterator e = c2.end();
     P v(3.5, 3);
 #if TEST_STD_VER < 11
-    TEST_LIBCPP_ASSERT_FAILURE(
+    TEST_LIBCUDACXX_ASSERT_FAILURE(
         c.insert(e, v),
         "unordered_map::insert(const_iterator, const value_type&) called with an iterator not referring to this unordered_map");
 #else
-    TEST_LIBCPP_ASSERT_FAILURE(
+    TEST_LIBCUDACXX_ASSERT_FAILURE(
         c.insert(e, v),
         "unordered_map::insert(const_iterator, value_type&&) called with an iterator not referring to this unordered_map");
 #endif

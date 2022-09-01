@@ -346,7 +346,7 @@
 #   error "__cpp_lib_out_ptr should not be defined before c++2b"
 # endif
 
-# if !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+# if !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 #   ifndef __cpp_lib_ranges
 #     error "__cpp_lib_ranges should be defined in c++20"
 #   endif
@@ -355,7 +355,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_ranges
-#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES) is not defined!"
+#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES) is not defined!"
 #   endif
 # endif
 
@@ -380,14 +380,14 @@
 #   error "__cpp_lib_shared_ptr_weak_type should have the value 201606L in c++20"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_smart_ptr_for_overwrite
 #     error "__cpp_lib_smart_ptr_for_overwrite should be defined in c++20"
 #   endif
 #   if __cpp_lib_smart_ptr_for_overwrite != 202002L
 #     error "__cpp_lib_smart_ptr_for_overwrite should have the value 202002L in c++20"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_smart_ptr_for_overwrite
 #     error "__cpp_lib_smart_ptr_for_overwrite should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -472,20 +472,20 @@
 #   error "__cpp_lib_make_unique should have the value 201304L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_out_ptr
 #     error "__cpp_lib_out_ptr should be defined in c++2b"
 #   endif
 #   if __cpp_lib_out_ptr != 202106L
 #     error "__cpp_lib_out_ptr should have the value 202106L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_out_ptr
 #     error "__cpp_lib_out_ptr should not be defined because it is unimplemented in libc++!"
 #   endif
 # endif
 
-# if !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+# if !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 #   ifndef __cpp_lib_ranges
 #     error "__cpp_lib_ranges should be defined in c++2b"
 #   endif
@@ -494,7 +494,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_ranges
-#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES) is not defined!"
+#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES) is not defined!"
 #   endif
 # endif
 
@@ -519,14 +519,14 @@
 #   error "__cpp_lib_shared_ptr_weak_type should have the value 201606L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_smart_ptr_for_overwrite
 #     error "__cpp_lib_smart_ptr_for_overwrite should be defined in c++2b"
 #   endif
 #   if __cpp_lib_smart_ptr_for_overwrite != 202002L
 #     error "__cpp_lib_smart_ptr_for_overwrite should have the value 202002L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_smart_ptr_for_overwrite
 #     error "__cpp_lib_smart_ptr_for_overwrite should not be defined because it is unimplemented in libc++!"
 #   endif

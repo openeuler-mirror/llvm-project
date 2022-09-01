@@ -48,7 +48,7 @@ int main(int, char**)
             },
             7
            );
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.at(1) == "one");
         assert(c.at(2) == "two");
@@ -81,7 +81,7 @@ int main(int, char**)
             },
             7
            );
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.at(1) == "one");
         assert(c.at(2) == "two");

@@ -31,7 +31,7 @@ void test() {
     S0 y0{};
     static_assert(std::constructible_from<S0>);
     static_assert(brace_initializable<S0>);
-    LIBCPP_STATIC_ASSERT(std::__default_initializable<S0>);
+    LIBCUDACXX_STATIC_ASSERT(std::__default_initializable<S0>);
     static_assert(std::default_initializable<S0>);
 
     struct S1 { S0 x; }; // Note: aggregate
@@ -39,7 +39,7 @@ void test() {
     S1 y1{}; // expected-error {{chosen constructor is explicit in copy-initialization}}
     static_assert(std::constructible_from<S1>);
     static_assert(!brace_initializable<S1>);
-    LIBCPP_STATIC_ASSERT(std::__default_initializable<S1>);
+    LIBCUDACXX_STATIC_ASSERT(std::__default_initializable<S1>);
     static_assert(!std::default_initializable<S1>);
 
     const int x2; // expected-error {{default initialization of an object of const type 'const int'}}
@@ -47,14 +47,14 @@ void test() {
 
     static_assert(std::constructible_from<const int>);
     static_assert(brace_initializable<const int>);
-    LIBCPP_STATIC_ASSERT(!std::__default_initializable<const int>);
+    LIBCUDACXX_STATIC_ASSERT(!std::__default_initializable<const int>);
     static_assert(!std::default_initializable<const int>);
 
     const int x3[1]; // expected-error-re {{default initialization of an object of const type 'const int{{[ ]*}}[1]'}}
     const int y3[1]{};
     static_assert(std::constructible_from<const int[1]>);
     static_assert(brace_initializable<const int[1]>);
-    LIBCPP_STATIC_ASSERT(!std::__default_initializable<const int[1]>);
+    LIBCUDACXX_STATIC_ASSERT(!std::__default_initializable<const int[1]>);
     static_assert(!std::default_initializable<const int[1]>);
 
     // Zero-length array extension
@@ -62,7 +62,7 @@ void test() {
     const int y4[]{};
     static_assert(!std::constructible_from<const int[]>);
     static_assert(brace_initializable<const int[]>);
-    LIBCPP_STATIC_ASSERT(!std::__default_initializable<const int[]>);
+    LIBCUDACXX_STATIC_ASSERT(!std::__default_initializable<const int[]>);
     static_assert(!std::default_initializable<const int[]>);
 }
 

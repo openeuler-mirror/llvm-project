@@ -18,9 +18,9 @@
 #include <cinttypes>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_CINTTYPES)
- #   error "<cinttypes> was expected to define _LIBCPP_CINTTYPES"
+#if !defined(_LIBCUDACXX_CINTTYPES)
+ #   error "<cinttypes> was expected to define _LIBCUDACXX_CINTTYPES"
 #endif
-#if !defined(_LIBCPP_CSTDINT)
+#if !defined(_LIBCUDACXX_CSTDINT)
  #   error "<cinttypes> should include <cstdint> in C++03 and later"
 #endif

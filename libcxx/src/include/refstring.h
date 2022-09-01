@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_REFSTRING_H
-#define _LIBCPP_REFSTRING_H
+#ifndef _LIBCUDACXX_REFSTRING_H
+#define _LIBCUDACXX_REFSTRING_H
 
 #include <__config>
 #include <stdexcept>
@@ -27,12 +27,12 @@
 // won't try to delete the memory.
 #if defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) || \
     defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__)
-#   define _LIBCPP_CHECK_FOR_GCC_EMPTY_STRING_STORAGE
+#   define _LIBCUDACXX_CHECK_FOR_GCC_EMPTY_STRING_STORAGE
 #   include <dlfcn.h>
 #   include <mach-o/dyld.h>
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace __refstring_imp { namespace {
 typedef int count_t;
@@ -53,7 +53,7 @@ inline char * data_from_rep(_Rep_base *rep) noexcept {
     return data + sizeof(*rep);
 }
 
-#if defined(_LIBCPP_CHECK_FOR_GCC_EMPTY_STRING_STORAGE)
+#if defined(_LIBCUDACXX_CHECK_FOR_GCC_EMPTY_STRING_STORAGE)
 inline
 const char* compute_gcc_empty_string_storage() noexcept
 {
@@ -80,7 +80,7 @@ get_gcc_empty_string_storage() noexcept
 using namespace __refstring_imp;
 
 inline
-__libcpp_refstring::__libcpp_refstring(const char* msg) {
+__LIBCUDACXX_refstring::__LIBCUDACXX_refstring(const char* msg) {
     std::size_t len = strlen(msg);
     _Rep_base* rep = static_cast<_Rep_base *>(::operator new(sizeof(*rep) + len + 1));
     rep->len = len;
@@ -92,23 +92,23 @@ __libcpp_refstring::__libcpp_refstring(const char* msg) {
 }
 
 inline
-__libcpp_refstring::__libcpp_refstring(const __libcpp_refstring &s) noexcept
+__LIBCUDACXX_refstring::__LIBCUDACXX_refstring(const __LIBCUDACXX_refstring &s) noexcept
     : __imp_(s.__imp_)
 {
     if (__uses_refcount())
-        __libcpp_atomic_add(&rep_from_data(__imp_)->count, 1);
+        __LIBCUDACXX_atomic_add(&rep_from_data(__imp_)->count, 1);
 }
 
 inline
-__libcpp_refstring& __libcpp_refstring::operator=(__libcpp_refstring const& s) noexcept {
+__LIBCUDACXX_refstring& __LIBCUDACXX_refstring::operator=(__LIBCUDACXX_refstring const& s) noexcept {
     bool adjust_old_count = __uses_refcount();
     struct _Rep_base *old_rep = rep_from_data(__imp_);
     __imp_ = s.__imp_;
     if (__uses_refcount())
-        __libcpp_atomic_add(&rep_from_data(__imp_)->count, 1);
+        __LIBCUDACXX_atomic_add(&rep_from_data(__imp_)->count, 1);
     if (adjust_old_count)
     {
-        if (__libcpp_atomic_add(&old_rep->count, count_t(-1)) < 0)
+        if (__LIBCUDACXX_atomic_add(&old_rep->count, count_t(-1)) < 0)
         {
             ::operator delete(old_rep);
         }
@@ -117,24 +117,24 @@ __libcpp_refstring& __libcpp_refstring::operator=(__libcpp_refstring const& s) n
 }
 
 inline
-__libcpp_refstring::~__libcpp_refstring() {
+__LIBCUDACXX_refstring::~__LIBCUDACXX_refstring() {
     if (__uses_refcount()) {
         _Rep_base* rep = rep_from_data(__imp_);
-        if (__libcpp_atomic_add(&rep->count, count_t(-1)) < 0) {
+        if (__LIBCUDACXX_atomic_add(&rep->count, count_t(-1)) < 0) {
             ::operator delete(rep);
         }
     }
 }
 
 inline
-bool __libcpp_refstring::__uses_refcount() const {
-#if defined(_LIBCPP_CHECK_FOR_GCC_EMPTY_STRING_STORAGE)
+bool __LIBCUDACXX_refstring::__uses_refcount() const {
+#if defined(_LIBCUDACXX_CHECK_FOR_GCC_EMPTY_STRING_STORAGE)
     return __imp_ != get_gcc_empty_string_storage();
 #else
     return true;
 #endif
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif //_LIBCPP_REFSTRING_H
+#endif //_LIBCUDACXX_REFSTRING_H

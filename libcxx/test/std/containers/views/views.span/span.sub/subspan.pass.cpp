@@ -28,8 +28,8 @@
 template <typename Span, size_t Offset, size_t Count>
 constexpr bool testConstexprSpan(Span sp)
 {
-    LIBCPP_ASSERT((noexcept(sp.template subspan<Offset, Count>())));
-    LIBCPP_ASSERT((noexcept(sp.subspan(Offset, Count))));
+    LIBCUDACXX_ASSERT((noexcept(sp.template subspan<Offset, Count>())));
+    LIBCUDACXX_ASSERT((noexcept(sp.subspan(Offset, Count))));
     auto s1 = sp.template subspan<Offset, Count>();
     auto s2 = sp.subspan(Offset, Count);
     using S1 = decltype(s1);
@@ -47,8 +47,8 @@ constexpr bool testConstexprSpan(Span sp)
 template <typename Span, size_t Offset>
 constexpr bool testConstexprSpan(Span sp)
 {
-    LIBCPP_ASSERT((noexcept(sp.template subspan<Offset>())));
-    LIBCPP_ASSERT((noexcept(sp.subspan(Offset))));
+    LIBCUDACXX_ASSERT((noexcept(sp.template subspan<Offset>())));
+    LIBCUDACXX_ASSERT((noexcept(sp.subspan(Offset))));
     auto s1 = sp.template subspan<Offset>();
     auto s2 = sp.subspan(Offset);
     using S1 = decltype(s1);
@@ -67,8 +67,8 @@ constexpr bool testConstexprSpan(Span sp)
 template <typename Span, size_t Offset, size_t Count>
 void testRuntimeSpan(Span sp)
 {
-    LIBCPP_ASSERT((noexcept(sp.template subspan<Offset, Count>())));
-    LIBCPP_ASSERT((noexcept(sp.subspan(Offset, Count))));
+    LIBCUDACXX_ASSERT((noexcept(sp.template subspan<Offset, Count>())));
+    LIBCUDACXX_ASSERT((noexcept(sp.subspan(Offset, Count))));
     auto s1 = sp.template subspan<Offset, Count>();
     auto s2 = sp.subspan(Offset, Count);
     using S1 = decltype(s1);
@@ -86,8 +86,8 @@ void testRuntimeSpan(Span sp)
 template <typename Span, size_t Offset>
 void testRuntimeSpan(Span sp)
 {
-    LIBCPP_ASSERT((noexcept(sp.template subspan<Offset>())));
-    LIBCPP_ASSERT((noexcept(sp.subspan(Offset))));
+    LIBCUDACXX_ASSERT((noexcept(sp.template subspan<Offset>())));
+    LIBCUDACXX_ASSERT((noexcept(sp.subspan(Offset))));
     auto s1 = sp.template subspan<Offset>();
     auto s2 = sp.subspan(Offset);
     using S1 = decltype(s1);

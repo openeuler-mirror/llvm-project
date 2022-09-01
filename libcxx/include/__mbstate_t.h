@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___MBSTATE_T_H
-#define _LIBCPP___MBSTATE_T_H
+#ifndef _LIBCUDACXX___MBSTATE_T_H
+#define _LIBCUDACXX___MBSTATE_T_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
@@ -25,7 +25,7 @@
 // This is a gruesome hack, but I don't know how to make it cleaner for
 // the time being.
 
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 #   include <wchar.h> // for mbstate_t
 #elif __has_include(<bits/types/mbstate_t.h>)
 #   include <bits/types/mbstate_t.h> // works on most Unixes
@@ -35,10 +35,10 @@
 #   error "The library was configured without support for wide-characters, but we don't know how to get the definition of mbstate_t without <wchar.h> on your platform."
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-using ::mbstate_t _LIBCPP_USING_IF_EXISTS;
+using ::mbstate_t _LIBCUDACXX_USING_IF_EXISTS;
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___MBSTATE_T_H
+#endif // _LIBCUDACXX___MBSTATE_T_H

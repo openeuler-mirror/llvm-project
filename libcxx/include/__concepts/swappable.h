@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CONCEPTS_SWAPPABLE_H
-#define _LIBCPP___CONCEPTS_SWAPPABLE_H
+#ifndef _LIBCUDACXX___CONCEPTS_SWAPPABLE_H
+#define _LIBCUDACXX___CONCEPTS_SWAPPABLE_H
 
 #include <__concepts/assignable.h>
 #include <__concepts/class_or_enum.h>
@@ -19,13 +19,13 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [concept.swappable]
 
@@ -39,7 +39,7 @@ namespace __swap {
   concept __unqualified_swappable_with =
     (__class_or_enum<remove_cvref_t<_Tp>> || __class_or_enum<remove_cvref_t<_Up>>) &&
     requires(_Tp&& __t, _Up&& __u) {
-      swap(_VSTD::forward<_Tp>(__t), _VSTD::forward<_Up>(__u));
+      swap(_CUDA_VSTD::forward<_Tp>(__t), _CUDA_VSTD::forward<_Up>(__u));
     };
 
   struct __fn;
@@ -64,9 +64,9 @@ namespace __swap {
     template<class _Tp, class _Up>
       requires __unqualified_swappable_with<_Tp, _Up>
     constexpr void operator()(_Tp&& __t, _Up&& __u) const
-      noexcept(noexcept(swap(_VSTD::forward<_Tp>(__t), _VSTD::forward<_Up>(__u))))
+      noexcept(noexcept(swap(_CUDA_VSTD::forward<_Tp>(__t), _CUDA_VSTD::forward<_Up>(__u))))
     {
-      swap(_VSTD::forward<_Tp>(__t), _VSTD::forward<_Up>(__u));
+      swap(_CUDA_VSTD::forward<_Tp>(__t), _CUDA_VSTD::forward<_Up>(__u));
     }
 
     // 2.2   Otherwise, if `E1` and `E2` are lvalues of array types with equal extent and...
@@ -86,7 +86,7 @@ namespace __swap {
     constexpr void operator()(_Tp& __x, _Tp& __y) const
       noexcept(is_nothrow_move_constructible_v<_Tp> && is_nothrow_move_assignable_v<_Tp>)
     {
-      __y = _VSTD::exchange(__x, _VSTD::move(__y));
+      __y = _CUDA_VSTD::exchange(__x, _CUDA_VSTD::move(__y));
     }
   };
 } // namespace __swap
@@ -103,14 +103,14 @@ template<class _Tp, class _Up>
 concept swappable_with =
   common_reference_with<_Tp, _Up> &&
   requires(_Tp&& __t, _Up&& __u) {
-    ranges::swap(_VSTD::forward<_Tp>(__t), _VSTD::forward<_Tp>(__t));
-    ranges::swap(_VSTD::forward<_Up>(__u), _VSTD::forward<_Up>(__u));
-    ranges::swap(_VSTD::forward<_Tp>(__t), _VSTD::forward<_Up>(__u));
-    ranges::swap(_VSTD::forward<_Up>(__u), _VSTD::forward<_Tp>(__t));
+    ranges::swap(_CUDA_VSTD::forward<_Tp>(__t), _CUDA_VSTD::forward<_Tp>(__t));
+    ranges::swap(_CUDA_VSTD::forward<_Up>(__u), _CUDA_VSTD::forward<_Up>(__u));
+    ranges::swap(_CUDA_VSTD::forward<_Tp>(__t), _CUDA_VSTD::forward<_Up>(__u));
+    ranges::swap(_CUDA_VSTD::forward<_Up>(__u), _CUDA_VSTD::forward<_Tp>(__t));
   };
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___CONCEPTS_SWAPPABLE_H
+#endif // _LIBCUDACXX___CONCEPTS_SWAPPABLE_H

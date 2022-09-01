@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_STABLE_PARTITION_H
-#define _LIBCPP___ALGORITHM_RANGES_STABLE_PARTITION_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_STABLE_PARTITION_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_STABLE_PARTITION_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__algorithm/make_projected.h>
@@ -30,13 +30,13 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __stable_partition {
@@ -44,7 +44,7 @@ namespace __stable_partition {
 struct __fn {
 
   template <class _Iter, class _Sent, class _Proj, class _Pred>
-  _LIBCPP_HIDE_FROM_ABI static
+  _LIBCUDACXX_HIDE_FROM_ABI static
   subrange<__uncvref_t<_Iter>> __stable_partition_fn_impl(
       _Iter&& __first, _Sent&& __last, _Pred&& __pred, _Proj&& __proj) {
     auto __last_iter = ranges::next(__first, __last);
@@ -59,7 +59,7 @@ struct __fn {
   template <bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent, class _Proj = identity,
             indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
   requires permutable<_Iter>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   subrange<_Iter> operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const {
     return __stable_partition_fn_impl(__first, __last, __pred, __proj);
   }
@@ -67,7 +67,7 @@ struct __fn {
   template <bidirectional_range _Range, class _Proj = identity,
             indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
   requires permutable<iterator_t<_Range>>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   borrowed_subrange_t<_Range> operator()(_Range&& __range, _Pred __pred, _Proj __proj = {}) const {
     return __stable_partition_fn_impl(ranges::begin(__range), ranges::end(__range), __pred, __proj);
   }
@@ -81,8 +81,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_STABLE_PARTITION_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_STABLE_PARTITION_H

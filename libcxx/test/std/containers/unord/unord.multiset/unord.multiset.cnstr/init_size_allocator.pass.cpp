@@ -47,7 +47,7 @@ void test(const Allocator& alloc)
         7,
         alloc);
 
-    LIBCPP_ASSERT(c.bucket_count() == 7);
+    LIBCUDACXX_ASSERT(c.bucket_count() == 7);
     assert(c.size() == 6);
     assert(c.count(1) == 2);
     assert(c.count(2) == 2);

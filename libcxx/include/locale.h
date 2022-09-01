@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_LOCALE_H
-#define _LIBCPP_LOCALE_H
+#ifndef _LIBCUDACXX_LOCALE_H
+#define _LIBCUDACXX_LOCALE_H
 
 /*
     locale.h synopsis
@@ -35,14 +35,14 @@ Functions:
 
 #include <__config>
 
-#if defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   error "<locale.h> is not supported since libc++ has been configured without support for localization."
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
 #include_next <locale.h>
 
-#endif // _LIBCPP_LOCALE_H
+#endif // _LIBCUDACXX_LOCALE_H

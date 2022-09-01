@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_WCTYPE_H
-#define _LIBCPP_WCTYPE_H
+#ifndef _LIBCUDACXX_WCTYPE_H
+#define _LIBCUDACXX_WCTYPE_H
 
 /*
     wctype.h synopsis
@@ -46,11 +46,11 @@ wctrans_t wctrans(const char* property);
 
 #include <__config>
 
-#if defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #   error "The <wctype.h> header is not supported since libc++ has been configured with LIBCXX_ENABLE_WIDE_CHARACTERS disabled"
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
@@ -65,7 +65,7 @@ wctrans_t wctrans(const char* property);
 // will fail because it does not refer to the same declaration.
 #if __has_include_next(<wctype.h>)
 #   include_next <wctype.h>
-#   define _LIBCPP_INCLUDED_C_LIBRARY_WCTYPE_H
+#   define _LIBCUDACXX_INCLUDED_C_LIBRARY_WCTYPE_H
 #endif
 
 #ifdef __cplusplus
@@ -91,4 +91,4 @@ wctrans_t wctrans(const char* property);
 
 #endif // __cplusplus
 
-#endif // _LIBCPP_WCTYPE_H
+#endif // _LIBCUDACXX_WCTYPE_H

@@ -8,16 +8,16 @@
 
 #include <experimental/memory_resource>
 
-#ifndef _LIBCPP_HAS_NO_ATOMIC_HEADER
+#ifndef _LIBCUDACXX_HAS_NO_ATOMIC_HEADER
 #  include <atomic>
-#elif !defined(_LIBCPP_HAS_NO_THREADS)
+#elif !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #  include <mutex>
-#  if defined(__ELF__) && defined(_LIBCPP_LINK_PTHREAD_LIB)
+#  if defined(__ELF__) && defined(_LIBCUDACXX_LINK_PTHREAD_LIB)
 #    pragma comment(lib, "pthread")
 #  endif
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_LFTS_PMR
+_LIBCUDACXX_BEGIN_NAMESPACE_LFTS_PMR
 
 // memory_resource
 
@@ -25,19 +25,19 @@ _LIBCPP_BEGIN_NAMESPACE_LFTS_PMR
 
 // new_delete_resource()
 
-class _LIBCPP_TYPE_VIS __new_delete_memory_resource_imp
+class _LIBCUDACXX_TYPE_VIS __new_delete_memory_resource_imp
     : public memory_resource
 {
     void *do_allocate(size_t size, size_t align) override {
-#ifdef _LIBCPP_HAS_NO_ALIGNED_ALLOCATION
+#ifdef _LIBCUDACXX_HAS_NO_ALIGNED_ALLOCATION
         if (__is_overaligned_for_new(align))
             __throw_bad_alloc();
 #endif
-        return _VSTD::__libcpp_allocate(size, align);
+        return _CUDA_VSTD::__LIBCUDACXX_allocate(size, align);
     }
 
     void do_deallocate(void *p, size_t n, size_t align) override {
-      _VSTD::__libcpp_deallocate(p, n, align);
+      _CUDA_VSTD::__LIBCUDACXX_deallocate(p, n, align);
     }
 
     bool do_is_equal(memory_resource const & other) const noexcept override
@@ -49,7 +49,7 @@ public:
 
 // null_memory_resource()
 
-class _LIBCPP_TYPE_VIS __null_memory_resource_imp
+class _LIBCUDACXX_TYPE_VIS __null_memory_resource_imp
     : public memory_resource
 {
 public:
@@ -72,7 +72,7 @@ union ResourceInitHelper {
     __null_memory_resource_imp       null_res;
   } resources;
   char dummy;
-  _LIBCPP_CONSTEXPR_AFTER_CXX11 ResourceInitHelper() : resources() {}
+  _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 ResourceInitHelper() : resources() {}
   ~ResourceInitHelper() {}
 };
 
@@ -96,19 +96,19 @@ memory_resource * null_memory_resource() noexcept {
 static memory_resource *
 __default_memory_resource(bool set = false, memory_resource * new_res = nullptr) noexcept
 {
-#ifndef _LIBCPP_HAS_NO_ATOMIC_HEADER
+#ifndef _LIBCUDACXX_HAS_NO_ATOMIC_HEADER
     static constinit atomic<memory_resource*> __res{&res_init.resources.new_delete_res};
     if (set) {
         new_res = new_res ? new_res : new_delete_resource();
         // TODO: Can a weaker ordering be used?
-        return _VSTD::atomic_exchange_explicit(
+        return _CUDA_VSTD::atomic_exchange_explicit(
             &__res, new_res, memory_order_acq_rel);
     }
     else {
-        return _VSTD::atomic_load_explicit(
+        return _CUDA_VSTD::atomic_load_explicit(
             &__res, memory_order_acquire);
     }
-#elif !defined(_LIBCPP_HAS_NO_THREADS)
+#elif !defined(_LIBCUDACXX_HAS_NO_THREADS)
     static constinit memory_resource *res = &res_init.resources.new_delete_res;
     static mutex res_lock;
     if (set) {
@@ -144,4 +144,4 @@ memory_resource * set_default_resource(memory_resource * __new_res) noexcept
     return __default_memory_resource(true, __new_res);
 }
 
-_LIBCPP_END_NAMESPACE_LFTS_PMR
+_LIBCUDACXX_END_NAMESPACE_LFTS_PMR

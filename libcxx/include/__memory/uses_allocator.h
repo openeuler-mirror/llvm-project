@@ -7,18 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___MEMORY_USES_ALLOCATOR_H
-#define _LIBCPP___MEMORY_USES_ALLOCATOR_H
+#ifndef _LIBCUDACXX___MEMORY_USES_ALLOCATOR_H
+#define _LIBCUDACXX___MEMORY_USES_ALLOCATOR_H
 
 #include <__config>
 #include <cstddef>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp>
 struct __has_allocator_type
@@ -44,16 +44,16 @@ struct __uses_allocator<_Tp, _Alloc, false>
 };
 
 template <class _Tp, class _Alloc>
-struct _LIBCPP_TEMPLATE_VIS uses_allocator
+struct _LIBCUDACXX_TEMPLATE_VIS uses_allocator
     : public __uses_allocator<_Tp, _Alloc>
 {
 };
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp, class _Alloc>
 inline constexpr size_t uses_allocator_v = uses_allocator<_Tp, _Alloc>::value;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___MEMORY_USES_ALLOCATOR_H
+#endif // _LIBCUDACXX___MEMORY_USES_ALLOCATOR_H

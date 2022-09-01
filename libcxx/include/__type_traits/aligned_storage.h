@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_ALIGNED_STORAGE_H
-#define _LIBCPP___TYPE_TRAITS_ALIGNED_STORAGE_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_ALIGNED_STORAGE_H
+#define _LIBCUDACXX___TYPE_TRAITS_ALIGNED_STORAGE_H
 
 #include <__config>
 #include <__type_traits/conditional.h>
@@ -16,16 +16,16 @@
 #include <__type_traits/type_list.h>
 #include <cstddef>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp>
 struct __align_type
 {
-    static const size_t value = _LIBCPP_PREFERRED_ALIGNOF(_Tp);
+    static const size_t value = _LIBCUDACXX_PREFERRED_ALIGNOF(_Tp);
     typedef _Tp type;
 };
 
@@ -91,7 +91,7 @@ struct __find_max_align<__type_list<_Hp, _Tp>, _Len>
     : public integral_constant<size_t, __select_align<_Len, _Hp::value, __find_max_align<_Tp, _Len>::value>::value> {};
 
 template <size_t _Len, size_t _Align = __find_max_align<__all_types, _Len>::value>
-struct _LIBCPP_TEMPLATE_VIS aligned_storage
+struct _LIBCUDACXX_TEMPLATE_VIS aligned_storage
 {
     typedef typename __find_pod<__all_types, _Align>::type _Aligner;
     union type
@@ -101,14 +101,14 @@ struct _LIBCPP_TEMPLATE_VIS aligned_storage
     };
 };
 
-#if _LIBCPP_STD_VER > 11
+#if _LIBCUDACXX_STD_VER > 11
 template <size_t _Len, size_t _Align = __find_max_align<__all_types, _Len>::value>
     using aligned_storage_t = typename aligned_storage<_Len, _Align>::type;
 #endif
 
 #define _CREATE_ALIGNED_STORAGE_SPECIALIZATION(n) \
 template <size_t _Len>\
-struct _LIBCPP_TEMPLATE_VIS aligned_storage<_Len, n>\
+struct _LIBCUDACXX_TEMPLATE_VIS aligned_storage<_Len, n>\
 {\
     struct _ALIGNAS(n) type\
     {\
@@ -131,12 +131,12 @@ _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x800);
 _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x1000);
 _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x2000);
 // PE/COFF does not support alignment beyond 8192 (=0x2000)
-#if !defined(_LIBCPP_OBJECT_FORMAT_COFF)
+#if !defined(_LIBCUDACXX_OBJECT_FORMAT_COFF)
 _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x4000);
-#endif // !defined(_LIBCPP_OBJECT_FORMAT_COFF)
+#endif // !defined(_LIBCUDACXX_OBJECT_FORMAT_COFF)
 
 #undef _CREATE_ALIGNED_STORAGE_SPECIALIZATION
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_ALIGNED_STORAGE_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_ALIGNED_STORAGE_H

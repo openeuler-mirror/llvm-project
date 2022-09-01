@@ -15,7 +15,7 @@
 
 TEST_CONSTEXPR_CXX20 bool test() {
   using CRefT = std::vector<bool>::const_reference;
-#if !defined(_LIBCPP_VERSION) || defined(_LIBCPP_ABI_BITSET_VECTOR_BOOL_CONST_SUBSCRIPT_RETURN_BOOL)
+#if !defined(_LIBCUDACXX_VERSION) || defined(_LIBCUDACXX_ABI_BITSET_VECTOR_BOOL_CONST_SUBSCRIPT_RETURN_BOOL)
   ASSERT_SAME_TYPE(CRefT, bool);
 #else
   ASSERT_SAME_TYPE(CRefT, std::__bit_const_reference<std::vector<bool> >);

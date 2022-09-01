@@ -29,7 +29,7 @@ constexpr bool test() {
 //  S   s5  { s,     5 };
     S  sNot { "def", 3 };
 
-    LIBCPP_ASSERT_NOEXCEPT(s0.ends_with(""));
+    LIBCUDACXX_ASSERT_NOEXCEPT(s0.ends_with(""));
 
     assert ( s0.ends_with(""));
     assert (!s0.ends_with("e"));

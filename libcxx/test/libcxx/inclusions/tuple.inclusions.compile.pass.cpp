@@ -20,9 +20,9 @@
 #include <tuple>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_TUPLE)
- #   error "<tuple> was expected to define _LIBCPP_TUPLE"
+#if !defined(_LIBCUDACXX_TUPLE)
+ #   error "<tuple> was expected to define _LIBCUDACXX_TUPLE"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<tuple> should include <compare> in C++20 and later"
 #endif

@@ -6,21 +6,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_ITERATOR_CONCEPT_H
-#define _LIBCPP___ALGORITHM_RANGES_ITERATOR_CONCEPT_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_ITERATOR_CONCEPT_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_ITERATOR_CONCEPT_H
 
 #include <__config>
 #include <__iterator/concepts.h>
 #include <__iterator/iterator_traits.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -44,8 +44,8 @@ template <class _Iter>
 using __iterator_concept = decltype(__get_iterator_concept<_Iter>());
 
 } // namespace ranges
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_ITERATOR_CONCEPT_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_ITERATOR_CONCEPT_H

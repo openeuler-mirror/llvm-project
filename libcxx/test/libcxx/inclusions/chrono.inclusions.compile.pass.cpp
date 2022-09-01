@@ -20,9 +20,9 @@
 #include <chrono>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_CHRONO)
- #   error "<chrono> was expected to define _LIBCPP_CHRONO"
+#if !defined(_LIBCUDACXX_CHRONO)
+ #   error "<chrono> was expected to define _LIBCUDACXX_CHRONO"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<chrono> should include <compare> in C++20 and later"
 #endif

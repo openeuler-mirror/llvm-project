@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_ABI_MICROSOFT
+#ifndef _LIBCUDACXX_ABI_MICROSOFT
 #error this header can only be used when targeting the MSVC ABI
 #endif
 
@@ -16,9 +16,9 @@
 
 extern "C" {
 typedef void (__cdecl* terminate_handler)();
-_LIBCPP_CRT_FUNC terminate_handler __cdecl set_terminate(
+_LIBCUDACXX_CRT_FUNC terminate_handler __cdecl set_terminate(
     terminate_handler _NewTerminateHandler) throw();
-_LIBCPP_CRT_FUNC terminate_handler __cdecl _get_terminate();
+_LIBCUDACXX_CRT_FUNC terminate_handler __cdecl _get_terminate();
 
 typedef void (__cdecl* unexpected_handler)();
 unexpected_handler __cdecl set_unexpected(
@@ -39,7 +39,7 @@ unexpected_handler get_unexpected() noexcept {
   return ::_get_unexpected();
 }
 
-_LIBCPP_NORETURN
+_LIBCUDACXX_NORETURN
 void unexpected() {
     (*get_unexpected())();
     // unexpected handler should not return
@@ -54,18 +54,18 @@ terminate_handler get_terminate() noexcept {
   return ::_get_terminate();
 }
 
-_LIBCPP_NORETURN
+_LIBCUDACXX_NORETURN
 void terminate() noexcept
 {
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
     try
     {
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
         (*get_terminate())();
         // handler should not return
         fprintf(stderr, "terminate_handler unexpectedly returned\n");
         ::abort();
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
     }
     catch (...)
     {
@@ -73,7 +73,7 @@ void terminate() noexcept
         fprintf(stderr, "terminate_handler unexpectedly threw an exception\n");
         ::abort();
     }
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
 }
 
 bool uncaught_exception() noexcept { return uncaught_exceptions() > 0; }
@@ -82,7 +82,7 @@ int uncaught_exceptions() noexcept {
     return __uncaught_exceptions();
 }
 
-#if !defined(_LIBCPP_ABI_VCRUNTIME)
+#if !defined(_LIBCUDACXX_ABI_VCRUNTIME)
 bad_cast::bad_cast() noexcept
 {
 }
@@ -158,6 +158,6 @@ bad_array_new_length::what() const noexcept
 {
     return "bad_array_new_length";
 }
-#endif // !_LIBCPP_ABI_VCRUNTIME
+#endif // !_LIBCUDACXX_ABI_VCRUNTIME
 
 } // namespace std

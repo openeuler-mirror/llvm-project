@@ -10,7 +10,7 @@
 
 // Test arguments destruction order involving unique_ptr<T> with trivial_abi.
 
-// ADDITIONAL_COMPILE_FLAGS: -Wno-macro-redefined -D_LIBCPP_ABI_ENABLE_UNIQUE_PTR_TRIVIAL_ABI
+// ADDITIONAL_COMPILE_FLAGS: -Wno-macro-redefined -D_LIBCUDACXX_ABI_ENABLE_UNIQUE_PTR_TRIVIAL_ABI
 
 // XFAIL: gcc
 
@@ -53,7 +53,7 @@ int main(int, char**) {
   func(A(shared_buf, &cur_idx), std::unique_ptr<B>(new B(shared_buf, &cur_idx)),
        C(shared_buf, &cur_idx));
 
-#if defined(_LIBCPP_ABI_MICROSOFT)
+#if defined(_LIBCUDACXX_ABI_MICROSOFT)
   // On Microsoft ABI, the dtor order is always A,B,C (because callee-destroyed)
   assert(shared_buf[0] == 'A' && shared_buf[1] == 'B' && shared_buf[2] == 'C');
 #else

@@ -24,7 +24,7 @@ test(S s, typename S::difference_type pos, It first, It last, S expected)
 {
     typename S::const_iterator p = s.cbegin() + pos;
     typename S::iterator i = s.insert(p, first, last);
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(i - s.begin() == pos);
     assert(s == expected);
 }
@@ -49,7 +49,7 @@ test_exceptions(S s, typename S::difference_type pos, It first, It last)
 
     // Part of "no effects" is that iterators and pointers
     // into the string must not have been invalidated.
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == original);
     assert(s.begin() == begin);
     assert(s.end() == end);

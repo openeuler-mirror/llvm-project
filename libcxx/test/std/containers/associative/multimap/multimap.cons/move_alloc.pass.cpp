@@ -63,7 +63,7 @@ int main(int, char**)
         assert(m3 == m2);
         assert(m3.get_allocator() == A(7));
         assert(m3.key_comp() == C(5));
-        LIBCPP_ASSERT(m1.empty());
+        LIBCUDACXX_ASSERT(m1.empty());
     }
     {
         typedef std::pair<MoveOnly, MoveOnly> V;
@@ -102,7 +102,7 @@ int main(int, char**)
         assert(m3 == m2);
         assert(m3.get_allocator() == A(5));
         assert(m3.key_comp() == C(5));
-        LIBCPP_ASSERT(m1.empty());
+        LIBCUDACXX_ASSERT(m1.empty());
     }
     {
         typedef std::pair<MoveOnly, MoveOnly> V;
@@ -141,7 +141,7 @@ int main(int, char**)
         assert(m3 == m2);
         assert(m3.get_allocator() == A(5));
         assert(m3.key_comp() == C(5));
-        LIBCPP_ASSERT(m1.empty());
+        LIBCUDACXX_ASSERT(m1.empty());
     }
     {
         typedef Counter<int> T;
@@ -177,7 +177,7 @@ int main(int, char**)
 
             M m3(std::move(m1), A());
             assert(m3 == m2);
-            LIBCPP_ASSERT(m1.empty());
+            LIBCUDACXX_ASSERT(m1.empty());
             assert(Counter_base::gConstructed >= (int)(3*num));
             assert(Counter_base::gConstructed <= (int)(4*num));
 
@@ -186,7 +186,7 @@ int main(int, char**)
             assert(Counter_base::gConstructed >= (int)(3*num));
             assert(Counter_base::gConstructed <= (int)(5*num));
             assert(m4 == m3);
-            LIBCPP_ASSERT(m2.empty());
+            LIBCUDACXX_ASSERT(m2.empty());
             }
             assert(Counter_base::gConstructed >= (int)(2*num));
             assert(Counter_base::gConstructed <= (int)(4*num));
@@ -230,7 +230,7 @@ int main(int, char**)
         assert(m3 == m2);
         assert(m3.get_allocator() == A());
         assert(m3.key_comp() == C(5));
-        LIBCPP_ASSERT(m1.empty());
+        LIBCUDACXX_ASSERT(m1.empty());
     }
     {
         typedef std::pair<MoveOnly, MoveOnly> V;
@@ -269,7 +269,7 @@ int main(int, char**)
         assert(m3 == m2);
         assert(m3.get_allocator() == A{});
         assert(m3.key_comp() == C(5));
-        LIBCPP_ASSERT(m1.empty());
+        LIBCUDACXX_ASSERT(m1.empty());
     }
 
   return 0;

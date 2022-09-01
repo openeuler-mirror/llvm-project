@@ -27,8 +27,8 @@
 template <typename Span, size_t Count>
 constexpr bool testConstexprSpan(Span sp)
 {
-    LIBCPP_ASSERT((noexcept(sp.template first<Count>())));
-    LIBCPP_ASSERT((noexcept(sp.first(Count))));
+    LIBCUDACXX_ASSERT((noexcept(sp.template first<Count>())));
+    LIBCUDACXX_ASSERT((noexcept(sp.first(Count))));
     auto s1 = sp.template first<Count>();
     auto s2 = sp.first(Count);
     using S1 = decltype(s1);
@@ -47,8 +47,8 @@ constexpr bool testConstexprSpan(Span sp)
 template <typename Span, size_t Count>
 void testRuntimeSpan(Span sp)
 {
-    LIBCPP_ASSERT((noexcept(sp.template first<Count>())));
-    LIBCPP_ASSERT((noexcept(sp.first(Count))));
+    LIBCUDACXX_ASSERT((noexcept(sp.template first<Count>())));
+    LIBCUDACXX_ASSERT((noexcept(sp.first(Count))));
     auto s1 = sp.template first<Count>();
     auto s2 = sp.first(Count);
     using S1 = decltype(s1);

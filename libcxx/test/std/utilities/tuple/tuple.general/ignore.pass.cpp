@@ -48,7 +48,7 @@ int main(int, char**) {
         static_assert(test_ignore_constexpr(), "");
     }
     {
-        LIBCPP_STATIC_ASSERT(std::is_trivial<decltype(std::ignore)>::value, "");
+        LIBCUDACXX_STATIC_ASSERT(std::is_trivial<decltype(std::ignore)>::value, "");
     }
 
   return 0;

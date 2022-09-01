@@ -32,7 +32,7 @@ int main(int, char**)
     assert(p1 == p2);
     (void) d(g, p1); // This line must not modify p1.
     assert(p1 == p2);
-    LIBCPP_ASSERT(p1 == d.param());
+    LIBCUDACXX_ASSERT(p1 == d.param());
 
     return 0;
 }

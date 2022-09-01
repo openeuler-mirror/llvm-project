@@ -12,7 +12,7 @@
 // clang-format off
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // <ranges>
 
@@ -21,15 +21,15 @@
 #include <ranges>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_RANGES)
- #   error "<ranges> was expected to define _LIBCPP_RANGES"
+#if !defined(_LIBCUDACXX_RANGES)
+ #   error "<ranges> was expected to define _LIBCUDACXX_RANGES"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<ranges> should include <compare> in C++20 and later"
 #endif
-#if TEST_STD_VER > 03 && !defined(_LIBCPP_INITIALIZER_LIST)
+#if TEST_STD_VER > 03 && !defined(_LIBCUDACXX_INITIALIZER_LIST)
  #   error "<ranges> should include <initializer_list> in C++20 and later"
 #endif
-#if !defined(_LIBCPP_ITERATOR)
+#if !defined(_LIBCUDACXX_ITERATOR)
  #   error "<ranges> should include <iterator> in C++20 and later"
 #endif

@@ -34,9 +34,9 @@ int main(int, char**)
            std::numeric_limits<Rep>::max(), "");
 #endif
 
-    LIBCPP_ASSERT_NOEXCEPT(std::chrono::duration_values<int>::max());
-    LIBCPP_ASSERT_NOEXCEPT(std::chrono::duration_values<double>::max());
-    LIBCPP_ASSERT_NOEXCEPT(std::chrono::duration_values<Rep>::max());
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::chrono::duration_values<int>::max());
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::chrono::duration_values<double>::max());
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::chrono::duration_values<Rep>::max());
 #if TEST_STD_VER > 17
     ASSERT_NOEXCEPT(std::chrono::duration_values<int>::max());
     ASSERT_NOEXCEPT(std::chrono::duration_values<double>::max());

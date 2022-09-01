@@ -23,7 +23,7 @@ TEST_CONSTEXPR_CXX20 void
 test(S s, const typename S::value_type* str, typename S::size_type n, S expected)
 {
     s.assign(str, n);
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == expected);
 }
 

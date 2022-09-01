@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_SWAP_RANGES_H
-#define _LIBCPP___ALGORITHM_RANGES_SWAP_RANGES_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_SWAP_RANGES_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_SWAP_RANGES_H
 
 #include <__algorithm/in_in_result.h>
 #include <__algorithm/iterator_operations.h>
@@ -20,13 +20,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -38,7 +38,7 @@ struct __fn {
   template <input_iterator _I1, sentinel_for<_I1> _S1,
             input_iterator _I2, sentinel_for<_I2> _S2>
     requires indirectly_swappable<_I1, _I2>
-  _LIBCPP_HIDE_FROM_ABI constexpr swap_ranges_result<_I1, _I2>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr swap_ranges_result<_I1, _I2>
   operator()(_I1 __first1, _S1 __last1, _I2 __first2, _S2 __last2) const {
     auto __ret = std::__swap_ranges<_RangeAlgPolicy>(
         std::move(__first1), std::move(__last1), std::move(__first2), std::move(__last2));
@@ -47,7 +47,7 @@ struct __fn {
 
   template <input_range _R1, input_range _R2>
     requires indirectly_swappable<iterator_t<_R1>, iterator_t<_R2>>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   swap_ranges_result<borrowed_iterator_t<_R1>, borrowed_iterator_t<_R2>>
   operator()(_R1&& __r1, _R2&& __r2) const {
     return operator()(ranges::begin(__r1), ranges::end(__r1),
@@ -61,8 +61,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_SWAP_RANGES_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_SWAP_RANGES_H

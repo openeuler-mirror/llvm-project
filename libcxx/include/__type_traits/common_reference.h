@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_COMMON_REFERENCE_H
-#define _LIBCPP___TYPE_TRAITS_COMMON_REFERENCE_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_COMMON_REFERENCE_H
+#define _LIBCUDACXX___TYPE_TRAITS_COMMON_REFERENCE_H
 
 #include <__config>
 #include <__type_traits/common_type.h>
@@ -20,14 +20,14 @@
 #include <__type_traits/remove_reference.h>
 #include <__utility/declval.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // common_reference
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 // Let COND_RES(X, Y) be:
 template <class _Xp, class _Yp>
 using __cond_res =
@@ -181,8 +181,8 @@ struct common_reference<_Tp, _Up, _Vp, _Rest...>
 // bullet 5 - Otherwise, there shall be no member `type`.
 template <class...> struct common_reference {};
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_COMMON_REFERENCE_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_COMMON_REFERENCE_H

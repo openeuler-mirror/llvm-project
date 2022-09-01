@@ -7,31 +7,31 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CHARCONV_TO_CHARS_RESULT_H
-#define _LIBCPP___CHARCONV_TO_CHARS_RESULT_H
+#ifndef _LIBCUDACXX___CHARCONV_TO_CHARS_RESULT_H
+#define _LIBCUDACXX___CHARCONV_TO_CHARS_RESULT_H
 
 #include <__config>
 #include <__errc>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
-struct _LIBCPP_TYPE_VIS to_chars_result
+struct _LIBCUDACXX_TYPE_VIS to_chars_result
 {
     char* ptr;
     errc ec;
-#  if _LIBCPP_STD_VER > 17
-    _LIBCPP_HIDE_FROM_ABI friend bool operator==(const to_chars_result&, const to_chars_result&) = default;
+#  if _LIBCUDACXX_STD_VER > 17
+    _LIBCUDACXX_HIDE_FROM_ABI friend bool operator==(const to_chars_result&, const to_chars_result&) = default;
 #  endif
 };
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___CHARCONV_TO_CHARS_RESULT_H
+#endif // _LIBCUDACXX___CHARCONV_TO_CHARS_RESULT_H

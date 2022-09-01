@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_UNIFORM_RANDOM_BIT_GENERATOR_H
-#define _LIBCPP___RANDOM_UNIFORM_RANDOM_BIT_GENERATOR_H
+#ifndef _LIBCUDACXX___RANDOM_UNIFORM_RANDOM_BIT_GENERATOR_H
+#define _LIBCUDACXX___RANDOM_UNIFORM_RANDOM_BIT_GENERATOR_H
 
 #include <__concepts/arithmetic.h>
 #include <__concepts/invocable.h>
@@ -15,16 +15,16 @@
 #include <__config>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [rand.req.urng]
 template<class _Gen>
@@ -36,10 +36,10 @@ concept uniform_random_bit_generator =
     requires bool_constant<(_Gen::min() < _Gen::max())>::value;
   };
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_UNIFORM_RANDOM_BIT_GENERATOR_H
+#endif // _LIBCUDACXX___RANDOM_UNIFORM_RANDOM_BIT_GENERATOR_H

@@ -7,31 +7,31 @@
 //
 //===---------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_FWD_SPAN_H
-#define _LIBCPP_FWD_SPAN_H
+#ifndef _LIBCUDACXX_FWD_SPAN_H
+#define _LIBCUDACXX_FWD_SPAN_H
 
 #include <__config>
 #include <cstddef>
 #include <limits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 inline constexpr size_t dynamic_extent = numeric_limits<size_t>::max();
 template <typename _Tp, size_t _Extent = dynamic_extent> class span;
 
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP_FWD_SPAN_H
+#endif // _LIBCUDACXX_FWD_SPAN_H

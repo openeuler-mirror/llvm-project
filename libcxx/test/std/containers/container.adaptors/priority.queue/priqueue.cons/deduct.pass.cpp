@@ -256,7 +256,7 @@ int main(int, char**)
         // The only requirement in the Standard is that integral types cannot be
         // considered input iterators, beyond that it is unspecified.
         using BadIter = int;
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
         struct OutputIter {
           using iterator_category = std::output_iterator_tag;
           using value_type = void;
@@ -268,7 +268,7 @@ int main(int, char**)
           const OutputIter& operator++() { return *this; }
           OutputIter operator++(int) const { return *this; }
         };
-#endif // _LIBCPP_VERSION
+#endif // _LIBCUDACXX_VERSION
 
         struct BadAlloc {};
         using AllocAsComp = Alloc;
@@ -287,14 +287,14 @@ int main(int, char**)
         //
         // Cannot deduce from (BAD_iter, BAD_iter, comp)
         static_assert(SFINAEs_away<std::priority_queue, BadIter, BadIter, Comp>);
-        LIBCPP_STATIC_ASSERT(SFINAEs_away<std::priority_queue, OutputIter, OutputIter, Comp>);
+        LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<std::priority_queue, OutputIter, OutputIter, Comp>);
         // Note: (iter, iter, ALLOC_as_comp) is allowed -- it just calls (iter, iter, alloc).
 
         // (iter, iter, comp, cont)
         //
         // Cannot deduce from (BAD_iter, BAD_iter, comp, cont)
         static_assert(SFINAEs_away<std::priority_queue, BadIter, BadIter, Comp, Cont>);
-        LIBCPP_STATIC_ASSERT(SFINAEs_away<std::priority_queue, OutputIter, OutputIter, Comp, Cont>);
+        LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<std::priority_queue, OutputIter, OutputIter, Comp, Cont>);
         // Cannot deduce from (iter, iter, ALLOC_as_comp, cont)
         static_assert(SFINAEs_away<std::priority_queue, Iter, Iter, AllocAsComp, Cont>);
         // Note: (iter, iter, comp, ALLOC_as_cont) is allowed -- it just calls (iter, iter, comp,
@@ -304,7 +304,7 @@ int main(int, char**)
         //
         // Cannot deduce from (BAD_iter, BAD_iter, alloc)
         static_assert(SFINAEs_away<std::priority_queue, BadIter, BadIter, Alloc>);
-        LIBCPP_STATIC_ASSERT(SFINAEs_away<std::priority_queue, OutputIter, OutputIter, Alloc>);
+        LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<std::priority_queue, OutputIter, OutputIter, Alloc>);
         // Note: (iter, iter, BAD_alloc) is interpreted as (iter, iter, comp) instead and fails upon
         // instantiation. There is no requirement to SFINAE away bad comparators.
 
@@ -319,7 +319,7 @@ int main(int, char**)
         //
         // Cannot deduce from (BAD_iter, BAD_iter, comp, cont, alloc)
         static_assert(SFINAEs_away<std::priority_queue, BadIter, BadIter, Comp, Cont, Alloc>);
-        LIBCPP_STATIC_ASSERT(
+        LIBCUDACXX_STATIC_ASSERT(
             SFINAEs_away<std::priority_queue, OutputIter, OutputIter, Comp, Cont, Alloc>);
         // Cannot deduce from (iter, iter, ALLOC_as_comp, cont, alloc)
         static_assert(SFINAEs_away<std::priority_queue, Iter, Iter, AllocAsComp, Cont, Alloc>);

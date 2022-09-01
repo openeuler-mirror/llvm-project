@@ -51,7 +51,7 @@ void test(const Allocator& alloc) {
          7,
          test_hash<int>(5),
          alloc);
-    LIBCPP_ASSERT(c.bucket_count() == 7);
+    LIBCUDACXX_ASSERT(c.bucket_count() == 7);
     assert(c.size() == 4);
     assert(c.at(1) == "one");
     assert(c.at(2) == "two");

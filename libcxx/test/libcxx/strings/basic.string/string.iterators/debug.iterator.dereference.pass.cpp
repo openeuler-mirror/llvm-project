@@ -11,7 +11,7 @@
 // Dereference non-dereferenceable iterator.
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <string>
 
@@ -23,14 +23,14 @@ int main(int, char**) {
     typedef std::string C;
     C c(1, '\0');
     C::iterator i = c.end();
-    TEST_LIBCPP_ASSERT_FAILURE(*i, "Attempted to dereference a non-dereferenceable iterator");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(*i, "Attempted to dereference a non-dereferenceable iterator");
   }
 
   {
     typedef std::basic_string<char, std::char_traits<char>, min_allocator<char> > C;
     C c(1, '\0');
     C::iterator i = c.end();
-    TEST_LIBCPP_ASSERT_FAILURE(*i, "Attempted to dereference a non-dereferenceable iterator");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(*i, "Attempted to dereference a non-dereferenceable iterator");
   }
 
   return 0;

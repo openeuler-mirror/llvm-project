@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_CONCEPTS_H
-#define _LIBCPP___FORMAT_CONCEPTS_H
+#ifndef _LIBCUDACXX___FORMAT_CONCEPTS_H
+#define _LIBCUDACXX___FORMAT_CONCEPTS_H
 
 #include <__concepts/same_as.h>
 #include <__concepts/semiregular.h>
@@ -17,13 +17,13 @@
 #include <__format/format_parse_context.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // The output iterator isn't specified. A formatter should accept any
 // output_iterator. This iterator is a minimal iterator to test the concept.
@@ -46,8 +46,8 @@ concept __formattable = (semiregular<formatter<remove_cvref_t<_Tp>, _CharT>>) &&
                           { __cf.format(__t, __fc) } -> same_as<__fmt_iter_for<_CharT>>;
                         };
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_CONCEPTS_H
+#endif // _LIBCUDACXX___FORMAT_CONCEPTS_H

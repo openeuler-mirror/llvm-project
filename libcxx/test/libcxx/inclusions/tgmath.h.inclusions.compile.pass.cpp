@@ -18,12 +18,12 @@
 #include <tgmath.h>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_TGMATH_H)
- #   error "<tgmath.h> was expected to define _LIBCPP_TGMATH_H"
+#if !defined(_LIBCUDACXX_TGMATH_H)
+ #   error "<tgmath.h> was expected to define _LIBCUDACXX_TGMATH_H"
 #endif
-#if !defined(_LIBCPP_CMATH)
+#if !defined(_LIBCUDACXX_CMATH)
  #   error "<tgmath.h> should include <cmath> in C++03 and later"
 #endif
-#if !defined(_LIBCPP_COMPLEX)
+#if !defined(_LIBCUDACXX_COMPLEX)
  #   error "<tgmath.h> should include <complex> in C++03 and later"
 #endif

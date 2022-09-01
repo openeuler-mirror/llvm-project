@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_REVERSE_VIEW_H
-#define _LIBCPP___RANGES_REVERSE_VIEW_H
+#ifndef _LIBCUDACXX___RANGES_REVERSE_VIEW_H
+#define _LIBCUDACXX___RANGES_REVERSE_VIEW_H
 
 #include <__concepts/constructible.h>
 #include <__config>
@@ -27,13 +27,13 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
   template<view _View>
@@ -43,23 +43,23 @@ namespace ranges {
     // amortized O(1) begin() method.
     static constexpr bool _UseCache = !random_access_range<_View> && !common_range<_View>;
     using _Cache = _If<_UseCache, __non_propagating_cache<reverse_iterator<iterator_t<_View>>>, __empty_cache>;
-    _LIBCPP_NO_UNIQUE_ADDRESS _Cache __cached_begin_ = _Cache();
-    _LIBCPP_NO_UNIQUE_ADDRESS _View __base_ = _View();
+    _LIBCUDACXX_NO_UNIQUE_ADDRESS _Cache __cached_begin_ = _Cache();
+    _LIBCUDACXX_NO_UNIQUE_ADDRESS _View __base_ = _View();
 
   public:
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     reverse_view() requires default_initializable<_View> = default;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr explicit reverse_view(_View __view) : __base_(std::move(__view)) {}
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _View base() const& requires copy_constructible<_View> { return __base_; }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _View base() && { return std::move(__base_); }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr reverse_iterator<iterator_t<_View>> begin() {
       if constexpr (_UseCache)
         if (__cached_begin_.__has_value())
@@ -71,32 +71,32 @@ namespace ranges {
       return __tmp;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr reverse_iterator<iterator_t<_View>> begin() requires common_range<_View> {
       return std::make_reverse_iterator(ranges::end(__base_));
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto begin() const requires common_range<const _View> {
       return std::make_reverse_iterator(ranges::end(__base_));
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr reverse_iterator<iterator_t<_View>> end() {
       return std::make_reverse_iterator(ranges::begin(__base_));
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto end() const requires common_range<const _View> {
       return std::make_reverse_iterator(ranges::begin(__base_));
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto size() requires sized_range<_View> {
       return ranges::size(__base_);
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto size() const requires sized_range<const _View> {
       return ranges::size(__base_);
     }
@@ -141,7 +141,7 @@ namespace ranges {
     struct __fn : __range_adaptor_closure<__fn> {
       template<class _Range>
         requires __is_reverse_view<remove_cvref_t<_Range>>
-      [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+      [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
       constexpr auto operator()(_Range&& __range) const
         noexcept(noexcept(std::forward<_Range>(__range).base()))
         -> decltype(      std::forward<_Range>(__range).base())
@@ -150,7 +150,7 @@ namespace ranges {
       template<class _Range,
                class _UnwrappedSubrange = typename __unwrapped_reverse_subrange<remove_cvref_t<_Range>>::type>
         requires __is_sized_reverse_subrange<remove_cvref_t<_Range>>
-      [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+      [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
       constexpr auto operator()(_Range&& __range) const
         noexcept(noexcept(_UnwrappedSubrange(__range.end().base(), __range.begin().base(), __range.size())))
         -> decltype(      _UnwrappedSubrange(__range.end().base(), __range.begin().base(), __range.size()))
@@ -159,7 +159,7 @@ namespace ranges {
       template<class _Range,
                class _UnwrappedSubrange = typename __unwrapped_reverse_subrange<remove_cvref_t<_Range>>::type>
         requires __is_unsized_reverse_subrange<remove_cvref_t<_Range>>
-      [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+      [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
       constexpr auto operator()(_Range&& __range) const
         noexcept(noexcept(_UnwrappedSubrange(__range.end().base(), __range.begin().base())))
         -> decltype(      _UnwrappedSubrange(__range.end().base(), __range.begin().base()))
@@ -169,7 +169,7 @@ namespace ranges {
         requires (!__is_reverse_view<remove_cvref_t<_Range>> &&
                   !__is_sized_reverse_subrange<remove_cvref_t<_Range>> &&
                   !__is_unsized_reverse_subrange<remove_cvref_t<_Range>>)
-      [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+      [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
       constexpr auto operator()(_Range&& __range) const
         noexcept(noexcept(reverse_view{std::forward<_Range>(__range)}))
         -> decltype(      reverse_view{std::forward<_Range>(__range)})
@@ -183,8 +183,8 @@ namespace ranges {
   } // namespace views
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_REVERSE_VIEW_H
+#endif // _LIBCUDACXX___RANGES_REVERSE_VIEW_H

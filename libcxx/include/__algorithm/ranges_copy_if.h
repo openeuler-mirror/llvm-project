@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_COPY_IF_H
-#define _LIBCPP___ALGORITHM_RANGES_COPY_IF_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_COPY_IF_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_COPY_IF_H
 
 #include <__algorithm/in_out_result.h>
 #include <__config>
@@ -20,13 +20,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -37,7 +37,7 @@ namespace __copy_if {
 struct __fn {
 
   template <class _InIter, class _Sent, class _OutIter, class _Proj, class _Pred>
-  _LIBCPP_HIDE_FROM_ABI static constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr
   copy_if_result <_InIter, _OutIter>
   __copy_if_impl(_InIter __first, _Sent __last, _OutIter __result, _Pred& __pred, _Proj& __proj) {
     for (; __first != __last; ++__first) {
@@ -52,7 +52,7 @@ struct __fn {
   template <input_iterator _Iter, sentinel_for<_Iter> _Sent, weakly_incrementable _OutIter, class _Proj = identity,
             indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
     requires indirectly_copyable<_Iter, _OutIter>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   copy_if_result<_Iter, _OutIter>
   operator()(_Iter __first, _Sent __last, _OutIter __result, _Pred __pred, _Proj __proj = {}) const {
     return __copy_if_impl(std::move(__first), std::move(__last), std::move(__result), __pred, __proj);
@@ -61,7 +61,7 @@ struct __fn {
   template <input_range _Range, weakly_incrementable _OutIter, class _Proj = identity,
             indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
     requires indirectly_copyable<iterator_t<_Range>, _OutIter>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   copy_if_result<borrowed_iterator_t<_Range>, _OutIter>
   operator()(_Range&& __r, _OutIter __result, _Pred __pred, _Proj __proj = {}) const {
     return __copy_if_impl(ranges::begin(__r), ranges::end(__r), std::move(__result), __pred, __proj);
@@ -74,8 +74,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_COPY_IF_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_COPY_IF_H

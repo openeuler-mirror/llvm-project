@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_SUPPORT_XLOCALE_NOP_LOCALE_MGMT_H
-#define _LIBCPP_SUPPORT_XLOCALE_NOP_LOCALE_MGMT_H
+#ifndef _LIBCUDACXX_SUPPORT_XLOCALE_NOP_LOCALE_MGMT_H
+#define _LIBCUDACXX_SUPPORT_XLOCALE_NOP_LOCALE_MGMT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,21 +17,21 @@ extern "C" {
 // Patch over lack of extended locale support
 typedef void *locale_t;
 
-inline _LIBCPP_HIDE_FROM_ABI locale_t
+inline _LIBCUDACXX_HIDE_FROM_ABI locale_t
 duplocale(locale_t) {
   return NULL;
 }
 
-inline _LIBCPP_HIDE_FROM_ABI void
+inline _LIBCUDACXX_HIDE_FROM_ABI void
 freelocale(locale_t) {
 }
 
-inline _LIBCPP_HIDE_FROM_ABI locale_t
+inline _LIBCUDACXX_HIDE_FROM_ABI locale_t
 newlocale(int, const char *, locale_t) {
   return NULL;
 }
 
-inline _LIBCPP_HIDE_FROM_ABI locale_t
+inline _LIBCUDACXX_HIDE_FROM_ABI locale_t
 uselocale(locale_t) {
   return NULL;
 }
@@ -53,4 +53,4 @@ uselocale(locale_t) {
 } // extern "C"
 #endif
 
-#endif // _LIBCPP_SUPPORT_XLOCALE_NOP_LOCALE_MGMT_H
+#endif // _LIBCUDACXX_SUPPORT_XLOCALE_NOP_LOCALE_MGMT_H

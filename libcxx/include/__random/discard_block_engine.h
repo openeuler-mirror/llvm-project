@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_DISCARD_BLOCK_ENGINE_H
-#define _LIBCPP___RANDOM_DISCARD_BLOCK_ENGINE_H
+#ifndef _LIBCUDACXX___RANDOM_DISCARD_BLOCK_ENGINE_H
+#define _LIBCUDACXX___RANDOM_DISCARD_BLOCK_ENGINE_H
 
 #include <__config>
 #include <__random/is_seed_sequence.h>
@@ -16,17 +16,17 @@
 #include <iosfwd>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _Engine, size_t __p, size_t __r>
-class _LIBCPP_TEMPLATE_VIS discard_block_engine
+class _LIBCUDACXX_TEMPLATE_VIS discard_block_engine
 {
     _Engine __e_;
     int     __n_;
@@ -39,47 +39,47 @@ public:
     typedef typename _Engine::result_type result_type;
 
     // engine characteristics
-    static _LIBCPP_CONSTEXPR const size_t block_size = __p;
-    static _LIBCPP_CONSTEXPR const size_t used_block = __r;
+    static _LIBCUDACXX_CONSTEXPR const size_t block_size = __p;
+    static _LIBCUDACXX_CONSTEXPR const size_t used_block = __r;
 
-#ifdef _LIBCPP_CXX03_LANG
+#ifdef _LIBCUDACXX_CXX03_LANG
     static const result_type _Min = _Engine::_Min;
     static const result_type _Max = _Engine::_Max;
 #else
-    static _LIBCPP_CONSTEXPR const result_type _Min = _Engine::min();
-    static _LIBCPP_CONSTEXPR const result_type _Max = _Engine::max();
+    static _LIBCUDACXX_CONSTEXPR const result_type _Min = _Engine::min();
+    static _LIBCUDACXX_CONSTEXPR const result_type _Max = _Engine::max();
 #endif
 
-    _LIBCPP_INLINE_VISIBILITY
-    static _LIBCPP_CONSTEXPR result_type min() { return _Engine::min(); }
-    _LIBCPP_INLINE_VISIBILITY
-    static _LIBCPP_CONSTEXPR result_type max() { return _Engine::max(); }
+    _LIBCUDACXX_INLINE_VISIBILITY
+    static _LIBCUDACXX_CONSTEXPR result_type min() { return _Engine::min(); }
+    _LIBCUDACXX_INLINE_VISIBILITY
+    static _LIBCUDACXX_CONSTEXPR result_type max() { return _Engine::max(); }
 
     // constructors and seeding functions
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     discard_block_engine() : __n_(0) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit discard_block_engine(const _Engine& __e)
         : __e_(__e), __n_(0) {}
-#ifndef _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit discard_block_engine(_Engine&& __e)
-        : __e_(_VSTD::move(__e)), __n_(0) {}
-#endif // _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY
+        : __e_(_CUDA_VSTD::move(__e)), __n_(0) {}
+#endif // _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit discard_block_engine(result_type __sd) : __e_(__sd), __n_(0) {}
     template<class _Sseq>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         explicit discard_block_engine(_Sseq& __q,
         typename enable_if<__is_seed_sequence<_Sseq, discard_block_engine>::value &&
                            !is_convertible<_Sseq, _Engine>::value>::type* = 0)
         : __e_(__q), __n_(0) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void seed() {__e_.seed(); __n_ = 0;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void seed(result_type __sd) {__e_.seed(__sd); __n_ = 0;}
     template<class _Sseq>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         typename enable_if
         <
             __is_seed_sequence<_Sseq, discard_block_engine>::value,
@@ -89,11 +89,11 @@ public:
 
     // generating functions
     result_type operator()();
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void discard(unsigned long long __z) {for (; __z; --__z) operator()();}
 
     // property functions
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     const _Engine& base() const _NOEXCEPT {return __e_;}
 
     template<class _Eng, size_t _Pp, size_t _Rp>
@@ -126,10 +126,10 @@ public:
 };
 
 template<class _Engine, size_t __p, size_t __r>
-    _LIBCPP_CONSTEXPR const size_t discard_block_engine<_Engine, __p, __r>::block_size;
+    _LIBCUDACXX_CONSTEXPR const size_t discard_block_engine<_Engine, __p, __r>::block_size;
 
 template<class _Engine, size_t __p, size_t __r>
-    _LIBCPP_CONSTEXPR const size_t discard_block_engine<_Engine, __p, __r>::used_block;
+    _LIBCUDACXX_CONSTEXPR const size_t discard_block_engine<_Engine, __p, __r>::used_block;
 
 template<class _Engine, size_t __p, size_t __r>
 typename discard_block_engine<_Engine, __p, __r>::result_type
@@ -145,7 +145,7 @@ discard_block_engine<_Engine, __p, __r>::operator()()
 }
 
 template<class _Eng, size_t _Pp, size_t _Rp>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator==(const discard_block_engine<_Eng, _Pp, _Rp>& __x,
            const discard_block_engine<_Eng, _Pp, _Rp>& __y)
@@ -154,7 +154,7 @@ operator==(const discard_block_engine<_Eng, _Pp, _Rp>& __x,
 }
 
 template<class _Eng, size_t _Pp, size_t _Rp>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator!=(const discard_block_engine<_Eng, _Pp, _Rp>& __x,
            const discard_block_engine<_Eng, _Pp, _Rp>& __y)
@@ -196,8 +196,8 @@ operator>>(basic_istream<_CharT, _Traits>& __is,
     return __is;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_DISCARD_BLOCK_ENGINE_H
+#endif // _LIBCUDACXX___RANDOM_DISCARD_BLOCK_ENGINE_H

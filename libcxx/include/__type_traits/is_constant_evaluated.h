@@ -6,27 +6,27 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_CONSTANT_EVALUATED_H
-#define _LIBCPP___TYPE_TRAITS_IS_CONSTANT_EVALUATED_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_CONSTANT_EVALUATED_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_CONSTANT_EVALUATED_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
-_LIBCPP_INLINE_VISIBILITY
+#if _LIBCUDACXX_STD_VER > 17
+_LIBCUDACXX_INLINE_VISIBILITY
 inline constexpr bool is_constant_evaluated() noexcept {
   return __builtin_is_constant_evaluated();
 }
 #endif
 
-inline _LIBCPP_CONSTEXPR
-bool __libcpp_is_constant_evaluated() _NOEXCEPT { return __builtin_is_constant_evaluated(); }
+inline _LIBCUDACXX_CONSTEXPR
+bool __LIBCUDACXX_is_constant_evaluated() _NOEXCEPT { return __builtin_is_constant_evaluated(); }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_CONSTANT_EVALUATED_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_CONSTANT_EVALUATED_H

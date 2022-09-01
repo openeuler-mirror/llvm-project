@@ -24,7 +24,7 @@ test(S s, typename S::size_type n, typename S::value_type c, S expected)
     if (n <= s.max_size())
     {
         s.resize(n, c);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == expected);
     }
 #ifndef TEST_HAS_NO_EXCEPTIONS

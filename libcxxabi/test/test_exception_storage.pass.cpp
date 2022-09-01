@@ -40,16 +40,16 @@ void *thread_code (void *parm) {
 #ifndef TEST_HAS_NO_THREADS
 #define NUMTHREADS  10
 size_t                 thread_globals [ NUMTHREADS ] = { 0 };
-std::__libcpp_thread_t   threads        [ NUMTHREADS ];
+std::__LIBCUDACXX_thread_t   threads        [ NUMTHREADS ];
 #endif
 
 int main() {
 #ifndef TEST_HAS_NO_THREADS
 //  Make the threads, let them run, and wait for them to finish
     for ( int i = 0; i < NUMTHREADS; ++i )
-        std::__libcpp_thread_create ( threads + i, thread_code, (void *) (thread_globals + i));
+        std::__LIBCUDACXX_thread_create ( threads + i, thread_code, (void *) (thread_globals + i));
     for ( int i = 0; i < NUMTHREADS; ++i )
-        std::__libcpp_thread_join ( &threads [ i ] );
+        std::__LIBCUDACXX_thread_join ( &threads [ i ] );
 
     int retVal = 0;
     for ( int i = 0; i < NUMTHREADS; ++i ) {

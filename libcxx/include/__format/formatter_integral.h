@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMATTER_INTEGRAL_H
-#define _LIBCPP___FORMAT_FORMATTER_INTEGRAL_H
+#ifndef _LIBCUDACXX___FORMAT_FORMATTER_INTEGRAL_H
+#define _LIBCUDACXX___FORMAT_FORMATTER_INTEGRAL_H
 
 #include <__concepts/arithmetic.h>
 #include <__concepts/same_as.h>
@@ -22,20 +22,20 @@
 #include <limits>
 #include <string>
 
-#ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
 #  include <locale>
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace __formatter {
 
@@ -43,7 +43,7 @@ namespace __formatter {
 // Generic
 //
 
-_LIBCPP_HIDE_FROM_ABI inline char* __insert_sign(char* __buf, bool __negative, __format_spec::__sign __sign) {
+_LIBCUDACXX_HIDE_FROM_ABI inline char* __insert_sign(char* __buf, bool __negative, __format_spec::__sign __sign) {
   if (__negative)
     *__buf++ = '-';
   else
@@ -78,8 +78,8 @@ _LIBCPP_HIDE_FROM_ABI inline char* __insert_sign(char* __buf, bool __negative, _
  * @note The grouping field of the locale is always a @c std::string,
  * regardless whether the @c std::numpunct's type is @c char or @c wchar_t.
  */
-_LIBCPP_HIDE_FROM_ABI inline string __determine_grouping(ptrdiff_t __size, const string& __grouping) {
-  _LIBCPP_ASSERT(!__grouping.empty() && __size > __grouping[0],
+_LIBCUDACXX_HIDE_FROM_ABI inline string __determine_grouping(ptrdiff_t __size, const string& __grouping) {
+  _LIBCUDACXX_ASSERT(!__grouping.empty() && __size > __grouping[0],
                  "The slow grouping formatting is used while there will be no "
                  "separators written");
   string __r;
@@ -105,7 +105,7 @@ _LIBCPP_HIDE_FROM_ABI inline string __determine_grouping(ptrdiff_t __size, const
     }
   }
 
-  __libcpp_unreachable();
+  __LIBCUDACXX_unreachable();
 }
 
 //
@@ -113,7 +113,7 @@ _LIBCPP_HIDE_FROM_ABI inline string __determine_grouping(ptrdiff_t __size, const
 //
 
 template <__formatter::__char_type _CharT>
-_LIBCPP_HIDE_FROM_ABI auto __format_char(
+_LIBCUDACXX_HIDE_FROM_ABI auto __format_char(
     integral auto __value,
     output_iterator<const _CharT&> auto __out_it,
     __format_spec::__parsed_specifications<_CharT> __specs) -> decltype(__out_it) {
@@ -135,7 +135,7 @@ _LIBCPP_HIDE_FROM_ABI auto __format_char(
   }
 
   const auto __c = static_cast<_CharT>(__value);
-  return __formatter::__write(_VSTD::addressof(__c), _VSTD::addressof(__c) + 1, _VSTD::move(__out_it), __specs);
+  return __formatter::__write(_CUDA_VSTD::addressof(__c), _CUDA_VSTD::addressof(__c) + 1, _CUDA_VSTD::move(__out_it), __specs);
 }
 
 //
@@ -144,11 +144,11 @@ _LIBCPP_HIDE_FROM_ABI auto __format_char(
 
 /** Wrapper around @ref to_chars, returning the output pointer. */
 template <integral _Tp>
-_LIBCPP_HIDE_FROM_ABI char* __to_buffer(char* __first, char* __last, _Tp __value, int __base) {
+_LIBCUDACXX_HIDE_FROM_ABI char* __to_buffer(char* __first, char* __last, _Tp __value, int __base) {
   // TODO FMT Evaluate code overhead due to not calling the internal function
   // directly. (Should be zero overhead.)
-  to_chars_result __r = _VSTD::to_chars(__first, __last, __value, __base);
-  _LIBCPP_ASSERT(__r.ec == errc(0), "Internal buffer too small");
+  to_chars_result __r = _CUDA_VSTD::to_chars(__first, __last, __value, __base);
+  _LIBCUDACXX_ASSERT(__r.ec == errc(0), "Internal buffer too small");
   return __r.ptr;
 }
 
@@ -198,7 +198,7 @@ consteval size_t __buffer_size() noexcept
 }
 
 template <unsigned_integral _Tp, class _CharT>
-_LIBCPP_HIDE_FROM_ABI auto __format_integer(
+_LIBCUDACXX_HIDE_FROM_ABI auto __format_integer(
     _Tp __value,
     auto& __ctx,
     __format_spec::__parsed_specifications<_CharT> __specs,
@@ -214,7 +214,7 @@ _LIBCPP_HIDE_FROM_ABI auto __format_integer(
 
   char* __last = __formatter::__to_buffer(__first, __end, __value, __base);
 
-#  ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#  ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
   if (__specs.__std_.__locale_specific_form_) {
     const auto& __np  = use_facet<numpunct<_CharT>>(__ctx.locale());
     string __grouping = __np.grouping();
@@ -243,12 +243,12 @@ _LIBCPP_HIDE_FROM_ABI auto __format_integer(
     // The zero padding is done like:
     // - Write [sign][prefix]
     // - Write data right aligned with '0' as fill character.
-    __out_it             = _VSTD::copy(__begin, __first, _VSTD::move(__out_it));
+    __out_it             = _CUDA_VSTD::copy(__begin, __first, _CUDA_VSTD::move(__out_it));
     __specs.__alignment_ = __format_spec::__alignment::__right;
     __specs.__fill_      = _CharT('0');
     int32_t __size       = __first - __begin;
 
-    __specs.__width_ -= _VSTD::min(__size, __specs.__width_);
+    __specs.__width_ -= _CUDA_VSTD::min(__size, __specs.__width_);
   }
 
   if (__specs.__std_.__type_ != __format_spec::__type::__hexadecimal_upper_case) [[likely]]
@@ -258,7 +258,7 @@ _LIBCPP_HIDE_FROM_ABI auto __format_integer(
 }
 
 template <unsigned_integral _Tp, class _CharT>
-_LIBCPP_HIDE_FROM_ABI auto __format_integer(
+_LIBCUDACXX_HIDE_FROM_ABI auto __format_integer(
     _Tp __value, auto& __ctx, __format_spec::__parsed_specifications<_CharT> __specs, bool __negative = false)
     -> decltype(__ctx.out()) {
   switch (__specs.__std_.__type_) {
@@ -291,13 +291,13 @@ _LIBCPP_HIDE_FROM_ABI auto __format_integer(
     return __formatter::__format_integer(__value, __ctx, __specs, __negative, __array.begin(), __array.end(), "0X", 16);
   }
   default:
-    _LIBCPP_ASSERT(false, "The parse function should have validated the type");
-    __libcpp_unreachable();
+    _LIBCUDACXX_ASSERT(false, "The parse function should have validated the type");
+    __LIBCUDACXX_unreachable();
   }
 }
 
 template <signed_integral _Tp, class _CharT>
-_LIBCPP_HIDE_FROM_ABI auto
+_LIBCUDACXX_HIDE_FROM_ABI auto
 __format_integer(_Tp __value, auto& __ctx, __format_spec::__parsed_specifications<_CharT> __specs)
     -> decltype(__ctx.out()) {
   // Depending on the std-format-spec string the sign and the value
@@ -319,27 +319,27 @@ __format_integer(_Tp __value, auto& __ctx, __format_spec::__parsed_specification
 //
 
 template <class _CharT>
-struct _LIBCPP_TEMPLATE_VIS __bool_strings;
+struct _LIBCUDACXX_TEMPLATE_VIS __bool_strings;
 
 template <>
-struct _LIBCPP_TEMPLATE_VIS __bool_strings<char> {
+struct _LIBCUDACXX_TEMPLATE_VIS __bool_strings<char> {
   static constexpr string_view __true{"true"};
   static constexpr string_view __false{"false"};
 };
 
-#  ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#  ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 template <>
-struct _LIBCPP_TEMPLATE_VIS __bool_strings<wchar_t> {
+struct _LIBCUDACXX_TEMPLATE_VIS __bool_strings<wchar_t> {
   static constexpr wstring_view __true{L"true"};
   static constexpr wstring_view __false{L"false"};
 };
 #  endif
 
 template <class _CharT>
-_LIBCPP_HIDE_FROM_ABI auto
+_LIBCUDACXX_HIDE_FROM_ABI auto
 __format_bool(bool __value, auto& __ctx, __format_spec::__parsed_specifications<_CharT> __specs)
     -> decltype(__ctx.out()) {
-#  ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#  ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
   if (__specs.__std_.__locale_specific_form_) {
     const auto& __np           = use_facet<numpunct<_CharT>>(__ctx.locale());
     basic_string<_CharT> __str = __value ? __np.truename() : __np.falsename();
@@ -353,10 +353,10 @@ __format_bool(bool __value, auto& __ctx, __format_spec::__parsed_specifications<
 
 } // namespace __formatter
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___FORMAT_FORMATTER_INTEGRAL_H
+#endif // _LIBCUDACXX___FORMAT_FORMATTER_INTEGRAL_H

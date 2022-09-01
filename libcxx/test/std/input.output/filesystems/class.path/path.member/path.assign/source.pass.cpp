@@ -229,7 +229,7 @@ void RunStringMoveTest(const fs::path::value_type* Expect) {
   assert(p == Expect);
   {
     // Signature test
-    LIBCPP_ONLY(ASSERT_NOEXCEPT(p = std::move(ss)));
+    LIBCUDACXX_ONLY(ASSERT_NOEXCEPT(p = std::move(ss)));
   }
 }
 

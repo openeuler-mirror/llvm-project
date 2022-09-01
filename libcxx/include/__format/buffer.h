@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_BUFFER_H
-#define _LIBCPP___FORMAT_BUFFER_H
+#ifndef _LIBCUDACXX___FORMAT_BUFFER_H
+#define _LIBCUDACXX___FORMAT_BUFFER_H
 
 #include <__algorithm/copy_n.h>
 #include <__algorithm/max.h>
@@ -28,16 +28,16 @@
 #include <cstddef>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace __format {
 
@@ -47,12 +47,12 @@ namespace __format {
 /// type-erasure for the formatting functions. This reduces the number to
 /// template instantiations.
 template <__formatter::__char_type _CharT>
-class _LIBCPP_TEMPLATE_VIS __output_buffer {
+class _LIBCUDACXX_TEMPLATE_VIS __output_buffer {
 public:
   using value_type = _CharT;
 
   template <class _Tp>
-  _LIBCPP_HIDE_FROM_ABI explicit __output_buffer(_CharT* __ptr,
+  _LIBCUDACXX_HIDE_FROM_ABI explicit __output_buffer(_CharT* __ptr,
                                                  size_t __capacity, _Tp* __obj)
       : __ptr_(__ptr), __capacity_(__capacity),
         __flush_([](_CharT* __p, size_t __size, void* __o) {
@@ -60,18 +60,18 @@ public:
         }),
         __obj_(__obj) {}
 
-  _LIBCPP_HIDE_FROM_ABI void reset(_CharT* __ptr, size_t __capacity) {
+  _LIBCUDACXX_HIDE_FROM_ABI void reset(_CharT* __ptr, size_t __capacity) {
     __ptr_ = __ptr;
     __capacity_ = __capacity;
   }
 
-  _LIBCPP_HIDE_FROM_ABI auto make_output_iterator() {
+  _LIBCUDACXX_HIDE_FROM_ABI auto make_output_iterator() {
     return back_insert_iterator{*this};
   }
 
   // TODO FMT It would be nice to have an overload taking a
   // basic_string_view<_CharT> and append it directly.
-  _LIBCPP_HIDE_FROM_ABI void push_back(_CharT __c) {
+  _LIBCUDACXX_HIDE_FROM_ABI void push_back(_CharT __c) {
     __ptr_[__size_++] = __c;
 
     // Profiling showed flushing after adding is more efficient than flushing
@@ -80,7 +80,7 @@ public:
       flush();
   }
 
-  _LIBCPP_HIDE_FROM_ABI void flush() {
+  _LIBCUDACXX_HIDE_FROM_ABI void flush() {
     __flush_(__ptr_, __size_, __obj_);
     __size_ = 0;
   }
@@ -98,9 +98,9 @@ private:
 /// This storage is used when writing a single element to the output iterator
 /// is expensive.
 template <__formatter::__char_type _CharT>
-class _LIBCPP_TEMPLATE_VIS __internal_storage {
+class _LIBCUDACXX_TEMPLATE_VIS __internal_storage {
 public:
-  _LIBCPP_HIDE_FROM_ABI _CharT* begin() { return __buffer_; }
+  _LIBCUDACXX_HIDE_FROM_ABI _CharT* begin() { return __buffer_; }
 
   static constexpr size_t __buffer_size = 256 / sizeof(_CharT);
 
@@ -114,26 +114,26 @@ private:
 /// Since the output is directly written to the underlying storage this class
 /// is just an empty class.
 template <__formatter::__char_type _CharT>
-class _LIBCPP_TEMPLATE_VIS __direct_storage {};
+class _LIBCUDACXX_TEMPLATE_VIS __direct_storage {};
 
 template <class _OutIt, class _CharT>
 concept __enable_direct_output = __formatter::__char_type<_CharT> &&
     (same_as<_OutIt, _CharT*>
-#ifndef _LIBCPP_ENABLE_DEBUG_MODE
+#ifndef _LIBCUDACXX_ENABLE_DEBUG_MODE
      || same_as<_OutIt, __wrap_iter<_CharT*>>
 #endif
     );
 
 /// Write policy for directly writing to the underlying output.
 template <class _OutIt, __formatter::__char_type _CharT>
-class _LIBCPP_TEMPLATE_VIS __writer_direct {
+class _LIBCUDACXX_TEMPLATE_VIS __writer_direct {
 public:
-  _LIBCPP_HIDE_FROM_ABI explicit __writer_direct(_OutIt __out_it)
+  _LIBCUDACXX_HIDE_FROM_ABI explicit __writer_direct(_OutIt __out_it)
       : __out_it_(__out_it) {}
 
-  _LIBCPP_HIDE_FROM_ABI auto out() { return __out_it_; }
+  _LIBCUDACXX_HIDE_FROM_ABI auto out() { return __out_it_; }
 
-  _LIBCPP_HIDE_FROM_ABI void flush(_CharT*, size_t __size) {
+  _LIBCUDACXX_HIDE_FROM_ABI void flush(_CharT*, size_t __size) {
     // _OutIt can be a __wrap_iter<CharT*>. Therefore the original iterator
     // is adjusted.
     __out_it_ += __size;
@@ -145,15 +145,15 @@ private:
 
 /// Write policy for copying the buffer to the output.
 template <class _OutIt, __formatter::__char_type _CharT>
-class _LIBCPP_TEMPLATE_VIS __writer_iterator {
+class _LIBCUDACXX_TEMPLATE_VIS __writer_iterator {
 public:
-  _LIBCPP_HIDE_FROM_ABI explicit __writer_iterator(_OutIt __out_it)
-      : __out_it_{_VSTD::move(__out_it)} {}
+  _LIBCUDACXX_HIDE_FROM_ABI explicit __writer_iterator(_OutIt __out_it)
+      : __out_it_{_CUDA_VSTD::move(__out_it)} {}
 
-  _LIBCPP_HIDE_FROM_ABI auto out() { return __out_it_; }
+  _LIBCUDACXX_HIDE_FROM_ABI auto out() { return __out_it_; }
 
-  _LIBCPP_HIDE_FROM_ABI void flush(_CharT* __ptr, size_t __size) {
-    __out_it_ = _VSTD::copy_n(__ptr, __size, _VSTD::move(__out_it_));
+  _LIBCUDACXX_HIDE_FROM_ABI void flush(_CharT* __ptr, size_t __size) {
+    __out_it_ = _CUDA_VSTD::copy_n(__ptr, __size, _CUDA_VSTD::move(__out_it_));
   }
 
 private:
@@ -175,27 +175,27 @@ concept __insertable =
 
 /// Extract the container type of a \ref back_insert_iterator.
 template <class _It>
-struct _LIBCPP_TEMPLATE_VIS __back_insert_iterator_container {
+struct _LIBCUDACXX_TEMPLATE_VIS __back_insert_iterator_container {
   using type = void;
 };
 
 template <__insertable _Container>
-struct _LIBCPP_TEMPLATE_VIS __back_insert_iterator_container<back_insert_iterator<_Container>> {
+struct _LIBCUDACXX_TEMPLATE_VIS __back_insert_iterator_container<back_insert_iterator<_Container>> {
   using type = _Container;
 };
 
 /// Write policy for inserting the buffer in a container.
 template <class _Container>
-class _LIBCPP_TEMPLATE_VIS __writer_container {
+class _LIBCUDACXX_TEMPLATE_VIS __writer_container {
 public:
   using _CharT = typename _Container::value_type;
 
-  _LIBCPP_HIDE_FROM_ABI explicit __writer_container(back_insert_iterator<_Container> __out_it)
+  _LIBCUDACXX_HIDE_FROM_ABI explicit __writer_container(back_insert_iterator<_Container> __out_it)
       : __container_{__out_it.__get_container()} {}
 
-  _LIBCPP_HIDE_FROM_ABI auto out() { return back_inserter(*__container_); }
+  _LIBCUDACXX_HIDE_FROM_ABI auto out() { return back_inserter(*__container_); }
 
-  _LIBCPP_HIDE_FROM_ABI void flush(_CharT* __ptr, size_t __size) {
+  _LIBCUDACXX_HIDE_FROM_ABI void flush(_CharT* __ptr, size_t __size) {
     __container_->insert(__container_->end(), __ptr, __ptr + __size);
   }
 
@@ -205,7 +205,7 @@ private:
 
 /// Selects the type of the writer used for the output iterator.
 template <class _OutIt, class _CharT>
-class _LIBCPP_TEMPLATE_VIS __writer_selector {
+class _LIBCUDACXX_TEMPLATE_VIS __writer_selector {
   using _Container = typename __back_insert_iterator_container<_OutIt>::type;
 
 public:
@@ -216,37 +216,37 @@ public:
 
 /// The generic formatting buffer.
 template <class _OutIt, __formatter::__char_type _CharT>
-requires(output_iterator<_OutIt, const _CharT&>) class _LIBCPP_TEMPLATE_VIS
+requires(output_iterator<_OutIt, const _CharT&>) class _LIBCUDACXX_TEMPLATE_VIS
     __format_buffer {
   using _Storage =
       conditional_t<__enable_direct_output<_OutIt, _CharT>,
                     __direct_storage<_CharT>, __internal_storage<_CharT>>;
 
 public:
-  _LIBCPP_HIDE_FROM_ABI explicit __format_buffer(_OutIt __out_it)
+  _LIBCUDACXX_HIDE_FROM_ABI explicit __format_buffer(_OutIt __out_it)
     requires(same_as<_Storage, __internal_storage<_CharT>>)
-  : __output_(__storage_.begin(), __storage_.__buffer_size, this), __writer_(_VSTD::move(__out_it)) {}
+  : __output_(__storage_.begin(), __storage_.__buffer_size, this), __writer_(_CUDA_VSTD::move(__out_it)) {}
 
-  _LIBCPP_HIDE_FROM_ABI explicit __format_buffer(_OutIt __out_it) requires(
+  _LIBCUDACXX_HIDE_FROM_ABI explicit __format_buffer(_OutIt __out_it) requires(
       same_as<_Storage, __direct_storage<_CharT>>)
-      : __output_(_VSTD::__unwrap_iter(__out_it), size_t(-1), this),
-        __writer_(_VSTD::move(__out_it)) {}
+      : __output_(_CUDA_VSTD::__unwrap_iter(__out_it), size_t(-1), this),
+        __writer_(_CUDA_VSTD::move(__out_it)) {}
 
-  _LIBCPP_HIDE_FROM_ABI auto make_output_iterator() {
+  _LIBCUDACXX_HIDE_FROM_ABI auto make_output_iterator() {
     return __output_.make_output_iterator();
   }
 
-  _LIBCPP_HIDE_FROM_ABI void flush(_CharT* __ptr, size_t __size) {
+  _LIBCUDACXX_HIDE_FROM_ABI void flush(_CharT* __ptr, size_t __size) {
     __writer_.flush(__ptr, __size);
   }
 
-  _LIBCPP_HIDE_FROM_ABI _OutIt out() && {
+  _LIBCUDACXX_HIDE_FROM_ABI _OutIt out() && {
     __output_.flush();
-    return _VSTD::move(__writer_).out();
+    return _CUDA_VSTD::move(__writer_).out();
   }
 
 private:
-  _LIBCPP_NO_UNIQUE_ADDRESS _Storage __storage_;
+  _LIBCUDACXX_NO_UNIQUE_ADDRESS _Storage __storage_;
   __output_buffer<_CharT> __output_;
   typename __writer_selector<_OutIt, _CharT>::type __writer_;
 };
@@ -256,13 +256,13 @@ private:
 /// Since \ref formatted_size only needs to know the size, the output itself is
 /// discarded.
 template <__formatter::__char_type _CharT>
-class _LIBCPP_TEMPLATE_VIS __formatted_size_buffer {
+class _LIBCUDACXX_TEMPLATE_VIS __formatted_size_buffer {
 public:
-  _LIBCPP_HIDE_FROM_ABI auto make_output_iterator() { return __output_.make_output_iterator(); }
+  _LIBCUDACXX_HIDE_FROM_ABI auto make_output_iterator() { return __output_.make_output_iterator(); }
 
-  _LIBCPP_HIDE_FROM_ABI void flush(const _CharT*, size_t __size) { __size_ += __size; }
+  _LIBCUDACXX_HIDE_FROM_ABI void flush(const _CharT*, size_t __size) { __size_ += __size; }
 
-  _LIBCPP_HIDE_FROM_ABI size_t result() && {
+  _LIBCUDACXX_HIDE_FROM_ABI size_t result() && {
     __output_.flush();
     return __size_;
   }
@@ -276,16 +276,16 @@ private:
 /// The base of a buffer that counts and limits the number of insertions.
 template <class _OutIt, __formatter::__char_type _CharT, bool>
   requires(output_iterator<_OutIt, const _CharT&>)
-struct _LIBCPP_TEMPLATE_VIS __format_to_n_buffer_base {
+struct _LIBCUDACXX_TEMPLATE_VIS __format_to_n_buffer_base {
   using _Size = iter_difference_t<_OutIt>;
 
 public:
-  _LIBCPP_HIDE_FROM_ABI explicit __format_to_n_buffer_base(_OutIt __out_it, _Size __n)
-      : __writer_(_VSTD::move(__out_it)), __n_(_VSTD::max(_Size(0), __n)) {}
+  _LIBCUDACXX_HIDE_FROM_ABI explicit __format_to_n_buffer_base(_OutIt __out_it, _Size __n)
+      : __writer_(_CUDA_VSTD::move(__out_it)), __n_(_CUDA_VSTD::max(_Size(0), __n)) {}
 
-  _LIBCPP_HIDE_FROM_ABI void flush(_CharT* __ptr, size_t __size) {
+  _LIBCUDACXX_HIDE_FROM_ABI void flush(_CharT* __ptr, size_t __size) {
     if (_Size(__size_) <= __n_)
-      __writer_.flush(__ptr, _VSTD::min(_Size(__size), __n_ - __size_));
+      __writer_.flush(__ptr, _CUDA_VSTD::min(_Size(__size), __n_ - __size_));
     __size_ += __size;
   }
 
@@ -306,17 +306,17 @@ protected:
 /// exceed the maximum number of code units.
 template <class _OutIt, __formatter::__char_type _CharT>
   requires(output_iterator<_OutIt, const _CharT&>)
-class _LIBCPP_TEMPLATE_VIS __format_to_n_buffer_base<_OutIt, _CharT, true> {
+class _LIBCUDACXX_TEMPLATE_VIS __format_to_n_buffer_base<_OutIt, _CharT, true> {
   using _Size = iter_difference_t<_OutIt>;
 
 public:
-  _LIBCPP_HIDE_FROM_ABI explicit __format_to_n_buffer_base(_OutIt __out_it, _Size __n)
-      : __output_(_VSTD::__unwrap_iter(__out_it), __n, this), __writer_(_VSTD::move(__out_it)) {
+  _LIBCUDACXX_HIDE_FROM_ABI explicit __format_to_n_buffer_base(_OutIt __out_it, _Size __n)
+      : __output_(_CUDA_VSTD::__unwrap_iter(__out_it), __n, this), __writer_(_CUDA_VSTD::move(__out_it)) {
     if (__n <= 0) [[unlikely]]
       __output_.reset(__storage_.begin(), __storage_.__buffer_size);
   }
 
-  _LIBCPP_HIDE_FROM_ABI void flush(_CharT* __ptr, size_t __size) {
+  _LIBCUDACXX_HIDE_FROM_ABI void flush(_CharT* __ptr, size_t __size) {
     // A flush to the direct writer happens in two occasions:
     // - The format function has written the maximum number of allowed code
     //   units. At this point it's no longer valid to write to this writer. So
@@ -344,26 +344,26 @@ protected:
 /// The buffer that counts and limits the number of insertions.
 template <class _OutIt, __formatter::__char_type _CharT>
   requires(output_iterator<_OutIt, const _CharT&>)
-struct _LIBCPP_TEMPLATE_VIS __format_to_n_buffer final
+struct _LIBCUDACXX_TEMPLATE_VIS __format_to_n_buffer final
     : public __format_to_n_buffer_base< _OutIt, _CharT, __enable_direct_output<_OutIt, _CharT>> {
   using _Base = __format_to_n_buffer_base<_OutIt, _CharT, __enable_direct_output<_OutIt, _CharT>>;
   using _Size = iter_difference_t<_OutIt>;
 
 public:
-  _LIBCPP_HIDE_FROM_ABI explicit __format_to_n_buffer(_OutIt __out_it, _Size __n) : _Base(_VSTD::move(__out_it), __n) {}
-  _LIBCPP_HIDE_FROM_ABI auto make_output_iterator() { return this->__output_.make_output_iterator(); }
+  _LIBCUDACXX_HIDE_FROM_ABI explicit __format_to_n_buffer(_OutIt __out_it, _Size __n) : _Base(_CUDA_VSTD::move(__out_it), __n) {}
+  _LIBCUDACXX_HIDE_FROM_ABI auto make_output_iterator() { return this->__output_.make_output_iterator(); }
 
-  _LIBCPP_HIDE_FROM_ABI format_to_n_result<_OutIt> result() && {
+  _LIBCUDACXX_HIDE_FROM_ABI format_to_n_result<_OutIt> result() && {
     this->__output_.flush();
-    return {_VSTD::move(this->__writer_).out(), this->__size_};
+    return {_CUDA_VSTD::move(this->__writer_).out(), this->__size_};
   }
 };
 } // namespace __format
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___FORMAT_BUFFER_H
+#endif // _LIBCUDACXX___FORMAT_BUFFER_H

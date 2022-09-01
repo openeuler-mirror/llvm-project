@@ -20,7 +20,7 @@ void test()
   {
     using iterator = std::move_iterator<cpp17_input_iterator<int*>>;
 
-    LIBCPP_STATIC_ASSERT(!std::default_initializable<iterator>);
+    LIBCUDACXX_STATIC_ASSERT(!std::default_initializable<iterator>);
     static_assert( std::copyable<iterator>);
     static_assert( std::input_iterator<iterator>);
     static_assert(!std::forward_iterator<iterator>);
@@ -37,7 +37,7 @@ void test()
   {
     using iterator = std::move_iterator<cpp20_input_iterator<int*>>;
 
-    LIBCPP_STATIC_ASSERT(!std::default_initializable<iterator>);
+    LIBCUDACXX_STATIC_ASSERT(!std::default_initializable<iterator>);
     static_assert(!std::copyable<iterator>);
     static_assert( std::input_iterator<iterator>);
     static_assert(!std::forward_iterator<iterator>);

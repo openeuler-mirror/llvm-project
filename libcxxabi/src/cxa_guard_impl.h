@@ -128,17 +128,17 @@ private:
 template <class IntType>
 class AtomicInt {
 public:
-  using MemoryOrder = std::__libcpp_atomic_order;
+  using MemoryOrder = std::__LIBCUDACXX_atomic_order;
 
   explicit AtomicInt(IntType* b) : b_(b) {}
   AtomicInt(AtomicInt const&) = delete;
   AtomicInt& operator=(AtomicInt const&) = delete;
 
-  IntType load(MemoryOrder ord) { return std::__libcpp_atomic_load(b_, ord); }
-  void store(IntType val, MemoryOrder ord) { std::__libcpp_atomic_store(b_, val, ord); }
-  IntType exchange(IntType new_val, MemoryOrder ord) { return std::__libcpp_atomic_exchange(b_, new_val, ord); }
+  IntType load(MemoryOrder ord) { return std::__LIBCUDACXX_atomic_load(b_, ord); }
+  void store(IntType val, MemoryOrder ord) { std::__LIBCUDACXX_atomic_store(b_, val, ord); }
+  IntType exchange(IntType new_val, MemoryOrder ord) { return std::__LIBCUDACXX_atomic_exchange(b_, new_val, ord); }
   bool compare_exchange(IntType* expected, IntType desired, MemoryOrder ord_success, MemoryOrder ord_failure) {
-    return std::__libcpp_atomic_compare_exchange(b_, expected, desired, ord_success, ord_failure);
+    return std::__LIBCUDACXX_atomic_compare_exchange(b_, expected, desired, ord_success, ord_failure);
   }
 
 private:
@@ -149,12 +149,12 @@ private:
 //                       PlatformGetThreadID
 //===----------------------------------------------------------------------===//
 
-#if defined(__APPLE__) && defined(_LIBCPP_HAS_THREAD_API_PTHREAD)
+#if defined(__APPLE__) && defined(_LIBCUDACXX_HAS_THREAD_API_PTHREAD)
 uint32_t PlatformThreadID() {
   static_assert(sizeof(mach_port_t) == sizeof(uint32_t), "");
-  return static_cast<uint32_t>(pthread_mach_thread_np(std::__libcpp_thread_get_current_id()));
+  return static_cast<uint32_t>(pthread_mach_thread_np(std::__LIBCUDACXX_thread_get_current_id()));
 }
-#elif defined(SYS_gettid) && defined(_LIBCPP_HAS_THREAD_API_PTHREAD)
+#elif defined(SYS_gettid) && defined(_LIBCUDACXX_HAS_THREAD_API_PTHREAD)
 uint32_t PlatformThreadID() {
   static_assert(sizeof(pid_t) == sizeof(uint32_t), "");
   return static_cast<uint32_t>(syscall(SYS_gettid));
@@ -270,37 +270,37 @@ private:
 //                     Global Mutex Implementation
 //===----------------------------------------------------------------------===//
 
-struct LibcppMutex;
-struct LibcppCondVar;
+struct LIBCUDACXXMutex;
+struct LIBCUDACXXCondVar;
 
 #ifndef _LIBCXXABI_HAS_NO_THREADS
-struct LibcppMutex {
-  LibcppMutex() = default;
-  LibcppMutex(LibcppMutex const&) = delete;
-  LibcppMutex& operator=(LibcppMutex const&) = delete;
+struct LIBCUDACXXMutex {
+  LIBCUDACXXMutex() = default;
+  LIBCUDACXXMutex(LIBCUDACXXMutex const&) = delete;
+  LIBCUDACXXMutex& operator=(LIBCUDACXXMutex const&) = delete;
 
-  bool lock() { return std::__libcpp_mutex_lock(&mutex); }
-  bool unlock() { return std::__libcpp_mutex_unlock(&mutex); }
+  bool lock() { return std::__LIBCUDACXX_mutex_lock(&mutex); }
+  bool unlock() { return std::__LIBCUDACXX_mutex_unlock(&mutex); }
 
 private:
-  friend struct LibcppCondVar;
-  std::__libcpp_mutex_t mutex = _LIBCPP_MUTEX_INITIALIZER;
+  friend struct LIBCUDACXXCondVar;
+  std::__LIBCUDACXX_mutex_t mutex = _LIBCUDACXX_MUTEX_INITIALIZER;
 };
 
-struct LibcppCondVar {
-  LibcppCondVar() = default;
-  LibcppCondVar(LibcppCondVar const&) = delete;
-  LibcppCondVar& operator=(LibcppCondVar const&) = delete;
+struct LIBCUDACXXCondVar {
+  LIBCUDACXXCondVar() = default;
+  LIBCUDACXXCondVar(LIBCUDACXXCondVar const&) = delete;
+  LIBCUDACXXCondVar& operator=(LIBCUDACXXCondVar const&) = delete;
 
-  bool wait(LibcppMutex& mut) { return std::__libcpp_condvar_wait(&cond, &mut.mutex); }
-  bool broadcast() { return std::__libcpp_condvar_broadcast(&cond); }
+  bool wait(LIBCUDACXXMutex& mut) { return std::__LIBCUDACXX_condvar_wait(&cond, &mut.mutex); }
+  bool broadcast() { return std::__LIBCUDACXX_condvar_broadcast(&cond); }
 
 private:
-  std::__libcpp_condvar_t cond = _LIBCPP_CONDVAR_INITIALIZER;
+  std::__LIBCUDACXX_condvar_t cond = _LIBCUDACXX_CONDVAR_INITIALIZER;
 };
 #else
-struct LibcppMutex {};
-struct LibcppCondVar {};
+struct LIBCUDACXXMutex {};
+struct LIBCUDACXXCondVar {};
 #endif // !defined(_LIBCXXABI_HAS_NO_THREADS)
 
 /// InitByteGlobalMutex - Uses a global mutex and condition variable (common to
@@ -619,7 +619,7 @@ struct GlobalStatic {
   static T instance;
 };
 template <class T>
-_LIBCPP_CONSTINIT T GlobalStatic<T>::instance = {};
+_LIBCUDACXX_CONSTINIT T GlobalStatic<T>::instance = {};
 
 enum class Implementation { NoThreads, GlobalMutex, Futex };
 
@@ -633,8 +633,8 @@ struct SelectImplementation<Implementation::NoThreads> {
 
 template <>
 struct SelectImplementation<Implementation::GlobalMutex> {
-  using type = GlobalMutexGuard<LibcppMutex, LibcppCondVar, GlobalStatic<LibcppMutex>::instance,
-                                GlobalStatic<LibcppCondVar>::instance, PlatformThreadID>;
+  using type = GlobalMutexGuard<LIBCUDACXXMutex, LIBCUDACXXCondVar, GlobalStatic<LIBCUDACXXMutex>::instance,
+                                GlobalStatic<LIBCUDACXXCondVar>::instance, PlatformThreadID>;
 };
 
 template <>

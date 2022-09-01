@@ -34,9 +34,9 @@ int main(int, char**)
            std::numeric_limits<Rep>::lowest(), "");
 #endif
 
-    LIBCPP_ASSERT_NOEXCEPT(std::chrono::duration_values<int>::min());
-    LIBCPP_ASSERT_NOEXCEPT(std::chrono::duration_values<double>::min());
-    LIBCPP_ASSERT_NOEXCEPT(std::chrono::duration_values<Rep>::min());
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::chrono::duration_values<int>::min());
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::chrono::duration_values<double>::min());
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::chrono::duration_values<Rep>::min());
 #if TEST_STD_VER > 17
     ASSERT_NOEXCEPT(std::chrono::duration_values<int>::min());
     ASSERT_NOEXCEPT(std::chrono::duration_values<double>::min());

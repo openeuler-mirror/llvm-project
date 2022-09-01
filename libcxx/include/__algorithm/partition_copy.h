@@ -6,22 +6,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_PARTITION_COPY_H
-#define _LIBCPP___ALGORITHM_PARTITION_COPY_H
+#ifndef _LIBCUDACXX___ALGORITHM_PARTITION_COPY_H
+#define _LIBCUDACXX___ALGORITHM_PARTITION_COPY_H
 
 #include <__config>
 #include <__iterator/iterator_traits.h>
 #include <__utility/pair.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _InputIterator, class _OutputIterator1,
           class _OutputIterator2, class _Predicate>
-_LIBCPP_CONSTEXPR_AFTER_CXX17 pair<_OutputIterator1, _OutputIterator2>
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX17 pair<_OutputIterator1, _OutputIterator2>
 partition_copy(_InputIterator __first, _InputIterator __last,
                _OutputIterator1 __out_true, _OutputIterator2 __out_false,
                _Predicate __pred)
@@ -42,6 +42,6 @@ partition_copy(_InputIterator __first, _InputIterator __last,
     return pair<_OutputIterator1, _OutputIterator2>(__out_true, __out_false);
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_PARTITION_COPY_H
+#endif // _LIBCUDACXX___ALGORITHM_PARTITION_COPY_H

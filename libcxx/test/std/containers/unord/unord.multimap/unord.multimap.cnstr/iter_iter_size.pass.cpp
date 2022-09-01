@@ -53,7 +53,7 @@ int main(int, char**)
         C c(cpp17_input_iterator<P*>(a), cpp17_input_iterator<P*>(a + sizeof(a)/sizeof(a[0])),
             10
            );
-        LIBCPP_ASSERT(c.bucket_count() == 11);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 11);
         assert(c.size() == 6);
         typedef std::pair<C::const_iterator, C::const_iterator> Eq;
         Eq eq = c.equal_range(1);
@@ -106,7 +106,7 @@ int main(int, char**)
         C c(cpp17_input_iterator<P*>(a), cpp17_input_iterator<P*>(a + sizeof(a)/sizeof(a[0])),
             10
            );
-        LIBCPP_ASSERT(c.bucket_count() == 11);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 11);
         assert(c.size() == 6);
         typedef std::pair<C::const_iterator, C::const_iterator> Eq;
         Eq eq = c.equal_range(1);

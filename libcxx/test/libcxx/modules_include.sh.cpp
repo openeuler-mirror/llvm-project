@@ -63,7 +63,7 @@ END-SCRIPT
 #include <atomic>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_4
-#if defined(TEST_4) && !defined(_LIBCPP_HAS_NO_THREADS)
+#if defined(TEST_4) && !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #include <barrier>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_5
@@ -119,7 +119,7 @@ END-SCRIPT
 #include <climits>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_18
-#if defined(TEST_18) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_18) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <clocale>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_19
@@ -127,7 +127,7 @@ END-SCRIPT
 #include <cmath>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_20
-#if defined(TEST_20) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_20) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <codecvt>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_21
@@ -207,11 +207,11 @@ END-SCRIPT
 #include <cuchar>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_40
-#if defined(TEST_40) && !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if defined(TEST_40) && !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #include <cwchar>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_41
-#if defined(TEST_41) && !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if defined(TEST_41) && !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #include <cwctype>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_42
@@ -235,7 +235,7 @@ END-SCRIPT
 #include <fenv.h>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_47
-#if defined(TEST_47) && !defined(_LIBCPP_HAS_NO_FILESYSTEM_LIBRARY)
+#if defined(TEST_47) && !defined(_LIBCUDACXX_HAS_NO_FILESYSTEM_LIBRARY)
 #include <filesystem>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_48
@@ -251,7 +251,7 @@ END-SCRIPT
 #include <forward_list>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_51
-#if defined(TEST_51) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_51) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <fstream>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_52
@@ -259,7 +259,7 @@ END-SCRIPT
 #include <functional>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_53
-#if defined(TEST_53) && !defined(_LIBCPP_HAS_NO_THREADS)
+#if defined(TEST_53) && !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #include <future>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_54
@@ -271,11 +271,11 @@ END-SCRIPT
 #include <inttypes.h>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_56
-#if defined(TEST_56) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_56) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <iomanip>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_57
-#if defined(TEST_57) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_57) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <ios>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_58
@@ -283,11 +283,11 @@ END-SCRIPT
 #include <iosfwd>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_59
-#if defined(TEST_59) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_59) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <iostream>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_60
-#if defined(TEST_60) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_60) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <istream>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_61
@@ -295,7 +295,7 @@ END-SCRIPT
 #include <iterator>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_62
-#if defined(TEST_62) && !defined(_LIBCPP_HAS_NO_THREADS)
+#if defined(TEST_62) && !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #include <latch>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_63
@@ -311,11 +311,11 @@ END-SCRIPT
 #include <list>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_66
-#if defined(TEST_66) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_66) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <locale>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_67
-#if defined(TEST_67) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_67) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <locale.h>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_68
@@ -331,7 +331,7 @@ END-SCRIPT
 #include <memory>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_71
-#if defined(TEST_71) && !defined(_LIBCPP_HAS_NO_THREADS)
+#if defined(TEST_71) && !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #include <mutex>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_72
@@ -351,7 +351,7 @@ END-SCRIPT
 #include <optional>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_76
-#if defined(TEST_76) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_76) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <ostream>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_77
@@ -371,7 +371,7 @@ END-SCRIPT
 #include <ratio>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_81
-#if defined(TEST_81) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_81) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <regex>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_82
@@ -379,7 +379,7 @@ END-SCRIPT
 #include <scoped_allocator>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_83
-#if defined(TEST_83) && !defined(_LIBCPP_HAS_NO_THREADS)
+#if defined(TEST_83) && !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #include <semaphore>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_84
@@ -391,7 +391,7 @@ END-SCRIPT
 #include <setjmp.h>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_86
-#if defined(TEST_86) && !defined(_LIBCPP_HAS_NO_THREADS)
+#if defined(TEST_86) && !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #include <shared_mutex>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_87
@@ -399,7 +399,7 @@ END-SCRIPT
 #include <span>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_88
-#if defined(TEST_88) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_88) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <sstream>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_89
@@ -407,7 +407,7 @@ END-SCRIPT
 #include <stack>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_90
-#if defined(TEST_90) && __cplusplus > 202002L && !defined(_LIBCPP_HAS_NO_THREADS)
+#if defined(TEST_90) && __cplusplus > 202002L && !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #include <stdatomic.h>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_91
@@ -435,7 +435,7 @@ END-SCRIPT
 #include <stdlib.h>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_97
-#if defined(TEST_97) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_97) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <streambuf>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_98
@@ -451,7 +451,7 @@ END-SCRIPT
 #include <string_view>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_101
-#if defined(TEST_101) && !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(TEST_101) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #include <strstream>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_102
@@ -463,7 +463,7 @@ END-SCRIPT
 #include <tgmath.h>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_104
-#if defined(TEST_104) && !defined(_LIBCPP_HAS_NO_THREADS)
+#if defined(TEST_104) && !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #include <thread>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_105
@@ -515,11 +515,11 @@ END-SCRIPT
 #include <version>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_117
-#if defined(TEST_117) && !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if defined(TEST_117) && !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #include <wchar.h>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_118
-#if defined(TEST_118) && !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if defined(TEST_118) && !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #include <wctype.h>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_119
@@ -527,7 +527,7 @@ END-SCRIPT
 #include <experimental/algorithm>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_120
-#if defined(TEST_120) && __cplusplus >= 201103L && !defined(_LIBCPP_HAS_NO_EXPERIMENTAL_COROUTINES)
+#if defined(TEST_120) && __cplusplus >= 201103L && !defined(_LIBCUDACXX_HAS_NO_EXPERIMENTAL_COROUTINES)
 #include <experimental/coroutine>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_121
@@ -563,7 +563,7 @@ END-SCRIPT
 #include <experimental/propagate_const>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_129
-#if defined(TEST_129) && !defined(_LIBCPP_HAS_NO_LOCALIZATION) && __cplusplus >= 201103L
+#if defined(TEST_129) && !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION) && __cplusplus >= 201103L
 #include <experimental/regex>
 #endif
 // RUN: %{cxx} %s %{flags} %{compile_flags} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only -DTEST_130

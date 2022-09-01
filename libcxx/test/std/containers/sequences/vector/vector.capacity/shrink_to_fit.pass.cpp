@@ -42,7 +42,7 @@ TEST_CONSTEXPR_CXX20 bool tests() {
         v.push_back(1);
         assert(is_contiguous_container_asan_correct(v));
         v.shrink_to_fit();
-        LIBCPP_ASSERT(v.capacity() == 200); // assumes libc++'s 2x growth factor
+        LIBCUDACXX_ASSERT(v.capacity() == 200); // assumes libc++'s 2x growth factor
         assert(v.size() == 101);
         assert(is_contiguous_container_asan_correct(v));
     }

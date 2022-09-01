@@ -64,7 +64,7 @@ int main(int, char**)
         test(c);
         assert(c.bucket_count() >= 5);
         c.reserve(3);
-        LIBCPP_ASSERT(c.bucket_count() == 5);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 5);
         test(c);
         c.max_load_factor(2);
         c.reserve(3);
@@ -92,7 +92,7 @@ int main(int, char**)
         test(c);
         assert(c.bucket_count() >= 5);
         c.reserve(3);
-        LIBCPP_ASSERT(c.bucket_count() == 5);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 5);
         test(c);
         c.max_load_factor(2);
         c.reserve(3);

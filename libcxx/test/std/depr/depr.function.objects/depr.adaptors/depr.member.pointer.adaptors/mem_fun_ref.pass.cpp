@@ -13,7 +13,7 @@
 //   mem_fun_ref(S (T::*f)());
 
 // REQUIRES: c++03 || c++11 || c++14
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS
 
 #include <functional>
 #include <cassert>

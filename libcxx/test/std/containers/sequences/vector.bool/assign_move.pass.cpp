@@ -31,7 +31,7 @@ TEST_CONSTEXPR_CXX20 bool tests()
         std::vector<bool, test_allocator<bool> > l2(test_allocator<bool>(5));
         l2 = std::move(l);
         assert(l2 == lo);
-        LIBCPP_ASSERT(l.empty());
+        LIBCUDACXX_ASSERT(l.empty());
         assert(l2.get_allocator() == lo.get_allocator());
     }
     {

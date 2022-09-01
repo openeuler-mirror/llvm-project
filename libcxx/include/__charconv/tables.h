@@ -7,19 +7,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CHARCONV_TABLES
-#define _LIBCPP___CHARCONV_TABLES
+#ifndef _LIBCUDACXX___CHARCONV_TABLES
+#define _LIBCUDACXX___CHARCONV_TABLES
 
 #include <__config>
 #include <cstdint>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
 namespace __itoa {
 
@@ -35,7 +35,7 @@ struct __table {
 
   static const uint32_t __pow10_32[10];
   static const uint64_t __pow10_64[20];
-#  ifndef _LIBCPP_HAS_NO_INT128
+#  ifndef _LIBCUDACXX_HAS_NO_INT128
   // TODO FMT Reduce the number of entries in this table.
   static const __uint128_t __pow10_128[40];
   static const int __pow10_128_offset = 0;
@@ -111,7 +111,7 @@ const uint64_t __table<_Tp>::__pow10_64[20] = {UINT64_C(0),
                                                UINT64_C(1000000000000000000),
                                                UINT64_C(10000000000000000000)};
 
-#  ifndef _LIBCPP_HAS_NO_INT128
+#  ifndef _LIBCUDACXX_HAS_NO_INT128
 template <class _Tp>
 const __uint128_t __table<_Tp>::__pow10_128[40] = {
     UINT64_C(0),
@@ -173,8 +173,8 @@ const char __table<_Tp>::__digits_base_10[200] = {
 
 } // namespace __itoa
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___CHARCONV_TABLES
+#endif // _LIBCUDACXX___CHARCONV_TABLES

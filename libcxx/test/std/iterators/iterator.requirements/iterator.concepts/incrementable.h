@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef LIBCPP_TEST_STD_ITERATORS_ITERATOR_REQUIREMENTS_ITERATOR_CONCEPTS_INCREMENTABLE_H
-#define LIBCPP_TEST_STD_ITERATORS_ITERATOR_REQUIREMENTS_ITERATOR_CONCEPTS_INCREMENTABLE_H
+#ifndef LIBCUDACXX_TEST_STD_ITERATORS_ITERATOR_REQUIREMENTS_ITERATOR_CONCEPTS_INCREMENTABLE_H
+#define LIBCUDACXX_TEST_STD_ITERATORS_ITERATOR_REQUIREMENTS_ITERATOR_CONCEPTS_INCREMENTABLE_H
 
 struct postfix_increment_returns_void {
   using difference_type = int;
@@ -180,4 +180,4 @@ struct noncopyable_with_difference_type_and_minus {
   bool operator==(noncopyable_with_difference_type_and_minus const&) const;
 };
 
-#endif // #define LIBCPP_TEST_STD_ITERATORS_ITERATOR_REQUIREMENTS_ITERATOR_CONCEPTS_INCREMENTABLE_H
+#endif // #define LIBCUDACXX_TEST_STD_ITERATORS_ITERATOR_REQUIREMENTS_ITERATOR_CONCEPTS_INCREMENTABLE_H

@@ -6,19 +6,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CONCEPTS_SAME_AS_H
-#define _LIBCPP___CONCEPTS_SAME_AS_H
+#ifndef _LIBCUDACXX___CONCEPTS_SAME_AS_H
+#define _LIBCUDACXX___CONCEPTS_SAME_AS_H
 
 #include <__config>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [concept.same]
 
@@ -28,8 +28,8 @@ concept __same_as_impl = _IsSame<_Tp, _Up>::value;
 template<class _Tp, class _Up>
 concept same_as = __same_as_impl<_Tp, _Up> && __same_as_impl<_Up, _Tp>;
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___CONCEPTS_SAME_AS_H
+#endif // _LIBCUDACXX___CONCEPTS_SAME_AS_H

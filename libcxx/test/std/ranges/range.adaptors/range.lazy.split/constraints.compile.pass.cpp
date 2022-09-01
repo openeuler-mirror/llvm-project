@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // template<input_range V, forward_range Pattern>
 //   requires view<V> && view<Pattern> &&
@@ -155,7 +155,7 @@ namespace test7 {
   static_assert( std::ranges::input_range<View>);
   static_assert(!std::ranges::forward_range<View>);
   static_assert( std::ranges::forward_range<Pattern>);
-  LIBCPP_STATIC_ASSERT(!std::ranges::__tiny_range<Pattern>);
+  LIBCUDACXX_STATIC_ASSERT(!std::ranges::__tiny_range<Pattern>);
   static_assert( std::ranges::view<View>);
   static_assert( std::ranges::view<Pattern>);
   static_assert( std::indirectly_comparable<
@@ -178,7 +178,7 @@ namespace test8 {
   static_assert( std::ranges::input_range<View>);
   static_assert(!std::ranges::forward_range<View>);
   static_assert( std::ranges::forward_range<Pattern>);
-  LIBCPP_STATIC_ASSERT(!std::ranges::__tiny_range<Pattern>);
+  LIBCUDACXX_STATIC_ASSERT(!std::ranges::__tiny_range<Pattern>);
   static_assert( std::ranges::view<View>);
   static_assert( std::ranges::view<Pattern>);
   static_assert( std::indirectly_comparable<
@@ -201,7 +201,7 @@ namespace test9 {
   static_assert( std::ranges::input_range<View>);
   static_assert(!std::ranges::forward_range<View>);
   static_assert( std::ranges::forward_range<Pattern>);
-  LIBCPP_STATIC_ASSERT(!std::ranges::__tiny_range<Pattern>);
+  LIBCUDACXX_STATIC_ASSERT(!std::ranges::__tiny_range<Pattern>);
   static_assert( std::ranges::view<View>);
   static_assert( std::ranges::view<Pattern>);
   static_assert( std::indirectly_comparable<

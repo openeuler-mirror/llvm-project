@@ -37,7 +37,7 @@ test(typename S::size_type min_cap, typename S::size_type erased_index, typename
     if (res_arg <= s.max_size())
     {
         s.reserve(res_arg);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == s0);
         assert(s.capacity() >= res_arg);
         assert(s.capacity() >= s.size());
@@ -51,7 +51,7 @@ test(typename S::size_type min_cap, typename S::size_type erased_index, typename
         try
         {
             s.reserve(res_arg);
-            LIBCPP_ASSERT(s.__invariants());
+            LIBCUDACXX_ASSERT(s.__invariants());
             assert(false);
         }
         catch (std::length_error&)

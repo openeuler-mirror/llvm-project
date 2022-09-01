@@ -192,7 +192,7 @@ void test_noexcept()
         // test that the functions noexcept-ness is propagated
         using Tup = std::tuple<int, const char*, long>;
         Tup t;
-        LIBCPP_ASSERT_NOEXCEPT(std::apply(nec, t));
+        LIBCUDACXX_ASSERT_NOEXCEPT(std::apply(nec, t));
         ASSERT_NOT_NOEXCEPT(std::apply(tc, t));
     }
     {
@@ -200,7 +200,7 @@ void test_noexcept()
         using Tup = std::tuple<NothrowMoveable, int>;
         Tup t;
         ASSERT_NOT_NOEXCEPT(std::apply(nec, t));
-        LIBCPP_ASSERT_NOEXCEPT(std::apply(nec, std::move(t)));
+        LIBCUDACXX_ASSERT_NOEXCEPT(std::apply(nec, std::move(t)));
     }
 }
 

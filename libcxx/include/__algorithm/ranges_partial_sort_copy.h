@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_PARTIAL_SORT_COPY_H
-#define _LIBCPP___ALGORITHM_RANGES_PARTIAL_SORT_COPY_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_PARTIAL_SORT_COPY_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_PARTIAL_SORT_COPY_H
 
 #include <__algorithm/in_out_result.h>
 #include <__algorithm/iterator_operations.h>
@@ -25,13 +25,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -47,7 +47,7 @@ struct __fn {
             class _Comp = ranges::less, class _Proj1 = identity, class _Proj2 = identity>
   requires indirectly_copyable<_Iter1, _Iter2> && sortable<_Iter2, _Comp, _Proj2> &&
            indirect_strict_weak_order<_Comp, projected<_Iter1, _Proj1>, projected<_Iter2, _Proj2>>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   partial_sort_copy_result<_Iter1, _Iter2>
   operator()(_Iter1 __first, _Sent1 __last, _Iter2 __result_first, _Sent2 __result_last,
              _Comp __comp = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const {
@@ -64,7 +64,7 @@ struct __fn {
            sortable<iterator_t<_Range2>, _Comp, _Proj2> &&
            indirect_strict_weak_order<_Comp, projected<iterator_t<_Range1>, _Proj1>,
                                       projected<iterator_t<_Range2>, _Proj2>>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   partial_sort_copy_result<borrowed_iterator_t<_Range1>, borrowed_iterator_t<_Range2>>
   operator()(_Range1&& __range, _Range2&& __result_range, _Comp __comp = {},
              _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const {
@@ -84,8 +84,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_PARTIAL_SORT_COPY_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_PARTIAL_SORT_COPY_H

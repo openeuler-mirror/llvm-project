@@ -21,7 +21,7 @@
 #include <system_error>
 #include <utility>
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 # define WIN32_LEAN_AND_MEAN
 # define NOMINMAX
 # include <windows.h>
@@ -32,7 +32,7 @@
 # include <sys/statvfs.h>
 # include <sys/time.h> // for ::utimes as used in __last_write_time
 # include <unistd.h>
-#endif // defined(_LIBCPP_WIN32API)
+#endif // defined(_LIBCUDACXX_WIN32API)
 
 #include "../include/apple_availability.h"
 
@@ -40,15 +40,15 @@
 // We can use the presence of UTIME_OMIT to detect platforms that provide
 // utimensat.
 #if defined(UTIME_OMIT)
-#define _LIBCPP_USE_UTIMENSAT
+#define _LIBCUDACXX_USE_UTIMENSAT
 #endif
 #endif
 
-_LIBCPP_DIAGNOSTIC_PUSH
-_LIBCPP_GCC_DIAGNOSTIC_IGNORED("-Wunused-function")
-_LIBCPP_CLANG_DIAGNOSTIC_IGNORED("-Wunused-function")
+_LIBCUDACXX_DIAGNOSTIC_PUSH
+_LIBCUDACXX_GCC_DIAGNOSTIC_IGNORED("-Wunused-function")
+_LIBCUDACXX_CLANG_DIAGNOSTIC_IGNORED("-Wunused-function")
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 #  define PATHSTR(x) (L##x)
 #  define PATH_CSTR_FMT "\"%ls\""
 #else
@@ -56,18 +56,18 @@ _LIBCPP_CLANG_DIAGNOSTIC_IGNORED("-Wunused-function")
 #  define PATH_CSTR_FMT "\"%s\""
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_BEGIN_NAMESPACE_FILESYSTEM
 
 namespace detail {
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 // Non anonymous, to allow access from two translation units.
 errc __win_err_to_errc(int err);
 #endif
 
 namespace {
 
-static _LIBCPP_ATTRIBUTE_FORMAT(__printf__, 1, 0) string
+static _LIBCUDACXX_ATTRIBUTE_FORMAT(__printf__, 1, 0) string
 format_string_impl(const char* msg, va_list ap) {
   array<char, 256> buf;
 
@@ -86,36 +86,36 @@ format_string_impl(const char* msg, va_list ap) {
     size_t size_with_null = static_cast<size_t>(ret) + 1;
     result.__resize_default_init(size_with_null - 1);
     ret = ::vsnprintf(&result[0], size_with_null, msg, ap);
-    _LIBCPP_ASSERT(static_cast<size_t>(ret) == (size_with_null - 1), "TODO");
+    _LIBCUDACXX_ASSERT(static_cast<size_t>(ret) == (size_with_null - 1), "TODO");
   }
   return result;
 }
 
-static _LIBCPP_ATTRIBUTE_FORMAT(__printf__, 1, 2) string
+static _LIBCUDACXX_ATTRIBUTE_FORMAT(__printf__, 1, 2) string
 format_string(const char* msg, ...) {
   string ret;
   va_list ap;
   va_start(ap, msg);
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
   try {
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
     ret = format_string_impl(msg, ap);
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
   } catch (...) {
     va_end(ap);
     throw;
   }
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
   va_end(ap);
   return ret;
 }
 
 error_code capture_errno() {
-  _LIBCPP_ASSERT(errno != 0, "Expected errno to be non-zero");
+  _LIBCUDACXX_ASSERT(errno != 0, "Expected errno to be non-zero");
   return error_code(errno, generic_category());
 }
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 error_code make_windows_error(int err) {
   return make_error_code(__win_err_to_errc(err));
 }
@@ -124,7 +124,7 @@ error_code make_windows_error(int err) {
 template <class T>
 T error_value();
 template <>
-_LIBCPP_CONSTEXPR_AFTER_CXX11 void error_value<void>() {}
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX11 void error_value<void>() {}
 template <>
 bool error_value<bool>() {
   return false;
@@ -140,7 +140,7 @@ uintmax_t error_value<uintmax_t>() {
   return uintmax_t(-1);
 }
 template <>
-_LIBCPP_CONSTEXPR_AFTER_CXX11 file_time_type error_value<file_time_type>() {
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX11 file_time_type error_value<file_time_type>() {
   return file_time_type::min();
 }
 template <>
@@ -176,10 +176,10 @@ struct ErrorHandler {
     case 2:
       __throw_filesystem_error(what, *p1_, *p2_, ec);
     }
-    __libcpp_unreachable();
+    __LIBCUDACXX_unreachable();
   }
 
-  _LIBCPP_ATTRIBUTE_FORMAT(__printf__, 3, 0)
+  _LIBCUDACXX_ATTRIBUTE_FORMAT(__printf__, 3, 0)
   void report_impl(const error_code& ec, const char* msg, va_list ap) const {
     if (ec_) {
       *ec_ = ec;
@@ -195,23 +195,23 @@ struct ErrorHandler {
     case 2:
       __throw_filesystem_error(what, *p1_, *p2_, ec);
     }
-    __libcpp_unreachable();
+    __LIBCUDACXX_unreachable();
   }
 
-  _LIBCPP_ATTRIBUTE_FORMAT(__printf__, 3, 4)
+  _LIBCUDACXX_ATTRIBUTE_FORMAT(__printf__, 3, 4)
   T report(const error_code& ec, const char* msg, ...) const {
     va_list ap;
     va_start(ap, msg);
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
     try {
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
       report_impl(ec, msg, ap);
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
     } catch (...) {
       va_end(ap);
       throw;
     }
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
     va_end(ap);
     return error_value<T>();
   }
@@ -220,20 +220,20 @@ struct ErrorHandler {
     return report(make_error_code(err));
   }
 
-  _LIBCPP_ATTRIBUTE_FORMAT(__printf__, 3, 4)
+  _LIBCUDACXX_ATTRIBUTE_FORMAT(__printf__, 3, 4)
   T report(errc const& err, const char* msg, ...) const {
     va_list ap;
     va_start(ap, msg);
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
     try {
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
       report_impl(make_error_code(err), msg, ap);
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
     } catch (...) {
       va_end(ap);
       throw;
     }
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
     va_end(ap);
     return error_value<T>();
   }
@@ -246,7 +246,7 @@ private:
 using chrono::duration;
 using chrono::duration_cast;
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 // Various C runtime versions (UCRT, or the legacy msvcrt.dll used by
 // some mingw toolchains) provide different stat function implementations,
 // with a number of limitations with respect to what we want from the
@@ -309,7 +309,7 @@ struct time_util_base {
           .count();
 
 private:
-  static _LIBCPP_CONSTEXPR_AFTER_CXX11 fs_duration get_min_nsecs() {
+  static _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 fs_duration get_min_nsecs() {
     return duration_cast<fs_duration>(
         fs_nanoseconds(min_nsec_timespec) -
         duration_cast<fs_nanoseconds>(fs_seconds(1)));
@@ -319,7 +319,7 @@ private:
                     FileTimeT::duration::min(),
                 "value doesn't roundtrip");
 
-  static _LIBCPP_CONSTEXPR_AFTER_CXX11 bool check_range() {
+  static _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 bool check_range() {
     // This kinda sucks, but it's what happens when we don't have __int128_t.
     if (sizeof(TimeT) == sizeof(rep)) {
       typedef duration<long long, ratio<3600 * 24 * 365> > Years;
@@ -385,7 +385,7 @@ struct time_util : time_util_base<FileTimeT, TimeT> {
 
 public:
   template <class CType, class ChronoType>
-  static _LIBCPP_CONSTEXPR_AFTER_CXX11 bool checked_set(CType* out,
+  static _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 bool checked_set(CType* out,
                                                         ChronoType time) {
     using Lim = numeric_limits<CType>;
     if (time > Lim::max() || time < Lim::min())
@@ -394,7 +394,7 @@ public:
     return true;
   }
 
-  static _LIBCPP_CONSTEXPR_AFTER_CXX11 bool is_representable(TimeSpecT tm) {
+  static _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 bool is_representable(TimeSpecT tm) {
     if (tm.tv_sec >= 0) {
       return tm.tv_sec < max_seconds ||
              (tm.tv_sec == max_seconds && tm.tv_nsec <= max_nsec);
@@ -405,7 +405,7 @@ public:
     }
   }
 
-  static _LIBCPP_CONSTEXPR_AFTER_CXX11 bool is_representable(FileTimeT tm) {
+  static _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 bool is_representable(FileTimeT tm) {
     auto secs = duration_cast<fs_seconds>(tm.time_since_epoch());
     auto nsecs = duration_cast<fs_nanoseconds>(tm.time_since_epoch() - secs);
     if (nsecs.count() < 0) {
@@ -418,7 +418,7 @@ public:
     return secs.count() >= TLim::min();
   }
 
-  static _LIBCPP_CONSTEXPR_AFTER_CXX11 FileTimeT
+  static _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 FileTimeT
   convert_from_timespec(TimeSpecT tm) {
     if (tm.tv_sec >= 0 || tm.tv_nsec == 0) {
       return FileTimeT(fs_seconds(tm.tv_sec) +
@@ -432,7 +432,7 @@ public:
   }
 
   template <class SubSecT>
-  static _LIBCPP_CONSTEXPR_AFTER_CXX11 bool
+  static _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 bool
   set_times_checked(TimeT* sec_out, SubSecT* subsec_out, FileTimeT tp) {
     auto dur = tp.time_since_epoch();
     auto sec_dur = duration_cast<fs_seconds>(dur);
@@ -449,7 +449,7 @@ public:
     return checked_set(sec_out, sec_dur.count()) &&
            checked_set(subsec_out, subsec_dur.count());
   }
-  static _LIBCPP_CONSTEXPR_AFTER_CXX11 bool convert_to_timespec(TimeSpecT& dest,
+  static _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 bool convert_to_timespec(TimeSpecT& dest,
                                                                 FileTimeT tp) {
     if (!is_representable(tp))
       return false;
@@ -457,7 +457,7 @@ public:
   }
 };
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 using fs_time = time_util<file_time_type, int64_t, TimeSpec>;
 #else
 using fs_time = time_util<file_time_type, time_t, TimeSpec>;
@@ -489,7 +489,7 @@ inline TimeSpec extract_mtime(StatT const& st) { return st.st_mtim; }
 inline TimeSpec extract_atime(StatT const& st) { return st.st_atim; }
 #endif
 
-#if !defined(_LIBCPP_WIN32API)
+#if !defined(_LIBCUDACXX_WIN32API)
 inline TimeVal make_timeval(TimeSpec const& ts) {
   using namespace chrono;
   auto Convert = [](long nsec) {
@@ -513,7 +513,7 @@ inline bool posix_utimes(const path& p, std::array<TimeSpec, 2> const& TS,
   return false;
 }
 
-#if defined(_LIBCPP_USE_UTIMENSAT)
+#if defined(_LIBCUDACXX_USE_UTIMENSAT)
 bool posix_utimensat(const path& p, std::array<TimeSpec, 2> const& TS,
                      error_code& ec) {
   if (::utimensat(AT_FDCWD, p.c_str(), TS.data(), 0) == -1) {
@@ -526,7 +526,7 @@ bool posix_utimensat(const path& p, std::array<TimeSpec, 2> const& TS,
 
 bool set_file_times(const path& p, std::array<TimeSpec, 2> const& TS,
                     error_code& ec) {
-#if !defined(_LIBCPP_USE_UTIMENSAT)
+#if !defined(_LIBCUDACXX_USE_UTIMENSAT)
   return posix_utimes(p, TS, ec);
 #else
   return posix_utimensat(p, TS, ec);
@@ -580,7 +580,7 @@ static pair<string_view, file_type> posix_readdir(DIR* dir_stream,
   }
 }
 
-#else // _LIBCPP_WIN32API
+#else // _LIBCUDACXX_WIN32API
 
 static file_type get_file_type(const WIN32_FIND_DATAW& data) {
   if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT &&
@@ -601,13 +601,13 @@ static file_time_type get_write_time(const WIN32_FIND_DATAW& data) {
   return file_time_type(file_time_type::duration(tmp.QuadPart));
 }
 
-#endif // !_LIBCPP_WIN32API
+#endif // !_LIBCUDACXX_WIN32API
 
 } // namespace
 } // end namespace detail
 
-_LIBCPP_END_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_END_NAMESPACE_FILESYSTEM
 
-_LIBCPP_DIAGNOSTIC_POP
+_LIBCUDACXX_DIAGNOSTIC_POP
 
 #endif // FILESYSTEM_COMMON_H

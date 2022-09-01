@@ -18,9 +18,9 @@
 #include <complex.h>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_COMPLEX_H)
- #   error "<complex.h> was expected to define _LIBCPP_COMPLEX_H"
+#if !defined(_LIBCUDACXX_COMPLEX_H)
+ #   error "<complex.h> was expected to define _LIBCUDACXX_COMPLEX_H"
 #endif
-#if !defined(_LIBCPP_COMPLEX)
+#if !defined(_LIBCUDACXX_COMPLEX)
  #   error "<complex.h> should include <complex> in C++03 and later"
 #endif

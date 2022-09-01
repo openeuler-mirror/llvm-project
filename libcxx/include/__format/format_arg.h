@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMAT_ARG_H
-#define _LIBCPP___FORMAT_FORMAT_ARG_H
+#ifndef _LIBCUDACXX___FORMAT_FORMAT_ARG_H
+#define _LIBCUDACXX___FORMAT_FORMAT_ARG_H
 
 #include <__assert>
 #include <__concepts/arithmetic.h>
@@ -24,13 +24,13 @@
 #include <string>
 #include <string_view>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace __format {
 /// The type stored in @ref basic_format_arg.
@@ -45,7 +45,7 @@ namespace __format {
 /// It could be packed in 4-bits but that means a new type directly becomes an
 /// ABI break. The packed type is 64-bit so this reduces the maximum number of
 /// packed elements from 16 to 12.
-enum class _LIBCPP_ENUM_VIS __arg_t : uint8_t {
+enum class _LIBCUDACXX_ENUM_VIS __arg_t : uint8_t {
   __none,
   __boolean,
   __char_type,
@@ -70,12 +70,12 @@ inline constexpr uint8_t __packed_arg_t_mask = 0x1f;
 inline constexpr unsigned __packed_types_storage_bits = 64;
 inline constexpr unsigned __packed_types_max = __packed_types_storage_bits / __packed_arg_t_bits;
 
-_LIBCPP_HIDE_FROM_ABI
+_LIBCUDACXX_HIDE_FROM_ABI
 constexpr bool __use_packed_format_arg_store(size_t __size) { return __size <= __packed_types_max; }
 
-_LIBCPP_HIDE_FROM_ABI
+_LIBCUDACXX_HIDE_FROM_ABI
 constexpr __arg_t __get_packed_type(uint64_t __types, size_t __id) {
-  _LIBCPP_ASSERT(__id <= __packed_types_max, "");
+  _LIBCUDACXX_ASSERT(__id <= __packed_types_max, "");
 
   if (__id > 0)
     __types >>= __id * __packed_arg_t_bits;
@@ -86,53 +86,53 @@ constexpr __arg_t __get_packed_type(uint64_t __types, size_t __id) {
 } // namespace __format
 
 template <class _Visitor, class _Context>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_AVAILABILITY_FORMAT decltype(auto) visit_format_arg(_Visitor&& __vis,
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_AVAILABILITY_FORMAT decltype(auto) visit_format_arg(_Visitor&& __vis,
                                                                                   basic_format_arg<_Context> __arg) {
   switch (__arg.__type_) {
   case __format::__arg_t::__none:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__monostate_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__monostate_);
   case __format::__arg_t::__boolean:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__boolean_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__boolean_);
   case __format::__arg_t::__char_type:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__char_type_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__char_type_);
   case __format::__arg_t::__int:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__int_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__int_);
   case __format::__arg_t::__long_long:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__long_long_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__long_long_);
   case __format::__arg_t::__i128:
-#  ifndef _LIBCPP_HAS_NO_INT128
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__i128_);
+#  ifndef _LIBCUDACXX_HAS_NO_INT128
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__i128_);
 #  else
-    __libcpp_unreachable();
+    __LIBCUDACXX_unreachable();
 #  endif
   case __format::__arg_t::__unsigned:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__unsigned_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__unsigned_);
   case __format::__arg_t::__unsigned_long_long:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__unsigned_long_long_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__unsigned_long_long_);
   case __format::__arg_t::__u128:
-#  ifndef _LIBCPP_HAS_NO_INT128
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__u128_);
+#  ifndef _LIBCUDACXX_HAS_NO_INT128
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__u128_);
 #  else
-    __libcpp_unreachable();
+    __LIBCUDACXX_unreachable();
 #  endif
   case __format::__arg_t::__float:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__float_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__float_);
   case __format::__arg_t::__double:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__double_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__double_);
   case __format::__arg_t::__long_double:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__long_double_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__long_double_);
   case __format::__arg_t::__const_char_type_ptr:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__const_char_type_ptr_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__const_char_type_ptr_);
   case __format::__arg_t::__string_view:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__string_view_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__string_view_);
   case __format::__arg_t::__ptr:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis), __arg.__value_.__ptr_);
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis), __arg.__value_.__ptr_);
   case __format::__arg_t::__handle:
-    return _VSTD::invoke(_VSTD::forward<_Visitor>(__vis),
+    return _CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Visitor>(__vis),
                          typename basic_format_arg<_Context>::handle{__arg.__value_.__handle_});
   }
 
-  __libcpp_unreachable();
+  __LIBCUDACXX_unreachable();
 }
 
 /// Contains the values used in basic_format_arg.
@@ -147,8 +147,8 @@ public:
   /// Contains the implementation for basic_format_arg::handle.
   struct __handle {
     template <class _Tp>
-    _LIBCPP_HIDE_FROM_ABI explicit __handle(_Tp&& __v) noexcept
-        : __ptr_(_VSTD::addressof(__v)),
+    _LIBCUDACXX_HIDE_FROM_ABI explicit __handle(_Tp&& __v) noexcept
+        : __ptr_(_CUDA_VSTD::addressof(__v)),
           __format_([](basic_format_parse_context<_CharT>& __parse_ctx, _Context& __ctx, const void* __ptr) {
             using _Dp = remove_cvref_t<_Tp>;
             using _Formatter = typename _Context::template formatter_type<_Dp>;
@@ -175,7 +175,7 @@ public:
     unsigned __unsigned_;
     long long __long_long_;
     unsigned long long __unsigned_long_long_;
-#  ifndef _LIBCPP_HAS_NO_INT128
+#  ifndef _LIBCUDACXX_HAS_NO_INT128
     __int128_t __i128_;
     __uint128_t __u128_;
 #  endif
@@ -191,39 +191,39 @@ public:
   // These constructors contain the exact storage type used. If adjustments are
   // required, these will be done in __create_format_arg.
 
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value() noexcept : __monostate_() {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(bool __value) noexcept : __boolean_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(_CharT __value) noexcept : __char_type_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(int __value) noexcept : __int_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(unsigned __value) noexcept : __unsigned_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(long long __value) noexcept : __long_long_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(unsigned long long __value) noexcept
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value() noexcept : __monostate_() {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(bool __value) noexcept : __boolean_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(_CharT __value) noexcept : __char_type_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(int __value) noexcept : __int_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(unsigned __value) noexcept : __unsigned_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(long long __value) noexcept : __long_long_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(unsigned long long __value) noexcept
       : __unsigned_long_long_(__value) {}
-#  ifndef _LIBCPP_HAS_NO_INT128
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(__int128_t __value) noexcept : __i128_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(__uint128_t __value) noexcept : __u128_(__value) {}
+#  ifndef _LIBCUDACXX_HAS_NO_INT128
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(__int128_t __value) noexcept : __i128_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(__uint128_t __value) noexcept : __u128_(__value) {}
 #  endif
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(float __value) noexcept : __float_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(double __value) noexcept : __double_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(long double __value) noexcept : __long_double_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(const _CharT* __value) noexcept : __const_char_type_ptr_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(basic_string_view<_CharT> __value) noexcept
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(float __value) noexcept : __float_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(double __value) noexcept : __double_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(long double __value) noexcept : __long_double_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(const _CharT* __value) noexcept : __const_char_type_ptr_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(basic_string_view<_CharT> __value) noexcept
       : __string_view_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(const void* __value) noexcept : __ptr_(__value) {}
-  _LIBCPP_HIDE_FROM_ABI __basic_format_arg_value(__handle __value) noexcept
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(const void* __value) noexcept : __ptr_(__value) {}
+  _LIBCUDACXX_HIDE_FROM_ABI __basic_format_arg_value(__handle __value) noexcept
       // TODO FMT Investigate why it doesn't work without the forward.
       : __handle_(std::forward<__handle>(__value)) {}
 };
 
 template <class _Context>
-class _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT basic_format_arg {
+class _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT basic_format_arg {
 public:
-  class _LIBCPP_TEMPLATE_VIS handle;
+  class _LIBCUDACXX_TEMPLATE_VIS handle;
 
-  _LIBCPP_HIDE_FROM_ABI basic_format_arg() noexcept
+  _LIBCUDACXX_HIDE_FROM_ABI basic_format_arg() noexcept
       : __type_{__format::__arg_t::__none} {}
 
-  _LIBCPP_HIDE_FROM_ABI explicit operator bool() const noexcept {
+  _LIBCUDACXX_HIDE_FROM_ABI explicit operator bool() const noexcept {
     return __type_ != __format::__arg_t::__none;
   }
 
@@ -245,28 +245,28 @@ public:
   __basic_format_arg_value<_Context> __value_;
   __format::__arg_t __type_;
 
-  _LIBCPP_HIDE_FROM_ABI explicit basic_format_arg(__format::__arg_t __type,
+  _LIBCUDACXX_HIDE_FROM_ABI explicit basic_format_arg(__format::__arg_t __type,
                                                   __basic_format_arg_value<_Context> __value) noexcept
       : __value_(__value), __type_(__type) {}
 };
 
 template <class _Context>
-class _LIBCPP_TEMPLATE_VIS basic_format_arg<_Context>::handle {
+class _LIBCUDACXX_TEMPLATE_VIS basic_format_arg<_Context>::handle {
 public:
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   void format(basic_format_parse_context<char_type>& __parse_ctx, _Context& __ctx) const {
     __handle_.__format_(__parse_ctx, __ctx, __handle_.__ptr_);
   }
 
-  _LIBCPP_HIDE_FROM_ABI explicit handle(typename __basic_format_arg_value<_Context>::__handle& __handle) noexcept
+  _LIBCUDACXX_HIDE_FROM_ABI explicit handle(typename __basic_format_arg_value<_Context>::__handle& __handle) noexcept
       : __handle_(__handle) {}
 
 private:
   typename __basic_format_arg_value<_Context>::__handle& __handle_;
 };
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_FORMAT_ARG_H
+#endif // _LIBCUDACXX___FORMAT_FORMAT_ARG_H

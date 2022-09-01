@@ -62,7 +62,7 @@ int main(int, char**)
             A(4)
            );
         c = c0;
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         std::multiset<std::string> s;
         s.insert("one");
@@ -185,7 +185,7 @@ int main(int, char**)
             A()
            );
         c = c0;
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         std::multiset<std::string> s;
         s.insert("one");

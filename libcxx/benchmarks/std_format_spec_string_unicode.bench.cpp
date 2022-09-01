@@ -4,7 +4,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_HAS_NO_UNICODE
+#ifndef _LIBCUDACXX_HAS_NO_UNICODE
 
 #  include <format>
 #  include <string_view>

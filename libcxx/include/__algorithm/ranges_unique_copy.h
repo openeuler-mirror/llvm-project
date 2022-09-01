@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_UNIQUE_COPY_H
-#define _LIBCPP___ALGORITHM_RANGES_UNIQUE_COPY_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_UNIQUE_COPY_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_UNIQUE_COPY_H
 
 #include <__algorithm/in_out_result.h>
 #include <__algorithm/iterator_operations.h>
@@ -28,13 +28,13 @@
 #include <__utility/forward.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -70,7 +70,7 @@ struct __fn {
              (forward_iterator<_InIter> ||
               (input_iterator<_OutIter> && same_as<iter_value_t<_InIter>, iter_value_t<_OutIter>>) ||
               indirectly_copyable_storable<_InIter, _OutIter>)
-  _LIBCPP_HIDE_FROM_ABI constexpr unique_copy_result<_InIter, _OutIter>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr unique_copy_result<_InIter, _OutIter>
   operator()(_InIter __first, _Sent __last, _OutIter __result, _Comp __comp = {}, _Proj __proj = {}) const {
     auto __ret = std::__unique_copy<_RangeAlgPolicy>(
         std::move(__first),
@@ -89,7 +89,7 @@ struct __fn {
       (forward_iterator<iterator_t<_Range>> ||
        (input_iterator<_OutIter> && same_as<range_value_t<_Range>, iter_value_t<_OutIter>>) ||
        indirectly_copyable_storable<iterator_t<_Range>, _OutIter>)
-  _LIBCPP_HIDE_FROM_ABI constexpr unique_copy_result<borrowed_iterator_t<_Range>, _OutIter>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr unique_copy_result<borrowed_iterator_t<_Range>, _OutIter>
   operator()(_Range&& __range, _OutIter __result, _Comp __comp = {}, _Proj __proj = {}) const {
     auto __ret = std::__unique_copy<_RangeAlgPolicy>(
         ranges::begin(__range),
@@ -108,8 +108,8 @@ inline constexpr auto unique_copy = __unique_copy::__fn{};
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_UNIQUE_COPY_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_UNIQUE_COPY_H

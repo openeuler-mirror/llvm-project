@@ -61,7 +61,7 @@ void test()
         typedef std::vector<MoveOnly> C;
         static_assert(noexcept(swap(std::declval<C&>(), std::declval<C&>())), "");
     }
-#if defined(_LIBCPP_VERSION)
+#if defined(_LIBCUDACXX_VERSION)
     {
         typedef std::vector<MoveOnly, test_allocator<MoveOnly>> C;
         static_assert(noexcept(swap(std::declval<C&>(), std::declval<C&>())), "");

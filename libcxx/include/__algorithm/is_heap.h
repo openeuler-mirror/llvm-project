@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_IS_HEAP_H
-#define _LIBCPP___ALGORITHM_IS_HEAP_H
+#ifndef _LIBCUDACXX___ALGORITHM_IS_HEAP_H
+#define _LIBCUDACXX___ALGORITHM_IS_HEAP_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -15,15 +15,15 @@
 #include <__config>
 #include <__iterator/iterator_traits.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _RandomAccessIterator, class _Compare>
-_LIBCPP_NODISCARD_EXT inline
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_NODISCARD_EXT inline
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 bool
 is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last, _Compare __comp)
 {
@@ -32,14 +32,14 @@ is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last, _Compare __
 }
 
 template<class _RandomAccessIterator>
-_LIBCPP_NODISCARD_EXT inline
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_NODISCARD_EXT inline
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 bool
 is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
 {
-    return _VSTD::is_heap(__first, __last, __less<typename iterator_traits<_RandomAccessIterator>::value_type>());
+    return _CUDA_VSTD::is_heap(__first, __last, __less<typename iterator_traits<_RandomAccessIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_IS_HEAP_H
+#endif // _LIBCUDACXX___ALGORITHM_IS_HEAP_H

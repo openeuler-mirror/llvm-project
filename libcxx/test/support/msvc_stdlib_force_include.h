@@ -23,7 +23,7 @@
 #include <crtdbg.h>
 #include <stdlib.h>
 
-#if defined(_LIBCPP_VERSION)
+#if defined(_LIBCUDACXX_VERSION)
     #error This header may not be used when targeting libc++
 #endif
 
@@ -90,20 +90,20 @@ const AssertionDialogAvoider assertion_dialog_avoider{};
     #define TEST_STD_VER 14
 #endif
 
-#define _LIBCPP_AVAILABILITY_THROW_BAD_ANY_CAST
+#define _LIBCUDACXX_AVAILABILITY_THROW_BAD_ANY_CAST
 
 #ifdef __clang__
-#define _LIBCPP_SUPPRESS_DEPRECATED_PUSH \
+#define _LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH \
     _Pragma("GCC diagnostic push") \
     _Pragma("GCC diagnostic ignored \"-Wdeprecated\"")
-#define _LIBCPP_SUPPRESS_DEPRECATED_POP \
+#define _LIBCUDACXX_SUPPRESS_DEPRECATED_POP \
     _Pragma("GCC diagnostic pop")
 #else // ^^^ clang / MSVC vvv
-#define _LIBCPP_SUPPRESS_DEPRECATED_PUSH \
+#define _LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH \
     __pragma(warning(push)) \
     __pragma(warning(disable : 4996)) \
     __pragma(warning(disable : 5215))
-#define _LIBCPP_SUPPRESS_DEPRECATED_POP \
+#define _LIBCUDACXX_SUPPRESS_DEPRECATED_POP \
     __pragma(warning(pop))
 #endif // __clang__
 

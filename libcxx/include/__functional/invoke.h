@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FUNCTIONAL_INVOKE_H
-#define _LIBCPP___FUNCTIONAL_INVOKE_H
+#ifndef _LIBCUDACXX___FUNCTIONAL_INVOKE_H
+#define _LIBCUDACXX___FUNCTIONAL_INVOKE_H
 
 #include <__config>
 #include <__type_traits/add_lvalue_reference.h>
@@ -29,13 +29,13 @@
 #include <__utility/declval.h>
 #include <__utility/forward.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
 // TODO: Disentangle the type traits and std::invoke properly
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 struct __any
 {
@@ -336,24 +336,24 @@ __nat __invoke(__any, _Args&& ...__args);
 
 template <class _Fp, class _A0, class ..._Args,
           class = __enable_if_bullet1<_Fp, _A0> >
-inline _LIBCPP_INLINE_VISIBILITY
-_LIBCPP_CONSTEXPR decltype((std::declval<_A0>().*std::declval<_Fp>())(std::declval<_Args>()...))
+inline _LIBCUDACXX_INLINE_VISIBILITY
+_LIBCUDACXX_CONSTEXPR decltype((std::declval<_A0>().*std::declval<_Fp>())(std::declval<_Args>()...))
 __invoke(_Fp&& __f, _A0&& __a0, _Args&& ...__args)
     _NOEXCEPT_(noexcept((static_cast<_A0&&>(__a0).*__f)(static_cast<_Args&&>(__args)...)))
     { return           (static_cast<_A0&&>(__a0).*__f)(static_cast<_Args&&>(__args)...); }
 
 template <class _Fp, class _A0, class ..._Args,
           class = __enable_if_bullet2<_Fp, _A0> >
-inline _LIBCPP_INLINE_VISIBILITY
-_LIBCPP_CONSTEXPR decltype((std::declval<_A0>().get().*std::declval<_Fp>())(std::declval<_Args>()...))
+inline _LIBCUDACXX_INLINE_VISIBILITY
+_LIBCUDACXX_CONSTEXPR decltype((std::declval<_A0>().get().*std::declval<_Fp>())(std::declval<_Args>()...))
 __invoke(_Fp&& __f, _A0&& __a0, _Args&& ...__args)
     _NOEXCEPT_(noexcept((__a0.get().*__f)(static_cast<_Args&&>(__args)...)))
     { return          (__a0.get().*__f)(static_cast<_Args&&>(__args)...); }
 
 template <class _Fp, class _A0, class ..._Args,
           class = __enable_if_bullet3<_Fp, _A0> >
-inline _LIBCPP_INLINE_VISIBILITY
-_LIBCPP_CONSTEXPR decltype(((*std::declval<_A0>()).*std::declval<_Fp>())(std::declval<_Args>()...))
+inline _LIBCUDACXX_INLINE_VISIBILITY
+_LIBCUDACXX_CONSTEXPR decltype(((*std::declval<_A0>()).*std::declval<_Fp>())(std::declval<_Args>()...))
 __invoke(_Fp&& __f, _A0&& __a0, _Args&& ...__args)
     _NOEXCEPT_(noexcept(((*static_cast<_A0&&>(__a0)).*__f)(static_cast<_Args&&>(__args)...)))
     { return          ((*static_cast<_A0&&>(__a0)).*__f)(static_cast<_Args&&>(__args)...); }
@@ -362,24 +362,24 @@ __invoke(_Fp&& __f, _A0&& __a0, _Args&& ...__args)
 
 template <class _Fp, class _A0,
           class = __enable_if_bullet4<_Fp, _A0> >
-inline _LIBCPP_INLINE_VISIBILITY
-_LIBCPP_CONSTEXPR decltype(std::declval<_A0>().*std::declval<_Fp>())
+inline _LIBCUDACXX_INLINE_VISIBILITY
+_LIBCUDACXX_CONSTEXPR decltype(std::declval<_A0>().*std::declval<_Fp>())
 __invoke(_Fp&& __f, _A0&& __a0)
     _NOEXCEPT_(noexcept(static_cast<_A0&&>(__a0).*__f))
     { return          static_cast<_A0&&>(__a0).*__f; }
 
 template <class _Fp, class _A0,
           class = __enable_if_bullet5<_Fp, _A0> >
-inline _LIBCPP_INLINE_VISIBILITY
-_LIBCPP_CONSTEXPR decltype(std::declval<_A0>().get().*std::declval<_Fp>())
+inline _LIBCUDACXX_INLINE_VISIBILITY
+_LIBCUDACXX_CONSTEXPR decltype(std::declval<_A0>().get().*std::declval<_Fp>())
 __invoke(_Fp&& __f, _A0&& __a0)
     _NOEXCEPT_(noexcept(__a0.get().*__f))
     { return          __a0.get().*__f; }
 
 template <class _Fp, class _A0,
           class = __enable_if_bullet6<_Fp, _A0> >
-inline _LIBCPP_INLINE_VISIBILITY
-_LIBCPP_CONSTEXPR decltype((*std::declval<_A0>()).*std::declval<_Fp>())
+inline _LIBCUDACXX_INLINE_VISIBILITY
+_LIBCUDACXX_CONSTEXPR decltype((*std::declval<_A0>()).*std::declval<_Fp>())
 __invoke(_Fp&& __f, _A0&& __a0)
     _NOEXCEPT_(noexcept((*static_cast<_A0&&>(__a0)).*__f))
     { return          (*static_cast<_A0&&>(__a0)).*__f; }
@@ -387,8 +387,8 @@ __invoke(_Fp&& __f, _A0&& __a0)
 // bullet 7
 
 template <class _Fp, class ..._Args>
-inline _LIBCPP_INLINE_VISIBILITY
-_LIBCPP_CONSTEXPR decltype(std::declval<_Fp>()(std::declval<_Args>()...))
+inline _LIBCUDACXX_INLINE_VISIBILITY
+_LIBCUDACXX_CONSTEXPR decltype(std::declval<_Fp>()(std::declval<_Args>()...))
 __invoke(_Fp&& __f, _Args&& ...__args)
     _NOEXCEPT_(noexcept(static_cast<_Fp&&>(__f)(static_cast<_Args&&>(__args)...)))
     { return          static_cast<_Fp&&>(__f)(static_cast<_Args&&>(__args)...); }
@@ -429,14 +429,14 @@ struct __nothrow_invokable_r_imp<true, false, _Ret, _Fp, _Args...>
     static void __test_noexcept(_Tp) _NOEXCEPT;
 
     static const bool value = noexcept(_ThisT::__test_noexcept<_Ret>(
-        _VSTD::__invoke(declval<_Fp>(), declval<_Args>()...)));
+        _CUDA_VSTD::__invoke(declval<_Fp>(), declval<_Args>()...)));
 };
 
 template <class _Ret, class _Fp, class ..._Args>
 struct __nothrow_invokable_r_imp<true, true, _Ret, _Fp, _Args...>
 {
     static const bool value = noexcept(
-        _VSTD::__invoke(declval<_Fp>(), declval<_Args>()...));
+        _CUDA_VSTD::__invoke(declval<_Fp>(), declval<_Args>()...));
 };
 
 template <class _Ret, class _Fp, class ..._Args>
@@ -480,16 +480,16 @@ struct __invoke_void_return_wrapper<_Ret, true>
     }
 };
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 
 // is_invocable
 
 template <class _Fn, class ..._Args>
-struct _LIBCPP_TEMPLATE_VIS is_invocable
+struct _LIBCUDACXX_TEMPLATE_VIS is_invocable
     : integral_constant<bool, __invokable<_Fn, _Args...>::value> {};
 
 template <class _Ret, class _Fn, class ..._Args>
-struct _LIBCPP_TEMPLATE_VIS is_invocable_r
+struct _LIBCUDACXX_TEMPLATE_VIS is_invocable_r
     : integral_constant<bool, __invokable_r<_Ret, _Fn, _Args...>::value> {};
 
 template <class _Fn, class ..._Args>
@@ -501,11 +501,11 @@ inline constexpr bool is_invocable_r_v = is_invocable_r<_Ret, _Fn, _Args...>::va
 // is_nothrow_invocable
 
 template <class _Fn, class ..._Args>
-struct _LIBCPP_TEMPLATE_VIS is_nothrow_invocable
+struct _LIBCUDACXX_TEMPLATE_VIS is_nothrow_invocable
     : integral_constant<bool, __nothrow_invokable<_Fn, _Args...>::value> {};
 
 template <class _Ret, class _Fn, class ..._Args>
-struct _LIBCPP_TEMPLATE_VIS is_nothrow_invocable_r
+struct _LIBCUDACXX_TEMPLATE_VIS is_nothrow_invocable_r
     : integral_constant<bool, __nothrow_invokable_r<_Ret, _Fn, _Args...>::value> {};
 
 template <class _Fn, class ..._Args>
@@ -515,7 +515,7 @@ template <class _Ret, class _Fn, class ..._Args>
 inline constexpr bool is_nothrow_invocable_r_v = is_nothrow_invocable_r<_Ret, _Fn, _Args...>::value;
 
 template <class _Fn, class... _Args>
-struct _LIBCPP_TEMPLATE_VIS invoke_result
+struct _LIBCUDACXX_TEMPLATE_VIS invoke_result
     : __invoke_of<_Fn, _Args...>
 {
 };
@@ -524,15 +524,15 @@ template <class _Fn, class... _Args>
 using invoke_result_t = typename invoke_result<_Fn, _Args...>::type;
 
 template <class _Fn, class ..._Args>
-_LIBCPP_CONSTEXPR_AFTER_CXX17 invoke_result_t<_Fn, _Args...>
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX17 invoke_result_t<_Fn, _Args...>
 invoke(_Fn&& __f, _Args&&... __args)
     noexcept(is_nothrow_invocable_v<_Fn, _Args...>)
 {
-    return _VSTD::__invoke(_VSTD::forward<_Fn>(__f), _VSTD::forward<_Args>(__args)...);
+    return _CUDA_VSTD::__invoke(_CUDA_VSTD::forward<_Fn>(__f), _CUDA_VSTD::forward<_Args>(__args)...);
 }
 
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FUNCTIONAL_INVOKE_H
+#endif // _LIBCUDACXX___FUNCTIONAL_INVOKE_H

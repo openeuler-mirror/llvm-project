@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // constexpr explicit single_view(const T& t);
 // constexpr explicit single_view(T&& t);

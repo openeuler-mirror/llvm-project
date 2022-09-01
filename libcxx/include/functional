@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_FUNCTIONAL
-#define _LIBCPP_FUNCTIONAL
+#ifndef _LIBCUDACXX_FUNCTIONAL
+#define _LIBCUDACXX_FUNCTIONAL
 
 /*
     functional synopsis
@@ -539,12 +539,12 @@ POLICY:  For non-variadic implementations, the number of arguments is limited
 #include <typeinfo>
 #include <version>
 
-#ifndef _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
+#ifndef _LIBCUDACXX_REMOVE_TRANSITIVE_INCLUDES
 #  include <utility>
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#endif // _LIBCPP_FUNCTIONAL
+#endif // _LIBCUDACXX_FUNCTIONAL

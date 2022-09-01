@@ -30,7 +30,7 @@ test(S s, typename S::size_type pos1, S str, typename S::size_type pos2,
     if (pos1 <= old_size && pos2 <= str.size())
     {
         s.insert(pos1, str, pos2, n);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == expected);
     }
 #ifndef TEST_HAS_NO_EXCEPTIONS
@@ -59,7 +59,7 @@ test_npos(S s, typename S::size_type pos1, S str, typename S::size_type pos2, S 
     if (pos1 <= old_size && pos2 <= str.size())
     {
         s.insert(pos1, str, pos2);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == expected);
     }
 #ifndef TEST_HAS_NO_EXCEPTIONS

@@ -10,11 +10,11 @@
 
 
 //  In C++17, the function adapters mem_fun/mem_fun_ref, etc have been removed.
-//  However, for backwards compatibility, if _LIBCPP_ENABLE_CXX17_REMOVED_BINDERS
+//  However, for backwards compatibility, if _LIBCUDACXX_ENABLE_CXX17_REMOVED_BINDERS
 //  is defined before including <functional>, then they will be restored.
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_CXX17_REMOVED_BINDERS
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_CXX17_REMOVED_BINDERS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS
 
 #include <functional>
 #include <cassert>

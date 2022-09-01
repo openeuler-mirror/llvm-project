@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMATTER_CHAR_H
-#define _LIBCPP___FORMAT_FORMATTER_CHAR_H
+#ifndef _LIBCUDACXX___FORMAT_FORMATTER_CHAR_H
+#define _LIBCUDACXX___FORMAT_FORMATTER_CHAR_H
 
 #include <__availability>
 #include <__concepts/same_as.h>
@@ -22,25 +22,25 @@
 #include <__type_traits/conditional.h>
 #include <__type_traits/is_signed.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <__formatter::__char_type _CharT>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT __formatter_char {
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT __formatter_char {
 public:
-  _LIBCPP_HIDE_FROM_ABI constexpr auto
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr auto
   parse(basic_format_parse_context<_CharT>& __parse_ctx) -> decltype(__parse_ctx.begin()) {
     auto __result = __parser_.__parse(__parse_ctx, __format_spec::__fields_integral);
     __format_spec::__process_parsed_char(__parser_);
     return __result;
   }
 
-  _LIBCPP_HIDE_FROM_ABI auto format(_CharT __value, auto& __ctx) const -> decltype(__ctx.out()) {
+  _LIBCUDACXX_HIDE_FROM_ABI auto format(_CharT __value, auto& __ctx) const -> decltype(__ctx.out()) {
     if (__parser_.__type_ == __format_spec::__type::__default || __parser_.__type_ == __format_spec::__type::__char)
       return __formatter::__format_char(__value, __ctx.out(), __parser_.__get_parsed_std_specifications(__ctx));
 
@@ -55,7 +55,7 @@ public:
       return __formatter::__format_integer(__value, __ctx, __parser_.__get_parsed_std_specifications(__ctx));
   }
 
-  _LIBCPP_HIDE_FROM_ABI auto format(char __value, auto& __ctx) const -> decltype(__ctx.out())
+  _LIBCUDACXX_HIDE_FROM_ABI auto format(char __value, auto& __ctx) const -> decltype(__ctx.out())
     requires(same_as<_CharT, wchar_t>)
   {
     return format(static_cast<wchar_t>(__value), __ctx);
@@ -65,20 +65,20 @@ public:
 };
 
 template <>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT formatter<char, char> : public __formatter_char<char> {};
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT formatter<char, char> : public __formatter_char<char> {};
 
-#  ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#  ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 template <>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT formatter<char, wchar_t> : public __formatter_char<wchar_t> {};
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT formatter<char, wchar_t> : public __formatter_char<wchar_t> {};
 
 template <>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT formatter<wchar_t, wchar_t> : public __formatter_char<wchar_t> {
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT formatter<wchar_t, wchar_t> : public __formatter_char<wchar_t> {
 };
 
-#  endif // _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#  endif // _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_FORMATTER_CHAR_H
+#endif // _LIBCUDACXX___FORMAT_FORMATTER_CHAR_H

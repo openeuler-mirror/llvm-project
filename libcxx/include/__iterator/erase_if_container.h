@@ -7,21 +7,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_ERASE_IF_CONTAINER_H
-#define _LIBCPP___ITERATOR_ERASE_IF_CONTAINER_H
+#ifndef _LIBCUDACXX___ITERATOR_ERASE_IF_CONTAINER_H
+#define _LIBCUDACXX___ITERATOR_ERASE_IF_CONTAINER_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Container, class _Predicate>
-_LIBCPP_HIDE_FROM_ABI
+_LIBCUDACXX_HIDE_FROM_ABI
 typename _Container::size_type
-__libcpp_erase_if_container(_Container& __c, _Predicate& __pred) {
+__LIBCUDACXX_erase_if_container(_Container& __c, _Predicate& __pred) {
   typename _Container::size_type __old_size = __c.size();
 
   const typename _Container::iterator __last = __c.end();
@@ -35,6 +35,6 @@ __libcpp_erase_if_container(_Container& __c, _Predicate& __pred) {
   return __old_size - __c.size();
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_ERASE_IF_CONTAINER_H
+#endif // _LIBCUDACXX___ITERATOR_ERASE_IF_CONTAINER_H

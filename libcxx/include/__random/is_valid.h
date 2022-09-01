@@ -6,18 +6,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_IS_VALID_H
-#define _LIBCPP___RANDOM_IS_VALID_H
+#ifndef _LIBCUDACXX___RANDOM_IS_VALID_H
+#define _LIBCUDACXX___RANDOM_IS_VALID_H
 
 #include <__config>
 #include <cstdint>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // [rand.req.genl]/1.5:
 // The effect of instantiating a template that has a template type parameter
@@ -25,22 +25,22 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 // cv-unqualified and is one of short, int, long, long long, unsigned short,
 // unsigned int, unsigned long, or unsigned long long.
 
-template<class> struct __libcpp_random_is_valid_inttype : false_type {};
-template<> struct __libcpp_random_is_valid_inttype<int8_t> : true_type {}; // extension
-template<> struct __libcpp_random_is_valid_inttype<short> : true_type {};
-template<> struct __libcpp_random_is_valid_inttype<int> : true_type {};
-template<> struct __libcpp_random_is_valid_inttype<long> : true_type {};
-template<> struct __libcpp_random_is_valid_inttype<long long> : true_type {};
-template<> struct __libcpp_random_is_valid_inttype<uint8_t> : true_type {}; // extension
-template<> struct __libcpp_random_is_valid_inttype<unsigned short> : true_type {};
-template<> struct __libcpp_random_is_valid_inttype<unsigned int> : true_type {};
-template<> struct __libcpp_random_is_valid_inttype<unsigned long> : true_type {};
-template<> struct __libcpp_random_is_valid_inttype<unsigned long long> : true_type {};
+template<class> struct __LIBCUDACXX_random_is_valid_inttype : false_type {};
+template<> struct __LIBCUDACXX_random_is_valid_inttype<int8_t> : true_type {}; // extension
+template<> struct __LIBCUDACXX_random_is_valid_inttype<short> : true_type {};
+template<> struct __LIBCUDACXX_random_is_valid_inttype<int> : true_type {};
+template<> struct __LIBCUDACXX_random_is_valid_inttype<long> : true_type {};
+template<> struct __LIBCUDACXX_random_is_valid_inttype<long long> : true_type {};
+template<> struct __LIBCUDACXX_random_is_valid_inttype<uint8_t> : true_type {}; // extension
+template<> struct __LIBCUDACXX_random_is_valid_inttype<unsigned short> : true_type {};
+template<> struct __LIBCUDACXX_random_is_valid_inttype<unsigned int> : true_type {};
+template<> struct __LIBCUDACXX_random_is_valid_inttype<unsigned long> : true_type {};
+template<> struct __LIBCUDACXX_random_is_valid_inttype<unsigned long long> : true_type {};
 
-#ifndef _LIBCPP_HAS_NO_INT128
-template<> struct __libcpp_random_is_valid_inttype<__int128_t> : true_type {}; // extension
-template<> struct __libcpp_random_is_valid_inttype<__uint128_t> : true_type {}; // extension
-#endif // _LIBCPP_HAS_NO_INT128
+#ifndef _LIBCUDACXX_HAS_NO_INT128
+template<> struct __LIBCUDACXX_random_is_valid_inttype<__int128_t> : true_type {}; // extension
+template<> struct __LIBCUDACXX_random_is_valid_inttype<__uint128_t> : true_type {}; // extension
+#endif // _LIBCUDACXX_HAS_NO_INT128
 
 // [rand.req.urng]/3:
 // A class G meets the uniform random bit generator requirements if G models
@@ -50,12 +50,12 @@ template<> struct __libcpp_random_is_valid_inttype<__uint128_t> : true_type {}; 
 // (In particular, reject URNGs with signed result_types; our distributions cannot
 // handle such generator types.)
 
-template<class, class = void> struct __libcpp_random_is_valid_urng : false_type {};
-template<class _Gp> struct __libcpp_random_is_valid_urng<_Gp, __enable_if_t<
+template<class, class = void> struct __LIBCUDACXX_random_is_valid_urng : false_type {};
+template<class _Gp> struct __LIBCUDACXX_random_is_valid_urng<_Gp, __enable_if_t<
     is_unsigned<typename _Gp::result_type>::value &&
     _IsSame<decltype(declval<_Gp&>()()), typename _Gp::result_type>::value
 > > : true_type {};
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANDOM_IS_VALID_H
+#endif // _LIBCUDACXX___RANDOM_IS_VALID_H

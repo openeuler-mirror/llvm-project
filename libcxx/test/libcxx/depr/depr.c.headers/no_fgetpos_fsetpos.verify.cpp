@@ -12,7 +12,7 @@
 
 using U = decltype(::fgetpos);
 using V = decltype(::fsetpos);
-#ifdef _LIBCPP_HAS_NO_FGETPOS_FSETPOS
+#ifdef _LIBCUDACXX_HAS_NO_FGETPOS_FSETPOS
 // expected-error@-3 {{no member named 'fgetpos' in the global namespace}}
 // expected-error@-3 {{no member named 'fsetpos' in the global namespace}}
 #else

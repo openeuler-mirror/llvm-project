@@ -52,7 +52,7 @@ int main(int, char**)
             test_hash<int>(8),
             test_equal_to<int>(9)
            );
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         assert(c.count(1) == 2);
         assert(c.count(2) == 2);
@@ -89,7 +89,7 @@ int main(int, char**)
             test_hash<int>(8),
             test_equal_to<int>(9)
            );
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         assert(c.count(1) == 2);
         assert(c.count(2) == 2);

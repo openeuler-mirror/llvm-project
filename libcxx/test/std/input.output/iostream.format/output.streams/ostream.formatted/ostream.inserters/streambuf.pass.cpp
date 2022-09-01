@@ -75,7 +75,7 @@ int main(int, char**)
         std::ostream os(&sb);
         os << nullptr;
         assert(sb.str().size() != 0);
-        LIBCPP_ASSERT(sb.str() == "nullptr");
+        LIBCUDACXX_ASSERT(sb.str() == "nullptr");
     }
 #endif
 

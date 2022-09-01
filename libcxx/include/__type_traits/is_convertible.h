@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_CONVERTIBLE_H
-#define _LIBCPP___TYPE_TRAITS_IS_CONVERTIBLE_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_CONVERTIBLE_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_CONVERTIBLE_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
@@ -18,18 +18,18 @@
 #include <__utility/declval.h>
 #include <cstddef>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if __has_builtin(__is_convertible_to) && !defined(_LIBCPP_USE_IS_CONVERTIBLE_FALLBACK)
+#if __has_builtin(__is_convertible_to) && !defined(_LIBCUDACXX_USE_IS_CONVERTIBLE_FALLBACK)
 
-template <class _T1, class _T2> struct _LIBCPP_TEMPLATE_VIS is_convertible
+template <class _T1, class _T2> struct _LIBCUDACXX_TEMPLATE_VIS is_convertible
     : public integral_constant<bool, __is_convertible_to(_T1, _T2)> {};
 
-#else  // __has_builtin(__is_convertible_to) && !defined(_LIBCPP_USE_IS_CONVERTIBLE_FALLBACK)
+#else  // __has_builtin(__is_convertible_to) && !defined(_LIBCUDACXX_USE_IS_CONVERTIBLE_FALLBACK)
 
 namespace __is_convertible_imp
 {
@@ -89,20 +89,20 @@ template <class _T1, class _T2> struct __is_convertible<_T1, _T2, 1, 3> : public
 template <class _T1, class _T2> struct __is_convertible<_T1, _T2, 2, 3> : public false_type {};
 template <class _T1, class _T2> struct __is_convertible<_T1, _T2, 3, 3> : public true_type {};
 
-template <class _T1, class _T2> struct _LIBCPP_TEMPLATE_VIS is_convertible
+template <class _T1, class _T2> struct _LIBCUDACXX_TEMPLATE_VIS is_convertible
     : public __is_convertible<_T1, _T2>
 {
     static const size_t __complete_check1 = __is_convertible_check<_T1>::__v;
     static const size_t __complete_check2 = __is_convertible_check<_T2>::__v;
 };
 
-#endif // __has_builtin(__is_convertible_to) && !defined(_LIBCPP_USE_IS_CONVERTIBLE_FALLBACK)
+#endif // __has_builtin(__is_convertible_to) && !defined(_LIBCUDACXX_USE_IS_CONVERTIBLE_FALLBACK)
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _From, class _To>
 inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_CONVERTIBLE_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_CONVERTIBLE_H

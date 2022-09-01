@@ -22,7 +22,7 @@ TEST_CONSTEXPR_CXX20 void test(const C& x, const typename C::allocator_type& a)
 {
     typename C::size_type s = x.size();
     C c(x, a);
-    LIBCPP_ASSERT(c.__invariants());
+    LIBCUDACXX_ASSERT(c.__invariants());
     assert(c.size() == s);
     assert(c == x);
 }

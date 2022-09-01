@@ -11,7 +11,7 @@
 // Increment iterator past end.
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <unordered_map>
 #include <cassert>
@@ -28,7 +28,7 @@ int main(int, char**) {
         C::iterator i = c.begin();
         ++i;
         assert(i == c.end());
-        TEST_LIBCPP_ASSERT_FAILURE(++i, "Attempted to increment a non-incrementable unordered container iterator");
+        TEST_LIBCUDACXX_ASSERT_FAILURE(++i, "Attempted to increment a non-incrementable unordered container iterator");
     }
 
     {
@@ -39,7 +39,7 @@ int main(int, char**) {
         C::iterator i = c.begin();
         ++i;
         assert(i == c.end());
-        TEST_LIBCPP_ASSERT_FAILURE(++i, "Attempted to increment a non-incrementable unordered container iterator");
+        TEST_LIBCUDACXX_ASSERT_FAILURE(++i, "Attempted to increment a non-incrementable unordered container iterator");
     }
 
     return 0;

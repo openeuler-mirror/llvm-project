@@ -11,7 +11,7 @@
 // iterator insert(const_iterator position, size_type n, const value_type& x);
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <list>
 
@@ -20,7 +20,7 @@
 int main(int, char**) {
     std::list<int> c1(100);
     std::list<int> c2;
-    TEST_LIBCPP_ASSERT_FAILURE(c1.insert(c2.cbegin(), 5, 1),
+    TEST_LIBCUDACXX_ASSERT_FAILURE(c1.insert(c2.cbegin(), 5, 1),
                                "list::insert(iterator, n, x) called with an iterator not referring to this list");
 
     return 0;

@@ -1177,8 +1177,8 @@
 {'is_defined': True, 'name': '_ZNSt3__119declare_no_pointersEPcm', 'type': 'FUNC'}
 {'is_defined': True, 'name': '_ZNSt3__119piecewise_constructE', 'size': 1, 'type': 'OBJECT'}
 {'is_defined': True, 'name': '_ZNSt3__120__get_collation_nameEPKc', 'type': 'FUNC'}
-{'is_defined': True, 'name': '_ZNSt3__120__libcpp_atomic_waitEPVKNS_17__cxx_atomic_implIiNS_22__cxx_atomic_base_implIiEEEEi', 'type': 'FUNC'}
-{'is_defined': True, 'name': '_ZNSt3__120__libcpp_atomic_waitEPVKvi', 'type': 'FUNC'}
+{'is_defined': True, 'name': '_ZNSt3__120__LIBCUDACXX_atomic_waitEPVKNS_17__cxx_atomic_implIiNS_22__cxx_atomic_base_implIiEEEEi', 'type': 'FUNC'}
+{'is_defined': True, 'name': '_ZNSt3__120__LIBCUDACXX_atomic_waitEPVKvi', 'type': 'FUNC'}
 {'is_defined': True, 'name': '_ZNSt3__120__throw_system_errorEiPKc', 'type': 'FUNC'}
 {'is_defined': True, 'name': '_ZNSt3__121__throw_runtime_errorEPKc', 'type': 'FUNC'}
 {'is_defined': True, 'name': '_ZNSt3__121__undeclare_reachableEPv', 'type': 'FUNC'}
@@ -1194,10 +1194,10 @@
 {'is_defined': True, 'name': '_ZNSt3__123__cxx_atomic_notify_allEPVKv', 'type': 'FUNC'}
 {'is_defined': True, 'name': '_ZNSt3__123__cxx_atomic_notify_oneEPVKNS_17__cxx_atomic_implIiNS_22__cxx_atomic_base_implIiEEEE', 'type': 'FUNC'}
 {'is_defined': True, 'name': '_ZNSt3__123__cxx_atomic_notify_oneEPVKv', 'type': 'FUNC'}
-{'is_defined': True, 'name': '_ZNSt3__123__libcpp_atomic_monitorEPVKNS_17__cxx_atomic_implIiNS_22__cxx_atomic_base_implIiEEEE', 'type': 'FUNC'}
-{'is_defined': True, 'name': '_ZNSt3__123__libcpp_atomic_monitorEPVKv', 'type': 'FUNC'}
+{'is_defined': True, 'name': '_ZNSt3__123__LIBCUDACXX_atomic_monitorEPVKNS_17__cxx_atomic_implIiNS_22__cxx_atomic_base_implIiEEEE', 'type': 'FUNC'}
+{'is_defined': True, 'name': '_ZNSt3__123__LIBCUDACXX_atomic_monitorEPVKv', 'type': 'FUNC'}
 {'is_defined': True, 'name': '_ZNSt3__125notify_all_at_thread_exitERNS_18condition_variableENS_11unique_lockINS_5mutexEEE', 'type': 'FUNC'}
-{'is_defined': True, 'name': '_ZNSt3__122__libcpp_verbose_abortEPKcz', 'type': 'FUNC'}
+{'is_defined': True, 'name': '_ZNSt3__122__LIBCUDACXX_verbose_abortEPKcz', 'type': 'FUNC'}
 {'is_defined': True, 'name': '_ZNSt3__127__insertion_sort_incompleteIRNS_6__lessIaaEEPaEEbT0_S5_T_', 'type': 'FUNC'}
 {'is_defined': True, 'name': '_ZNSt3__127__insertion_sort_incompleteIRNS_6__lessIccEEPcEEbT0_S5_T_', 'type': 'FUNC'}
 {'is_defined': True, 'name': '_ZNSt3__127__insertion_sort_incompleteIRNS_6__lessIddEEPdEEbT0_S5_T_', 'type': 'FUNC'}

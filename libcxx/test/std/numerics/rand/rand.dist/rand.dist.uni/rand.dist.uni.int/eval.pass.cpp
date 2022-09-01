@@ -122,7 +122,7 @@ int main(int, char**)
 
     test_statistics<short, std::minstd_rand0>(SHRT_MIN, SHRT_MAX);
 
-#if defined(_LIBCPP_VERSION) // extension
+#if defined(_LIBCUDACXX_VERSION) // extension
     test_statistics<int8_t, std::minstd_rand0>();
     test_statistics<uint8_t, std::minstd_rand0>();
 

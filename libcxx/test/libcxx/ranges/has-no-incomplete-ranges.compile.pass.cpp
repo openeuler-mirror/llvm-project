@@ -8,9 +8,9 @@
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
 // UNSUPPORTED: no-filesystem
-// REQUIRES: libcpp-has-no-incomplete-ranges
+// REQUIRES: LIBCUDACXX-has-no-incomplete-ranges
 
-// Test that _LIBCPP_HAS_NO_INCOMPLETE_RANGES disables the std::ranges namespace.
+// Test that _LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES disables the std::ranges namespace.
 
 #include <algorithm>
 #include <concepts>
@@ -23,7 +23,7 @@
 #include <string_view>
 #include <utility>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 namespace ranges {
   int data;
   int size;
@@ -37,4 +37,4 @@ namespace ranges {
   int join_view;
   int views; // this entire namespace should be absent
 } // namespace ranges
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

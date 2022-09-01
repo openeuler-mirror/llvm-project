@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS
 
 // <functional>
 
@@ -44,7 +44,7 @@ test()
         if (small)
         {
             const std::size_t result = h(t);
-            LIBCPP_ASSERT(result == static_cast<size_t>(t));
+            LIBCUDACXX_ASSERT(result == static_cast<size_t>(t));
             ((void)result); // Prevent unused warning
         }
     }

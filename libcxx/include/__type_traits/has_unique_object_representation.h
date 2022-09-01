@@ -6,23 +6,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_HAS_UNIQUE_OBJECT_REPRESENTATION_H
-#define _LIBCPP___TYPE_TRAITS_HAS_UNIQUE_OBJECT_REPRESENTATION_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_HAS_UNIQUE_OBJECT_REPRESENTATION_H
+#define _LIBCUDACXX___TYPE_TRAITS_HAS_UNIQUE_OBJECT_REPRESENTATION_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 #include <__type_traits/remove_all_extents.h>
 #include <__type_traits/remove_cv.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS has_unique_object_representations
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS has_unique_object_representations
     : public integral_constant<bool,
        __has_unique_object_representations(remove_cv_t<remove_all_extents_t<_Tp>>)> {};
 
@@ -31,6 +31,6 @@ inline constexpr bool has_unique_object_representations_v = has_unique_object_re
 
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_HAS_UNIQUE_OBJECT_REPRESENTATION_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_HAS_UNIQUE_OBJECT_REPRESENTATION_H

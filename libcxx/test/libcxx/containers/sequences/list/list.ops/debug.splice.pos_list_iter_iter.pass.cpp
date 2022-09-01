@@ -11,7 +11,7 @@
 // void splice(const_iterator position, list& x, iterator first, iterator last);
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <list>
 
@@ -20,7 +20,7 @@
 int main(int, char**) {
   std::list<int> v1(3);
   std::list<int> v2(3);
-  TEST_LIBCPP_ASSERT_FAILURE(
+  TEST_LIBCUDACXX_ASSERT_FAILURE(
       v1.splice(v1.begin(), v2, v2.begin(), v1.end()),
       "list::splice(iterator, list, iterator, iterator) called with third iterator not referring to the list argument");
 

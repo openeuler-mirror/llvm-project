@@ -8,10 +8,10 @@
 
 #include <__config>
 
-#if defined(_LIBCPP_USING_WIN32_RANDOM)
+#if defined(_LIBCUDACXX_USING_WIN32_RANDOM)
     // Must be defined before including stdlib.h to enable rand_s().
 #   define _CRT_RAND_S
-#endif // defined(_LIBCPP_USING_WIN32_RANDOM)
+#endif // defined(_LIBCUDACXX_USING_WIN32_RANDOM)
 
 #include <limits>
 #include <random>
@@ -25,25 +25,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(_LIBCPP_USING_GETENTROPY)
+#if defined(_LIBCUDACXX_USING_GETENTROPY)
 #   include <sys/random.h>
-#elif defined(_LIBCPP_USING_DEV_RANDOM)
+#elif defined(_LIBCUDACXX_USING_DEV_RANDOM)
 #   include <fcntl.h>
 #   include <unistd.h>
 #   if __has_include(<sys/ioctl.h>) && __has_include(<linux/random.h>)
 #       include <sys/ioctl.h>
 #       include <linux/random.h>
 #   endif
-#elif defined(_LIBCPP_USING_NACL_RANDOM)
+#elif defined(_LIBCUDACXX_USING_NACL_RANDOM)
 #   include <nacl/nacl_random.h>
-#elif defined(_LIBCPP_USING_FUCHSIA_CPRNG)
+#elif defined(_LIBCUDACXX_USING_FUCHSIA_CPRNG)
 #  include <zircon/syscalls.h>
 #endif
 
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if defined(_LIBCPP_USING_GETENTROPY)
+#if defined(_LIBCUDACXX_USING_GETENTROPY)
 
 random_device::random_device(const string& __token)
 {
@@ -66,7 +66,7 @@ random_device::operator()()
     return r;
 }
 
-#elif defined(_LIBCPP_USING_ARC4_RANDOM)
+#elif defined(_LIBCUDACXX_USING_ARC4_RANDOM)
 
 random_device::random_device(const string&)
 {
@@ -82,7 +82,7 @@ random_device::operator()()
     return arc4random();
 }
 
-#elif defined(_LIBCPP_USING_DEV_RANDOM)
+#elif defined(_LIBCUDACXX_USING_DEV_RANDOM)
 
 random_device::random_device(const string& __token)
     : __f_(open(__token.c_str(), O_RDONLY))
@@ -119,7 +119,7 @@ random_device::operator()()
     return r;
 }
 
-#elif defined(_LIBCPP_USING_NACL_RANDOM)
+#elif defined(_LIBCUDACXX_USING_NACL_RANDOM)
 
 random_device::random_device(const string& __token)
 {
@@ -148,7 +148,7 @@ random_device::operator()()
     return r;
 }
 
-#elif defined(_LIBCPP_USING_WIN32_RANDOM)
+#elif defined(_LIBCUDACXX_USING_WIN32_RANDOM)
 
 random_device::random_device(const string& __token)
 {
@@ -170,7 +170,7 @@ random_device::operator()()
     return r;
 }
 
-#elif defined(_LIBCPP_USING_FUCHSIA_CPRNG)
+#elif defined(_LIBCUDACXX_USING_FUCHSIA_CPRNG)
 
 random_device::random_device(const string& __token) {
   if (__token != "/dev/urandom")
@@ -198,7 +198,7 @@ unsigned random_device::operator()() {
 double
 random_device::entropy() const noexcept
 {
-#if defined(_LIBCPP_USING_DEV_RANDOM) && defined(RNDGETENTCNT)
+#if defined(_LIBCUDACXX_USING_DEV_RANDOM) && defined(RNDGETENTCNT)
   int ent;
   if (::ioctl(__f_, RNDGETENTCNT, &ent) < 0)
     return 0;
@@ -210,11 +210,11 @@ random_device::entropy() const noexcept
     return std::numeric_limits<result_type>::digits;
 
   return ent;
-#elif defined(_LIBCPP_USING_ARC4_RANDOM) || defined(_LIBCPP_USING_FUCHSIA_CPRNG)
+#elif defined(_LIBCUDACXX_USING_ARC4_RANDOM) || defined(_LIBCUDACXX_USING_FUCHSIA_CPRNG)
   return std::numeric_limits<result_type>::digits;
 #else
   return 0;
 #endif
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

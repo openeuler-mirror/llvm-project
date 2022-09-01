@@ -22,7 +22,7 @@ test(S s1, SV sv)
 {
     typedef typename S::traits_type T;
     s1 = sv;
-    LIBCPP_ASSERT(s1.__invariants());
+    LIBCUDACXX_ASSERT(s1.__invariants());
     assert(s1.size() == sv.size());
     assert(T::compare(s1.data(), sv.data(), s1.size()) == 0);
     assert(s1.capacity() >= s1.size());

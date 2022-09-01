@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03, c++11, c++14
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03, c++11, c++14
 
 // test container debugging
 
@@ -80,7 +80,7 @@ private:
     EXPECT_DEATH( C1.erase(it1) );
     C1.erase(C1.begin(), C1.end());
     assert(C1.size() == 0);
-    TEST_LIBCPP_ASSERT_FAILURE(C1.pop_back(), "string::pop_back(): string is already empty");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(C1.pop_back(), "string::pop_back(): string is already empty");
   }
 };
 

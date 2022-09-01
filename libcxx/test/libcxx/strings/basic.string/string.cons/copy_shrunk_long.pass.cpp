@@ -26,7 +26,7 @@ test()
   S s1("1234567890123456789012345678901234567890123456789012345678901234567890");
   s1.resize(7);
   S s2(s1);
-  LIBCPP_ASSERT(s2.__invariants());
+  LIBCUDACXX_ASSERT(s2.__invariants());
   assert(s2 == s1);
   assert(s2.capacity() < sizeof(S));
 }

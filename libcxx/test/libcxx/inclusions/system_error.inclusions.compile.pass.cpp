@@ -20,9 +20,9 @@
 #include <system_error>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_SYSTEM_ERROR)
- #   error "<system_error> was expected to define _LIBCPP_SYSTEM_ERROR"
+#if !defined(_LIBCUDACXX_SYSTEM_ERROR)
+ #   error "<system_error> was expected to define _LIBCUDACXX_SYSTEM_ERROR"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<system_error> should include <compare> in C++20 and later"
 #endif

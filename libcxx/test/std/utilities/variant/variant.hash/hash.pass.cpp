@@ -117,7 +117,7 @@ void test_hash_variant_duplicate_elements() {
     const V v2(std::in_place_index<1>);
     assert(h(v1) == h(v1));
     assert(h(v2) == h(v2));
-    LIBCPP_ASSERT(h(v1) != h(v2));
+    LIBCUDACXX_ASSERT(h(v1) != h(v2));
 }
 
 struct A {};

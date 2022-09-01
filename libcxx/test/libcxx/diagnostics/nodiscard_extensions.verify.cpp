@@ -9,14 +9,14 @@
 // UNSUPPORTED: c++03
 
 // Test that entities declared [[nodiscard]] as an extension by libc++, are
-// only actually declared such when _LIBCPP_ENABLE_NODISCARD is specified.
+// only actually declared such when _LIBCUDACXX_ENABLE_NODISCARD is specified.
 
 // All entities to which libc++ applies [[nodiscard]] as an extension should
 // be tested here and in nodiscard_extensions.pass.cpp. They should also
 // be listed in `UsingLibcxx.rst` in the documentation for the extension.
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_NODISCARD
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_NODISCARD
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS
 
 #include <algorithm>
 #include <bit> // bit_cast

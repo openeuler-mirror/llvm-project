@@ -13,11 +13,11 @@
 // that removal as an extension in all Standard versions. However, we still define the functions that
 // were once part of the library's ABI for backwards compatibility.
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-_LIBCPP_FUNC_VIS void declare_reachable(void*) {}
-_LIBCPP_FUNC_VIS void declare_no_pointers(char*, size_t) {}
-_LIBCPP_FUNC_VIS void undeclare_no_pointers(char*, size_t) {}
-_LIBCPP_FUNC_VIS void* __undeclare_reachable(void* p) { return p; }
+_LIBCUDACXX_FUNC_VIS void declare_reachable(void*) {}
+_LIBCUDACXX_FUNC_VIS void declare_no_pointers(char*, size_t) {}
+_LIBCUDACXX_FUNC_VIS void undeclare_no_pointers(char*, size_t) {}
+_LIBCUDACXX_FUNC_VIS void* __undeclare_reachable(void* p) { return p; }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

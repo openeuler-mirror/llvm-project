@@ -170,7 +170,7 @@ elseif ("${LIBCXX_CXX_ABI}" STREQUAL "vcruntime")
 # Don't link against any ABI library
 elseif ("${LIBCXX_CXX_ABI}" STREQUAL "none")
   add_library(libcxx-abi-headers INTERFACE)
-  target_compile_definitions(libcxx-abi-headers INTERFACE "-D_LIBCPP_BUILDING_HAS_NO_ABI_LIBRARY")
+  target_compile_definitions(libcxx-abi-headers INTERFACE "-D_LIBCUDACXX_BUILDING_HAS_NO_ABI_LIBRARY")
 
   add_library(libcxx-abi-shared INTERFACE)
   target_link_libraries(libcxx-abi-shared INTERFACE libcxx-abi-headers)

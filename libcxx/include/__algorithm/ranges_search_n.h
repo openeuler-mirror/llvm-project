@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_SEARCH_N_H
-#define _LIBCPP___ALGORITHM_RANGES_SEARCH_N_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_SEARCH_N_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_SEARCH_N_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__algorithm/search_n.h>
@@ -26,20 +26,20 @@
 #include <__ranges/subrange.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __search_n {
 struct __fn {
 
   template <class _Iter1, class _Sent1, class _SizeT, class _Type, class _Pred, class _Proj>
-  _LIBCPP_HIDE_FROM_ABI static constexpr subrange<_Iter1> __ranges_search_n_impl(
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr subrange<_Iter1> __ranges_search_n_impl(
       _Iter1 __first, _Sent1 __last, _SizeT __count, const _Type& __value, _Pred& __pred, _Proj& __proj) {
     if (__count == 0)
       return {__first, __first};
@@ -75,7 +75,7 @@ struct __fn {
             class _Pred = ranges::equal_to,
             class _Proj = identity>
     requires indirectly_comparable<_Iter, const _Type*, _Pred, _Proj>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   subrange<_Iter> operator()(_Iter __first, _Sent __last,
                              iter_difference_t<_Iter> __count,
                              const _Type& __value,
@@ -86,7 +86,7 @@ struct __fn {
 
   template <forward_range _Range, class _Type, class _Pred = ranges::equal_to, class _Proj = identity>
     requires indirectly_comparable<iterator_t<_Range>, const _Type*, _Pred, _Proj>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   borrowed_subrange_t<_Range> operator()(_Range&& __range,
                                          range_difference_t<_Range> __count,
                                          const _Type& __value,
@@ -113,8 +113,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_SEARCH_N_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_SEARCH_N_H

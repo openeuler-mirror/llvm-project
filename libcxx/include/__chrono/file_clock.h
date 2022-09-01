@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CHRONO_FILE_CLOCK_H
-#define _LIBCPP___CHRONO_FILE_CLOCK_H
+#ifndef _LIBCUDACXX___CHRONO_FILE_CLOCK_H
+#define _LIBCUDACXX___CHRONO_FILE_CLOCK_H
 
 #include <__availability>
 #include <__chrono/duration.h>
@@ -17,19 +17,19 @@
 #include <__config>
 #include <ratio>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#ifndef _LIBCPP_CXX03_LANG
-_LIBCPP_BEGIN_NAMESPACE_FILESYSTEM
+#ifndef _LIBCUDACXX_CXX03_LANG
+_LIBCUDACXX_BEGIN_NAMESPACE_FILESYSTEM
 struct _FilesystemClock;
-_LIBCPP_END_NAMESPACE_FILESYSTEM
-#endif // !_LIBCPP_CXX03_LANG
+_LIBCUDACXX_END_NAMESPACE_FILESYSTEM
+#endif // !_LIBCUDACXX_CXX03_LANG
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace chrono
 {
@@ -42,14 +42,14 @@ using file_time = time_point<file_clock, _Duration>;
 
 } // namespace chrono
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-#ifndef _LIBCPP_CXX03_LANG
-_LIBCPP_BEGIN_NAMESPACE_FILESYSTEM
+#ifndef _LIBCUDACXX_CXX03_LANG
+_LIBCUDACXX_BEGIN_NAMESPACE_FILESYSTEM
 struct _FilesystemClock {
-#if !defined(_LIBCPP_HAS_NO_INT128)
+#if !defined(_LIBCUDACXX_HAS_NO_INT128)
   typedef __int128_t rep;
   typedef nano period;
 #else
@@ -60,26 +60,26 @@ struct _FilesystemClock {
   typedef chrono::duration<rep, period> duration;
   typedef chrono::time_point<_FilesystemClock> time_point;
 
-  _LIBCPP_EXPORTED_FROM_ABI
-  static _LIBCPP_CONSTEXPR_AFTER_CXX11 const bool is_steady = false;
+  _LIBCUDACXX_EXPORTED_FROM_ABI
+  static _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 const bool is_steady = false;
 
-  _LIBCPP_AVAILABILITY_FILESYSTEM _LIBCPP_FUNC_VIS static time_point now() noexcept;
+  _LIBCUDACXX_AVAILABILITY_FILESYSTEM _LIBCUDACXX_FUNC_VIS static time_point now() noexcept;
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
   template <class _Duration>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   static chrono::sys_time<_Duration> to_sys(const chrono::file_time<_Duration>& __t) {
     return chrono::sys_time<_Duration>(__t.time_since_epoch());
   }
 
   template <class _Duration>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   static chrono::file_time<_Duration> from_sys(const chrono::sys_time<_Duration>& __t) {
     return chrono::file_time<_Duration>(__t.time_since_epoch());
   }
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 };
-_LIBCPP_END_NAMESPACE_FILESYSTEM
-#endif // !_LIBCPP_CXX03_LANG
+_LIBCUDACXX_END_NAMESPACE_FILESYSTEM
+#endif // !_LIBCUDACXX_CXX03_LANG
 
-#endif // _LIBCPP___CHRONO_FILE_CLOCK_H
+#endif // _LIBCUDACXX___CHRONO_FILE_CLOCK_H

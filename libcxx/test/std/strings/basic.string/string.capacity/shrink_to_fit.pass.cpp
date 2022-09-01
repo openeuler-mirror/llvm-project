@@ -23,7 +23,7 @@ test(S s)
     typename S::size_type old_cap = s.capacity();
     S s0 = s;
     s.shrink_to_fit();
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == s0);
     assert(s.capacity() <= old_cap);
     assert(s.capacity() >= s.size());

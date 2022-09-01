@@ -28,7 +28,7 @@
 
 #include "filesystem_common.h"
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 # define WIN32_LEAN_AND_MEAN
 # define NOMINMAX
 # include <windows.h>
@@ -41,10 +41,10 @@
 #endif
 #include <time.h>
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 // This struct isn't defined in the normal Windows SDK, but only in the
 // Windows Driver Kit.
-struct LIBCPP_REPARSE_DATA_BUFFER {
+struct LIBCUDACXX_REPARSE_DATA_BUFFER {
   unsigned long  ReparseTag;
   unsigned short ReparseDataLength;
   unsigned short Reserved;
@@ -71,12 +71,12 @@ struct LIBCPP_REPARSE_DATA_BUFFER {
 };
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_BEGIN_NAMESPACE_FILESYSTEM
 
 namespace detail {
 namespace {
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 
 // Various C runtime header sets provide more or less of these. As we
 // provide our own implementation, undef all potential defines from the
@@ -347,7 +347,7 @@ wchar_t *getcwd(wchar_t *buff, size_t size) { return _wgetcwd(buff, size); }
 
 wchar_t *realpath(const wchar_t *path, wchar_t *resolved_name) {
   // Only expected to be used with us allocating the buffer.
-  _LIBCPP_ASSERT(resolved_name == nullptr,
+  _LIBCUDACXX_ASSERT(resolved_name == nullptr,
                  "Windows realpath() assumes a null resolved_name");
 
   WinHandle h(path, FILE_READ_ATTRIBUTES, 0);
@@ -444,8 +444,8 @@ SSizeT readlink(const wchar_t *path, wchar_t *ret_buf, size_t bufsize) {
   if (!DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, nullptr, 0, buf, sizeof(buf),
                        &out, 0))
     return set_errno();
-  const auto *reparse = reinterpret_cast<LIBCPP_REPARSE_DATA_BUFFER *>(buf);
-  size_t path_buf_offset = offsetof(LIBCPP_REPARSE_DATA_BUFFER,
+  const auto *reparse = reinterpret_cast<LIBCUDACXX_REPARSE_DATA_BUFFER *>(buf);
+  size_t path_buf_offset = offsetof(LIBCUDACXX_REPARSE_DATA_BUFFER,
                                     SymbolicLinkReparseBuffer.PathBuffer[0]);
   if (out < path_buf_offset) {
     errno = EINVAL;
@@ -517,6 +517,6 @@ using SSizeT = ::ssize_t;
 } // namespace
 } // end namespace detail
 
-_LIBCPP_END_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_END_NAMESPACE_FILESYSTEM
 
 #endif // POSIX_COMPAT_H

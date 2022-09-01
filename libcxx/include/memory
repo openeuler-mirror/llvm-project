@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_MEMORY
-#define _LIBCPP_MEMORY
+#ifndef _LIBCUDACXX_MEMORY
+#define _LIBCUDACXX_MEMORY
 
 /*
     memory synopsis
@@ -873,7 +873,7 @@ template<size_t N, class T>
 #include <typeinfo>
 #include <version>
 
-#ifndef _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
+#ifndef _LIBCUDACXX_REMOVE_TRANSITIVE_INCLUDES
 #  include <iterator>
 #  include <utility>
 #endif
@@ -881,11 +881,11 @@ template<size_t N, class T>
 // standard-mandated includes
 #include <compare>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 struct __destruct_n
 {
@@ -893,45 +893,45 @@ private:
     size_t __size_;
 
     template <class _Tp>
-    _LIBCPP_INLINE_VISIBILITY void __process(_Tp* __p, false_type) _NOEXCEPT
+    _LIBCUDACXX_INLINE_VISIBILITY void __process(_Tp* __p, false_type) _NOEXCEPT
         {for (size_t __i = 0; __i < __size_; ++__i, ++__p) __p->~_Tp();}
 
     template <class _Tp>
-    _LIBCPP_INLINE_VISIBILITY void __process(_Tp*, true_type) _NOEXCEPT
+    _LIBCUDACXX_INLINE_VISIBILITY void __process(_Tp*, true_type) _NOEXCEPT
         {}
 
-    _LIBCPP_INLINE_VISIBILITY void __incr(false_type) _NOEXCEPT
+    _LIBCUDACXX_INLINE_VISIBILITY void __incr(false_type) _NOEXCEPT
         {++__size_;}
-    _LIBCPP_INLINE_VISIBILITY void __incr(true_type) _NOEXCEPT
+    _LIBCUDACXX_INLINE_VISIBILITY void __incr(true_type) _NOEXCEPT
         {}
 
-    _LIBCPP_INLINE_VISIBILITY void __set(size_t __s, false_type) _NOEXCEPT
+    _LIBCUDACXX_INLINE_VISIBILITY void __set(size_t __s, false_type) _NOEXCEPT
         {__size_ = __s;}
-    _LIBCPP_INLINE_VISIBILITY void __set(size_t, true_type) _NOEXCEPT
+    _LIBCUDACXX_INLINE_VISIBILITY void __set(size_t, true_type) _NOEXCEPT
         {}
 public:
-    _LIBCPP_INLINE_VISIBILITY explicit __destruct_n(size_t __s) _NOEXCEPT
+    _LIBCUDACXX_INLINE_VISIBILITY explicit __destruct_n(size_t __s) _NOEXCEPT
         : __size_(__s) {}
 
     template <class _Tp>
-    _LIBCPP_INLINE_VISIBILITY void __incr() _NOEXCEPT
+    _LIBCUDACXX_INLINE_VISIBILITY void __incr() _NOEXCEPT
         {__incr(integral_constant<bool, is_trivially_destructible<_Tp>::value>());}
 
     template <class _Tp>
-    _LIBCPP_INLINE_VISIBILITY void __set(size_t __s, _Tp*) _NOEXCEPT
+    _LIBCUDACXX_INLINE_VISIBILITY void __set(size_t __s, _Tp*) _NOEXCEPT
         {__set(__s, integral_constant<bool, is_trivially_destructible<_Tp>::value>());}
 
     template <class _Tp>
-    _LIBCPP_INLINE_VISIBILITY void operator()(_Tp* __p) _NOEXCEPT
+    _LIBCUDACXX_INLINE_VISIBILITY void operator()(_Tp* __p) _NOEXCEPT
         {__process(__p, integral_constant<bool, is_trivially_destructible<_Tp>::value>());}
 };
 
-_LIBCPP_FUNC_VIS void* align(size_t __align, size_t __sz, void*& __ptr, size_t& __space);
+_LIBCUDACXX_FUNC_VIS void* align(size_t __align, size_t __sz, void*& __ptr, size_t& __space);
 
 template <typename _Alloc, typename _Traits=allocator_traits<_Alloc> >
 struct __noexcept_move_assign_container : public integral_constant<bool,
     _Traits::propagate_on_container_move_assignment::value
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
         || _Traits::is_always_equal::value
 #else
         && is_nothrow_move_assignable<_Alloc>::value
@@ -943,30 +943,30 @@ template <class _Tp, class _Alloc>
 struct __temp_value {
     typedef allocator_traits<_Alloc> _Traits;
 
-#ifdef _LIBCPP_CXX03_LANG
-    typename aligned_storage<sizeof(_Tp), _LIBCPP_ALIGNOF(_Tp)>::type __v;
+#ifdef _LIBCUDACXX_CXX03_LANG
+    typename aligned_storage<sizeof(_Tp), _LIBCUDACXX_ALIGNOF(_Tp)>::type __v;
 #else
     union { _Tp __v; };
 #endif
     _Alloc &__a;
 
-    _LIBCPP_CONSTEXPR_AFTER_CXX17 _Tp *__addr() {
-#ifdef _LIBCPP_CXX03_LANG
+    _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _Tp *__addr() {
+#ifdef _LIBCUDACXX_CXX03_LANG
         return reinterpret_cast<_Tp*>(std::addressof(__v));
 #else
         return std::addressof(__v);
 #endif
     }
 
-    _LIBCPP_CONSTEXPR_AFTER_CXX17 _Tp &   get() { return *__addr(); }
+    _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _Tp &   get() { return *__addr(); }
 
     template<class... _Args>
-    _LIBCPP_NO_CFI
-    _LIBCPP_CONSTEXPR_AFTER_CXX17 __temp_value(_Alloc &__alloc, _Args&& ... __args) : __a(__alloc) {
+    _LIBCUDACXX_NO_CFI
+    _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 __temp_value(_Alloc &__alloc, _Args&& ... __args) : __a(__alloc) {
       _Traits::construct(__a, __addr(), std::forward<_Args>(__args)...);
     }
 
-    _LIBCPP_CONSTEXPR_AFTER_CXX17 ~__temp_value() { _Traits::destroy(__a, __addr()); }
+    _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 ~__temp_value() { _Traits::destroy(__a, __addr()); }
 };
 
 template<typename _Alloc, typename = void, typename = void>
@@ -987,11 +987,11 @@ struct __builtin_new_allocator {
   struct __builtin_new_deleter {
     typedef void* pointer_type;
 
-    _LIBCPP_CONSTEXPR explicit __builtin_new_deleter(size_t __size, size_t __align)
+    _LIBCUDACXX_CONSTEXPR explicit __builtin_new_deleter(size_t __size, size_t __align)
         : __size_(__size), __align_(__align) {}
 
     void operator()(void* __p) const _NOEXCEPT {
-        _VSTD::__libcpp_deallocate(__p, __size_, __align_);
+        _CUDA_VSTD::__LIBCUDACXX_deallocate(__p, __size_, __align_);
     }
 
    private:
@@ -1002,32 +1002,32 @@ struct __builtin_new_allocator {
   typedef unique_ptr<void, __builtin_new_deleter> __holder_t;
 
   static __holder_t __allocate_bytes(size_t __s, size_t __align) {
-      return __holder_t(_VSTD::__libcpp_allocate(__s, __align),
+      return __holder_t(_CUDA_VSTD::__LIBCUDACXX_allocate(__s, __align),
                      __builtin_new_deleter(__s, __align));
   }
 
   static void __deallocate_bytes(void* __p, size_t __s,
                                  size_t __align) _NOEXCEPT {
-      _VSTD::__libcpp_deallocate(__p, __s, __align);
+      _CUDA_VSTD::__LIBCUDACXX_deallocate(__p, __s, __align);
   }
 
   template <class _Tp>
-  _LIBCPP_NODEBUG _LIBCPP_ALWAYS_INLINE
+  _LIBCUDACXX_NODEBUG _LIBCUDACXX_ALWAYS_INLINE
   static __holder_t __allocate_type(size_t __n) {
-      return __allocate_bytes(__n * sizeof(_Tp), _LIBCPP_ALIGNOF(_Tp));
+      return __allocate_bytes(__n * sizeof(_Tp), _LIBCUDACXX_ALIGNOF(_Tp));
   }
 
   template <class _Tp>
-  _LIBCPP_NODEBUG _LIBCPP_ALWAYS_INLINE
+  _LIBCUDACXX_NODEBUG _LIBCUDACXX_ALWAYS_INLINE
   static void __deallocate_type(void* __p, size_t __n) _NOEXCEPT {
-      __deallocate_bytes(__p, __n * sizeof(_Tp), _LIBCPP_ALIGNOF(_Tp));
+      __deallocate_bytes(__p, __n * sizeof(_Tp), _LIBCUDACXX_ALIGNOF(_Tp));
   }
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#if defined(_LIBCPP_HAS_PARALLEL_ALGORITHMS) && _LIBCPP_STD_VER >= 17
+#if defined(_LIBCUDACXX_HAS_PARALLEL_ALGORITHMS) && _LIBCUDACXX_STD_VER >= 17
 #   include <__pstl_memory>
 #endif
 
-#endif // _LIBCPP_MEMORY
+#endif // _LIBCUDACXX_MEMORY

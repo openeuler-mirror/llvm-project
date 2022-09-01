@@ -28,7 +28,7 @@ test(S s, typename S::size_type pos1, typename S::size_type n1, SV sv, S expecte
     if (pos1 <= old_size)
     {
         s.replace(pos1, n1, sv);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == expected);
         typename S::size_type xlen = std::min(n1, old_size - pos1);
         typename S::size_type rlen = sv.size();

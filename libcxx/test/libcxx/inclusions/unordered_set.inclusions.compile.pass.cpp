@@ -20,12 +20,12 @@
 #include <unordered_set>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_UNORDERED_SET)
- #   error "<unordered_set> was expected to define _LIBCPP_UNORDERED_SET"
+#if !defined(_LIBCUDACXX_UNORDERED_SET)
+ #   error "<unordered_set> was expected to define _LIBCUDACXX_UNORDERED_SET"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<unordered_set> should include <compare> in C++20 and later"
 #endif
-#if TEST_STD_VER > 03 && !defined(_LIBCPP_INITIALIZER_LIST)
+#if TEST_STD_VER > 03 && !defined(_LIBCUDACXX_INITIALIZER_LIST)
  #   error "<unordered_set> should include <initializer_list> in C++11 and later"
 #endif

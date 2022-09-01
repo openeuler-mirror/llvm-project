@@ -6,27 +6,27 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_REMOVE_POINTER_H
-#define _LIBCPP___TYPE_TRAITS_REMOVE_POINTER_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_REMOVE_POINTER_H
+#define _LIBCUDACXX___TYPE_TRAITS_REMOVE_POINTER_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS remove_pointer                      {typedef _LIBCPP_NODEBUG _Tp type;};
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS remove_pointer<_Tp*>                {typedef _LIBCPP_NODEBUG _Tp type;};
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS remove_pointer<_Tp* const>          {typedef _LIBCPP_NODEBUG _Tp type;};
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS remove_pointer<_Tp* volatile>       {typedef _LIBCPP_NODEBUG _Tp type;};
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS remove_pointer<_Tp* const volatile> {typedef _LIBCPP_NODEBUG _Tp type;};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS remove_pointer                      {typedef _LIBCUDACXX_NODEBUG _Tp type;};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS remove_pointer<_Tp*>                {typedef _LIBCUDACXX_NODEBUG _Tp type;};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS remove_pointer<_Tp* const>          {typedef _LIBCUDACXX_NODEBUG _Tp type;};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS remove_pointer<_Tp* volatile>       {typedef _LIBCUDACXX_NODEBUG _Tp type;};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS remove_pointer<_Tp* const volatile> {typedef _LIBCUDACXX_NODEBUG _Tp type;};
 
-#if _LIBCPP_STD_VER > 11
+#if _LIBCUDACXX_STD_VER > 11
 template <class _Tp> using remove_pointer_t = typename remove_pointer<_Tp>::type;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_REMOVE_POINTER_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_REMOVE_POINTER_H

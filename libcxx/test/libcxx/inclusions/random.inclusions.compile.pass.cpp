@@ -18,9 +18,9 @@
 #include <random>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_RANDOM)
- #   error "<random> was expected to define _LIBCPP_RANDOM"
+#if !defined(_LIBCUDACXX_RANDOM)
+ #   error "<random> was expected to define _LIBCUDACXX_RANDOM"
 #endif
-#if TEST_STD_VER > 03 && !defined(_LIBCPP_INITIALIZER_LIST)
+#if TEST_STD_VER > 03 && !defined(_LIBCUDACXX_INITIALIZER_LIST)
  #   error "<random> should include <initializer_list> in C++11 and later"
 #endif

@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_NON_PROPAGATING_CACHE_H
-#define _LIBCPP___RANGES_NON_PROPAGATING_CACHE_H
+#ifndef _LIBCUDACXX___RANGES_NON_PROPAGATING_CACHE_H
+#define _LIBCUDACXX___RANGES_NON_PROPAGATING_CACHE_H
 
 #include <__config>
 #include <__iterator/concepts.h>        // indirectly_readable
@@ -18,13 +18,13 @@
 #include <optional>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
   // __non_propagating_cache is a helper type that allows storing an optional value in it,
@@ -37,7 +37,7 @@ namespace ranges {
   // may refer to internal details of the source view.
   template<class _Tp>
     requires is_object_v<_Tp>
-  class _LIBCPP_TEMPLATE_VIS __non_propagating_cache {
+  class _LIBCUDACXX_TEMPLATE_VIS __non_propagating_cache {
     struct __from_tag { };
     struct __forward_tag { };
 
@@ -54,21 +54,21 @@ namespace ranges {
     optional<__wrapper> __value_ = nullopt;
 
   public:
-    _LIBCPP_HIDE_FROM_ABI __non_propagating_cache() = default;
+    _LIBCUDACXX_HIDE_FROM_ABI __non_propagating_cache() = default;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __non_propagating_cache(__non_propagating_cache const&) noexcept
       : __value_(nullopt)
     { }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __non_propagating_cache(__non_propagating_cache&& __other) noexcept
       : __value_(nullopt)
     {
       __other.__value_.reset();
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __non_propagating_cache& operator=(__non_propagating_cache const& __other) noexcept {
       if (this != std::addressof(__other)) {
         __value_.reset();
@@ -76,29 +76,29 @@ namespace ranges {
       return *this;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __non_propagating_cache& operator=(__non_propagating_cache&& __other) noexcept {
       __value_.reset();
       __other.__value_.reset();
       return *this;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _Tp& operator*() { return __value_->__t_; }
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _Tp const& operator*() const { return __value_->__t_; }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr bool __has_value() const { return __value_.has_value(); }
 
     template<class _Fn>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _Tp& __emplace_from(_Fn const& __f) {
       return __value_.emplace(__from_tag{}, __f).__t_;
     }
 
     template<class ..._Args>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _Tp& __emplace(_Args&& ...__args) {
       return __value_.emplace(__forward_tag{}, std::forward<_Args>(__args)...).__t_;
     }
@@ -107,8 +107,8 @@ namespace ranges {
   struct __empty_cache { };
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_NON_PROPAGATING_CACHE_H
+#endif // _LIBCUDACXX___RANGES_NON_PROPAGATING_CACHE_H

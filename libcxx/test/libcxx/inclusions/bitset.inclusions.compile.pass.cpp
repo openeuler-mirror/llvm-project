@@ -18,12 +18,12 @@
 #include <bitset>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_BITSET)
- #   error "<bitset> was expected to define _LIBCPP_BITSET"
+#if !defined(_LIBCUDACXX_BITSET)
+ #   error "<bitset> was expected to define _LIBCUDACXX_BITSET"
 #endif
-#if !defined(_LIBCPP_IOSFWD)
+#if !defined(_LIBCUDACXX_IOSFWD)
  #   error "<bitset> should include <iosfwd> in C++03 and later"
 #endif
-#if !defined(_LIBCPP_STRING)
+#if !defined(_LIBCUDACXX_STRING)
  #   error "<bitset> should include <string> in C++03 and later"
 #endif

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_LOWER_BOUND_H
-#define _LIBCPP___ALGORITHM_LOWER_BOUND_H
+#ifndef _LIBCUDACXX___ALGORITHM_LOWER_BOUND_H
+#define _LIBCUDACXX___ALGORITHM_LOWER_BOUND_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/half_positive.h>
@@ -22,14 +22,14 @@
 #include <__type_traits/remove_reference.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy, class _Iter, class _Sent, class _Type, class _Proj, class _Comp>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _Iter __lower_bound_impl(_Iter __first, _Sent __last, const _Type& __value, _Comp& __comp, _Proj& __proj) {
   auto __len = _IterOps<_AlgPolicy>::distance(__first, __last);
 
@@ -48,7 +48,7 @@ _Iter __lower_bound_impl(_Iter __first, _Sent __last, const _Type& __value, _Com
 }
 
 template <class _ForwardIterator, class _Tp, class _Compare>
-_LIBCPP_NODISCARD_EXT inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_NODISCARD_EXT inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _ForwardIterator lower_bound(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value, _Compare __comp) {
   static_assert(__is_callable<_Compare, decltype(*__first), const _Tp&>::value,
                 "The comparator has to be callable");
@@ -57,12 +57,12 @@ _ForwardIterator lower_bound(_ForwardIterator __first, _ForwardIterator __last, 
 }
 
 template <class _ForwardIterator, class _Tp>
-_LIBCPP_NODISCARD_EXT inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_NODISCARD_EXT inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _ForwardIterator lower_bound(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value) {
   return std::lower_bound(__first, __last, __value,
                           __less<typename iterator_traits<_ForwardIterator>::value_type, _Tp>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_LOWER_BOUND_H
+#endif // _LIBCUDACXX___ALGORITHM_LOWER_BOUND_H

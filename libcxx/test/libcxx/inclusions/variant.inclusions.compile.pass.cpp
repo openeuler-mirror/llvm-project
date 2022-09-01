@@ -20,9 +20,9 @@
 #include <variant>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_VARIANT)
- #   error "<variant> was expected to define _LIBCPP_VARIANT"
+#if !defined(_LIBCUDACXX_VARIANT)
+ #   error "<variant> was expected to define _LIBCUDACXX_VARIANT"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<variant> should include <compare> in C++20 and later"
 #endif

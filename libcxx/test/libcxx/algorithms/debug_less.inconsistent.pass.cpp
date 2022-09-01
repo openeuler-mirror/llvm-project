@@ -13,7 +13,7 @@
 // Make sure __debug_less asserts when the comparator is not consistent.
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <algorithm>
 #include <iterator>
@@ -46,7 +46,7 @@ int main(int, char**) {
     BadComparator<MT0> c;
     std::__debug_less<BadComparator<MT0>> d(c);
 
-    TEST_LIBCPP_ASSERT_FAILURE(d(one, two), "Comparator does not induce a strict weak ordering");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(d(one, two), "Comparator does not induce a strict weak ordering");
 
     return 0;
 }

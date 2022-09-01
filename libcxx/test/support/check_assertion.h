@@ -24,7 +24,7 @@
 #include "test_macros.h"
 #include "test_allocator.h"
 
-#ifndef _LIBCPP_VERSION
+#ifndef _LIBCUDACXX_VERSION
 # error "This header may only be used for libc++ tests"
 #endif
 
@@ -236,7 +236,7 @@ private:
   std::string stderr_from_child_;
 };
 
-void std::__libcpp_verbose_abort(char const* format, ...) {
+void std::__LIBCUDACXX_verbose_abort(char const* format, ...) {
   assert(!GlobalMatcher().empty());
 
   // Extract information from the error message. This has to stay synchronized with
@@ -297,6 +297,6 @@ inline bool ExpectDeath(const char* stmt, Func&& func) {
 
 #define EXPECT_DEATH_MATCHES(Matcher, ...) assert((ExpectDeath(#__VA_ARGS__, [&]() { __VA_ARGS__; }, Matcher)))
 
-#define TEST_LIBCPP_ASSERT_FAILURE(expr, message) assert((ExpectDeath(#expr, [&]() { (void)(expr); }, AssertionInfoMatcher(message))))
+#define TEST_LIBCUDACXX_ASSERT_FAILURE(expr, message) assert((ExpectDeath(#expr, [&]() { (void)(expr); }, AssertionInfoMatcher(message))))
 
 #endif // TEST_SUPPORT_CHECK_ASSERTION_H

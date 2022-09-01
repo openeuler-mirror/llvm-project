@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMAT_ARG_STORE_H
-#define _LIBCPP___FORMAT_FORMAT_ARG_STORE_H
+#ifndef _LIBCUDACXX___FORMAT_FORMAT_ARG_STORE_H
+#define _LIBCUDACXX___FORMAT_FORMAT_ARG_STORE_H
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
@@ -24,9 +24,9 @@
 #include <string_view>
 #include <type_traits>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace __format {
 
@@ -47,7 +47,7 @@ template <class _Context, same_as<typename _Context::char_type> _Tp>
 consteval __arg_t __determine_arg_t() {
   return __arg_t::__char_type;
 }
-#  ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#  ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 template <class _Context, class _CharT>
   requires(same_as<typename _Context::char_type, wchar_t> && same_as<_CharT, char>)
 consteval __arg_t __determine_arg_t() {
@@ -56,13 +56,13 @@ consteval __arg_t __determine_arg_t() {
 #  endif
 
 // Signed integers
-template <class, __libcpp_signed_integer _Tp>
+template <class, __LIBCUDACXX_signed_integer _Tp>
 consteval __arg_t __determine_arg_t() {
   if constexpr (sizeof(_Tp) <= sizeof(int))
     return __arg_t::__int;
   else if constexpr (sizeof(_Tp) <= sizeof(long long))
     return __arg_t::__long_long;
-#  ifndef _LIBCPP_HAS_NO_INT128
+#  ifndef _LIBCUDACXX_HAS_NO_INT128
   else if constexpr (sizeof(_Tp) == sizeof(__int128_t))
     return __arg_t::__i128;
 #  endif
@@ -71,13 +71,13 @@ consteval __arg_t __determine_arg_t() {
 }
 
 // Unsigned integers
-template <class, __libcpp_unsigned_integer _Tp>
+template <class, __LIBCUDACXX_unsigned_integer _Tp>
 consteval __arg_t __determine_arg_t() {
   if constexpr (sizeof(_Tp) <= sizeof(unsigned))
     return __arg_t::__unsigned;
   else if constexpr (sizeof(_Tp) <= sizeof(unsigned long long))
     return __arg_t::__unsigned_long_long;
-#  ifndef _LIBCPP_HAS_NO_INT128
+#  ifndef _LIBCUDACXX_HAS_NO_INT128
   else if constexpr (sizeof(_Tp) == sizeof(__uint128_t))
     return __arg_t::__u128;
 #  endif
@@ -153,7 +153,7 @@ template <class _Context, class _Tp>
 consteval __arg_t __determine_arg_t() = delete;
 
 template <class _Context, class _Tp>
-_LIBCPP_HIDE_FROM_ABI basic_format_arg<_Context> __create_format_arg(_Tp&& __value) noexcept {
+_LIBCUDACXX_HIDE_FROM_ABI basic_format_arg<_Context> __create_format_arg(_Tp&& __value) noexcept {
   constexpr __arg_t __arg = __determine_arg_t<_Context, remove_cvref_t<_Tp>>();
   static_assert(__arg != __arg_t::__none);
 
@@ -186,13 +186,13 @@ _LIBCPP_HIDE_FROM_ABI basic_format_arg<_Context> __create_format_arg(_Tp&& __val
     return basic_format_arg<_Context>{__arg, static_cast<const void*>(__value)};
   else if constexpr (__arg == __arg_t::__handle)
     return basic_format_arg<_Context>{
-        __arg, typename __basic_format_arg_value<_Context>::__handle{_VSTD::forward<_Tp>(__value)}};
+        __arg, typename __basic_format_arg_value<_Context>::__handle{_CUDA_VSTD::forward<_Tp>(__value)}};
   else
     return basic_format_arg<_Context>{__arg, __value};
 }
 
 template <class _Context, class... _Args>
-_LIBCPP_HIDE_FROM_ABI void __create_packed_storage(uint64_t& __types, __basic_format_arg_value<_Context>* __values,
+_LIBCUDACXX_HIDE_FROM_ABI void __create_packed_storage(uint64_t& __types, __basic_format_arg_value<_Context>* __values,
                                                    _Args&&... __args) noexcept {
   int __shift = 0;
   (
@@ -210,7 +210,7 @@ _LIBCPP_HIDE_FROM_ABI void __create_packed_storage(uint64_t& __types, __basic_fo
 }
 
 template <class _Context, class... _Args>
-_LIBCPP_HIDE_FROM_ABI void __store_basic_format_arg(basic_format_arg<_Context>* __data, _Args&&... __args) noexcept {
+_LIBCUDACXX_HIDE_FROM_ABI void __store_basic_format_arg(basic_format_arg<_Context>* __data, _Args&&... __args) noexcept {
   ([&] { *__data++ = __create_format_arg<_Context>(__args); }(), ...);
 }
 
@@ -228,8 +228,8 @@ struct __unpacked_format_arg_store {
 } // namespace __format
 
 template <class _Context, class... _Args>
-struct _LIBCPP_TEMPLATE_VIS __format_arg_store {
-  _LIBCPP_HIDE_FROM_ABI
+struct _LIBCUDACXX_TEMPLATE_VIS __format_arg_store {
+  _LIBCUDACXX_HIDE_FROM_ABI
   __format_arg_store(_Args&... __args) noexcept {
     if constexpr (sizeof...(_Args) != 0) {
       if constexpr (__format::__use_packed_format_arg_store(sizeof...(_Args)))
@@ -246,8 +246,8 @@ struct _LIBCPP_TEMPLATE_VIS __format_arg_store {
   _Storage __storage;
 };
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_FORMAT_ARG_STORE_H
+#endif // _LIBCUDACXX___FORMAT_FORMAT_ARG_STORE_H

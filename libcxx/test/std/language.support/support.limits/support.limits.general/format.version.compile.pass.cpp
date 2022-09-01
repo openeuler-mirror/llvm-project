@@ -11,7 +11,7 @@
 //
 // clang-format off
 
-// UNSUPPORTED: libcpp-has-no-incomplete-format
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-format
 
 // <format>
 
@@ -44,7 +44,7 @@
 
 #elif TEST_STD_VER == 20
 
-# if !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_format) && !defined(_LIBCPP_HAS_NO_INCOMPLETE_FORMAT)
+# if !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_format) && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_FORMAT)
 #   ifndef __cpp_lib_format
 #     error "__cpp_lib_format should be defined in c++20"
 #   endif
@@ -53,13 +53,13 @@
 #   endif
 # else
 #   ifdef __cpp_lib_format
-#     error "__cpp_lib_format should not be defined when !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_format) && !defined(_LIBCPP_HAS_NO_INCOMPLETE_FORMAT) is not defined!"
+#     error "__cpp_lib_format should not be defined when !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_format) && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_FORMAT) is not defined!"
 #   endif
 # endif
 
 #elif TEST_STD_VER > 20
 
-# if !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_format) && !defined(_LIBCPP_HAS_NO_INCOMPLETE_FORMAT)
+# if !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_format) && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_FORMAT)
 #   ifndef __cpp_lib_format
 #     error "__cpp_lib_format should be defined in c++2b"
 #   endif
@@ -68,7 +68,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_format
-#     error "__cpp_lib_format should not be defined when !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_format) && !defined(_LIBCPP_HAS_NO_INCOMPLETE_FORMAT) is not defined!"
+#     error "__cpp_lib_format should not be defined when !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_format) && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_FORMAT) is not defined!"
 #   endif
 # endif
 

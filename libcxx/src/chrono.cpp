@@ -32,17 +32,17 @@
 #endif
 
 #if !defined(__APPLE__) && defined(_POSIX_TIMERS) && _POSIX_TIMERS > 0
-# define _LIBCPP_USE_CLOCK_GETTIME
+# define _LIBCUDACXX_USE_CLOCK_GETTIME
 #endif
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 #  define WIN32_LEAN_AND_MEAN
 #  define VC_EXTRA_LEAN
 #  include <windows.h>
 #  if _WIN32_WINNT >= _WIN32_WINNT_WIN8
 #    include <winapifamily.h>
 #  endif
-#endif // defined(_LIBCPP_WIN32API)
+#endif // defined(_LIBCUDACXX_WIN32API)
 
 #if defined(__Fuchsia__)
 #  include <zircon/syscalls.h>
@@ -52,11 +52,11 @@
 # include <mach/mach_time.h>
 #endif
 
-#if defined(__ELF__) && defined(_LIBCPP_LINK_RT_LIB)
+#if defined(__ELF__) && defined(_LIBCUDACXX_LINK_RT_LIB)
 #  pragma comment(lib, "rt")
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace chrono
 {
@@ -65,7 +65,7 @@ namespace chrono
 // system_clock
 //
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 
 #if _WIN32_WINNT < _WIN32_WINNT_WIN8
 
@@ -91,15 +91,15 @@ public:
 
 #endif
 
-static system_clock::time_point __libcpp_system_clock_now() {
+static system_clock::time_point __LIBCUDACXX_system_clock_now() {
   // FILETIME is in 100ns units
   using filetime_duration =
-      _VSTD::chrono::duration<__int64,
-                              _VSTD::ratio_multiply<_VSTD::ratio<100, 1>,
+      _CUDA_VSTD::chrono::duration<__int64,
+                              _CUDA_VSTD::ratio_multiply<_CUDA_VSTD::ratio<100, 1>,
                                                     nanoseconds::period>>;
 
   // The Windows epoch is Jan 1 1601, the Unix epoch Jan 1 1970.
-  static _LIBCPP_CONSTEXPR const seconds nt_to_unix_epoch{11644473600};
+  static _LIBCUDACXX_CONSTEXPR const seconds nt_to_unix_epoch{11644473600};
 
   FILETIME ft;
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8 && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)) || \
@@ -116,9 +116,9 @@ static system_clock::time_point __libcpp_system_clock_now() {
   return system_clock::time_point(duration_cast<system_clock::duration>(d - nt_to_unix_epoch));
 }
 
-#elif defined(CLOCK_REALTIME) && defined(_LIBCPP_USE_CLOCK_GETTIME)
+#elif defined(CLOCK_REALTIME) && defined(_LIBCUDACXX_USE_CLOCK_GETTIME)
 
-static system_clock::time_point __libcpp_system_clock_now() {
+static system_clock::time_point __LIBCUDACXX_system_clock_now() {
   struct timespec tp;
   if (0 != clock_gettime(CLOCK_REALTIME, &tp))
     __throw_system_error(errno, "clock_gettime(CLOCK_REALTIME) failed");
@@ -127,7 +127,7 @@ static system_clock::time_point __libcpp_system_clock_now() {
 
 #else
 
-static system_clock::time_point __libcpp_system_clock_now() {
+static system_clock::time_point __LIBCUDACXX_system_clock_now() {
     timeval tv;
     gettimeofday(&tv, 0);
     return system_clock::time_point(seconds(tv.tv_sec) + microseconds(tv.tv_usec));
@@ -140,7 +140,7 @@ const bool system_clock::is_steady;
 system_clock::time_point
 system_clock::now() noexcept
 {
-    return __libcpp_system_clock_now();
+    return __LIBCUDACXX_system_clock_now();
 }
 
 time_t
@@ -163,7 +163,7 @@ system_clock::from_time_t(time_t t) noexcept
 //  instead.
 //
 
-#ifndef _LIBCPP_HAS_NO_MONOTONIC_CLOCK
+#ifndef _LIBCUDACXX_HAS_NO_MONOTONIC_CLOCK
 
 #if defined(__APPLE__)
 
@@ -176,10 +176,10 @@ system_clock::from_time_t(time_t t) noexcept
     (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ < 100000) || \
     (defined(__ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__ < 100000) || \
     (defined(__ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__ < 30000)
-# define _LIBCPP_USE_OLD_MACH_ABSOLUTE_TIME
+# define _LIBCUDACXX_USE_OLD_MACH_ABSOLUTE_TIME
 #endif
 
-#if defined(_LIBCPP_USE_OLD_MACH_ABSOLUTE_TIME)
+#if defined(_LIBCUDACXX_USE_OLD_MACH_ABSOLUTE_TIME)
 
 //   mach_absolute_time() * MachInfo.numer / MachInfo.denom is the number of
 //   nanoseconds since the computer booted up.  MachInfo.numer and MachInfo.denom
@@ -213,7 +213,7 @@ static FP init_steady_clock() {
     return &steady_full;
 }
 
-static steady_clock::time_point __libcpp_steady_clock_now() {
+static steady_clock::time_point __LIBCUDACXX_steady_clock_now() {
     static FP fp = init_steady_clock();
     return steady_clock::time_point(steady_clock::duration(fp()));
 }
@@ -225,7 +225,7 @@ static steady_clock::time_point __libcpp_steady_clock_now() {
 // Furthermore, only CLOCK_MONOTONIC_RAW is truly monotonic, because it
 // also counts cycles when the system is asleep. Thus, it is the only
 // acceptable implementation of steady_clock.
-static steady_clock::time_point __libcpp_steady_clock_now() {
+static steady_clock::time_point __LIBCUDACXX_steady_clock_now() {
     struct timespec tp;
     if (0 != clock_gettime(CLOCK_MONOTONIC_RAW, &tp))
         __throw_system_error(errno, "clock_gettime(CLOCK_MONOTONIC_RAW) failed");
@@ -234,7 +234,7 @@ static steady_clock::time_point __libcpp_steady_clock_now() {
 
 #endif
 
-#elif defined(_LIBCPP_WIN32API)
+#elif defined(_LIBCUDACXX_WIN32API)
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms644905(v=vs.85).aspx says:
 //    If the function fails, the return value is zero. <snip>
@@ -249,7 +249,7 @@ __QueryPerformanceFrequency()
     return val;
 }
 
-static steady_clock::time_point __libcpp_steady_clock_now() {
+static steady_clock::time_point __LIBCUDACXX_steady_clock_now() {
   static const LARGE_INTEGER freq = __QueryPerformanceFrequency();
 
   LARGE_INTEGER counter;
@@ -262,7 +262,7 @@ static steady_clock::time_point __libcpp_steady_clock_now() {
 
 #elif defined(__MVS__)
 
-static steady_clock::time_point __libcpp_steady_clock_now() {
+static steady_clock::time_point __LIBCUDACXX_steady_clock_now() {
   struct timespec64 ts;
   if (0 != gettimeofdayMonotonic(&ts))
     __throw_system_error(errno, "failed to obtain time of day");
@@ -272,7 +272,7 @@ static steady_clock::time_point __libcpp_steady_clock_now() {
 
 #  elif defined(__Fuchsia__)
 
-static steady_clock::time_point __libcpp_steady_clock_now() noexcept {
+static steady_clock::time_point __LIBCUDACXX_steady_clock_now() noexcept {
   // Implicitly link against the vDSO system call ABI without
   // requiring the final link to specify -lzircon explicitly when
   // statically linking libc++.
@@ -283,7 +283,7 @@ static steady_clock::time_point __libcpp_steady_clock_now() noexcept {
 
 #  elif defined(CLOCK_MONOTONIC)
 
-static steady_clock::time_point __libcpp_steady_clock_now() {
+static steady_clock::time_point __LIBCUDACXX_steady_clock_now() {
     struct timespec tp;
     if (0 != clock_gettime(CLOCK_MONOTONIC, &tp))
         __throw_system_error(errno, "clock_gettime(CLOCK_MONOTONIC) failed");
@@ -299,11 +299,11 @@ const bool steady_clock::is_steady;
 steady_clock::time_point
 steady_clock::now() noexcept
 {
-    return __libcpp_steady_clock_now();
+    return __LIBCUDACXX_steady_clock_now();
 }
 
-#endif // !_LIBCPP_HAS_NO_MONOTONIC_CLOCK
+#endif // !_LIBCUDACXX_HAS_NO_MONOTONIC_CLOCK
 
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

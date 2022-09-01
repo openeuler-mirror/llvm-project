@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_COPY_H
-#define _LIBCPP___ALGORITHM_RANGES_COPY_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_COPY_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_COPY_H
 
 #include <__algorithm/copy.h>
 #include <__algorithm/in_out_result.h>
@@ -19,13 +19,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -37,7 +37,7 @@ struct __fn {
 
   template <input_iterator _InIter, sentinel_for<_InIter> _Sent, weakly_incrementable _OutIter>
     requires indirectly_copyable<_InIter, _OutIter>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   copy_result<_InIter, _OutIter> operator()(_InIter __first, _Sent __last, _OutIter __result) const {
     auto __ret = std::__copy(std::move(__first), std::move(__last), std::move(__result));
     return {std::move(__ret.first), std::move(__ret.second)};
@@ -45,7 +45,7 @@ struct __fn {
 
   template <input_range _Range, weakly_incrementable _OutIter>
     requires indirectly_copyable<iterator_t<_Range>, _OutIter>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   copy_result<borrowed_iterator_t<_Range>, _OutIter> operator()(_Range&& __r, _OutIter __result) const {
     auto __ret = std::__copy(ranges::begin(__r), ranges::end(__r), std::move(__result));
     return {std::move(__ret.first), std::move(__ret.second)};
@@ -58,8 +58,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_COPY_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_COPY_H

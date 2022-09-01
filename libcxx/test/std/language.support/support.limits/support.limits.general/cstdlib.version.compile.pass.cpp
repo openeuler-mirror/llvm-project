@@ -48,14 +48,14 @@
 
 #elif TEST_STD_VER > 20
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_constexpr_cmath
 #     error "__cpp_lib_constexpr_cmath should be defined in c++2b"
 #   endif
 #   if __cpp_lib_constexpr_cmath != 202202L
 #     error "__cpp_lib_constexpr_cmath should have the value 202202L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_constexpr_cmath
 #     error "__cpp_lib_constexpr_cmath should not be defined because it is unimplemented in libc++!"
 #   endif

@@ -8,7 +8,7 @@
 
 // Test that we can set a custom verbose termination function.
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_ASSERTIONS=1
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_ASSERTIONS=1
 
 // We flag uses of the verbose termination function in older dylibs at compile-time to avoid runtime
 // failures when back-deploying.
@@ -16,11 +16,11 @@
 
 #include <cstdlib>
 
-void std::__libcpp_verbose_abort(char const*, ...) {
+void std::__LIBCUDACXX_verbose_abort(char const*, ...) {
   std::exit(EXIT_SUCCESS);
 }
 
 int main(int, char**) {
-  _LIBCPP_ASSERT(false, "message");
+  _LIBCUDACXX_ASSERT(false, "message");
   return EXIT_FAILURE;
 }

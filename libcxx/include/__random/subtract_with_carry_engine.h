@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_SUBTRACT_WITH_CARRY_ENGINE_H
-#define _LIBCPP___RANDOM_SUBTRACT_WITH_CARRY_ENGINE_H
+#ifndef _LIBCUDACXX___RANDOM_SUBTRACT_WITH_CARRY_ENGINE_H
+#define _LIBCUDACXX___RANDOM_SUBTRACT_WITH_CARRY_ENGINE_H
 
 #include <__algorithm/equal.h>
 #include <__algorithm/min.h>
@@ -20,17 +20,17 @@
 #include <limits>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _UIntType, size_t __w, size_t __s, size_t __r>
-class _LIBCPP_TEMPLATE_VIS subtract_with_carry_engine;
+class _LIBCUDACXX_TEMPLATE_VIS subtract_with_carry_engine;
 
 template<class _UInt, size_t _Wp, size_t _Sp, size_t _Rp>
 bool
@@ -39,7 +39,7 @@ operator==(
     const subtract_with_carry_engine<_UInt, _Wp, _Sp, _Rp>& __y);
 
 template<class _UInt, size_t _Wp, size_t _Sp, size_t _Rp>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator!=(
     const subtract_with_carry_engine<_UInt, _Wp, _Sp, _Rp>& __x,
@@ -58,7 +58,7 @@ operator>>(basic_istream<_CharT, _Traits>& __is,
            subtract_with_carry_engine<_UInt, _Wp, _Sp, _Rp>& __x);
 
 template<class _UIntType, size_t __w, size_t __s, size_t __r>
-class _LIBCPP_TEMPLATE_VIS subtract_with_carry_engine
+class _LIBCUDACXX_TEMPLATE_VIS subtract_with_carry_engine
 {
 public:
     // types
@@ -69,49 +69,49 @@ private:
     result_type  __c_;
     size_t      __i_;
 
-    static _LIBCPP_CONSTEXPR const result_type _Dt = numeric_limits<result_type>::digits;
+    static _LIBCUDACXX_CONSTEXPR const result_type _Dt = numeric_limits<result_type>::digits;
     static_assert(  0 <  __w, "subtract_with_carry_engine invalid parameters");
     static_assert(__w <= _Dt, "subtract_with_carry_engine invalid parameters");
     static_assert(  0 <  __s, "subtract_with_carry_engine invalid parameters");
     static_assert(__s <  __r, "subtract_with_carry_engine invalid parameters");
 public:
-    static _LIBCPP_CONSTEXPR const result_type _Min = 0;
-    static _LIBCPP_CONSTEXPR const result_type _Max = __w == _Dt ? result_type(~0) :
+    static _LIBCUDACXX_CONSTEXPR const result_type _Min = 0;
+    static _LIBCUDACXX_CONSTEXPR const result_type _Max = __w == _Dt ? result_type(~0) :
                                                       (result_type(1) << __w) - result_type(1);
     static_assert(_Min < _Max, "subtract_with_carry_engine invalid parameters");
 
     // engine characteristics
-    static _LIBCPP_CONSTEXPR const size_t word_size = __w;
-    static _LIBCPP_CONSTEXPR const size_t short_lag = __s;
-    static _LIBCPP_CONSTEXPR const size_t long_lag = __r;
-    _LIBCPP_INLINE_VISIBILITY
-    static _LIBCPP_CONSTEXPR result_type min() { return _Min; }
-    _LIBCPP_INLINE_VISIBILITY
-    static _LIBCPP_CONSTEXPR result_type max() { return _Max; }
-    static _LIBCPP_CONSTEXPR const result_type default_seed = 19780503u;
+    static _LIBCUDACXX_CONSTEXPR const size_t word_size = __w;
+    static _LIBCUDACXX_CONSTEXPR const size_t short_lag = __s;
+    static _LIBCUDACXX_CONSTEXPR const size_t long_lag = __r;
+    _LIBCUDACXX_INLINE_VISIBILITY
+    static _LIBCUDACXX_CONSTEXPR result_type min() { return _Min; }
+    _LIBCUDACXX_INLINE_VISIBILITY
+    static _LIBCUDACXX_CONSTEXPR result_type max() { return _Max; }
+    static _LIBCUDACXX_CONSTEXPR const result_type default_seed = 19780503u;
 
     // constructors and seeding functions
-#ifndef _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
     subtract_with_carry_engine() : subtract_with_carry_engine(default_seed) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit subtract_with_carry_engine(result_type __sd) { seed(__sd); }
 #else
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit subtract_with_carry_engine(result_type __sd = default_seed) {
       seed(__sd);
     }
 #endif
     template<class _Sseq>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         explicit subtract_with_carry_engine(_Sseq& __q,
         typename enable_if<__is_seed_sequence<_Sseq, subtract_with_carry_engine>::value>::type* = 0)
         {seed(__q);}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void seed(result_type __sd = default_seed)
         {seed(__sd, integral_constant<unsigned, 1 + (__w - 1) / 32>());}
     template<class _Sseq>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         typename enable_if
         <
             __is_seed_sequence<_Sseq, subtract_with_carry_engine>::value,
@@ -122,7 +122,7 @@ public:
 
     // generating functions
     result_type operator()();
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void discard(unsigned long long __z) {for (; __z; --__z) operator()();}
 
     template<class _UInt, size_t _Wp, size_t _Sp, size_t _Rp>
@@ -164,16 +164,16 @@ private:
 };
 
 template<class _UIntType, size_t __w, size_t __s, size_t __r>
-    _LIBCPP_CONSTEXPR const size_t subtract_with_carry_engine<_UIntType, __w, __s, __r>::word_size;
+    _LIBCUDACXX_CONSTEXPR const size_t subtract_with_carry_engine<_UIntType, __w, __s, __r>::word_size;
 
 template<class _UIntType, size_t __w, size_t __s, size_t __r>
-    _LIBCPP_CONSTEXPR const size_t subtract_with_carry_engine<_UIntType, __w, __s, __r>::short_lag;
+    _LIBCUDACXX_CONSTEXPR const size_t subtract_with_carry_engine<_UIntType, __w, __s, __r>::short_lag;
 
 template<class _UIntType, size_t __w, size_t __s, size_t __r>
-    _LIBCPP_CONSTEXPR const size_t subtract_with_carry_engine<_UIntType, __w, __s, __r>::long_lag;
+    _LIBCUDACXX_CONSTEXPR const size_t subtract_with_carry_engine<_UIntType, __w, __s, __r>::long_lag;
 
 template<class _UIntType, size_t __w, size_t __s, size_t __r>
-    _LIBCPP_CONSTEXPR const typename subtract_with_carry_engine<_UIntType, __w, __s, __r>::result_type
+    _LIBCUDACXX_CONSTEXPR const typename subtract_with_carry_engine<_UIntType, __w, __s, __r>::result_type
     subtract_with_carry_engine<_UIntType, __w, __s, __r>::default_seed;
 
 template<class _UIntType, size_t __w, size_t __s, size_t __r>
@@ -259,42 +259,42 @@ operator==(
     if (__x.__c_ != __y.__c_)
         return false;
     if (__x.__i_ == __y.__i_)
-        return _VSTD::equal(__x.__x_, __x.__x_ + _Rp, __y.__x_);
+        return _CUDA_VSTD::equal(__x.__x_, __x.__x_ + _Rp, __y.__x_);
     if (__x.__i_ == 0 || __y.__i_ == 0)
     {
-        size_t __j = _VSTD::min(_Rp - __x.__i_, _Rp - __y.__i_);
-        if (!_VSTD::equal(__x.__x_ + __x.__i_, __x.__x_ + __x.__i_ + __j,
+        size_t __j = _CUDA_VSTD::min(_Rp - __x.__i_, _Rp - __y.__i_);
+        if (!_CUDA_VSTD::equal(__x.__x_ + __x.__i_, __x.__x_ + __x.__i_ + __j,
                          __y.__x_ + __y.__i_))
             return false;
         if (__x.__i_ == 0)
-            return _VSTD::equal(__x.__x_ + __j, __x.__x_ + _Rp, __y.__x_);
-        return _VSTD::equal(__x.__x_, __x.__x_ + (_Rp - __j), __y.__x_ + __j);
+            return _CUDA_VSTD::equal(__x.__x_ + __j, __x.__x_ + _Rp, __y.__x_);
+        return _CUDA_VSTD::equal(__x.__x_, __x.__x_ + (_Rp - __j), __y.__x_ + __j);
     }
     if (__x.__i_ < __y.__i_)
     {
         size_t __j = _Rp - __y.__i_;
-        if (!_VSTD::equal(__x.__x_ + __x.__i_, __x.__x_ + (__x.__i_ + __j),
+        if (!_CUDA_VSTD::equal(__x.__x_ + __x.__i_, __x.__x_ + (__x.__i_ + __j),
                          __y.__x_ + __y.__i_))
             return false;
-        if (!_VSTD::equal(__x.__x_ + (__x.__i_ + __j), __x.__x_ + _Rp,
+        if (!_CUDA_VSTD::equal(__x.__x_ + (__x.__i_ + __j), __x.__x_ + _Rp,
                          __y.__x_))
             return false;
-        return _VSTD::equal(__x.__x_, __x.__x_ + __x.__i_,
+        return _CUDA_VSTD::equal(__x.__x_, __x.__x_ + __x.__i_,
                            __y.__x_ + (_Rp - (__x.__i_ + __j)));
     }
     size_t __j = _Rp - __x.__i_;
-    if (!_VSTD::equal(__y.__x_ + __y.__i_, __y.__x_ + (__y.__i_ + __j),
+    if (!_CUDA_VSTD::equal(__y.__x_ + __y.__i_, __y.__x_ + (__y.__i_ + __j),
                      __x.__x_ + __x.__i_))
         return false;
-    if (!_VSTD::equal(__y.__x_ + (__y.__i_ + __j), __y.__x_ + _Rp,
+    if (!_CUDA_VSTD::equal(__y.__x_ + (__y.__i_ + __j), __y.__x_ + _Rp,
                      __x.__x_))
         return false;
-    return _VSTD::equal(__y.__x_, __y.__x_ + __y.__i_,
+    return _CUDA_VSTD::equal(__y.__x_, __y.__x_ + __y.__i_,
                        __x.__x_ + (_Rp - (__y.__i_ + __j)));
 }
 
 template<class _UInt, size_t _Wp, size_t _Sp, size_t _Rp>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator!=(
     const subtract_with_carry_engine<_UInt, _Wp, _Sp, _Rp>& __x,
@@ -345,8 +345,8 @@ operator>>(basic_istream<_CharT, _Traits>& __is,
     return __is;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_SUBTRACT_WITH_CARRY_ENGINE_H
+#endif // _LIBCUDACXX___RANDOM_SUBTRACT_WITH_CARRY_ENGINE_H

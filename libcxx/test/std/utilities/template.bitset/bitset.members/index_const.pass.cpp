@@ -25,7 +25,7 @@ void test_index_const() {
             assert(v[N/2] == v.test(N/2));
         }
     }
-#if !defined(_LIBCPP_VERSION) || defined(_LIBCPP_ABI_BITSET_VECTOR_BOOL_CONST_SUBSCRIPT_RETURN_BOOL)
+#if !defined(_LIBCUDACXX_VERSION) || defined(_LIBCUDACXX_ABI_BITSET_VECTOR_BOOL_CONST_SUBSCRIPT_RETURN_BOOL)
     ASSERT_SAME_TYPE(decltype(cases[0][0]), bool);
 #else
     ASSERT_SAME_TYPE(decltype(cases[0][0]), typename std::bitset<N>::const_reference);
@@ -48,7 +48,7 @@ int main(int, char**) {
   const auto& set = set_;
   auto b = set[0];
   set_[0] = true;
-#if !defined(_LIBCPP_VERSION) || defined(_LIBCPP_ABI_BITSET_VECTOR_BOOL_CONST_SUBSCRIPT_RETURN_BOOL)
+#if !defined(_LIBCUDACXX_VERSION) || defined(_LIBCUDACXX_ABI_BITSET_VECTOR_BOOL_CONST_SUBSCRIPT_RETURN_BOOL)
   assert(!b);
 #else
   assert(b);

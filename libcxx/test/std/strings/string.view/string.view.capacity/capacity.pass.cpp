@@ -54,7 +54,7 @@ void test1 () {
         typedef typename SV::size_type Size;
         SV sv;
         assert(sv.max_size() <= std::numeric_limits<Size>::max() / sizeof(CharT));
-        LIBCPP_ASSERT(sv.max_size() == std::numeric_limits<Size>::max() / sizeof(CharT));
+        LIBCUDACXX_ASSERT(sv.max_size() == std::numeric_limits<Size>::max() / sizeof(CharT));
     }
 }
 

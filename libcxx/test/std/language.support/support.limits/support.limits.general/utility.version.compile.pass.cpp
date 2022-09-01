@@ -258,14 +258,14 @@
 #   error "__cpp_lib_integer_sequence should have the value 201304L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_ranges_zip
 #     error "__cpp_lib_ranges_zip should be defined in c++2b"
 #   endif
 #   if __cpp_lib_ranges_zip != 202110L
 #     error "__cpp_lib_ranges_zip should have the value 202110L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_ranges_zip
 #     error "__cpp_lib_ranges_zip should not be defined because it is unimplemented in libc++!"
 #   endif

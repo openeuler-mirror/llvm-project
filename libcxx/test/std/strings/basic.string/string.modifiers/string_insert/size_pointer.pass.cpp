@@ -27,7 +27,7 @@ test(S s, typename S::size_type pos, const typename S::value_type* str, S expect
     if (pos <= old_size)
     {
         s.insert(pos, str);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == expected);
     }
 #ifndef TEST_HAS_NO_EXCEPTIONS

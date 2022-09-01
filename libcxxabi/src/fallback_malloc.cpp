@@ -17,7 +17,7 @@
 
 #include <stdlib.h> // for malloc, calloc, free
 #include <string.h> // for memset
-#include <new> // for std::__libcpp_aligned_{alloc,free}
+#include <new> // for std::__LIBCUDACXX_aligned_{alloc,free}
 
 //  A small, simple heap manager based (loosely) on
 //  the startup heap manager from FreeBSD, optimized for space.
@@ -33,18 +33,18 @@ namespace {
 
 // When POSIX threads are not available, make the mutex operations a nop
 #ifndef _LIBCXXABI_HAS_NO_THREADS
-static _LIBCPP_CONSTINIT std::__libcpp_mutex_t heap_mutex = _LIBCPP_MUTEX_INITIALIZER;
+static _LIBCUDACXX_CONSTINIT std::__LIBCUDACXX_mutex_t heap_mutex = _LIBCUDACXX_MUTEX_INITIALIZER;
 #else
-static _LIBCPP_CONSTINIT void* heap_mutex = 0;
+static _LIBCUDACXX_CONSTINIT void* heap_mutex = 0;
 #endif
 
 class mutexor {
 public:
 #ifndef _LIBCXXABI_HAS_NO_THREADS
-  mutexor(std::__libcpp_mutex_t* m) : mtx_(m) {
-    std::__libcpp_mutex_lock(mtx_);
+  mutexor(std::__LIBCUDACXX_mutex_t* m) : mtx_(m) {
+    std::__LIBCUDACXX_mutex_lock(mtx_);
   }
-  ~mutexor() { std::__libcpp_mutex_unlock(mtx_); }
+  ~mutexor() { std::__LIBCUDACXX_mutex_unlock(mtx_); }
 #else
   mutexor(void*) {}
   ~mutexor() {}
@@ -53,7 +53,7 @@ private:
   mutexor(const mutexor& rhs);
   mutexor& operator=(const mutexor& rhs);
 #ifndef _LIBCXXABI_HAS_NO_THREADS
-  std::__libcpp_mutex_t* mtx_;
+  std::__LIBCUDACXX_mutex_t* mtx_;
 #endif
 };
 
@@ -204,15 +204,15 @@ struct __attribute__((aligned)) __aligned_type {};
 
 void* __aligned_malloc_with_fallback(size_t size) {
 #if defined(_WIN32)
-  if (void* dest = std::__libcpp_aligned_alloc(alignof(__aligned_type), size))
+  if (void* dest = std::__LIBCUDACXX_aligned_alloc(alignof(__aligned_type), size))
     return dest;
-#elif defined(_LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION)
+#elif defined(_LIBCUDACXX_HAS_NO_LIBRARY_ALIGNED_ALLOCATION)
   if (void* dest = ::malloc(size))
     return dest;
 #else
   if (size == 0)
     size = 1;
-  if (void* dest = std::__libcpp_aligned_alloc(__alignof(__aligned_type), size))
+  if (void* dest = std::__LIBCUDACXX_aligned_alloc(__alignof(__aligned_type), size))
     return dest;
 #endif
   return fallback_malloc(size);
@@ -233,10 +233,10 @@ void __aligned_free_with_fallback(void* ptr) {
   if (is_fallback_ptr(ptr))
     fallback_free(ptr);
   else {
-#if defined(_LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION)
+#if defined(_LIBCUDACXX_HAS_NO_LIBRARY_ALIGNED_ALLOCATION)
     ::free(ptr);
 #else
-    std::__libcpp_aligned_free(ptr);
+    std::__LIBCUDACXX_aligned_free(ptr);
 #endif
   }
 }

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_SHIFT_RIGHT_H
-#define _LIBCPP___ALGORITHM_SHIFT_RIGHT_H
+#ifndef _LIBCUDACXX___ALGORITHM_SHIFT_RIGHT_H
+#define _LIBCUDACXX___ALGORITHM_SHIFT_RIGHT_H
 
 #include <__algorithm/move.h>
 #include <__algorithm/move_backward.h>
@@ -17,16 +17,16 @@
 #include <__utility/swap.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <class _ForwardIterator>
-inline _LIBCPP_INLINE_VISIBILITY constexpr
+inline _LIBCUDACXX_INLINE_VISIBILITY constexpr
 _ForwardIterator
 shift_right(_ForwardIterator __first, _ForwardIterator __last,
             typename iterator_traits<_ForwardIterator>::difference_type __n)
@@ -41,7 +41,7 @@ shift_right(_ForwardIterator __first, _ForwardIterator __last,
             return __last;
         }
         _ForwardIterator __m = __first + (__d - __n);
-        return _VSTD::move_backward(__first, __m, __last);
+        return _CUDA_VSTD::move_backward(__first, __m, __last);
     } else if constexpr (__is_cpp17_bidirectional_iterator<_ForwardIterator>::value) {
         _ForwardIterator __m = __last;
         for (; __n > 0; --__n) {
@@ -50,7 +50,7 @@ shift_right(_ForwardIterator __first, _ForwardIterator __last,
             }
             --__m;
         }
-        return _VSTD::move_backward(__first, __m, __last);
+        return _CUDA_VSTD::move_backward(__first, __m, __last);
     } else {
         _ForwardIterator __ret = __first;
         for (; __n > 0; --__n) {
@@ -70,7 +70,7 @@ shift_right(_ForwardIterator __first, _ForwardIterator __last,
         auto __lead = __ret;
         while (__trail != __ret) {
             if (__lead == __last) {
-                _VSTD::move(__first, __trail, __ret);
+                _CUDA_VSTD::move(__first, __trail, __ret);
                 return __ret;
             }
             ++__trail;
@@ -80,8 +80,8 @@ shift_right(_ForwardIterator __first, _ForwardIterator __last,
         _ForwardIterator __mid = __first;
         while (true) {
             if (__lead == __last) {
-                __trail = _VSTD::move(__mid, __ret, __trail);
-                _VSTD::move(__first, __mid, __trail);
+                __trail = _CUDA_VSTD::move(__mid, __ret, __trail);
+                _CUDA_VSTD::move(__first, __mid, __trail);
                 return __ret;
             }
             swap(*__mid, *__trail);
@@ -95,8 +95,8 @@ shift_right(_ForwardIterator __first, _ForwardIterator __last,
     }
 }
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_SHIFT_RIGHT_H
+#endif // _LIBCUDACXX___ALGORITHM_SHIFT_RIGHT_H

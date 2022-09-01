@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_FILL_H
-#define _LIBCPP___ALGORITHM_RANGES_FILL_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_FILL_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_FILL_H
 
 #include <__algorithm/ranges_fill_n.h>
 #include <__config>
@@ -16,19 +16,19 @@
 #include <__ranges/concepts.h>
 #include <__ranges/dangling.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __fill {
 struct __fn {
   template <class _Type, output_iterator<const _Type&> _Iter, sentinel_for<_Iter> _Sent>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   _Iter operator()(_Iter __first, _Sent __last, const _Type& __value) const {
     if constexpr(random_access_iterator<_Iter> && sized_sentinel_for<_Sent, _Iter>) {
       return ranges::fill_n(__first, __last - __first, __value);
@@ -40,7 +40,7 @@ struct __fn {
   }
 
   template <class _Type, output_range<const _Type&> _Range>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   borrowed_iterator_t<_Range> operator()(_Range&& __range, const _Type& __value) const {
     return (*this)(ranges::begin(__range), ranges::end(__range), __value);
   }
@@ -52,8 +52,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_FILL_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_FILL_H

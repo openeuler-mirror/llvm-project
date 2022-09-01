@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_REPLACE_COPY_IF_H
-#define _LIBCPP___ALGORITHM_RANGES_REPLACE_COPY_IF_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_REPLACE_COPY_IF_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_REPLACE_COPY_IF_H
 
 #include <__algorithm/in_out_result.h>
 #include <__config>
@@ -20,13 +20,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -34,7 +34,7 @@ template <class _InIter, class _OutIter>
 using replace_copy_if_result = in_out_result<_InIter, _OutIter>;
 
 template <class _InIter, class _Sent, class _OutIter, class _Pred, class _Type, class _Proj>
-_LIBCPP_HIDE_FROM_ABI constexpr replace_copy_if_result<_InIter, _OutIter> __replace_copy_if_impl(
+_LIBCUDACXX_HIDE_FROM_ABI constexpr replace_copy_if_result<_InIter, _OutIter> __replace_copy_if_impl(
     _InIter __first, _Sent __last, _OutIter __result, _Pred& __pred, const _Type& __new_value, _Proj& __proj) {
   while (__first != __last) {
     if (std::invoke(__pred, std::invoke(__proj, *__first)))
@@ -59,7 +59,7 @@ namespace __replace_copy_if {
               class _Proj = identity,
               indirect_unary_predicate<projected<_InIter, _Proj>> _Pred>
       requires indirectly_copyable<_InIter, _OutIter>
-    _LIBCPP_HIDE_FROM_ABI constexpr replace_copy_if_result<_InIter, _OutIter> operator()(
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr replace_copy_if_result<_InIter, _OutIter> operator()(
         _InIter __first, _Sent __last, _OutIter __result, _Pred __pred, const _Type& __new_value, _Proj __proj = {})
         const {
       return ranges::__replace_copy_if_impl(
@@ -72,7 +72,7 @@ namespace __replace_copy_if {
               class _Proj = identity,
               indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _OutIter>
-    _LIBCPP_HIDE_FROM_ABI constexpr replace_copy_if_result<borrowed_iterator_t<_Range>, _OutIter>
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr replace_copy_if_result<borrowed_iterator_t<_Range>, _OutIter>
     operator()(_Range&& __range, _OutIter __result, _Pred __pred, const _Type& __new_value, _Proj __proj = {}) const {
       return ranges::__replace_copy_if_impl(
           ranges::begin(__range), ranges::end(__range), std::move(__result), __pred, __new_value, __proj);
@@ -86,8 +86,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_REPLACE_COPY_IF_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_REPLACE_COPY_IF_H

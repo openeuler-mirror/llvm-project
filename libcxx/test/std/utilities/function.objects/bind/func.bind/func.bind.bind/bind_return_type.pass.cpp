@@ -82,10 +82,10 @@ void do_test(Fn* func) {
     // Check that the call operator SFINAE's away when too few arguments
     // are provided but is well-formed otherwise.
     {
-        LIBCPP_STATIC_ASSERT(!CheckCall<Bind>(), "");
+        LIBCUDACXX_STATIC_ASSERT(!CheckCall<Bind>(), "");
         static_assert(CheckCall<Bind, int>(), "");
         static_assert(CheckCall<Bind, int, int>(), "");
-        LIBCPP_STATIC_ASSERT(!CheckCall<BindR>(), "");
+        LIBCUDACXX_STATIC_ASSERT(!CheckCall<BindR>(), "");
         static_assert(CheckCall<BindR, int>(), "");
         static_assert(CheckCall<BindR, int, int>(), "");
     }
@@ -109,7 +109,7 @@ void do_test_r(Fn* func) {
     // Check that the call operator SFINAE's away when too few arguments
     // are provided but is well-formed otherwise.
     {
-        LIBCPP_STATIC_ASSERT(!CheckCall<Bind>(), "");
+        LIBCUDACXX_STATIC_ASSERT(!CheckCall<Bind>(), "");
         static_assert(CheckCall<Bind, int>(), "");
         static_assert(CheckCall<Bind, int, int>(), "");
     }

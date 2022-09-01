@@ -24,7 +24,7 @@ test(S& s, typename S::const_iterator p, typename S::value_type c, S expected)
     bool sufficient_cap = s.size() < s.capacity();
     typename S::difference_type pos = p - s.begin();
     typename S::iterator i = s.insert(p, c);
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == expected);
     assert(i - s.begin() == pos);
     assert(*i == c);

@@ -8,13 +8,13 @@
 
 #include "../../include/refstring.h"
 
-/* For _LIBCPPABI_VERSION */
-#if !defined(_LIBCPP_BUILDING_HAS_NO_ABI_LIBRARY) &&                           \
+/* For _LIBCUDACXXABI_VERSION */
+#if !defined(_LIBCUDACXX_BUILDING_HAS_NO_ABI_LIBRARY) &&                           \
     (defined(LIBCXX_BUILDING_LIBCXXABI) || defined(LIBCXXRT))
 #include <cxxabi.h>
 #endif
 
-static_assert(sizeof(std::__libcpp_refstring) == sizeof(const char*), "");
+static_assert(sizeof(std::__LIBCUDACXX_refstring) == sizeof(const char*), "");
 
 namespace std // purposefully not using versioning namespace
 {
@@ -42,7 +42,7 @@ runtime_error& runtime_error::operator=(const runtime_error& re) noexcept {
   return *this;
 }
 
-#if !defined(_LIBCPPABI_VERSION) && !defined(LIBSTDCXX)
+#if !defined(_LIBCUDACXXABI_VERSION) && !defined(LIBSTDCXX)
 
 const char* logic_error::what() const noexcept { return __imp_.c_str(); }
 

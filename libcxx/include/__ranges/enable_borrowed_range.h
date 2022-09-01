@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANGES_ENABLE_BORROWED_RANGE_H
-#define _LIBCPP___RANGES_ENABLE_BORROWED_RANGE_H
+#ifndef _LIBCUDACXX___RANGES_ENABLE_BORROWED_RANGE_H
+#define _LIBCUDACXX___RANGES_ENABLE_BORROWED_RANGE_H
 
 // These customization variables are used in <span> and <string_view>. The
 // separate header is used to avoid including the entire <ranges> header in
@@ -16,13 +16,13 @@
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace ranges {
 
@@ -33,8 +33,8 @@ inline constexpr bool enable_borrowed_range = false;
 
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_ENABLE_BORROWED_RANGE_H
+#endif // _LIBCUDACXX___RANGES_ENABLE_BORROWED_RANGE_H

@@ -36,7 +36,7 @@ void test(const Allocator& alloc) {
                                > C;
 
     C c(7, alloc);
-    LIBCPP_ASSERT(c.bucket_count() == 7);
+    LIBCUDACXX_ASSERT(c.bucket_count() == 7);
     assert(c.hash_function() == test_hash<NotConstructible>());
     assert(c.key_eq() == test_equal_to<NotConstructible>());
     assert(c.get_allocator() == alloc);

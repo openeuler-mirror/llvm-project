@@ -46,7 +46,7 @@ int main(int, char**)
             test_allocator<std::pair<const int, std::string> >(10)
            );
         C c = std::move(c0);
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 0);
         assert(c.hash_function() == test_hash<int>(8));
         assert(c.key_eq() == test_equal_to<int>(9));
@@ -85,7 +85,7 @@ int main(int, char**)
         C::iterator it0 = c0.begin();
         C c = std::move(c0);
         assert(it0 == c.begin()); // Iterators remain valid
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         typedef std::pair<C::const_iterator, C::const_iterator> Eq;
         Eq eq = c.equal_range(1);
@@ -132,7 +132,7 @@ int main(int, char**)
             min_allocator<std::pair<const int, std::string> >()
            );
         C c = std::move(c0);
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 0);
         assert(c.hash_function() == test_hash<int>(8));
         assert(c.key_eq() == test_equal_to<int>(9));
@@ -171,7 +171,7 @@ int main(int, char**)
         C::iterator it0 = c0.begin();
         C c = std::move(c0);
         assert(it0 == c.begin()); // Iterators remain valid
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         typedef std::pair<C::const_iterator, C::const_iterator> Eq;
         Eq eq = c.equal_range(1);

@@ -11,7 +11,7 @@
 // list(list&& c);
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <list>
 
@@ -22,7 +22,7 @@ int main(int, char**) {
     l1.push_back(1); l1.push_back(2); l1.push_back(3);
     std::list<int>::iterator i = l1.begin();
     std::list<int> l2 = l1;
-    TEST_LIBCPP_ASSERT_FAILURE(l2.erase(i), "list::erase(iterator) called with an iterator not referring to this list");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(l2.erase(i), "list::erase(iterator) called with an iterator not referring to this list");
 
     return 0;
 }

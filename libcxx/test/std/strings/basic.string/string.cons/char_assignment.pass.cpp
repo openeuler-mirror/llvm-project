@@ -22,7 +22,7 @@ test(S s1, typename S::value_type s2)
 {
     typedef typename S::traits_type T;
     s1 = s2;
-    LIBCPP_ASSERT(s1.__invariants());
+    LIBCUDACXX_ASSERT(s1.__invariants());
     assert(s1.size() == 1);
     assert(T::eq(s1[0], s2));
     assert(s1.capacity() >= s1.size());

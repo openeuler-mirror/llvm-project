@@ -15,25 +15,25 @@
 #include <functional>
 #include <string>
 
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
 #  include <mutex>
-#  if defined(__ELF__) && defined(_LIBCPP_LINK_PTHREAD_LIB)
+#  if defined(__ELF__) && defined(_LIBCUDACXX_LINK_PTHREAD_LIB)
 #    pragma comment(lib, "pthread")
 #  endif
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-_LIBCPP_FUNC_VIS
-__libcpp_db*
+_LIBCUDACXX_FUNC_VIS
+__LIBCUDACXX_db*
 __get_db()
 {
-    static _LIBCPP_NO_DESTROY __libcpp_db db;
+    static _LIBCUDACXX_NO_DESTROY __LIBCUDACXX_db db;
     return &db;
 }
 
-_LIBCPP_FUNC_VIS
-const __libcpp_db*
+_LIBCUDACXX_FUNC_VIS
+const __LIBCUDACXX_db*
 __get_const_db()
 {
     return __get_db();
@@ -42,7 +42,7 @@ __get_const_db()
 namespace
 {
 
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
 typedef mutex mutex_type;
 typedef lock_guard<mutex_type> WLock;
 typedef lock_guard<mutex_type> RLock;
@@ -50,10 +50,10 @@ typedef lock_guard<mutex_type> RLock;
 mutex_type&
 mut()
 {
-    static _LIBCPP_NO_DESTROY mutex_type m;
+    static _LIBCUDACXX_NO_DESTROY mutex_type m;
     return m;
 }
-#endif // !_LIBCPP_HAS_NO_THREADS
+#endif // !_LIBCUDACXX_HAS_NO_THREADS
 
 }  // unnamed namespace
 
@@ -76,7 +76,7 @@ __c_node::~__c_node()
     }
 }
 
-__libcpp_db::__libcpp_db()
+__LIBCUDACXX_db::__LIBCUDACXX_db()
     : __cbeg_(nullptr),
       __cend_(nullptr),
       __csz_(0),
@@ -86,7 +86,7 @@ __libcpp_db::__libcpp_db()
 {
 }
 
-__libcpp_db::~__libcpp_db()
+__LIBCUDACXX_db::~__LIBCUDACXX_db()
 {
     if (__cbeg_)
     {
@@ -115,20 +115,20 @@ __libcpp_db::~__libcpp_db()
 }
 
 void*
-__libcpp_db::__find_c_from_i(void* __i) const
+__LIBCUDACXX_db::__find_c_from_i(void* __i) const
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     RLock _(mut());
 #endif
     __i_node* i = __find_iterator(__i);
-    _LIBCPP_ASSERT(i != nullptr, "iterator not found in debug database.");
+    _LIBCUDACXX_ASSERT(i != nullptr, "iterator not found in debug database.");
     return i->__c_ != nullptr ? i->__c_->__c_ : nullptr;
 }
 
 void
-__libcpp_db::__insert_ic(void* __i, const void* __c)
+__LIBCUDACXX_db::__insert_ic(void* __i, const void* __c)
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     WLock _(mut());
 #endif
     if (__cbeg_ == __cend_)
@@ -149,9 +149,9 @@ __libcpp_db::__insert_ic(void* __i, const void* __c)
 }
 
 void
-__libcpp_db::__insert_c(void* __c, __libcpp_db::_InsertConstruct *__fn)
+__LIBCUDACXX_db::__insert_c(void* __c, __LIBCUDACXX_db::_InsertConstruct *__fn)
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     WLock _(mut());
 #endif
     if (__csz_ + 1 > static_cast<size_t>(__cend_ - __cbeg_))
@@ -188,9 +188,9 @@ __libcpp_db::__insert_c(void* __c, __libcpp_db::_InsertConstruct *__fn)
 }
 
 void
-__libcpp_db::__erase_i(void* __i)
+__LIBCUDACXX_db::__erase_i(void* __i)
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     WLock _(mut());
 #endif
     if (__ibeg_ != __iend_)
@@ -221,9 +221,9 @@ __libcpp_db::__erase_i(void* __i)
 }
 
 void
-__libcpp_db::__invalidate_all(void* __c)
+__LIBCUDACXX_db::__invalidate_all(void* __c)
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     WLock _(mut());
 #endif
     if (__cend_ != __cbeg_)
@@ -247,14 +247,14 @@ __libcpp_db::__invalidate_all(void* __c)
 }
 
 __c_node*
-__libcpp_db::__find_c_and_lock(void* __c) const
+__LIBCUDACXX_db::__find_c_and_lock(void* __c) const
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     mut().lock();
 #endif
     if (__cend_ == __cbeg_)
     {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
         mut().unlock();
 #endif
         return nullptr;
@@ -263,7 +263,7 @@ __libcpp_db::__find_c_and_lock(void* __c) const
     __c_node* p = __cbeg_[hc];
     if (p == nullptr)
     {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
         mut().unlock();
 #endif
         return nullptr;
@@ -273,7 +273,7 @@ __libcpp_db::__find_c_and_lock(void* __c) const
         p = p->__next_;
         if (p == nullptr)
         {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
             mut().unlock();
 #endif
             return nullptr;
@@ -283,31 +283,31 @@ __libcpp_db::__find_c_and_lock(void* __c) const
 }
 
 __c_node*
-__libcpp_db::__find_c(void* __c) const
+__LIBCUDACXX_db::__find_c(void* __c) const
 {
     size_t hc = hash<void*>()(__c) % static_cast<size_t>(__cend_ - __cbeg_);
     __c_node* p = __cbeg_[hc];
-    _LIBCPP_ASSERT(p != nullptr, "debug mode internal logic error __find_c A");
+    _LIBCUDACXX_ASSERT(p != nullptr, "debug mode internal logic error __find_c A");
     while (p->__c_ != __c)
     {
         p = p->__next_;
-        _LIBCPP_ASSERT(p != nullptr, "debug mode internal logic error __find_c B");
+        _LIBCUDACXX_ASSERT(p != nullptr, "debug mode internal logic error __find_c B");
     }
     return p;
 }
 
 void
-__libcpp_db::unlock() const
+__LIBCUDACXX_db::unlock() const
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     mut().unlock();
 #endif
 }
 
 void
-__libcpp_db::__erase_c(void* __c)
+__LIBCUDACXX_db::__erase_c(void* __c)
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     WLock _(mut());
 #endif
     if (__cend_ != __cbeg_)
@@ -317,14 +317,14 @@ __libcpp_db::__erase_c(void* __c)
         if (p == nullptr)
             return;
         __c_node* q = nullptr;
-        _LIBCPP_ASSERT(p != nullptr, "debug mode internal logic error __erase_c A");
+        _LIBCUDACXX_ASSERT(p != nullptr, "debug mode internal logic error __erase_c A");
         while (p->__c_ != __c)
         {
             q = p;
             p = p->__next_;
             if (p == nullptr)
                 return;
-            _LIBCPP_ASSERT(p != nullptr, "debug mode internal logic error __erase_c B");
+            _LIBCUDACXX_ASSERT(p != nullptr, "debug mode internal logic error __erase_c B");
         }
         if (q == nullptr)
             __cbeg_[hc] = p->__next_;
@@ -342,9 +342,9 @@ __libcpp_db::__erase_c(void* __c)
 }
 
 void
-__libcpp_db::__iterator_copy(void* __i, const void* __i0)
+__LIBCUDACXX_db::__iterator_copy(void* __i, const void* __i0)
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     WLock _(mut());
 #endif
     __i_node* i = __find_iterator(__i);
@@ -370,9 +370,9 @@ __libcpp_db::__iterator_copy(void* __i, const void* __i0)
 }
 
 bool
-__libcpp_db::__dereferenceable(const void* __i) const
+__LIBCUDACXX_db::__dereferenceable(const void* __i) const
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     RLock _(mut());
 #endif
     __i_node* i = __find_iterator(__i);
@@ -380,9 +380,9 @@ __libcpp_db::__dereferenceable(const void* __i) const
 }
 
 bool
-__libcpp_db::__decrementable(const void* __i) const
+__LIBCUDACXX_db::__decrementable(const void* __i) const
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     RLock _(mut());
 #endif
     __i_node* i = __find_iterator(__i);
@@ -390,9 +390,9 @@ __libcpp_db::__decrementable(const void* __i) const
 }
 
 bool
-__libcpp_db::__addable(const void* __i, ptrdiff_t __n) const
+__LIBCUDACXX_db::__addable(const void* __i, ptrdiff_t __n) const
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     RLock _(mut());
 #endif
     __i_node* i = __find_iterator(__i);
@@ -400,9 +400,9 @@ __libcpp_db::__addable(const void* __i, ptrdiff_t __n) const
 }
 
 bool
-__libcpp_db::__subscriptable(const void* __i, ptrdiff_t __n) const
+__LIBCUDACXX_db::__subscriptable(const void* __i, ptrdiff_t __n) const
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     RLock _(mut());
 #endif
     __i_node* i = __find_iterator(__i);
@@ -410,9 +410,9 @@ __libcpp_db::__subscriptable(const void* __i, ptrdiff_t __n) const
 }
 
 bool
-__libcpp_db::__less_than_comparable(const void* __i, const void* __j) const
+__LIBCUDACXX_db::__less_than_comparable(const void* __i, const void* __j) const
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     RLock _(mut());
 #endif
     __i_node* i = __find_iterator(__i);
@@ -423,26 +423,26 @@ __libcpp_db::__less_than_comparable(const void* __i, const void* __j) const
 }
 
 void
-__libcpp_db::swap(void* c1, void* c2)
+__LIBCUDACXX_db::swap(void* c1, void* c2)
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     WLock _(mut());
 #endif
     size_t hc = hash<void*>()(c1) % static_cast<size_t>(__cend_ - __cbeg_);
     __c_node* p1 = __cbeg_[hc];
-    _LIBCPP_ASSERT(p1 != nullptr, "debug mode internal logic error swap A");
+    _LIBCUDACXX_ASSERT(p1 != nullptr, "debug mode internal logic error swap A");
     while (p1->__c_ != c1)
     {
         p1 = p1->__next_;
-        _LIBCPP_ASSERT(p1 != nullptr, "debug mode internal logic error swap B");
+        _LIBCUDACXX_ASSERT(p1 != nullptr, "debug mode internal logic error swap B");
     }
     hc = hash<void*>()(c2) % static_cast<size_t>(__cend_ - __cbeg_);
     __c_node* p2 = __cbeg_[hc];
-    _LIBCPP_ASSERT(p2 != nullptr, "debug mode internal logic error swap C");
+    _LIBCUDACXX_ASSERT(p2 != nullptr, "debug mode internal logic error swap C");
     while (p2->__c_ != c2)
     {
         p2 = p2->__next_;
-        _LIBCPP_ASSERT(p2 != nullptr, "debug mode internal logic error swap D");
+        _LIBCUDACXX_ASSERT(p2 != nullptr, "debug mode internal logic error swap D");
     }
     std::swap(p1->beg_, p2->beg_);
     std::swap(p1->end_, p2->end_);
@@ -454,9 +454,9 @@ __libcpp_db::swap(void* c1, void* c2)
 }
 
 void
-__libcpp_db::__insert_i(void* __i)
+__LIBCUDACXX_db::__insert_i(void* __i)
 {
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
     WLock _(mut());
 #endif
     __insert_iterator(__i);
@@ -487,9 +487,9 @@ __c_node::__add(__i_node* i)
 
 // private api
 
-_LIBCPP_HIDDEN
+_LIBCUDACXX_HIDDEN
 __i_node*
-__libcpp_db::__insert_iterator(void* __i)
+__LIBCUDACXX_db::__insert_iterator(void* __i)
 {
     if (__isz_ + 1 > static_cast<size_t>(__iend_ - __ibeg_))
     {
@@ -526,9 +526,9 @@ __libcpp_db::__insert_iterator(void* __i)
     return r;
 }
 
-_LIBCPP_HIDDEN
+_LIBCUDACXX_HIDDEN
 __i_node*
-__libcpp_db::__find_iterator(const void* __i) const
+__LIBCUDACXX_db::__find_iterator(const void* __i) const
 {
     __i_node* r = nullptr;
     if (__ibeg_ != __iend_)
@@ -546,14 +546,14 @@ __libcpp_db::__find_iterator(const void* __i) const
     return r;
 }
 
-_LIBCPP_HIDDEN
+_LIBCUDACXX_HIDDEN
 void
 __c_node::__remove(__i_node* p)
 {
     __i_node** r = find(beg_, end_, p);
-    _LIBCPP_ASSERT(r != end_, "debug mode internal logic error __c_node::__remove");
+    _LIBCUDACXX_ASSERT(r != end_, "debug mode internal logic error __c_node::__remove");
     if (--end_ != r)
         memmove(r, r+1, static_cast<size_t>(end_ - r)*sizeof(__i_node*));
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Test that _LIBCPP_FREESTANDING is not defined when -ffreestanding is not passed
+// Test that _LIBCUDACXX_FREESTANDING is not defined when -ffreestanding is not passed
 // to the compiler but defined when -ffreestanding is passed to the compiler.
 
 // RUN: %{cxx} %{flags} %{compile_flags} -fsyntax-only %s
@@ -14,7 +14,7 @@
 
 #include <__config>
 
-#if defined(FREESTANDING) != defined(_LIBCPP_FREESTANDING)
-#error _LIBCPP_FREESTANDING should be defined in freestanding mode and not \
+#if defined(FREESTANDING) != defined(_LIBCUDACXX_FREESTANDING)
+#error _LIBCUDACXX_FREESTANDING should be defined in freestanding mode and not \
        defined in non-freestanding mode
 #endif

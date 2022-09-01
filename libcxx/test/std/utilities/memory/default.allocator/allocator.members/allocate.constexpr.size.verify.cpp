@@ -35,6 +35,6 @@ constexpr bool test()
 int main(int, char**)
 {
     static_assert(test<double>()); // expected-error-re {{{{(static_assert|static assertion)}} expression is not an integral constant expression}}
-    LIBCPP_STATIC_ASSERT(test<const double>()); // expected-error-re {{{{(static_assert|static assertion)}} expression is not an integral constant expression}}
+    LIBCUDACXX_STATIC_ASSERT(test<const double>()); // expected-error-re {{{{(static_assert|static assertion)}} expression is not an integral constant expression}}
     return 0;
 }

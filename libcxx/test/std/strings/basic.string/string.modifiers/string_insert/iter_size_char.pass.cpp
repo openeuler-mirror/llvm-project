@@ -23,7 +23,7 @@ test(S s, typename S::difference_type pos, typename S::size_type n,
 {
     typename S::const_iterator p = s.cbegin() + pos;
     typename S::iterator i = s.insert(p, n, c);
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(i - s.begin() == pos);
     assert(s == expected);
 }

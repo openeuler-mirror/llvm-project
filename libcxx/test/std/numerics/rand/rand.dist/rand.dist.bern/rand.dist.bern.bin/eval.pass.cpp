@@ -526,7 +526,7 @@ int main(int, char**) {
     tests<unsigned long>();
     tests<unsigned long long>();
 
-#if defined(_LIBCPP_VERSION) // extension
+#if defined(_LIBCUDACXX_VERSION) // extension
     tests<int8_t>();
     tests<uint8_t>();
 #if !defined(TEST_HAS_NO_INT128)

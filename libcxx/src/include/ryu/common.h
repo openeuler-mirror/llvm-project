@@ -36,8 +36,8 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef _LIBCPP_SRC_INCLUDE_RYU_COMMON_H
-#define _LIBCPP_SRC_INCLUDE_RYU_COMMON_H
+#ifndef _LIBCUDACXX_SRC_INCLUDE_RYU_COMMON_H
+#define _LIBCUDACXX_SRC_INCLUDE_RYU_COMMON_H
 
 // Avoid formatting to keep the changes with the original code minimal.
 // clang-format off
@@ -45,13 +45,13 @@
 #include <__assert>
 #include "__config"
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI inline uint32_t __decimalLength9(const uint32_t __v) {
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI inline uint32_t __decimalLength9(const uint32_t __v) {
   // Function precondition: __v is not a 10-digit number.
   // (f2s: 9 digits are sufficient for round-tripping.)
   // (d2fixed: We print 9-digit blocks.)
-  _LIBCPP_ASSERT(__v < 1000000000, "");
+  _LIBCUDACXX_ASSERT(__v < 1000000000, "");
   if (__v >= 100000000) { return 9; }
   if (__v >= 10000000) { return 8; }
   if (__v >= 1000000) { return 7; }
@@ -64,45 +64,45 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 }
 
 // Returns __e == 0 ? 1 : ceil(log_2(5^__e)).
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI  inline int32_t __pow5bits(const int32_t __e) {
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI  inline int32_t __pow5bits(const int32_t __e) {
   // This approximation works up to the point that the multiplication overflows at __e = 3529.
   // If the multiplication were done in 64 bits, it would fail at 5^4004 which is just greater
   // than 2^9297.
-  _LIBCPP_ASSERT(__e >= 0, "");
-  _LIBCPP_ASSERT(__e <= 3528, "");
+  _LIBCUDACXX_ASSERT(__e >= 0, "");
+  _LIBCUDACXX_ASSERT(__e <= 3528, "");
   return static_cast<int32_t>(((static_cast<uint32_t>(__e) * 1217359) >> 19) + 1);
 }
 
 // Returns floor(log_10(2^__e)).
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI  inline uint32_t __log10Pow2(const int32_t __e) {
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI  inline uint32_t __log10Pow2(const int32_t __e) {
   // The first value this approximation fails for is 2^1651 which is just greater than 10^297.
-  _LIBCPP_ASSERT(__e >= 0, "");
-  _LIBCPP_ASSERT(__e <= 1650, "");
+  _LIBCUDACXX_ASSERT(__e >= 0, "");
+  _LIBCUDACXX_ASSERT(__e <= 1650, "");
   return (static_cast<uint32_t>(__e) * 78913) >> 18;
 }
 
 // Returns floor(log_10(5^__e)).
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI inline uint32_t __log10Pow5(const int32_t __e) {
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI inline uint32_t __log10Pow5(const int32_t __e) {
   // The first value this approximation fails for is 5^2621 which is just greater than 10^1832.
-  _LIBCPP_ASSERT(__e >= 0, "");
-  _LIBCPP_ASSERT(__e <= 2620, "");
+  _LIBCUDACXX_ASSERT(__e >= 0, "");
+  _LIBCUDACXX_ASSERT(__e <= 2620, "");
   return (static_cast<uint32_t>(__e) * 732923) >> 20;
 }
 
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI inline uint32_t __float_to_bits(const float __f) {
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI inline uint32_t __float_to_bits(const float __f) {
   uint32_t __bits = 0;
-  _VSTD::memcpy(&__bits, &__f, sizeof(float));
+  _CUDA_VSTD::memcpy(&__bits, &__f, sizeof(float));
   return __bits;
 }
 
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI inline uint64_t __double_to_bits(const double __d) {
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI inline uint64_t __double_to_bits(const double __d) {
   uint64_t __bits = 0;
-  _VSTD::memcpy(&__bits, &__d, sizeof(double));
+  _CUDA_VSTD::memcpy(&__bits, &__d, sizeof(double));
   return __bits;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
 // clang-format on
 
-#endif // _LIBCPP_SRC_INCLUDE_RYU_COMMON_H
+#endif // _LIBCUDACXX_SRC_INCLUDE_RYU_COMMON_H

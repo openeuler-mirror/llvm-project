@@ -30,7 +30,7 @@ template <class T>
 constexpr bool test()
 {
     ASSERT_SAME_TYPE(decltype(std::bit_ceil(T())), T);
-    LIBCPP_ASSERT_NOEXCEPT(std::bit_ceil(T()));
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::bit_ceil(T()));
 
     assert(std::bit_ceil(T(0)) == T(1));
     assert(std::bit_ceil(T(1)) == T(1));

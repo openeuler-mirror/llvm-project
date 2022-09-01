@@ -6,28 +6,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_IS_CONSTRUCTIBLE_H
-#define _LIBCPP___TYPE_IS_CONSTRUCTIBLE_H
+#ifndef _LIBCUDACXX___TYPE_IS_CONSTRUCTIBLE_H
+#define _LIBCUDACXX___TYPE_IS_CONSTRUCTIBLE_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp, class ..._Args>
-struct _LIBCPP_TEMPLATE_VIS is_constructible
+struct _LIBCUDACXX_TEMPLATE_VIS is_constructible
     : public integral_constant<bool, __is_constructible(_Tp, _Args...)>
 { };
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp, class ..._Args>
 inline constexpr bool is_constructible_v = is_constructible<_Tp, _Args...>::value;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_IS_CONSTRUCTIBLE_H
+#endif // _LIBCUDACXX___TYPE_IS_CONSTRUCTIBLE_H

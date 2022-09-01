@@ -6,7 +6,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-format
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-format
 
 // <format>
 
@@ -30,7 +30,7 @@ void test() {
   std::basic_string<CharT> output;
   const std::basic_format_context context =
       test_format_context_create(OutIt{output}, args);
-  LIBCPP_ASSERT(args.__size() == 4);
+  LIBCUDACXX_ASSERT(args.__size() == 4);
   ASSERT_NOEXCEPT(context.arg(0));
   for (size_t i = 0, e = args.__size(); i != e; ++i) {
     assert(context.arg(i));

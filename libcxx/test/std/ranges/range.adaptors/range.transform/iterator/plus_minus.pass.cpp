@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // transform_view::<iterator>::operator{+,-}
 
@@ -25,7 +25,7 @@ constexpr bool test() {
   assert((iter1 + 1).base() == globalBuff + 5);
   assert((1 + iter1).base() == globalBuff + 5);
   assert((iter1 - 1).base() == globalBuff + 3);
-  LIBCPP_ASSERT(iter1 - iter2 == 4);
+  LIBCUDACXX_ASSERT(iter1 - iter2 == 4);
   assert((iter1 + 2) - 2 == iter1);
   assert((iter1 - 2) + 2 == iter1);
 

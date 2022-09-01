@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // std::views::drop
 
@@ -182,7 +182,7 @@ constexpr bool test() {
   // `views::drop(subrange, n)` returns a `subrange` when `subrange::StoreSize == false`.
   {
     auto subrange = std::ranges::subrange(buf, buf + N);
-    LIBCPP_STATIC_ASSERT(!decltype(subrange)::_StoreSize);
+    LIBCUDACXX_STATIC_ASSERT(!decltype(subrange)::_StoreSize);
 
     using Result = std::ranges::subrange<int*>;
     std::same_as<Result> decltype(auto) result = subrange | std::views::drop(3);
@@ -196,7 +196,7 @@ constexpr bool test() {
 
     using Subrange = std::ranges::subrange<View::iterator, View::sentinel, std::ranges::subrange_kind::sized>;
     auto subrange = Subrange(view.begin(), view.end(), std::ranges::distance(view.begin(), view.end()));
-    LIBCPP_STATIC_ASSERT(decltype(subrange)::_StoreSize);
+    LIBCUDACXX_STATIC_ASSERT(decltype(subrange)::_StoreSize);
 
     std::same_as<Subrange> decltype(auto) result = subrange | std::views::drop(3);
     assert(result.size() == 5);

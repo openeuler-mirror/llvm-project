@@ -14,7 +14,7 @@
 #include <cstddef>
 #include "include/refstring.h" // from libc++
 
-static_assert(sizeof(std::__libcpp_refstring) == sizeof(const char *), "");
+static_assert(sizeof(std::__LIBCUDACXX_refstring) == sizeof(const char *), "");
 
 namespace std  // purposefully not using versioning namespace
 {

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_SEED_SEQ_H
-#define _LIBCPP___RANDOM_SEED_SEQ_H
+#ifndef _LIBCUDACXX___RANDOM_SEED_SEQ_H
+#define _LIBCUDACXX___RANDOM_SEED_SEQ_H
 
 #include <__algorithm/copy.h>
 #include <__algorithm/fill.h>
@@ -16,34 +16,34 @@
 #include <initializer_list>
 #include <vector>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-class _LIBCPP_TEMPLATE_VIS seed_seq
+class _LIBCUDACXX_TEMPLATE_VIS seed_seq
 {
 public:
     // types
     typedef uint32_t result_type;
 
     // constructors
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     seed_seq() _NOEXCEPT {}
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
     template<class _Tp, __enable_if_t<is_integral<_Tp>::value>* = nullptr>
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     seed_seq(initializer_list<_Tp> __il) {
         __init(__il.begin(), __il.end());
     }
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
     template<class _InputIterator>
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     seed_seq(_InputIterator __first, _InputIterator __last) {
         static_assert(is_integral<typename iterator_traits<_InputIterator>::value_type>::value,
             "Mandates: iterator_traits<InputIterator>::value_type is an integer type");
@@ -55,17 +55,17 @@ public:
         void generate(_RandomAccessIterator __first, _RandomAccessIterator __last);
 
     // property functions
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     size_t size() const _NOEXCEPT {return __v_.size();}
     template<class _OutputIterator>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         void param(_OutputIterator __dest) const
-            {_VSTD::copy(__v_.begin(), __v_.end(), __dest);}
+            {_CUDA_VSTD::copy(__v_.begin(), __v_.end(), __dest);}
 
     seed_seq(const seed_seq&) = delete;
     void operator=(const seed_seq&) = delete;
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     static result_type _Tp(result_type __x) {return __x ^ (__x >> 27);}
 
 private:
@@ -89,7 +89,7 @@ seed_seq::generate(_RandomAccessIterator __first, _RandomAccessIterator __last)
 {
     if (__first != __last)
     {
-        _VSTD::fill(__first, __last, 0x8b8b8b8b);
+        _CUDA_VSTD::fill(__first, __last, 0x8b8b8b8b);
         const size_t __n = static_cast<size_t>(__last - __first);
         const size_t __s = __v_.size();
         const size_t __t = (__n >= 623) ? 11
@@ -99,7 +99,7 @@ seed_seq::generate(_RandomAccessIterator __first, _RandomAccessIterator __last)
                          : (__n - 1) / 2;
         const size_t __p = (__n - __t) / 2;
         const size_t __q = __p + __t;
-        const size_t __m = _VSTD::max(__s + 1, __n);
+        const size_t __m = _CUDA_VSTD::max(__s + 1, __n);
         // __k = 0;
         {
             result_type __r = 1664525 * _Tp(__first[0] ^ __first[__p]
@@ -170,8 +170,8 @@ seed_seq::generate(_RandomAccessIterator __first, _RandomAccessIterator __last)
     }
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_SEED_SEQ_H
+#endif // _LIBCUDACXX___RANDOM_SEED_SEQ_H

@@ -26,8 +26,8 @@ test(S s1, S s2)
 {
     S s0 = s2;
     s1 = std::move(s2);
-    LIBCPP_ASSERT(s1.__invariants());
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s1.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s1 == s0);
     assert(s1.capacity() >= s1.size());
 }

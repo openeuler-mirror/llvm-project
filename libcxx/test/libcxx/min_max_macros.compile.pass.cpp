@@ -45,7 +45,7 @@ TEST_MACROS();
 TEST_MACROS();
 #include <atomic>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <barrier>
 TEST_MACROS();
 #endif
@@ -75,13 +75,13 @@ TEST_MACROS();
 TEST_MACROS();
 #include <climits>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <clocale>
 TEST_MACROS();
 #endif
 #include <cmath>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <codecvt>
 TEST_MACROS();
 #endif
@@ -123,11 +123,11 @@ TEST_MACROS();
 TEST_MACROS();
 #include <cuchar>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #   include <cwchar>
 TEST_MACROS();
 #endif
-#if !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #   include <cwctype>
 TEST_MACROS();
 #endif
@@ -141,7 +141,7 @@ TEST_MACROS();
 TEST_MACROS();
 #include <fenv.h>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_FILESYSTEM_LIBRARY)
+#if !defined(_LIBCUDACXX_HAS_NO_FILESYSTEM_LIBRARY)
 #   include <filesystem>
 TEST_MACROS();
 #endif
@@ -151,13 +151,13 @@ TEST_MACROS();
 TEST_MACROS();
 #include <forward_list>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <fstream>
 TEST_MACROS();
 #endif
 #include <functional>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <future>
 TEST_MACROS();
 #endif
@@ -165,27 +165,27 @@ TEST_MACROS();
 TEST_MACROS();
 #include <inttypes.h>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <iomanip>
 TEST_MACROS();
 #endif
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <ios>
 TEST_MACROS();
 #endif
 #include <iosfwd>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <iostream>
 TEST_MACROS();
 #endif
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <istream>
 TEST_MACROS();
 #endif
 #include <iterator>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <latch>
 TEST_MACROS();
 #endif
@@ -195,11 +195,11 @@ TEST_MACROS();
 TEST_MACROS();
 #include <list>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <locale>
 TEST_MACROS();
 #endif
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <locale.h>
 TEST_MACROS();
 #endif
@@ -209,7 +209,7 @@ TEST_MACROS();
 TEST_MACROS();
 #include <memory>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <mutex>
 TEST_MACROS();
 #endif
@@ -221,7 +221,7 @@ TEST_MACROS();
 TEST_MACROS();
 #include <optional>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <ostream>
 TEST_MACROS();
 #endif
@@ -233,13 +233,13 @@ TEST_MACROS();
 TEST_MACROS();
 #include <ratio>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <regex>
 TEST_MACROS();
 #endif
 #include <scoped_allocator>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <semaphore>
 TEST_MACROS();
 #endif
@@ -247,19 +247,19 @@ TEST_MACROS();
 TEST_MACROS();
 #include <setjmp.h>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <shared_mutex>
 TEST_MACROS();
 #endif
 #include <span>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <sstream>
 TEST_MACROS();
 #endif
 #include <stack>
 TEST_MACROS();
-#if __cplusplus > 202002L && !defined(_LIBCPP_HAS_NO_THREADS)
+#if __cplusplus > 202002L && !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <stdatomic.h>
 TEST_MACROS();
 #endif
@@ -275,7 +275,7 @@ TEST_MACROS();
 TEST_MACROS();
 #include <stdlib.h>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <streambuf>
 TEST_MACROS();
 #endif
@@ -285,7 +285,7 @@ TEST_MACROS();
 TEST_MACROS();
 #include <string_view>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <strstream>
 TEST_MACROS();
 #endif
@@ -293,7 +293,7 @@ TEST_MACROS();
 TEST_MACROS();
 #include <tgmath.h>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <thread>
 TEST_MACROS();
 #endif
@@ -321,11 +321,11 @@ TEST_MACROS();
 TEST_MACROS();
 #include <version>
 TEST_MACROS();
-#if !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #   include <wchar.h>
 TEST_MACROS();
 #endif
-#if !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #   include <wctype.h>
 TEST_MACROS();
 #endif
@@ -333,7 +333,7 @@ TEST_MACROS();
 #   include <experimental/algorithm>
 TEST_MACROS();
 #endif
-#if __cplusplus >= 201103L && !defined(_LIBCPP_HAS_NO_EXPERIMENTAL_COROUTINES)
+#if __cplusplus >= 201103L && !defined(_LIBCUDACXX_HAS_NO_EXPERIMENTAL_COROUTINES)
 #   include <experimental/coroutine>
 TEST_MACROS();
 #endif
@@ -369,7 +369,7 @@ TEST_MACROS();
 #   include <experimental/propagate_const>
 TEST_MACROS();
 #endif
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION) && __cplusplus >= 201103L
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION) && __cplusplus >= 201103L
 #   include <experimental/regex>
 TEST_MACROS();
 #endif

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_CLAMP_H
-#define _LIBCPP___ALGORITHM_RANGES_CLAMP_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_CLAMP_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_CLAMP_H
 
 #include <__assert>
 #include <__config>
@@ -18,13 +18,13 @@
 #include <__iterator/projected.h>
 #include <__utility/forward.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __clamp {
@@ -33,13 +33,13 @@ struct __fn {
   template <class _Type,
             class _Proj = identity,
             indirect_strict_weak_order<projected<const _Type*, _Proj>> _Comp = ranges::less>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   const _Type& operator()(const _Type& __value,
                           const _Type& __low,
                           const _Type& __high,
                           _Comp __comp = {},
                           _Proj __proj = {}) const {
-    _LIBCPP_ASSERT(!bool(std::invoke(__comp, std::invoke(__proj, __high), std::invoke(__proj, __low))),
+    _LIBCUDACXX_ASSERT(!bool(std::invoke(__comp, std::invoke(__proj, __high), std::invoke(__proj, __low))),
                    "Bad bounds passed to std::ranges::clamp");
 
     if (std::invoke(__comp, std::invoke(__proj, __value), std::invoke(__proj, __low)))
@@ -58,8 +58,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_CLAMP_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_CLAMP_H

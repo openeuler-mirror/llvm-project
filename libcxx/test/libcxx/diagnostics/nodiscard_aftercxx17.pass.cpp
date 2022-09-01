@@ -6,16 +6,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Test that _LIBCPP_NODISCARD_AFTER_CXX17 is disabled whenever
-// _LIBCPP_DISABLE_NODISCARD_AFTER_CXX17 is defined by the user.
+// Test that _LIBCUDACXX_NODISCARD_AFTER_CXX17 is disabled whenever
+// _LIBCUDACXX_DISABLE_NODISCARD_AFTER_CXX17 is defined by the user.
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_NODISCARD_AFTER_CXX17
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_NODISCARD_AFTER_CXX17
 
 #include <__config>
 
 #include "test_macros.h"
 
-_LIBCPP_NODISCARD_AFTER_CXX17 int foo() { return 6; }
+_LIBCUDACXX_NODISCARD_AFTER_CXX17 int foo() { return 6; }
 
 int main(int, char**)
 {

@@ -49,7 +49,7 @@ int main(int, char**)
         C c(cpp17_input_iterator<P*>(a), cpp17_input_iterator<P*>(a + sizeof(a)/sizeof(a[0])),
             7
            );
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.count(1) == 1);
         assert(c.count(2) == 1);
@@ -84,7 +84,7 @@ int main(int, char**)
         C c(cpp17_input_iterator<P*>(a), cpp17_input_iterator<P*>(a + sizeof(a)/sizeof(a[0])),
             7
            );
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.count(1) == 1);
         assert(c.count(2) == 1);

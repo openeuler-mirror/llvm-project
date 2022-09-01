@@ -23,7 +23,7 @@ TEST_CONSTEXPR_CXX20 void
 test(S s, S str, S expected)
 {
     s.assign(std::move(str));
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == expected);
 }
 

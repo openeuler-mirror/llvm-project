@@ -15,7 +15,7 @@
 
 // REQUIRES: has-unix-headers
 // XFAIL: use_system_cxx_lib && target={{.+}}-apple-macosx{{10.9|10.10|10.11|10.12|10.13|10.14|10.15|11.0|12.0}}
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_ASSERTIONS=1
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_ASSERTIONS=1
 
 #include <array>
 #include <span>
@@ -27,7 +27,7 @@ int main(int, char**) {
     std::span<int> other(array.data(), 3);
 
     auto invalid_source = [&] { std::span<int, 2> const s(other); (void)s; };
-    TEST_LIBCPP_ASSERT_FAILURE(invalid_source(), "size mismatch in span's constructor (other span)");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(invalid_source(), "size mismatch in span's constructor (other span)");
 
     return 0;
 }

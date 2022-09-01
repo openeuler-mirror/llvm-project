@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_CHRONO
-#define _LIBCPP_CHRONO
+#ifndef _LIBCUDACXX_CHRONO
+#define _LIBCUDACXX_CHRONO
 
 /*
     chrono synopsis
@@ -718,8 +718,8 @@ constexpr chrono::year                                  operator ""y(unsigned lo
 // standard-mandated includes
 #include <compare>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#endif // _LIBCPP_CHRONO
+#endif // _LIBCUDACXX_CHRONO

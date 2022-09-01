@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_UPPER_BOUND_H
-#define _LIBCPP___ALGORITHM_UPPER_BOUND_H
+#ifndef _LIBCUDACXX___ALGORITHM_UPPER_BOUND_H
+#define _LIBCUDACXX___ALGORITHM_UPPER_BOUND_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/half_positive.h>
@@ -21,14 +21,14 @@
 #include <__type_traits/is_copy_constructible.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy, class _Compare, class _Iter, class _Sent, class _Tp, class _Proj>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 _Iter
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _Iter
 __upper_bound(_Iter __first, _Sent __last, const _Tp& __value, _Compare&& __comp, _Proj&& __proj) {
   auto __len = _IterOps<_AlgPolicy>::distance(__first, __last);
   while (__len != 0) {
@@ -45,7 +45,7 @@ __upper_bound(_Iter __first, _Sent __last, const _Tp& __value, _Compare&& __comp
 }
 
 template <class _ForwardIterator, class _Tp, class _Compare>
-_LIBCPP_NODISCARD_EXT inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 _ForwardIterator
+_LIBCUDACXX_NODISCARD_EXT inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _ForwardIterator
 upper_bound(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value, _Compare __comp) {
   static_assert(is_copy_constructible<_ForwardIterator>::value,
                 "Iterator has to be copy constructible");
@@ -54,7 +54,7 @@ upper_bound(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __valu
 }
 
 template <class _ForwardIterator, class _Tp>
-_LIBCPP_NODISCARD_EXT inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 _ForwardIterator
+_LIBCUDACXX_NODISCARD_EXT inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _ForwardIterator
 upper_bound(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value) {
   return std::upper_bound(
       std::move(__first),
@@ -63,6 +63,6 @@ upper_bound(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __valu
       __less<_Tp, typename iterator_traits<_ForwardIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_UPPER_BOUND_H
+#endif // _LIBCUDACXX___ALGORITHM_UPPER_BOUND_H

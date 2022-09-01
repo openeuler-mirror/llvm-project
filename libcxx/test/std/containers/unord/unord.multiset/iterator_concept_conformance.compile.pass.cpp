@@ -23,7 +23,7 @@ using const_local_iterator = std::unordered_multiset<int>::const_local_iterator;
 using value_type = int;
 
 static_assert(std::forward_iterator<iterator>);
-LIBCPP_STATIC_ASSERT(!std::bidirectional_iterator<iterator>);
+LIBCUDACXX_STATIC_ASSERT(!std::bidirectional_iterator<iterator>);
 static_assert(!std::indirectly_writable<iterator, value_type>);
 static_assert(std::sentinel_for<iterator, iterator>);
 static_assert(std::sentinel_for<iterator, const_iterator>);
@@ -36,7 +36,7 @@ static_assert(std::indirectly_copyable_storable<iterator, int*>);
 static_assert(!std::indirectly_swappable<iterator, iterator>);
 
 static_assert(std::forward_iterator<const_iterator>);
-LIBCPP_STATIC_ASSERT(!std::bidirectional_iterator<const_iterator>);
+LIBCUDACXX_STATIC_ASSERT(!std::bidirectional_iterator<const_iterator>);
 static_assert(!std::indirectly_writable<const_iterator, value_type>);
 static_assert(std::sentinel_for<const_iterator, iterator>);
 static_assert(std::sentinel_for<const_iterator, const_iterator>);
@@ -49,7 +49,7 @@ static_assert(std::indirectly_copyable_storable<const_iterator, int*>);
 static_assert(!std::indirectly_swappable<const_iterator, const_iterator>);
 
 static_assert(std::forward_iterator<local_iterator>);
-LIBCPP_STATIC_ASSERT(!std::bidirectional_iterator<local_iterator>);
+LIBCUDACXX_STATIC_ASSERT(!std::bidirectional_iterator<local_iterator>);
 static_assert(!std::indirectly_writable<local_iterator, value_type>);
 static_assert(std::sentinel_for<local_iterator, local_iterator>);
 static_assert(std::sentinel_for<local_iterator, const_local_iterator>);
@@ -62,7 +62,7 @@ static_assert(std::indirectly_copyable_storable<local_iterator, int*>);
 static_assert(!std::indirectly_swappable<local_iterator, local_iterator>);
 
 static_assert(std::forward_iterator<const_local_iterator>);
-LIBCPP_STATIC_ASSERT(!std::bidirectional_iterator<const_local_iterator>);
+LIBCUDACXX_STATIC_ASSERT(!std::bidirectional_iterator<const_local_iterator>);
 static_assert(!std::indirectly_writable<const_local_iterator, value_type>);
 static_assert(std::sentinel_for<const_local_iterator, local_iterator>);
 static_assert(std::sentinel_for<const_local_iterator, const_local_iterator>);

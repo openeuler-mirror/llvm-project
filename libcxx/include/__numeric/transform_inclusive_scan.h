@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___NUMERIC_TRANSFORM_INCLUSIVE_SCAN_H
-#define _LIBCPP___NUMERIC_TRANSFORM_INCLUSIVE_SCAN_H
+#ifndef _LIBCUDACXX___NUMERIC_TRANSFORM_INCLUSIVE_SCAN_H
+#define _LIBCUDACXX___NUMERIC_TRANSFORM_INCLUSIVE_SCAN_H
 
 #include <__config>
 #include <__iterator/iterator_traits.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 
 template <class _InputIterator, class _OutputIterator, class _Tp, class _BinaryOp, class _UnaryOp>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _OutputIterator
 transform_inclusive_scan(_InputIterator __first, _InputIterator __last,
                            _OutputIterator __result, _BinaryOp __b, _UnaryOp __u, _Tp __init)
@@ -36,7 +36,7 @@ transform_inclusive_scan(_InputIterator __first, _InputIterator __last,
 }
 
 template <class _InputIterator, class _OutputIterator, class _BinaryOp, class _UnaryOp>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _OutputIterator
 transform_inclusive_scan(_InputIterator __first, _InputIterator __last,
                                _OutputIterator __result, _BinaryOp __b, _UnaryOp __u)
@@ -45,14 +45,14 @@ transform_inclusive_scan(_InputIterator __first, _InputIterator __last,
         typename iterator_traits<_InputIterator>::value_type __init = __u(*__first);
         *__result++ = __init;
         if (++__first != __last)
-            return _VSTD::transform_inclusive_scan(__first, __last, __result, __b, __u, __init);
+            return _CUDA_VSTD::transform_inclusive_scan(__first, __last, __result, __b, __u, __init);
     }
 
     return __result;
 }
 
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___NUMERIC_TRANSFORM_INCLUSIVE_SCAN_H
+#endif // _LIBCUDACXX___NUMERIC_TRANSFORM_INCLUSIVE_SCAN_H

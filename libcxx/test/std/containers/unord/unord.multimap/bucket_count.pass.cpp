@@ -26,7 +26,7 @@ int main(int, char**)
     {
         typedef std::unordered_multimap<int, std::string> C;
         const C c;
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
     }
     {
         typedef std::unordered_multimap<int, std::string> C;

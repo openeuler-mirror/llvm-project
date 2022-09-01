@@ -39,7 +39,7 @@ END-SCRIPT
 #include <any>
 #include <array>
 #include <atomic>
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <barrier>
 #endif
 #include <bit>
@@ -54,11 +54,11 @@ END-SCRIPT
 #include <cinttypes>
 #include <ciso646>
 #include <climits>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <clocale>
 #endif
 #include <cmath>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <codecvt>
 #endif
 #include <compare>
@@ -80,10 +80,10 @@ END-SCRIPT
 #include <ctime>
 #include <ctype.h>
 #include <cuchar>
-#if !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #   include <cwchar>
 #endif
-#if !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #   include <cwctype>
 #endif
 #include <deque>
@@ -91,82 +91,82 @@ END-SCRIPT
 #include <exception>
 #include <execution>
 #include <fenv.h>
-#if !defined(_LIBCPP_HAS_NO_FILESYSTEM_LIBRARY)
+#if !defined(_LIBCUDACXX_HAS_NO_FILESYSTEM_LIBRARY)
 #   include <filesystem>
 #endif
 #include <float.h>
 #include <format>
 #include <forward_list>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <fstream>
 #endif
 #include <functional>
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <future>
 #endif
 #include <initializer_list>
 #include <inttypes.h>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <iomanip>
 #endif
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <ios>
 #endif
 #include <iosfwd>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <iostream>
 #endif
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <istream>
 #endif
 #include <iterator>
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <latch>
 #endif
 #include <limits>
 #include <limits.h>
 #include <list>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <locale>
 #endif
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <locale.h>
 #endif
 #include <map>
 #include <math.h>
 #include <memory>
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <mutex>
 #endif
 #include <new>
 #include <numbers>
 #include <numeric>
 #include <optional>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <ostream>
 #endif
 #include <queue>
 #include <random>
 #include <ranges>
 #include <ratio>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <regex>
 #endif
 #include <scoped_allocator>
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <semaphore>
 #endif
 #include <set>
 #include <setjmp.h>
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <shared_mutex>
 #endif
 #include <span>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <sstream>
 #endif
 #include <stack>
-#if __cplusplus > 202002L && !defined(_LIBCPP_HAS_NO_THREADS)
+#if __cplusplus > 202002L && !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <stdatomic.h>
 #endif
 #include <stdbool.h>
@@ -175,18 +175,18 @@ END-SCRIPT
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <streambuf>
 #endif
 #include <string>
 #include <string.h>
 #include <string_view>
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #   include <strstream>
 #endif
 #include <system_error>
 #include <tgmath.h>
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 #   include <thread>
 #endif
 #include <tuple>
@@ -201,16 +201,16 @@ END-SCRIPT
 #include <variant>
 #include <vector>
 #include <version>
-#if !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #   include <wchar.h>
 #endif
-#if !defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if !defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #   include <wctype.h>
 #endif
 #if __cplusplus >= 201103L
 #   include <experimental/algorithm>
 #endif
-#if __cplusplus >= 201103L && !defined(_LIBCPP_HAS_NO_EXPERIMENTAL_COROUTINES)
+#if __cplusplus >= 201103L && !defined(_LIBCUDACXX_HAS_NO_EXPERIMENTAL_COROUTINES)
 #   include <experimental/coroutine>
 #endif
 #if __cplusplus >= 201103L
@@ -237,7 +237,7 @@ END-SCRIPT
 #if __cplusplus >= 201103L
 #   include <experimental/propagate_const>
 #endif
-#if !defined(_LIBCPP_HAS_NO_LOCALIZATION) && __cplusplus >= 201103L
+#if !defined(_LIBCUDACXX_HAS_NO_LOCALIZATION) && __cplusplus >= 201103L
 #   include <experimental/regex>
 #endif
 #if __cplusplus >= 201103L

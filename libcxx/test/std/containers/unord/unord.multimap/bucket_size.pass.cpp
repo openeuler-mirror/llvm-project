@@ -38,13 +38,13 @@ int main(int, char**)
         };
         const C c(std::begin(a), std::end(a));
         assert(c.bucket_count() >= 7);
-        LIBCPP_ASSERT(c.bucket_size(0) == 0);
-        LIBCPP_ASSERT(c.bucket_size(1) == 2);
-        LIBCPP_ASSERT(c.bucket_size(2) == 2);
-        LIBCPP_ASSERT(c.bucket_size(3) == 1);
-        LIBCPP_ASSERT(c.bucket_size(4) == 1);
-        LIBCPP_ASSERT(c.bucket_size(5) == 0);
-        LIBCPP_ASSERT(c.bucket_size(6) == 0);
+        LIBCUDACXX_ASSERT(c.bucket_size(0) == 0);
+        LIBCUDACXX_ASSERT(c.bucket_size(1) == 2);
+        LIBCUDACXX_ASSERT(c.bucket_size(2) == 2);
+        LIBCUDACXX_ASSERT(c.bucket_size(3) == 1);
+        LIBCUDACXX_ASSERT(c.bucket_size(4) == 1);
+        LIBCUDACXX_ASSERT(c.bucket_size(5) == 0);
+        LIBCUDACXX_ASSERT(c.bucket_size(6) == 0);
     }
 #if TEST_STD_VER >= 11
     {
@@ -62,13 +62,13 @@ int main(int, char**)
         };
         const C c(std::begin(a), std::end(a));
         assert(c.bucket_count() >= 7);
-        LIBCPP_ASSERT(c.bucket_size(0) == 0);
-        LIBCPP_ASSERT(c.bucket_size(1) == 2);
-        LIBCPP_ASSERT(c.bucket_size(2) == 2);
-        LIBCPP_ASSERT(c.bucket_size(3) == 1);
-        LIBCPP_ASSERT(c.bucket_size(4) == 1);
-        LIBCPP_ASSERT(c.bucket_size(5) == 0);
-        LIBCPP_ASSERT(c.bucket_size(6) == 0);
+        LIBCUDACXX_ASSERT(c.bucket_size(0) == 0);
+        LIBCUDACXX_ASSERT(c.bucket_size(1) == 2);
+        LIBCUDACXX_ASSERT(c.bucket_size(2) == 2);
+        LIBCUDACXX_ASSERT(c.bucket_size(3) == 1);
+        LIBCUDACXX_ASSERT(c.bucket_size(4) == 1);
+        LIBCUDACXX_ASSERT(c.bucket_size(5) == 0);
+        LIBCUDACXX_ASSERT(c.bucket_size(6) == 0);
     }
 #endif
 

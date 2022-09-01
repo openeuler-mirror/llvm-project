@@ -7,7 +7,7 @@
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
 // UNSUPPORTED: no-exceptions
-// UNSUPPORTED: libcpp-has-no-incomplete-format
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-format
 
 // This test requires the dylib support introduced in D92214.
 // XFAIL: use_system_cxx_lib && target={{.+}}-apple-macosx10.{{9|10|11|12|13|14|15}}
@@ -39,7 +39,7 @@ void test_exception() {
     TEST_IGNORE_NODISCARD context.next_arg_id();
     assert(false);
   } catch ([[maybe_unused]] const std::format_error& e) {
-    LIBCPP_ASSERT(strcmp(e.what(), "Using automatic argument numbering in manual "
+    LIBCUDACXX_ASSERT(strcmp(e.what(), "Using automatic argument numbering in manual "
                                    "argument numbering mode") == 0);
     return;
   }

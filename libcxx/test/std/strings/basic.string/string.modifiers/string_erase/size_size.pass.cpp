@@ -27,7 +27,7 @@ test(S s, typename S::size_type pos, typename S::size_type n, S expected)
     if (pos <= old_size)
     {
         s.erase(pos, n);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s[s.size()] == typename S::value_type());
         assert(s == expected);
     }
@@ -57,7 +57,7 @@ test(S s, typename S::size_type pos, S expected)
     if (pos <= old_size)
     {
         s.erase(pos);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s[s.size()] == typename S::value_type());
         assert(s == expected);
     }
@@ -83,7 +83,7 @@ TEST_CONSTEXPR_CXX20 void
 test(S s, S expected)
 {
     s.erase();
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s[s.size()] == typename S::value_type());
     assert(s == expected);
 }

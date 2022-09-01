@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_ALL_H
-#define _LIBCPP___RANGES_ALL_H
+#ifndef _LIBCUDACXX___RANGES_ALL_H
+#define _LIBCUDACXX___RANGES_ALL_H
 
 #include <__config>
 #include <__iterator/concepts.h>
@@ -22,13 +22,13 @@
 #include <__utility/forward.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges::views {
 
@@ -36,18 +36,18 @@ namespace __all {
   struct __fn : __range_adaptor_closure<__fn> {
     template<class _Tp>
       requires ranges::view<decay_t<_Tp>>
-    [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+    [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto operator()(_Tp&& __t) const
-      noexcept(noexcept(_LIBCPP_AUTO_CAST(std::forward<_Tp>(__t))))
-      -> decltype(_LIBCPP_AUTO_CAST(std::forward<_Tp>(__t)))
+      noexcept(noexcept(_LIBCUDACXX_AUTO_CAST(std::forward<_Tp>(__t))))
+      -> decltype(_LIBCUDACXX_AUTO_CAST(std::forward<_Tp>(__t)))
     {
-      return _LIBCPP_AUTO_CAST(std::forward<_Tp>(__t));
+      return _LIBCUDACXX_AUTO_CAST(std::forward<_Tp>(__t));
     }
 
     template<class _Tp>
       requires (!ranges::view<decay_t<_Tp>>) &&
                requires (_Tp&& __t) { ranges::ref_view{std::forward<_Tp>(__t)}; }
-    [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+    [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto operator()(_Tp&& __t) const
       noexcept(noexcept(ranges::ref_view{std::forward<_Tp>(__t)}))
     {
@@ -58,7 +58,7 @@ namespace __all {
       requires (!ranges::view<decay_t<_Tp>> &&
                 !requires (_Tp&& __t) { ranges::ref_view{std::forward<_Tp>(__t)}; } &&
                  requires (_Tp&& __t) { ranges::owning_view{std::forward<_Tp>(__t)}; })
-    [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+    [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto operator()(_Tp&& __t) const
       noexcept(noexcept(ranges::owning_view{std::forward<_Tp>(__t)}))
     {
@@ -76,8 +76,8 @@ using all_t = decltype(views::all(declval<_Range>()));
 
 } // namespace ranges::views
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_ALL_H
+#endif // _LIBCUDACXX___RANGES_ALL_H

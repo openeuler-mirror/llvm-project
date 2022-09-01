@@ -6,45 +6,45 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_BERNOULLI_DISTRIBUTION_H
-#define _LIBCPP___RANDOM_BERNOULLI_DISTRIBUTION_H
+#ifndef _LIBCUDACXX___RANDOM_BERNOULLI_DISTRIBUTION_H
+#define _LIBCUDACXX___RANDOM_BERNOULLI_DISTRIBUTION_H
 
 #include <__config>
 #include <__random/is_valid.h>
 #include <__random/uniform_real_distribution.h>
 #include <iosfwd>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-class _LIBCPP_TEMPLATE_VIS bernoulli_distribution
+class _LIBCUDACXX_TEMPLATE_VIS bernoulli_distribution
 {
 public:
     // types
     typedef bool result_type;
 
-    class _LIBCPP_TEMPLATE_VIS param_type
+    class _LIBCUDACXX_TEMPLATE_VIS param_type
     {
         double __p_;
     public:
         typedef bernoulli_distribution distribution_type;
 
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         explicit param_type(double __p = 0.5) : __p_(__p) {}
 
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         double p() const {return __p_;}
 
-        friend _LIBCPP_INLINE_VISIBILITY
+        friend _LIBCUDACXX_INLINE_VISIBILITY
             bool operator==(const param_type& __x, const param_type& __y)
             {return __x.__p_ == __y.__p_;}
-        friend _LIBCPP_INLINE_VISIBILITY
+        friend _LIBCUDACXX_INLINE_VISIBILITY
             bool operator!=(const param_type& __x, const param_type& __y)
             {return !(__x == __y);}
     };
@@ -54,46 +54,46 @@ private:
 
 public:
     // constructors and reset functions
-#ifndef _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
     bernoulli_distribution() : bernoulli_distribution(0.5) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit bernoulli_distribution(double __p) : __p_(param_type(__p)) {}
 #else
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit bernoulli_distribution(double __p = 0.5) : __p_(param_type(__p)) {}
 #endif
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit bernoulli_distribution(const param_type& __p) : __p_(__p) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void reset() {}
 
     // generating functions
     template<class _URNG>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         result_type operator()(_URNG& __g)
         {return (*this)(__g, __p_);}
-    template<class _URNG> _LIBCPP_INLINE_VISIBILITY result_type operator()(_URNG& __g, const param_type& __p);
+    template<class _URNG> _LIBCUDACXX_INLINE_VISIBILITY result_type operator()(_URNG& __g, const param_type& __p);
 
     // property functions
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     double p() const {return __p_.p();}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     param_type param() const {return __p_;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void param(const param_type& __p) {__p_ = __p;}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type min() const {return false;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type max() const {return true;}
 
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
         bool operator==(const bernoulli_distribution& __x,
                         const bernoulli_distribution& __y)
         {return __x.__p_ == __y.__p_;}
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
         bool operator!=(const bernoulli_distribution& __x,
                         const bernoulli_distribution& __y)
         {return !(__x == __y);}
@@ -104,7 +104,7 @@ inline
 bernoulli_distribution::result_type
 bernoulli_distribution::operator()(_URNG& __g, const param_type& __p)
 {
-    static_assert(__libcpp_random_is_valid_urng<_URNG>::value, "");
+    static_assert(__LIBCUDACXX_random_is_valid_urng<_URNG>::value, "");
     uniform_real_distribution<double> __gen;
     return __gen(__g) < __p.p();
 }
@@ -138,8 +138,8 @@ operator>>(basic_istream<_CharT, _Traits>& __is, bernoulli_distribution& __x)
     return __is;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_BERNOULLI_DISTRIBUTION_H
+#endif // _LIBCUDACXX___RANDOM_BERNOULLI_DISTRIBUTION_H

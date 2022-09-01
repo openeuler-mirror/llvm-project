@@ -29,10 +29,10 @@ void test(typename C::size_type n,
     // Test without a custom allocator
     {
         C c(n);
-        LIBCPP_ASSERT(c.__invariants());
+        LIBCUDACXX_ASSERT(c.__invariants());
         assert(c.size() == n);
         assert(c.get_allocator() == typename C::allocator_type());
-        LIBCPP_ASSERT(is_contiguous_container_asan_correct(c));
+        LIBCUDACXX_ASSERT(is_contiguous_container_asan_correct(c));
 #if TEST_STD_VER >= 11
         for (typename C::const_iterator i = c.cbegin(), e = c.cend(); i != e; ++i)
             assert(*i == typename C::value_type());
@@ -43,10 +43,10 @@ void test(typename C::size_type n,
 #if TEST_STD_VER >= 14
     {
         C c(n, a);
-        LIBCPP_ASSERT(c.__invariants());
+        LIBCUDACXX_ASSERT(c.__invariants());
         assert(c.size() == n);
         assert(c.get_allocator() == a);
-        LIBCPP_ASSERT(is_contiguous_container_asan_correct(c));
+        LIBCUDACXX_ASSERT(is_contiguous_container_asan_correct(c));
         for (typename C::const_iterator i = c.cbegin(), e = c.cend(); i != e; ++i)
             assert(*i == typename C::value_type());
     }

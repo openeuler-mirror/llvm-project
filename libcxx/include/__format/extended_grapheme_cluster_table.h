@@ -58,8 +58,8 @@
 // use or other dealings in these Data Files or Software without prior
 // written authorization of the copyright holder.
 
-#ifndef _LIBCPP___FORMAT_EXTENDED_GRAPHEME_CLUSTER_TABLE_H
-#define _LIBCPP___FORMAT_EXTENDED_GRAPHEME_CLUSTER_TABLE_H
+#ifndef _LIBCUDACXX___FORMAT_EXTENDED_GRAPHEME_CLUSTER_TABLE_H
+#define _LIBCUDACXX___FORMAT_EXTENDED_GRAPHEME_CLUSTER_TABLE_H
 
 #include <__algorithm/upper_bound.h>
 #include <__config>
@@ -67,13 +67,13 @@
 #include <cstddef>
 #include <cstdint>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace __extended_grapheme_custer_property_boundary {
 
@@ -292,7 +292,7 @@ inline constexpr uint32_t __entries[1480] = {
     0x707387f1, 0x707787f1, 0x707b87f1, 0x707f80f1};
 
 /// Returns the extended grapheme cluster bondary property of a code point.
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr __property __get_property(const char32_t __code_point) noexcept {
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr __property __get_property(const char32_t __code_point) noexcept {
   // TODO FMT use std::ranges::upper_bound.
 
   // The algorithm searches for the upper bound of the range and, when found,
@@ -325,8 +325,8 @@ inline constexpr uint32_t __entries[1480] = {
 
 } // namespace __extended_grapheme_custer_property_boundary
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_EXTENDED_GRAPHEME_CLUSTER_TABLE_H
+#endif // _LIBCUDACXX___FORMAT_EXTENDED_GRAPHEME_CLUSTER_TABLE_H

@@ -57,7 +57,7 @@ TEST_CASE(basic) {
     TEST_CHECK(expect == 42);
 
     // Remove the file to show that the results were already in the cache.
-    LIBCPP_ONLY(remove(file));
+    LIBCUDACXX_ONLY(remove(file));
 
     std::error_code ec = GetTestEC();
     TEST_CHECK(ent.file_size(ec) == expect);
@@ -70,7 +70,7 @@ TEST_CASE(basic) {
     uintmax_t expect = file_size(ent);
     TEST_CHECK(expect == 99);
 
-    LIBCPP_ONLY(remove(ent));
+    LIBCUDACXX_ONLY(remove(ent));
 
     std::error_code ec = GetTestEC();
     TEST_CHECK(ent.file_size(ec) == 99);

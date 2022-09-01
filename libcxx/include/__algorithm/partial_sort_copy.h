@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_PARTIAL_SORT_COPY_H
-#define _LIBCPP___ALGORITHM_PARTIAL_SORT_COPY_H
+#ifndef _LIBCUDACXX___ALGORITHM_PARTIAL_SORT_COPY_H
+#define _LIBCUDACXX___ALGORITHM_PARTIAL_SORT_COPY_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -24,16 +24,16 @@
 #include <__utility/move.h>
 #include <__utility/pair.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy, class _Compare,
           class _InputIterator, class _Sentinel1, class _RandomAccessIterator, class _Sentinel2,
           class _Proj1, class _Proj2>
-_LIBCPP_CONSTEXPR_AFTER_CXX17 pair<_InputIterator, _RandomAccessIterator>
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX17 pair<_InputIterator, _RandomAccessIterator>
 __partial_sort_copy(_InputIterator __first, _Sentinel1 __last,
                     _RandomAccessIterator __result_first, _Sentinel2 __result_last,
                     _Compare&& __comp, _Proj1&& __proj1, _Proj2&& __proj2)
@@ -60,7 +60,7 @@ __partial_sort_copy(_InputIterator __first, _Sentinel1 __last,
 }
 
 template <class _InputIterator, class _RandomAccessIterator, class _Compare>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _RandomAccessIterator
 partial_sort_copy(_InputIterator __first, _InputIterator __last,
                   _RandomAccessIterator __result_first, _RandomAccessIterator __result_last, _Compare __comp)
@@ -75,15 +75,15 @@ partial_sort_copy(_InputIterator __first, _InputIterator __last,
 }
 
 template <class _InputIterator, class _RandomAccessIterator>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _RandomAccessIterator
 partial_sort_copy(_InputIterator __first, _InputIterator __last,
                   _RandomAccessIterator __result_first, _RandomAccessIterator __result_last)
 {
-    return _VSTD::partial_sort_copy(__first, __last, __result_first, __result_last,
+    return _CUDA_VSTD::partial_sort_copy(__first, __last, __result_first, __result_last,
                                    __less<typename iterator_traits<_RandomAccessIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_PARTIAL_SORT_COPY_H
+#endif // _LIBCUDACXX___ALGORITHM_PARTIAL_SORT_COPY_H

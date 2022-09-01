@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_SORT_HEAP_H
-#define _LIBCPP___ALGORITHM_SORT_HEAP_H
+#ifndef _LIBCUDACXX___ALGORITHM_SORT_HEAP_H
+#define _LIBCUDACXX___ALGORITHM_SORT_HEAP_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -18,14 +18,14 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy, class _Compare, class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 void __sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last, _Compare&& __comp) {
   using _CompRef = typename __comp_ref_type<_Compare>::type;
   _CompRef __comp_ref = __comp;
@@ -36,7 +36,7 @@ void __sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last, _C
 }
 
 template <class _RandomAccessIterator, class _Compare>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 void sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last, _Compare __comp) {
   static_assert(std::is_copy_constructible<_RandomAccessIterator>::value, "Iterators must be copy constructible.");
   static_assert(std::is_copy_assignable<_RandomAccessIterator>::value, "Iterators must be copy assignable.");
@@ -45,12 +45,12 @@ void sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last, _Com
 }
 
 template <class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 void sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last) {
   std::sort_heap(std::move(__first), std::move(__last),
       __less<typename iterator_traits<_RandomAccessIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_SORT_HEAP_H
+#endif // _LIBCUDACXX___ALGORITHM_SORT_HEAP_H

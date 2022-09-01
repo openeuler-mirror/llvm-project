@@ -6,19 +6,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_COPY_CVREF_H
-#define _LIBCPP___TYPE_TRAITS_COPY_CVREF_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_COPY_CVREF_H
+#define _LIBCUDACXX___TYPE_TRAITS_COPY_CVREF_H
 
 #include <__config>
 #include <__type_traits/add_lvalue_reference.h>
 #include <__type_traits/add_rvalue_reference.h>
 #include <__type_traits/copy_cv.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _From, class _To>
 struct __copy_cvref
@@ -41,6 +41,6 @@ struct __copy_cvref<_From&&, _To>
 template <class _From, class _To>
 using __copy_cvref_t = typename __copy_cvref<_From, _To>::type;
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_COPY_CVREF_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_COPY_CVREF_H

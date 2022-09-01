@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_BINOMIAL_DISTRIBUTION_H
-#define _LIBCPP___RANDOM_BINOMIAL_DISTRIBUTION_H
+#ifndef _LIBCUDACXX___RANDOM_BINOMIAL_DISTRIBUTION_H
+#define _LIBCUDACXX___RANDOM_BINOMIAL_DISTRIBUTION_H
 
 #include <__config>
 #include <__random/is_valid.h>
@@ -15,24 +15,24 @@
 #include <cmath>
 #include <iosfwd>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _IntType = int>
-class _LIBCPP_TEMPLATE_VIS binomial_distribution
+class _LIBCUDACXX_TEMPLATE_VIS binomial_distribution
 {
-    static_assert(__libcpp_random_is_valid_inttype<_IntType>::value, "IntType must be a supported integer type");
+    static_assert(__LIBCUDACXX_random_is_valid_inttype<_IntType>::value, "IntType must be a supported integer type");
 public:
     // types
     typedef _IntType result_type;
 
-    class _LIBCPP_TEMPLATE_VIS param_type
+    class _LIBCUDACXX_TEMPLATE_VIS param_type
     {
         result_type __t_;
         double __p_;
@@ -44,15 +44,15 @@ public:
 
         explicit param_type(result_type __t = 1, double __p = 0.5);
 
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         result_type t() const {return __t_;}
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         double p() const {return __p_;}
 
-        friend _LIBCPP_INLINE_VISIBILITY
+        friend _LIBCUDACXX_INLINE_VISIBILITY
             bool operator==(const param_type& __x, const param_type& __y)
             {return __x.__t_ == __y.__t_ && __x.__p_ == __y.__p_;}
-        friend _LIBCPP_INLINE_VISIBILITY
+        friend _LIBCUDACXX_INLINE_VISIBILITY
             bool operator!=(const param_type& __x, const param_type& __y)
             {return !(__x == __y);}
 
@@ -64,61 +64,61 @@ private:
 
 public:
     // constructors and reset functions
-#ifndef _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
     binomial_distribution() : binomial_distribution(1) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit binomial_distribution(result_type __t, double __p = 0.5)
         : __p_(param_type(__t, __p)) {}
 #else
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit binomial_distribution(result_type __t = 1, double __p = 0.5)
         : __p_(param_type(__t, __p)) {}
 #endif
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit binomial_distribution(const param_type& __p) : __p_(__p) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void reset() {}
 
     // generating functions
     template<class _URNG>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         result_type operator()(_URNG& __g)
         {return (*this)(__g, __p_);}
     template<class _URNG> result_type operator()(_URNG& __g, const param_type& __p);
 
     // property functions
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type t() const {return __p_.t();}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     double p() const {return __p_.p();}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     param_type param() const {return __p_;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void param(const param_type& __p) {__p_ = __p;}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type min() const {return 0;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type max() const {return t();}
 
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
         bool operator==(const binomial_distribution& __x,
                         const binomial_distribution& __y)
         {return __x.__p_ == __y.__p_;}
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
         bool operator!=(const binomial_distribution& __x,
                         const binomial_distribution& __y)
         {return !(__x == __y);}
 };
 
-#ifndef _LIBCPP_MSVCRT_LIKE
+#ifndef _LIBCUDACXX_MSVCRT_LIKE
 extern "C" double lgamma_r(double, int *);
 #endif
 
-inline _LIBCPP_INLINE_VISIBILITY double __libcpp_lgamma(double __d) {
-#if defined(_LIBCPP_MSVCRT_LIKE)
+inline _LIBCUDACXX_INLINE_VISIBILITY double __LIBCUDACXX_lgamma(double __d) {
+#if defined(_LIBCUDACXX_MSVCRT_LIKE)
   return lgamma(__d);
 #else
   int __sign;
@@ -133,10 +133,10 @@ binomial_distribution<_IntType>::param_type::param_type(result_type __t, double 
     if (0 < __p_ && __p_ < 1)
     {
         __r0_ = static_cast<result_type>((__t_ + 1) * __p_);
-        __pr_ = _VSTD::exp(__libcpp_lgamma(__t_ + 1.) -
-                           __libcpp_lgamma(__r0_ + 1.) -
-                           __libcpp_lgamma(__t_ - __r0_ + 1.) + __r0_ * _VSTD::log(__p_) +
-                           (__t_ - __r0_) * _VSTD::log(1 - __p_));
+        __pr_ = _CUDA_VSTD::exp(__LIBCUDACXX_lgamma(__t_ + 1.) -
+                           __LIBCUDACXX_lgamma(__r0_ + 1.) -
+                           __LIBCUDACXX_lgamma(__t_ - __r0_ + 1.) + __r0_ * _CUDA_VSTD::log(__p_) +
+                           (__t_ - __r0_) * _CUDA_VSTD::log(1 - __p_));
         __odds_ratio_ = __p_ / (1 - __p_);
     }
 }
@@ -148,7 +148,7 @@ template<class _URNG>
 _IntType
 binomial_distribution<_IntType>::operator()(_URNG& __g, const param_type& __pr)
 {
-    static_assert(__libcpp_random_is_valid_urng<_URNG>::value, "");
+    static_assert(__LIBCUDACXX_random_is_valid_urng<_URNG>::value, "");
     if (__pr.__t_ == 0 || __pr.__p_ == 0)
         return 0;
     if (__pr.__p_ == 1)
@@ -221,8 +221,8 @@ operator>>(basic_istream<_CharT, _Traits>& __is,
     return __is;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_BINOMIAL_DISTRIBUTION_H
+#endif // _LIBCUDACXX___RANDOM_BINOMIAL_DISTRIBUTION_H

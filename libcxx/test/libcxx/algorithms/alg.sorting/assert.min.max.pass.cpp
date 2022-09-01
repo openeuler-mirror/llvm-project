@@ -9,9 +9,9 @@
 // <algorithm>
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: c++03, c++11, c++14, c++17, libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: c++03, c++11, c++14, c++17, LIBCUDACXX-has-no-incomplete-ranges
 // XFAIL: use_system_cxx_lib && target={{.+}}-apple-macosx{{10.9|10.10|10.11|10.12|10.13|10.14|10.15|11.0|12.0}}
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_ASSERTIONS=1
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_ASSERTIONS=1
 
 #include <algorithm>
 #include <array>
@@ -20,10 +20,10 @@
 
 int main(int, char**) {
   std::initializer_list<int> init_list{};
-  TEST_LIBCPP_ASSERT_FAILURE(std::ranges::minmax(init_list),
+  TEST_LIBCUDACXX_ASSERT_FAILURE(std::ranges::minmax(init_list),
                              "initializer_list has to contain at least one element");
 
-  TEST_LIBCPP_ASSERT_FAILURE(std::ranges::minmax(std::array<int, 0>{}),
+  TEST_LIBCUDACXX_ASSERT_FAILURE(std::ranges::minmax(std::array<int, 0>{}),
                              "range has to contain at least one element");
 
   return 0;

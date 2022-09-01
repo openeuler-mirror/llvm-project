@@ -156,14 +156,14 @@
 #   error "__cpp_lib_atomic_flag_test should have the value 201907L in c++20"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_atomic_float
 #     error "__cpp_lib_atomic_float should be defined in c++20"
 #   endif
 #   if __cpp_lib_atomic_float != 201711L
 #     error "__cpp_lib_atomic_float should have the value 201711L in c++20"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_atomic_float
 #     error "__cpp_lib_atomic_float should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -183,27 +183,27 @@
 #   error "__cpp_lib_atomic_lock_free_type_aliases should have the value 201907L in c++20"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_atomic_ref
 #     error "__cpp_lib_atomic_ref should be defined in c++20"
 #   endif
 #   if __cpp_lib_atomic_ref != 201806L
 #     error "__cpp_lib_atomic_ref should have the value 201806L in c++20"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_atomic_ref
 #     error "__cpp_lib_atomic_ref should not be defined because it is unimplemented in libc++!"
 #   endif
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_atomic_shared_ptr
 #     error "__cpp_lib_atomic_shared_ptr should be defined in c++20"
 #   endif
 #   if __cpp_lib_atomic_shared_ptr != 201711L
 #     error "__cpp_lib_atomic_shared_ptr should have the value 201711L in c++20"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_atomic_shared_ptr
 #     error "__cpp_lib_atomic_shared_ptr should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -216,7 +216,7 @@
 #   error "__cpp_lib_atomic_value_initialization should have the value 201911L in c++20"
 # endif
 
-# if !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_atomic_wait)
+# if !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_atomic_wait)
 #   ifndef __cpp_lib_atomic_wait
 #     error "__cpp_lib_atomic_wait should be defined in c++20"
 #   endif
@@ -225,7 +225,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_atomic_wait
-#     error "__cpp_lib_atomic_wait should not be defined when !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_atomic_wait) is not defined!"
+#     error "__cpp_lib_atomic_wait should not be defined when !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_atomic_wait) is not defined!"
 #   endif
 # endif
 
@@ -251,14 +251,14 @@
 #   error "__cpp_lib_atomic_flag_test should have the value 201907L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_atomic_float
 #     error "__cpp_lib_atomic_float should be defined in c++2b"
 #   endif
 #   if __cpp_lib_atomic_float != 201711L
 #     error "__cpp_lib_atomic_float should have the value 201711L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_atomic_float
 #     error "__cpp_lib_atomic_float should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -278,27 +278,27 @@
 #   error "__cpp_lib_atomic_lock_free_type_aliases should have the value 201907L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_atomic_ref
 #     error "__cpp_lib_atomic_ref should be defined in c++2b"
 #   endif
 #   if __cpp_lib_atomic_ref != 201806L
 #     error "__cpp_lib_atomic_ref should have the value 201806L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_atomic_ref
 #     error "__cpp_lib_atomic_ref should not be defined because it is unimplemented in libc++!"
 #   endif
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_atomic_shared_ptr
 #     error "__cpp_lib_atomic_shared_ptr should be defined in c++2b"
 #   endif
 #   if __cpp_lib_atomic_shared_ptr != 201711L
 #     error "__cpp_lib_atomic_shared_ptr should have the value 201711L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_atomic_shared_ptr
 #     error "__cpp_lib_atomic_shared_ptr should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -311,7 +311,7 @@
 #   error "__cpp_lib_atomic_value_initialization should have the value 201911L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_atomic_wait)
+# if !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_atomic_wait)
 #   ifndef __cpp_lib_atomic_wait
 #     error "__cpp_lib_atomic_wait should be defined in c++2b"
 #   endif
@@ -320,7 +320,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_atomic_wait
-#     error "__cpp_lib_atomic_wait should not be defined when !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_atomic_wait) is not defined!"
+#     error "__cpp_lib_atomic_wait should not be defined when !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_atomic_wait) is not defined!"
 #   endif
 # endif
 

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_PIECEWISE_CONSTANT_DISTRIBUTION_H
-#define _LIBCPP___RANDOM_PIECEWISE_CONSTANT_DISTRIBUTION_H
+#ifndef _LIBCUDACXX___RANDOM_PIECEWISE_CONSTANT_DISTRIBUTION_H
+#define _LIBCUDACXX___RANDOM_PIECEWISE_CONSTANT_DISTRIBUTION_H
 
 #include <__algorithm/upper_bound.h>
 #include <__config>
@@ -17,23 +17,23 @@
 #include <numeric>
 #include <vector>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _RealType = double>
-class _LIBCPP_TEMPLATE_VIS piecewise_constant_distribution
+class _LIBCUDACXX_TEMPLATE_VIS piecewise_constant_distribution
 {
 public:
     // types
     typedef _RealType result_type;
 
-    class _LIBCPP_TEMPLATE_VIS param_type
+    class _LIBCUDACXX_TEMPLATE_VIS param_type
     {
         vector<result_type> __b_;
         vector<result_type> __densities_;
@@ -45,25 +45,25 @@ public:
         template<class _InputIteratorB, class _InputIteratorW>
             param_type(_InputIteratorB __f_b, _InputIteratorB __l_b,
                        _InputIteratorW __f_w);
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
         template<class _UnaryOperation>
             param_type(initializer_list<result_type> __bl, _UnaryOperation __fw);
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
         template<class _UnaryOperation>
             param_type(size_t __nw, result_type __xmin, result_type __xmax,
                        _UnaryOperation __fw);
         param_type(param_type const&) = default;
         param_type & operator=(const param_type& __rhs);
 
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         vector<result_type> intervals() const {return __b_;}
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         vector<result_type> densities() const {return __densities_;}
 
-        friend _LIBCPP_INLINE_VISIBILITY
+        friend _LIBCUDACXX_INLINE_VISIBILITY
             bool operator==(const param_type& __x, const param_type& __y)
             {return __x.__densities_ == __y.__densities_ && __x.__b_ == __y.__b_;}
-        friend _LIBCPP_INLINE_VISIBILITY
+        friend _LIBCUDACXX_INLINE_VISIBILITY
             bool operator!=(const param_type& __x, const param_type& __y)
             {return !(__x == __y);}
 
@@ -90,64 +90,64 @@ private:
 
 public:
     // constructor and reset functions
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     piecewise_constant_distribution() {}
     template<class _InputIteratorB, class _InputIteratorW>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         piecewise_constant_distribution(_InputIteratorB __f_b,
                                         _InputIteratorB __l_b,
                                         _InputIteratorW __f_w)
         : __p_(__f_b, __l_b, __f_w) {}
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
     template<class _UnaryOperation>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         piecewise_constant_distribution(initializer_list<result_type> __bl,
                                         _UnaryOperation __fw)
         : __p_(__bl, __fw) {}
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
     template<class _UnaryOperation>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         piecewise_constant_distribution(size_t __nw, result_type __xmin,
                                         result_type __xmax, _UnaryOperation __fw)
         : __p_(__nw, __xmin, __xmax, __fw) {}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit piecewise_constant_distribution(const param_type& __p)
         : __p_(__p) {}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void reset() {}
 
     // generating functions
     template<class _URNG>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         result_type operator()(_URNG& __g)
         {return (*this)(__g, __p_);}
     template<class _URNG> result_type operator()(_URNG& __g, const param_type& __p);
 
     // property functions
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     vector<result_type> intervals() const {return __p_.intervals();}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     vector<result_type> densities() const {return __p_.densities();}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     param_type param() const {return __p_;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void param(const param_type& __p) {__p_ = __p;}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type min() const {return __p_.__b_.front();}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type max() const {return __p_.__b_.back();}
 
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
         bool operator==(const piecewise_constant_distribution& __x,
                         const piecewise_constant_distribution& __y)
         {return __x.__p_ == __y.__p_;}
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
         bool operator!=(const piecewise_constant_distribution& __x,
                            const piecewise_constant_distribution& __y)
         {return !(__x == __y);}
@@ -187,14 +187,14 @@ void
 piecewise_constant_distribution<_RealType>::param_type::__init()
 {
     // __densities_ contains non-normalized areas
-    result_type __total_area = _VSTD::accumulate(__densities_.begin(),
+    result_type __total_area = _CUDA_VSTD::accumulate(__densities_.begin(),
                                                 __densities_.end(),
                                                 result_type());
     for (size_t __i = 0; __i < __densities_.size(); ++__i)
         __densities_[__i] /= __total_area;
     // __densities_ contains normalized areas
     __areas_.assign(__densities_.size(), result_type());
-    _VSTD::partial_sum(__densities_.begin(), __densities_.end() - 1,
+    _CUDA_VSTD::partial_sum(__densities_.begin(), __densities_.end() - 1,
                                                           __areas_.begin() + 1);
     // __areas_ contains partial sums of normalized areas: [0, __densities_ - 1]
     __densities_.back() = 1 - __areas_.back();  // correct round off error
@@ -235,7 +235,7 @@ piecewise_constant_distribution<_RealType>::param_type::param_type(
     }
 }
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
 template<class _RealType>
 template<class _UnaryOperation>
@@ -260,7 +260,7 @@ piecewise_constant_distribution<_RealType>::param_type::param_type(
     }
 }
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
 template<class _RealType>
 template<class _UnaryOperation>
@@ -285,10 +285,10 @@ template<class _URNG>
 _RealType
 piecewise_constant_distribution<_RealType>::operator()(_URNG& __g, const param_type& __p)
 {
-    static_assert(__libcpp_random_is_valid_urng<_URNG>::value, "");
+    static_assert(__LIBCUDACXX_random_is_valid_urng<_URNG>::value, "");
     typedef uniform_real_distribution<result_type> _Gen;
     result_type __u = _Gen()(__g);
-    ptrdiff_t __k = _VSTD::upper_bound(__p.__areas_.begin(), __p.__areas_.end(),
+    ptrdiff_t __k = _CUDA_VSTD::upper_bound(__p.__areas_.begin(), __p.__areas_.end(),
                                       __u) - __p.__areas_.begin() - 1;
     return (__u - __p.__areas_[__k]) / __p.__densities_[__k] + __p.__b_[__k];
 }
@@ -351,8 +351,8 @@ operator>>(basic_istream<_CharT, _Traits>& __is,
     return __is;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_PIECEWISE_CONSTANT_DISTRIBUTION_H
+#endif // _LIBCUDACXX___RANDOM_PIECEWISE_CONSTANT_DISTRIBUTION_H

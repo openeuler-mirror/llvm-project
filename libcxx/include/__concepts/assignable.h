@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CONCEPTS_ASSIGNABLE_H
-#define _LIBCPP___CONCEPTS_ASSIGNABLE_H
+#ifndef _LIBCUDACXX___CONCEPTS_ASSIGNABLE_H
+#define _LIBCUDACXX___CONCEPTS_ASSIGNABLE_H
 
 #include <__concepts/common_reference_with.h>
 #include <__concepts/same_as.h>
@@ -15,13 +15,13 @@
 #include <__utility/forward.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [concept.assignable]
 
@@ -30,11 +30,11 @@ concept assignable_from =
   is_lvalue_reference_v<_Lhs> &&
   common_reference_with<__make_const_lvalue_ref<_Lhs>, __make_const_lvalue_ref<_Rhs>> &&
   requires (_Lhs __lhs, _Rhs&& __rhs) {
-    { __lhs = _VSTD::forward<_Rhs>(__rhs) } -> same_as<_Lhs>;
+    { __lhs = _CUDA_VSTD::forward<_Rhs>(__rhs) } -> same_as<_Lhs>;
   };
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___CONCEPTS_ASSIGNABLE_H
+#endif // _LIBCUDACXX___CONCEPTS_ASSIGNABLE_H

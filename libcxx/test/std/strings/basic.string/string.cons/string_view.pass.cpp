@@ -33,7 +33,7 @@ test(std::basic_string_view<charT> sv)
     typedef typename S::allocator_type A;
   {
     S s2(sv);
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s2.size() == sv.size());
     assert(T::compare(s2.data(), sv.data(), sv.size()) == 0);
     assert(s2.get_allocator() == A());
@@ -42,7 +42,7 @@ test(std::basic_string_view<charT> sv)
   {
     S s2;
     s2 = sv;
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s2.size() == sv.size());
     assert(T::compare(s2.data(), sv.data(), sv.size()) == 0);
     assert(s2.get_allocator() == A());
@@ -58,7 +58,7 @@ test(std::basic_string_view<charT> sv, const A& a)
     typedef typename S::traits_type T;
   {
     S s2(sv, a);
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s2.size() == sv.size());
     assert(T::compare(s2.data(), sv.data(), sv.size()) == 0);
     assert(s2.get_allocator() == a);
@@ -67,7 +67,7 @@ test(std::basic_string_view<charT> sv, const A& a)
   {
     S s2(a);
     s2 = sv;
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s2.size() == sv.size());
     assert(T::compare(s2.data(), sv.data(), sv.size()) == 0);
     assert(s2.get_allocator() == a);

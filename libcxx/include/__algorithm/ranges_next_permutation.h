@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_NEXT_PERMUTATION_H
-#define _LIBCPP___ALGORITHM_RANGES_NEXT_PERMUTATION_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_NEXT_PERMUTATION_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_NEXT_PERMUTATION_H
 
 #include <__algorithm/in_found_result.h>
 #include <__algorithm/iterator_operations.h>
@@ -23,13 +23,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -41,7 +41,7 @@ namespace __next_permutation {
 struct __fn {
   template <bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent, class _Comp = ranges::less, class _Proj = identity>
     requires sortable<_Iter, _Comp, _Proj>
-  _LIBCPP_HIDE_FROM_ABI constexpr next_permutation_result<_Iter>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr next_permutation_result<_Iter>
   operator()(_Iter __first, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const {
     auto __result = std::__next_permutation<_RangeAlgPolicy>(
         std::move(__first), std::move(__last), std::__make_projected(__comp, __proj));
@@ -50,7 +50,7 @@ struct __fn {
 
   template <bidirectional_range _Range, class _Comp = ranges::less, class _Proj = identity>
     requires sortable<iterator_t<_Range>, _Comp, _Proj>
-  _LIBCPP_HIDE_FROM_ABI constexpr next_permutation_result<borrowed_iterator_t<_Range>>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr next_permutation_result<borrowed_iterator_t<_Range>>
   operator()(_Range&& __range, _Comp __comp = {}, _Proj __proj = {}) const {
     auto __result = std::__next_permutation<_RangeAlgPolicy>(
         ranges::begin(__range), ranges::end(__range), std::__make_projected(__comp, __proj));
@@ -65,8 +65,8 @@ constexpr inline auto next_permutation = __next_permutation::__fn{};
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_NEXT_PERMUTATION_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_NEXT_PERMUTATION_H

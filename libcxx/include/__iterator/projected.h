@@ -6,21 +6,21 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___ITERATOR_PROJECTED_H
-#define _LIBCPP___ITERATOR_PROJECTED_H
+#ifndef _LIBCUDACXX___ITERATOR_PROJECTED_H
+#define _LIBCUDACXX___ITERATOR_PROJECTED_H
 
 #include <__config>
 #include <__iterator/concepts.h>
 #include <__iterator/incrementable_traits.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template<indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
 struct projected {
@@ -33,8 +33,8 @@ struct incrementable_traits<projected<_It, _Proj>> {
   using difference_type = iter_difference_t<_It>;
 };
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_PROJECTED_H
+#endif // _LIBCUDACXX___ITERATOR_PROJECTED_H

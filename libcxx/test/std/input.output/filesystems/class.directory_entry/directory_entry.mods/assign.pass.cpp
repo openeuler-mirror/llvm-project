@@ -80,7 +80,7 @@ TEST_CASE(test_assign_calls_refresh) {
     ent.assign(file);
 
     // removing the file demonstrates that the values where cached previously.
-    LIBCPP_ONLY(remove(file));
+    LIBCUDACXX_ONLY(remove(file));
 
     TEST_CHECK(ent.is_regular_file());
   }
@@ -89,8 +89,8 @@ TEST_CASE(test_assign_calls_refresh) {
     directory_entry ent;
     ent.assign(sym);
 
-    LIBCPP_ONLY(remove(file));
-    LIBCPP_ONLY(remove(sym));
+    LIBCUDACXX_ONLY(remove(file));
+    LIBCUDACXX_ONLY(remove(sym));
 
     TEST_CHECK(ent.is_symlink());
     TEST_CHECK(ent.is_regular_file());

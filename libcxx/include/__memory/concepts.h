@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___MEMORY_CONCEPTS_H
-#define _LIBCPP___MEMORY_CONCEPTS_H
+#ifndef _LIBCUDACXX___MEMORY_CONCEPTS_H
+#define _LIBCUDACXX___MEMORY_CONCEPTS_H
 
 #include <__config>
 #include <__iterator/concepts.h>
@@ -19,13 +19,13 @@
 #include <concepts>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
 
@@ -61,8 +61,8 @@ concept __nothrow_forward_range =
 
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___MEMORY_CONCEPTS_H
+#endif // _LIBCUDACXX___MEMORY_CONCEPTS_H

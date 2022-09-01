@@ -51,7 +51,7 @@ TEST_CASE(basic_test)
         TEST_CHECK(!ec);
         TEST_CHECK(ret.is_absolute());
         TEST_CHECK(PathEqIgnoreSep(ret, TC.expect));
-        LIBCPP_ONLY(TEST_CHECK(PathEq(ret, TC.expect)));
+        LIBCUDACXX_ONLY(TEST_CHECK(PathEq(ret, TC.expect)));
     }
 }
 

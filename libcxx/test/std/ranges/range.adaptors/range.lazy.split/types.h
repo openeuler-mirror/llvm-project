@@ -178,7 +178,7 @@ struct ForwardTinyView : std::ranges::view_base {
 };
 static_assert(std::ranges::forward_range<ForwardTinyView>);
 static_assert(std::ranges::view<ForwardTinyView>);
-LIBCPP_STATIC_ASSERT(std::ranges::__tiny_range<ForwardTinyView>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__tiny_range<ForwardTinyView>);
 
 // Aliases
 

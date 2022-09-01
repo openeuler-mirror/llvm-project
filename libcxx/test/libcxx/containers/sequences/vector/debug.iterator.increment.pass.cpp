@@ -11,7 +11,7 @@
 // Increment iterator past end.
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <vector>
 #include <cassert>
@@ -27,7 +27,7 @@ int main(int, char**) {
     C::iterator i = c.begin();
     ++i;
     assert(i == c.end());
-    TEST_LIBCPP_ASSERT_FAILURE(++i, "Attempted to increment a non-incrementable iterator");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(++i, "Attempted to increment a non-incrementable iterator");
   }
 
   {
@@ -37,7 +37,7 @@ int main(int, char**) {
     C::iterator i = c.begin();
     ++i;
     assert(i == c.end());
-    TEST_LIBCPP_ASSERT_FAILURE(++i, "Attempted to increment a non-incrementable iterator");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(++i, "Attempted to increment a non-incrementable iterator");
   }
 
   return 0;

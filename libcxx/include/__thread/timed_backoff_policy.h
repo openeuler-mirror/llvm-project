@@ -6,40 +6,40 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___THREAD_TIMED_BACKOFF_POLICY_H
-#define _LIBCPP___THREAD_TIMED_BACKOFF_POLICY_H
+#ifndef _LIBCUDACXX___THREAD_TIMED_BACKOFF_POLICY_H
+#define _LIBCUDACXX___THREAD_TIMED_BACKOFF_POLICY_H
 
 #include <__config>
 
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
 
 #  include <__chrono/duration.h>
 #  include <__threading_support>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-struct __libcpp_timed_backoff_policy {
-  _LIBCPP_INLINE_VISIBILITY
+struct __LIBCUDACXX_timed_backoff_policy {
+  _LIBCUDACXX_INLINE_VISIBILITY
   bool operator()(chrono::nanoseconds __elapsed) const
   {
       if(__elapsed > chrono::milliseconds(128))
-          __libcpp_thread_sleep_for(chrono::milliseconds(8));
+          __LIBCUDACXX_thread_sleep_for(chrono::milliseconds(8));
       else if(__elapsed > chrono::microseconds(64))
-          __libcpp_thread_sleep_for(__elapsed / 2);
+          __LIBCUDACXX_thread_sleep_for(__elapsed / 2);
       else if(__elapsed > chrono::microseconds(4))
-        __libcpp_thread_yield();
+        __LIBCUDACXX_thread_yield();
       else
         {} // poll
       return false;
   }
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_HAS_NO_THREADS
+#endif // _LIBCUDACXX_HAS_NO_THREADS
 
-#endif // _LIBCPP___THREAD_TIMED_BACKOFF_POLICY_H
+#endif // _LIBCUDACXX___THREAD_TIMED_BACKOFF_POLICY_H

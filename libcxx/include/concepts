@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_CONCEPTS
-#define _LIBCPP_CONCEPTS
+#ifndef _LIBCUDACXX_CONCEPTS
+#define _LIBCUDACXX_CONCEPTS
 
 /*
     concepts synopsis
@@ -155,8 +155,8 @@ namespace std {
 #include <__config>
 #include <version>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#endif // _LIBCPP_CONCEPTS
+#endif // _LIBCUDACXX_CONCEPTS

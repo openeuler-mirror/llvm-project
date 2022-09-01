@@ -7,21 +7,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CHRONO_YEAR_MONTH_H
-#define _LIBCPP___CHRONO_YEAR_MONTH_H
+#ifndef _LIBCUDACXX___CHRONO_YEAR_MONTH_H
+#define _LIBCUDACXX___CHRONO_YEAR_MONTH_H
 
 #include <__chrono/duration.h>
 #include <__chrono/month.h>
 #include <__chrono/year.h>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace chrono
 {
@@ -30,49 +30,49 @@ class year_month {
     chrono::year  __y;
     chrono::month __m;
 public:
-    _LIBCPP_HIDE_FROM_ABI year_month() = default;
-    _LIBCPP_HIDE_FROM_ABI constexpr year_month(const chrono::year& __yval, const chrono::month& __mval) noexcept
+    _LIBCUDACXX_HIDE_FROM_ABI year_month() = default;
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr year_month(const chrono::year& __yval, const chrono::month& __mval) noexcept
         : __y{__yval}, __m{__mval} {}
-    _LIBCPP_HIDE_FROM_ABI inline constexpr chrono::year  year()  const noexcept { return __y; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr chrono::month month() const noexcept { return __m; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr year_month& operator+=(const months& __dm) noexcept { this->__m += __dm; return *this; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr year_month& operator-=(const months& __dm) noexcept { this->__m -= __dm; return *this; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr year_month& operator+=(const years& __dy)  noexcept { this->__y += __dy; return *this; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr year_month& operator-=(const years& __dy)  noexcept { this->__y -= __dy; return *this; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr bool ok() const noexcept { return __y.ok() && __m.ok(); }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr chrono::year  year()  const noexcept { return __y; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr chrono::month month() const noexcept { return __m; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr year_month& operator+=(const months& __dm) noexcept { this->__m += __dm; return *this; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr year_month& operator-=(const months& __dm) noexcept { this->__m -= __dm; return *this; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr year_month& operator+=(const years& __dy)  noexcept { this->__y += __dy; return *this; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr year_month& operator-=(const years& __dy)  noexcept { this->__y -= __dy; return *this; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr bool ok() const noexcept { return __y.ok() && __m.ok(); }
 };
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 year_month operator/(const year& __y, const month& __m) noexcept { return year_month{__y, __m}; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 year_month operator/(const year& __y, int __m) noexcept { return year_month{__y, month(__m)}; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator==(const year_month& __lhs, const year_month& __rhs) noexcept
 { return __lhs.year() == __rhs.year() && __lhs.month() == __rhs.month(); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator!=(const year_month& __lhs, const year_month& __rhs) noexcept
 { return !(__lhs == __rhs); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator< (const year_month& __lhs, const year_month& __rhs) noexcept
 { return __lhs.year() != __rhs.year() ? __lhs.year() < __rhs.year() : __lhs.month() < __rhs.month(); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator> (const year_month& __lhs, const year_month& __rhs) noexcept
 { return __rhs < __lhs; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator<=(const year_month& __lhs, const year_month& __rhs) noexcept
 { return !(__rhs < __lhs);}
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator>=(const year_month& __lhs, const year_month& __rhs) noexcept
 { return !(__lhs < __rhs); }
 
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 year_month operator+(const year_month& __lhs, const months& __rhs) noexcept
 {
     int __dmi = static_cast<int>(static_cast<unsigned>(__lhs.month())) - 1 + __rhs.count();
@@ -81,34 +81,34 @@ year_month operator+(const year_month& __lhs, const months& __rhs) noexcept
     return (__lhs.year() + years(__dy)) / month(static_cast<unsigned>(__dmi));
 }
 
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 year_month operator+(const months& __lhs, const year_month& __rhs) noexcept
 { return __rhs + __lhs; }
 
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 year_month operator+(const year_month& __lhs, const years& __rhs) noexcept
 { return (__lhs.year() + __rhs) / __lhs.month(); }
 
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 year_month operator+(const years& __lhs, const year_month& __rhs) noexcept
 { return __rhs + __lhs; }
 
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 months operator-(const year_month& __lhs, const year_month& __rhs) noexcept
 { return (__lhs.year() - __rhs.year()) + months(static_cast<unsigned>(__lhs.month()) - static_cast<unsigned>(__rhs.month())); }
 
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 year_month operator-(const year_month& __lhs, const months& __rhs) noexcept
 { return __lhs + -__rhs; }
 
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 year_month operator-(const year_month& __lhs, const years& __rhs) noexcept
 { return __lhs + -__rhs; }
 
 } // namespace chrono
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-#endif // _LIBCPP___CHRONO_YEAR_MONTH_H
+#endif // _LIBCUDACXX___CHRONO_YEAR_MONTH_H

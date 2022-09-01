@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef LIBCPP_TEST_STD_ITERATOR_UNQUALIFIED_LOOKUP_WRAPPER
-#define LIBCPP_TEST_STD_ITERATOR_UNQUALIFIED_LOOKUP_WRAPPER
+#ifndef LIBCUDACXX_TEST_STD_ITERATOR_UNQUALIFIED_LOOKUP_WRAPPER
+#define LIBCUDACXX_TEST_STD_ITERATOR_UNQUALIFIED_LOOKUP_WRAPPER
 
 #include <iterator>
 #include <utility>
@@ -76,4 +76,4 @@ private:
   int moves_ = 0;
 };
 
-#endif // LIBCPP_TEST_STD_ITERATOR_UNQUALIFIED_LOOKUP_WRAPPER
+#endif // LIBCUDACXX_TEST_STD_ITERATOR_UNQUALIFIED_LOOKUP_WRAPPER

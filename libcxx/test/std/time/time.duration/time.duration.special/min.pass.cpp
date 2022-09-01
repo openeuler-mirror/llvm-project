@@ -22,7 +22,7 @@
 template <class D>
 void test()
 {
-    LIBCPP_ASSERT_NOEXCEPT(std::chrono::duration_values<typename D::rep>::min());
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::chrono::duration_values<typename D::rep>::min());
 #if TEST_STD_VER > 17
     ASSERT_NOEXCEPT(       std::chrono::duration_values<typename D::rep>::min());
 #endif

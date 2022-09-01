@@ -50,7 +50,7 @@ void test_const_container(const C& c)
 template<typename T>
 void test_const_container(const std::initializer_list<T>& c)
 {
-    LIBCPP_ASSERT_NOEXCEPT(std::ssize(c)); // our std::ssize is conditionally noexcept
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::ssize(c)); // our std::ssize is conditionally noexcept
     static_assert( std::is_signed_v<decltype(std::ssize(c))>, "");
     assert ( std::ssize(c)   == static_cast<decltype(std::ssize(c))>(c.size()));
 }
@@ -58,7 +58,7 @@ void test_const_container(const std::initializer_list<T>& c)
 template<typename T>
 void test_container(std::initializer_list<T>& c)
 {
-    LIBCPP_ASSERT_NOEXCEPT(std::ssize(c)); // our std::ssize is conditionally noexcept
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::ssize(c)); // our std::ssize is conditionally noexcept
     static_assert( std::is_signed_v<decltype(std::ssize(c))>, "");
     assert ( std::ssize(c)   == static_cast<decltype(std::ssize(c))>(c.size()));
 }
@@ -116,7 +116,7 @@ int main(int, char**)
     static_assert( std::numeric_limits<                   decltype(std::ssize(sc))>::max()  > 60000, "");
     static_assert( std::numeric_limits<std::make_signed_t<decltype(std:: size(sc))>>::max() < 60000, "");
     assert (std::ssize(sc) == 60000);
-    LIBCPP_ASSERT_NOT_NOEXCEPT(std::ssize(sc));
+    LIBCUDACXX_ASSERT_NOT_NOEXCEPT(std::ssize(sc));
 
   return 0;
 }

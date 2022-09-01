@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_UNIFORM_INT_DISTRIBUTION_H
-#define _LIBCPP___RANDOM_UNIFORM_INT_DISTRIBUTION_H
+#ifndef _LIBCUDACXX___RANDOM_UNIFORM_INT_DISTRIBUTION_H
+#define _LIBCUDACXX___RANDOM_UNIFORM_INT_DISTRIBUTION_H
 
 #include <__bits>
 #include <__config>
@@ -20,14 +20,14 @@
 #include <limits>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _Engine, class _UIntType>
 class __independent_bits_engine
@@ -55,16 +55,16 @@ private:
     _Engine_result_type __mask0_;
     _Engine_result_type __mask1_;
 
-#ifdef _LIBCPP_CXX03_LANG
+#ifdef _LIBCUDACXX_CXX03_LANG
     static const _Working_result_type _Rp = _Engine::_Max - _Engine::_Min
                                           + _Working_result_type(1);
 #else
-    static _LIBCPP_CONSTEXPR const _Working_result_type _Rp = _Engine::max() - _Engine::min()
+    static _LIBCUDACXX_CONSTEXPR const _Working_result_type _Rp = _Engine::max() - _Engine::min()
                                                       + _Working_result_type(1);
 #endif
-    static _LIBCPP_CONSTEXPR const size_t __m = __log2<_Working_result_type, _Rp>::value;
-    static _LIBCPP_CONSTEXPR const size_t _WDt = numeric_limits<_Working_result_type>::digits;
-    static _LIBCPP_CONSTEXPR const size_t _EDt = numeric_limits<_Engine_result_type>::digits;
+    static _LIBCUDACXX_CONSTEXPR const size_t __m = __log2<_Working_result_type, _Rp>::value;
+    static _LIBCUDACXX_CONSTEXPR const size_t _WDt = numeric_limits<_Working_result_type>::digits;
+    static _LIBCUDACXX_CONSTEXPR const size_t _EDt = numeric_limits<_Engine_result_type>::digits;
 
 public:
     // constructors and seeding functions
@@ -159,7 +159,7 @@ __independent_bits_engine<_Engine, _UIntType>::__eval(true_type)
 template<class _IntType = int>
 class uniform_int_distribution
 {
-    static_assert(__libcpp_random_is_valid_inttype<_IntType>::value, "IntType must be a supported integer type");
+    static_assert(__LIBCUDACXX_random_is_valid_inttype<_IntType>::value, "IntType must be a supported integer type");
 public:
     // types
     typedef _IntType result_type;
@@ -189,7 +189,7 @@ private:
 
 public:
     // constructors and reset functions
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
     uniform_int_distribution() : uniform_int_distribution(0) {}
     explicit uniform_int_distribution(
         result_type __a, result_type __b = numeric_limits<result_type>::max())
@@ -230,9 +230,9 @@ template<class _IntType>
 template<class _URNG>
 typename uniform_int_distribution<_IntType>::result_type
 uniform_int_distribution<_IntType>::operator()(_URNG& __g, const param_type& __p)
-_LIBCPP_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK
+_LIBCUDACXX_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK
 {
-    static_assert(__libcpp_random_is_valid_urng<_URNG>::value, "");
+    static_assert(__LIBCUDACXX_random_is_valid_urng<_URNG>::value, "");
     typedef typename conditional<sizeof(result_type) <= sizeof(uint32_t), uint32_t,
                                  typename make_unsigned<result_type>::type>::type _UIntType;
     const _UIntType _Rp = _UIntType(__p.b()) - _UIntType(__p.a()) + _UIntType(1);
@@ -286,8 +286,8 @@ operator>>(basic_istream<_CharT, _Traits>& __is,
     return __is;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_UNIFORM_INT_DISTRIBUTION_H
+#endif // _LIBCUDACXX___RANDOM_UNIFORM_INT_DISTRIBUTION_H

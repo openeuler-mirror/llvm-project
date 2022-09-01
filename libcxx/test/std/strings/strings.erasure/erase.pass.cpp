@@ -25,7 +25,7 @@ template <class S, class U>
 void test0(S s, U val, S expected, size_t expected_erased_count) {
   ASSERT_SAME_TYPE(typename S::size_type, decltype(std::erase(s, val)));
   assert(expected_erased_count == std::erase(s, val));
-  LIBCPP_ASSERT(s.__invariants());
+  LIBCUDACXX_ASSERT(s.__invariants());
   assert(s == expected);
 }
 

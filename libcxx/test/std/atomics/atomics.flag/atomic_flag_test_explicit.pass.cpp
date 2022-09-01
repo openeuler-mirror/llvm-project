@@ -41,7 +41,7 @@ int main(int, char**)
         assert(f.test_and_set() == 0);
         assert(std::atomic_flag_test_explicit(&f, std::memory_order_acquire) == 1);
     }
-#ifdef _LIBCPP_VERSION // Don't violate precondition [atomics.flag]/6
+#ifdef _LIBCUDACXX_VERSION // Don't violate precondition [atomics.flag]/6
     {
         std::atomic_flag f;
         f.clear();
@@ -56,7 +56,7 @@ int main(int, char**)
         assert(f.test_and_set() == 0);
         assert(std::atomic_flag_test_explicit(&f, std::memory_order_acq_rel) == 1);
     }
-#endif // _LIBCPP_VERSION
+#endif // _LIBCUDACXX_VERSION
     {
         std::atomic_flag f;
         f.clear();
@@ -85,7 +85,7 @@ int main(int, char**)
         assert(f.test_and_set() == 0);
         assert(std::atomic_flag_test_explicit(&f, std::memory_order_acquire) == 1);
     }
-#ifdef _LIBCPP_VERSION // Don't violate precondition [atomics.flag]/6
+#ifdef _LIBCUDACXX_VERSION // Don't violate precondition [atomics.flag]/6
     {
         volatile std::atomic_flag f;
         f.clear();
@@ -100,7 +100,7 @@ int main(int, char**)
         assert(f.test_and_set() == 0);
         assert(std::atomic_flag_test_explicit(&f, std::memory_order_acq_rel) == 1);
     }
-#endif // _LIBCPP_VERSION
+#endif // _LIBCUDACXX_VERSION
     {
         volatile std::atomic_flag f;
         f.clear();

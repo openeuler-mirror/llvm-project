@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_NORMAL_DISTRIBUTION_H
-#define _LIBCPP___RANDOM_NORMAL_DISTRIBUTION_H
+#ifndef _LIBCUDACXX___RANDOM_NORMAL_DISTRIBUTION_H
+#define _LIBCUDACXX___RANDOM_NORMAL_DISTRIBUTION_H
 
 #include <__config>
 #include <__random/is_valid.h>
@@ -16,42 +16,42 @@
 #include <iosfwd>
 #include <limits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _RealType = double>
-class _LIBCPP_TEMPLATE_VIS normal_distribution
+class _LIBCUDACXX_TEMPLATE_VIS normal_distribution
 {
 public:
     // types
     typedef _RealType result_type;
 
-    class _LIBCPP_TEMPLATE_VIS param_type
+    class _LIBCUDACXX_TEMPLATE_VIS param_type
     {
         result_type __mean_;
         result_type __stddev_;
     public:
         typedef normal_distribution distribution_type;
 
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         explicit param_type(result_type __mean = 0, result_type __stddev = 1)
             : __mean_(__mean), __stddev_(__stddev) {}
 
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         result_type mean() const {return __mean_;}
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         result_type stddev() const {return __stddev_;}
 
-        friend _LIBCPP_INLINE_VISIBILITY
+        friend _LIBCUDACXX_INLINE_VISIBILITY
             bool operator==(const param_type& __x, const param_type& __y)
             {return __x.__mean_ == __y.__mean_ && __x.__stddev_ == __y.__stddev_;}
-        friend _LIBCPP_INLINE_VISIBILITY
+        friend _LIBCUDACXX_INLINE_VISIBILITY
             bool operator!=(const param_type& __x, const param_type& __y)
             {return !(__x == __y);}
     };
@@ -63,53 +63,53 @@ private:
 
 public:
     // constructors and reset functions
-#ifndef _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
     normal_distribution() : normal_distribution(0) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit normal_distribution(result_type __mean, result_type __stddev = 1)
         : __p_(param_type(__mean, __stddev)), _V_hot_(false) {}
 #else
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit normal_distribution(result_type __mean = 0,
                                  result_type __stddev = 1)
         : __p_(param_type(__mean, __stddev)), _V_hot_(false) {}
 #endif
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit normal_distribution(const param_type& __p)
         : __p_(__p), _V_hot_(false) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void reset() {_V_hot_ = false;}
 
     // generating functions
     template<class _URNG>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         result_type operator()(_URNG& __g)
         {return (*this)(__g, __p_);}
     template<class _URNG> result_type operator()(_URNG& __g, const param_type& __p);
 
     // property functions
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type mean() const {return __p_.mean();}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type stddev() const {return __p_.stddev();}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     param_type param() const {return __p_;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void param(const param_type& __p) {__p_ = __p;}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type min() const {return -numeric_limits<result_type>::infinity();}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type max() const {return numeric_limits<result_type>::infinity();}
 
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
         bool operator==(const normal_distribution& __x,
                         const normal_distribution& __y)
         {return __x.__p_ == __y.__p_ && __x._V_hot_ == __y._V_hot_ &&
                 (!__x._V_hot_ || __x._V_ == __y._V_);}
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
         bool operator!=(const normal_distribution& __x,
                         const normal_distribution& __y)
         {return !(__x == __y);}
@@ -132,7 +132,7 @@ template<class _URNG>
 _RealType
 normal_distribution<_RealType>::operator()(_URNG& __g, const param_type& __p)
 {
-    static_assert(__libcpp_random_is_valid_urng<_URNG>::value, "");
+    static_assert(__LIBCUDACXX_random_is_valid_urng<_URNG>::value, "");
     result_type _Up;
     if (_V_hot_)
     {
@@ -151,7 +151,7 @@ normal_distribution<_RealType>::operator()(_URNG& __g, const param_type& __p)
             __v = _Uni(__g);
             __s = __u * __u + __v * __v;
         } while (__s > 1 || __s == 0);
-        result_type _Fp = _VSTD::sqrt(-2 * _VSTD::log(__s) / __s);
+        result_type _Fp = _CUDA_VSTD::sqrt(-2 * _CUDA_VSTD::log(__s) / __s);
         _V_ = __v * _Fp;
         _V_hot_ = true;
         _Up = __u * _Fp;
@@ -203,8 +203,8 @@ operator>>(basic_istream<_CharT, _Traits>& __is,
     return __is;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_NORMAL_DISTRIBUTION_H
+#endif // _LIBCUDACXX___RANDOM_NORMAL_DISTRIBUTION_H

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// UNSUPPORTED: no-threads, libcpp-has-thread-api-external
-// REQUIRES: libcpp-has-thread-api-pthread
+// UNSUPPORTED: no-threads, LIBCUDACXX-has-thread-api-external
+// REQUIRES: LIBCUDACXX-has-thread-api-pthread
 
 // <thread>
 

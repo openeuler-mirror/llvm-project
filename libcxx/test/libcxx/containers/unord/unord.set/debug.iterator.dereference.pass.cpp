@@ -11,7 +11,7 @@
 // Dereference non-dereferenceable iterator.
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <unordered_set>
 
@@ -24,7 +24,7 @@ int main(int, char**) {
         typedef std::unordered_set<T> C;
         C c(1);
         C::iterator i = c.end();
-        TEST_LIBCPP_ASSERT_FAILURE(*i, "Attempted to dereference a non-dereferenceable unordered container const_iterator");
+        TEST_LIBCUDACXX_ASSERT_FAILURE(*i, "Attempted to dereference a non-dereferenceable unordered container const_iterator");
     }
 
     {
@@ -32,7 +32,7 @@ int main(int, char**) {
         typedef std::unordered_set<T, std::hash<T>, std::equal_to<T>, min_allocator<T>> C;
         C c(1);
         C::iterator i = c.end();
-        TEST_LIBCPP_ASSERT_FAILURE(*i, "Attempted to dereference a non-dereferenceable unordered container const_iterator");
+        TEST_LIBCUDACXX_ASSERT_FAILURE(*i, "Attempted to dereference a non-dereferenceable unordered container const_iterator");
     }
 
     return 0;

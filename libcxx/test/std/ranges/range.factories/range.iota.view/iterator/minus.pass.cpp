@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // friend constexpr iterator operator-(iterator i, difference_type n)
 //   requires advanceable<W>;
@@ -94,7 +94,7 @@ constexpr bool test() {
       auto iter2 = std::next(io.begin(), 5);
       assert(iter1 - iter2 == 5);
 
-      LIBCPP_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
+      LIBCUDACXX_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
     }
     {
       std::ranges::iota_view<int> io(0);
@@ -102,7 +102,7 @@ constexpr bool test() {
       auto iter2 = std::next(io.begin(), 10);
       assert(iter1 - iter2 == 0);
 
-      LIBCPP_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
+      LIBCUDACXX_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
     }
     {
       std::ranges::iota_view<int> io(0);
@@ -110,7 +110,7 @@ constexpr bool test() {
       auto iter2 = std::next(io.begin(), 10);
       assert(iter1 - iter2 == -5);
 
-      LIBCPP_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
+      LIBCUDACXX_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
     }
 
     // When "_Start" is unsigned integer like and y > x.
@@ -120,7 +120,7 @@ constexpr bool test() {
       auto iter2 = std::next(io.begin(), 10);
       assert(iter1 - iter2 == -5);
 
-      LIBCPP_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
+      LIBCUDACXX_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
     }
 
     // When "_Start" is unsigned integer like and x >= y.
@@ -130,7 +130,7 @@ constexpr bool test() {
       auto iter2 = std::next(io.begin(), 5);
       assert(iter1 - iter2 == 5);
 
-      LIBCPP_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
+      LIBCUDACXX_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
     }
     {
       std::ranges::iota_view<unsigned> io(0);
@@ -138,7 +138,7 @@ constexpr bool test() {
       auto iter2 = std::next(io.begin(), 10);
       assert(iter1 - iter2 == 0);
 
-      LIBCPP_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
+      LIBCUDACXX_STATIC_ASSERT(std::same_as<decltype(iter1 - iter2), IntDiffT>);
     }
 
     // When "_Start" is not integer like.

@@ -7,23 +7,23 @@
 //===----------------------------------------------------------------------===//
 
 #include <__config>
-#ifdef _LIBCPP_DEPRECATED_ABI_LEGACY_LIBRARY_DEFINITIONS_FOR_INLINE_FUNCTIONS
-#   define _LIBCPP_SHARED_PTR_DEFINE_LEGACY_INLINE_FUNCTIONS
+#ifdef _LIBCUDACXX_DEPRECATED_ABI_LEGACY_LIBRARY_DEFINITIONS_FOR_INLINE_FUNCTIONS
+#   define _LIBCUDACXX_SHARED_PTR_DEFINE_LEGACY_INLINE_FUNCTIONS
 #endif
 
 #include <memory>
 
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
 #  include <mutex>
 #  include <thread>
-#  if defined(__ELF__) && defined(_LIBCPP_LINK_PTHREAD_LIB)
+#  if defined(__ELF__) && defined(_LIBCUDACXX_LINK_PTHREAD_LIB)
 #    pragma comment(lib, "pthread")
 #  endif
 #endif
 
 #include "include/atomic_support.h"
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 const allocator_arg_t allocator_arg = allocator_arg_t();
 
@@ -43,17 +43,17 @@ __shared_weak_count::~__shared_weak_count()
 {
 }
 
-#if defined(_LIBCPP_SHARED_PTR_DEFINE_LEGACY_INLINE_FUNCTIONS)
+#if defined(_LIBCUDACXX_SHARED_PTR_DEFINE_LEGACY_INLINE_FUNCTIONS)
 void
 __shared_count::__add_shared() noexcept
 {
-    __libcpp_atomic_refcount_increment(__shared_owners_);
+    __LIBCUDACXX_atomic_refcount_increment(__shared_owners_);
 }
 
 bool
 __shared_count::__release_shared() noexcept
 {
-    if (__libcpp_atomic_refcount_decrement(__shared_owners_) == -1)
+    if (__LIBCUDACXX_atomic_refcount_decrement(__shared_owners_) == -1)
     {
         __on_zero_shared();
         return true;
@@ -70,7 +70,7 @@ __shared_weak_count::__add_shared() noexcept
 void
 __shared_weak_count::__add_weak() noexcept
 {
-    __libcpp_atomic_refcount_increment(__shared_weak_owners_);
+    __LIBCUDACXX_atomic_refcount_increment(__shared_weak_owners_);
 }
 
 void
@@ -79,7 +79,7 @@ __shared_weak_count::__release_shared() noexcept
     if (__shared_count::__release_shared())
         __release_weak();
 }
-#endif // _LIBCPP_SHARED_PTR_DEFINE_LEGACY_INLINE_FUNCTIONS
+#endif // _LIBCUDACXX_SHARED_PTR_DEFINE_LEGACY_INLINE_FUNCTIONS
 
 void
 __shared_weak_count::__release_weak() noexcept
@@ -105,24 +105,24 @@ __shared_weak_count::__release_weak() noexcept
     // threads, and have them all get copied at once.  The argument
     // also doesn't apply for __release_shared, because an outstanding
     // weak_ptr::lock() could read / modify the shared count.
-    if (__libcpp_atomic_load(&__shared_weak_owners_, _AO_Acquire) == 0)
+    if (__LIBCUDACXX_atomic_load(&__shared_weak_owners_, _AO_Acquire) == 0)
     {
         // no need to do this store, because we are about
         // to destroy everything.
-        //__libcpp_atomic_store(&__shared_weak_owners_, -1, _AO_Release);
+        //__LIBCUDACXX_atomic_store(&__shared_weak_owners_, -1, _AO_Release);
         __on_zero_shared_weak();
     }
-    else if (__libcpp_atomic_refcount_decrement(__shared_weak_owners_) == -1)
+    else if (__LIBCUDACXX_atomic_refcount_decrement(__shared_weak_owners_) == -1)
         __on_zero_shared_weak();
 }
 
 __shared_weak_count*
 __shared_weak_count::lock() noexcept
 {
-    long object_owners = __libcpp_atomic_load(&__shared_owners_);
+    long object_owners = __LIBCUDACXX_atomic_load(&__shared_owners_);
     while (object_owners != -1)
     {
-        if (__libcpp_atomic_compare_exchange(&__shared_owners_,
+        if (__LIBCUDACXX_atomic_compare_exchange(&__shared_owners_,
                                              &object_owners,
                                              object_owners+1))
             return this;
@@ -136,22 +136,22 @@ __shared_weak_count::__get_deleter(const type_info&) const noexcept
     return nullptr;
 }
 
-#if !defined(_LIBCPP_HAS_NO_THREADS)
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS)
 
 static constexpr std::size_t __sp_mut_count = 32;
-static constinit __libcpp_mutex_t mut_back[__sp_mut_count] =
+static constinit __LIBCUDACXX_mutex_t mut_back[__sp_mut_count] =
 {
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER
+    _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER,
+    _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER,
+    _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER,
+    _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER,
+    _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER,
+    _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER,
+    _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER,
+    _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER, _LIBCUDACXX_MUTEX_INITIALIZER
 };
 
-_LIBCPP_CONSTEXPR __sp_mut::__sp_mut(void* p) noexcept
+_LIBCUDACXX_CONSTEXPR __sp_mut::__sp_mut(void* p) noexcept
    : __lx(p)
 {
 }
@@ -159,14 +159,14 @@ _LIBCPP_CONSTEXPR __sp_mut::__sp_mut(void* p) noexcept
 void
 __sp_mut::lock() noexcept
 {
-    auto m = static_cast<__libcpp_mutex_t*>(__lx);
-    __libcpp_mutex_lock(m);
+    auto m = static_cast<__LIBCUDACXX_mutex_t*>(__lx);
+    __LIBCUDACXX_mutex_lock(m);
 }
 
 void
 __sp_mut::unlock() noexcept
 {
-    __libcpp_mutex_unlock(static_cast<__libcpp_mutex_t*>(__lx));
+    __LIBCUDACXX_mutex_unlock(static_cast<__LIBCUDACXX_mutex_t*>(__lx));
 }
 
 __sp_mut&
@@ -185,7 +185,7 @@ __get_sp_mut(const void* p)
     return muts[hash<const void*>()(p) & (__sp_mut_count-1)];
 }
 
-#endif // !defined(_LIBCPP_HAS_NO_THREADS)
+#endif // !defined(_LIBCUDACXX_HAS_NO_THREADS)
 
 void*
 align(size_t alignment, size_t size, void*& ptr, size_t& space)
@@ -206,4 +206,4 @@ align(size_t alignment, size_t size, void*& ptr, size_t& space)
     return r;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

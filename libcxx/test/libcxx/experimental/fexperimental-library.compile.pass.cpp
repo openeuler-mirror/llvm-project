@@ -26,10 +26,10 @@
 
 #include <version>
 
-#ifdef _LIBCPP_HAS_NO_INCOMPLETE_FORMAT
+#ifdef _LIBCUDACXX_HAS_NO_INCOMPLETE_FORMAT
 #   error "-fexperimental-library should enable <format>"
 #endif
 
-#ifdef _LIBCPP_HAS_NO_INCOMPLETE_RANGES
+#ifdef _LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES
 #   error "-fexperimental-library should enable <ranges>"
 #endif

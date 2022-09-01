@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // constexpr auto begin();
 // constexpr auto begin() const requires forward_range<View> && forward_range<const View>;
@@ -33,8 +33,8 @@ constexpr bool test() {
 
     static_assert(std::ranges::forward_range<V>);
     static_assert(std::ranges::forward_range<const V>);
-    LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<V>);
-    LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<P>);
+    LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<V>);
+    LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<P>);
 
     {
       std::ranges::lazy_split_view<V, P> v;
@@ -59,8 +59,8 @@ constexpr bool test() {
 
     static_assert(std::ranges::forward_range<V>);
     static_assert(std::ranges::forward_range<const V>);
-    LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<V>);
-    LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<P>);
+    LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<V>);
+    LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<P>);
 
     {
       std::ranges::lazy_split_view<V, P> v;
@@ -84,8 +84,8 @@ constexpr bool test() {
     using P = V;
     static_assert(std::ranges::forward_range<V>);
     static_assert(!std::ranges::forward_range<const V>);
-    LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<V>);
-    LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<P>);
+    LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<V>);
+    LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<P>);
 
     std::ranges::lazy_split_view<V, P> v;
     auto it = v.begin();
@@ -103,8 +103,8 @@ constexpr bool test() {
 
     static_assert(std::ranges::forward_range<V>);
     static_assert(std::ranges::forward_range<const V>);
-    LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<V>);
-    LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<P>);
+    LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<V>);
+    LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<P>);
 
     {
       std::ranges::lazy_split_view<V, P> v;

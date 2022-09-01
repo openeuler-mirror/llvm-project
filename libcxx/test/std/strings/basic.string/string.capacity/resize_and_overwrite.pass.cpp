@@ -27,8 +27,8 @@ constexpr void test_appending(size_t k, size_t N, size_t new_capacity) {
   auto s = S(k, 'a');
   s.resize_and_overwrite(new_capacity, [&](auto* p, auto n) {
     assert(n == new_capacity);
-    LIBCPP_ASSERT(s.size() == new_capacity);
-    LIBCPP_ASSERT(s.begin().base() == p);
+    LIBCUDACXX_ASSERT(s.size() == new_capacity);
+    LIBCUDACXX_ASSERT(s.begin().base() == p);
     assert(std::all_of(p, p + k, [](const auto ch) { return ch == 'a'; }));
     std::fill(p + k, p + n, 'b');
     p[n] = 'c'; // will be overwritten
@@ -45,8 +45,8 @@ constexpr void test_truncating(size_t o, size_t N) {
   auto s = S(o, 'a');
   s.resize_and_overwrite(N, [&](auto* p, auto n) {
     assert(n == N);
-    LIBCPP_ASSERT(s.size() == n);
-    LIBCPP_ASSERT(s.begin().base() == p);
+    LIBCUDACXX_ASSERT(s.size() == n);
+    LIBCUDACXX_ASSERT(s.begin().base() == p);
     assert(std::all_of(p, p + n, [](auto ch) { return ch == 'a'; }));
     p[n - 1] = 'b';
     p[n] = 'c'; // will be overwritten

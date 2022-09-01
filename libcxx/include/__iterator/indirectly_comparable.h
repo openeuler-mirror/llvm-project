@@ -7,28 +7,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_INDIRECTLY_COMPARABLE_H
-#define _LIBCPP___ITERATOR_INDIRECTLY_COMPARABLE_H
+#ifndef _LIBCUDACXX___ITERATOR_INDIRECTLY_COMPARABLE_H
+#define _LIBCUDACXX___ITERATOR_INDIRECTLY_COMPARABLE_H
 
 #include <__config>
 #include <__functional/identity.h>
 #include <__iterator/concepts.h>
 #include <__iterator/projected.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <class _I1, class _I2, class _Rp, class _P1 = identity, class _P2 = identity>
 concept indirectly_comparable =
   indirect_binary_predicate<_Rp, projected<_I1, _P1>, projected<_I2, _P2>>;
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_INDIRECTLY_COMPARABLE_H
+#endif // _LIBCUDACXX___ITERATOR_INDIRECTLY_COMPARABLE_H

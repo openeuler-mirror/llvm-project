@@ -11,7 +11,7 @@
 // Decrement iterator prior to begin.
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <string>
 #include <cassert>
@@ -26,7 +26,7 @@ int main(int, char**) {
     C::iterator i = c.end();
     --i;
     assert(i == c.begin());
-    TEST_LIBCPP_ASSERT_FAILURE(--i, "Attempted to decrement a non-decrementable iterator");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(--i, "Attempted to decrement a non-decrementable iterator");
   }
 
   {
@@ -35,7 +35,7 @@ int main(int, char**) {
     C::iterator i = c.end();
     --i;
     assert(i == c.begin());
-    TEST_LIBCPP_ASSERT_FAILURE(--i, "Attempted to decrement a non-decrementable iterator");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(--i, "Attempted to decrement a non-decrementable iterator");
   }
 
   return 0;

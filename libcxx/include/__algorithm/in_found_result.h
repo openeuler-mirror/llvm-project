@@ -7,43 +7,43 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_IN_FOUND_RESULT_H
-#define _LIBCPP___ALGORITHM_IN_FOUND_RESULT_H
+#ifndef _LIBCUDACXX___ALGORITHM_IN_FOUND_RESULT_H
+#define _LIBCUDACXX___ALGORITHM_IN_FOUND_RESULT_H
 
 #include <__concepts/convertible_to.h>
 #include <__config>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 template <class _InIter1>
 struct in_found_result {
-  _LIBCPP_NO_UNIQUE_ADDRESS _InIter1 in;
+  _LIBCUDACXX_NO_UNIQUE_ADDRESS _InIter1 in;
   bool found;
 
   template <class _InIter2>
     requires convertible_to<const _InIter1&, _InIter2>
-  _LIBCPP_HIDE_FROM_ABI constexpr operator in_found_result<_InIter2>() const & {
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr operator in_found_result<_InIter2>() const & {
     return {in, found};
   }
 
   template <class _InIter2>
     requires convertible_to<_InIter1, _InIter2>
-  _LIBCPP_HIDE_FROM_ABI constexpr operator in_found_result<_InIter2>() && {
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr operator in_found_result<_InIter2>() && {
     return {std::move(in), found};
   }
 };
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_IN_FOUND_RESULT_H
+#endif // _LIBCUDACXX___ALGORITHM_IN_FOUND_RESULT_H

@@ -10,7 +10,7 @@
 // Make sure that std::span's iterators check for OOB accesses when the debug mode is enabled.
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode
 
 #include <span>
 
@@ -27,15 +27,15 @@ int main(int, char**) {
         std::span<Foo> const span(array, 3);
         {
             auto it = span.end();
-            TEST_LIBCPP_ASSERT_FAILURE(*it, "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(*it, "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
         }
         {
             auto it = span.end();
-            TEST_LIBCPP_ASSERT_FAILURE(it->x, "__bounded_iter::operator->: Attempt to dereference an out-of-range iterator");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(it->x, "__bounded_iter::operator->: Attempt to dereference an out-of-range iterator");
         }
         {
             auto it = span.begin();
-            TEST_LIBCPP_ASSERT_FAILURE(it[3], "__bounded_iter::operator[]: Attempt to index an iterator out-of-range");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(it[3], "__bounded_iter::operator[]: Attempt to index an iterator out-of-range");
         }
     }
 
@@ -45,15 +45,15 @@ int main(int, char**) {
         std::span<Foo, 3> const span(array, 3);
         {
             auto it = span.end();
-            TEST_LIBCPP_ASSERT_FAILURE(*it, "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(*it, "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
         }
         {
             auto it = span.end();
-            TEST_LIBCPP_ASSERT_FAILURE(it->x, "__bounded_iter::operator->: Attempt to dereference an out-of-range iterator");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(it->x, "__bounded_iter::operator->: Attempt to dereference an out-of-range iterator");
         }
         {
             auto it = span.begin();
-            TEST_LIBCPP_ASSERT_FAILURE(it[3], "__bounded_iter::operator[]: Attempt to index an iterator out-of-range");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(it[3], "__bounded_iter::operator[]: Attempt to index an iterator out-of-range");
         }
     }
 
@@ -63,15 +63,15 @@ int main(int, char**) {
         std::span<Foo> const span(array, 3);
         {
             auto it = span.rend();
-            TEST_LIBCPP_ASSERT_FAILURE(*it, "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(*it, "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
         }
         {
             auto it = span.rend();
-            TEST_LIBCPP_ASSERT_FAILURE(it->x, "__bounded_iter::operator->: Attempt to dereference an out-of-range iterator");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(it->x, "__bounded_iter::operator->: Attempt to dereference an out-of-range iterator");
         }
         {
             auto it = span.rbegin();
-            TEST_LIBCPP_ASSERT_FAILURE(it[3], "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(it[3], "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
         }
     }
 
@@ -81,15 +81,15 @@ int main(int, char**) {
         std::span<Foo, 3> const span(array, 3);
         {
             auto it = span.rend();
-            TEST_LIBCPP_ASSERT_FAILURE(*it, "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(*it, "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
         }
         {
             auto it = span.rend();
-            TEST_LIBCPP_ASSERT_FAILURE(it->x, "__bounded_iter::operator->: Attempt to dereference an out-of-range iterator");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(it->x, "__bounded_iter::operator->: Attempt to dereference an out-of-range iterator");
         }
         {
             auto it = span.rbegin();
-            TEST_LIBCPP_ASSERT_FAILURE(it[3], "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(it[3], "__bounded_iter::operator*: Attempt to dereference an out-of-range iterator");
         }
     }
 

@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMATTER_BOOL_H
-#define _LIBCPP___FORMAT_FORMATTER_BOOL_H
+#ifndef _LIBCUDACXX___FORMAT_FORMATTER_BOOL_H
+#define _LIBCUDACXX___FORMAT_FORMATTER_BOOL_H
 
 #include <__algorithm/copy.h>
 #include <__availability>
@@ -23,29 +23,29 @@
 #include <__utility/unreachable.h>
 #include <string_view>
 
-#ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
 #  include <locale>
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <__formatter::__char_type _CharT>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT formatter<bool, _CharT> {
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT formatter<bool, _CharT> {
 public:
-  _LIBCPP_HIDE_FROM_ABI constexpr auto
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr auto
   parse(basic_format_parse_context<_CharT>& __parse_ctx) -> decltype(__parse_ctx.begin()) {
     auto __result = __parser_.__parse(__parse_ctx, __format_spec::__fields_integral);
     __format_spec::__process_parsed_bool(__parser_);
     return __result;
   }
 
-  _LIBCPP_HIDE_FROM_ABI auto format(bool __value, auto& __ctx) const -> decltype(__ctx.out()) {
+  _LIBCUDACXX_HIDE_FROM_ABI auto format(bool __value, auto& __ctx) const -> decltype(__ctx.out()) {
     switch (__parser_.__type_) {
     case __format_spec::__type::__default:
     case __format_spec::__type::__string:
@@ -63,16 +63,16 @@ public:
           static_cast<unsigned>(__value), __ctx, __parser_.__get_parsed_std_specifications(__ctx));
 
     default:
-      _LIBCPP_ASSERT(false, "The parse function should have validated the type");
-      __libcpp_unreachable();
+      _LIBCUDACXX_ASSERT(false, "The parse function should have validated the type");
+      __LIBCUDACXX_unreachable();
     }
   }
 
   __format_spec::__parser<_CharT> __parser_;
 };
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_FORMATTER_BOOL_H
+#endif // _LIBCUDACXX___FORMAT_FORMATTER_BOOL_H

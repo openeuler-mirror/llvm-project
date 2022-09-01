@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_REMOVE_COPY_H
-#define _LIBCPP___ALGORITHM_RANGES_REMOVE_COPY_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_REMOVE_COPY_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_REMOVE_COPY_H
 
 #include <__algorithm/in_out_result.h>
 #include <__algorithm/ranges_remove_copy_if.h>
@@ -22,13 +22,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -45,7 +45,7 @@ namespace __remove_copy {
               class _Proj = identity>
       requires indirectly_copyable<_InIter, _OutIter> &&
                indirect_binary_predicate<ranges::equal_to, projected<_InIter, _Proj>, const _Type*>
-    _LIBCPP_HIDE_FROM_ABI constexpr remove_copy_result<_InIter, _OutIter>
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr remove_copy_result<_InIter, _OutIter>
     operator()(_InIter __first, _Sent __last, _OutIter __result, const _Type& __value, _Proj __proj = {}) const {
       auto __pred = [&](auto&& __val) { return __value == __val; };
       return ranges::__remove_copy_if_impl(std::move(__first), std::move(__last), std::move(__result), __pred, __proj);
@@ -54,7 +54,7 @@ namespace __remove_copy {
     template <input_range _Range, weakly_incrementable _OutIter, class _Type, class _Proj = identity>
       requires indirectly_copyable<iterator_t<_Range>, _OutIter> &&
                indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Range>, _Proj>, const _Type*>
-    _LIBCPP_HIDE_FROM_ABI constexpr remove_copy_result<borrowed_iterator_t<_Range>, _OutIter>
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr remove_copy_result<borrowed_iterator_t<_Range>, _OutIter>
     operator()(_Range&& __range, _OutIter __result, const _Type& __value, _Proj __proj = {}) const {
       auto __pred = [&](auto&& __val) { return __value == __val; };
       return ranges::__remove_copy_if_impl(
@@ -69,8 +69,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_REMOVE_COPY_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_REMOVE_COPY_H

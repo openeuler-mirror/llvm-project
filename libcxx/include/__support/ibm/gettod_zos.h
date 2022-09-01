@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_SUPPORT_IBM_GETTOD_ZOS_H
-#define _LIBCPP_SUPPORT_IBM_GETTOD_ZOS_H
+#ifndef _LIBCUDACXX_SUPPORT_IBM_GETTOD_ZOS_H
+#define _LIBCUDACXX_SUPPORT_IBM_GETTOD_ZOS_H
 
 #include <time.h>
 
-inline _LIBCPP_HIDE_FROM_ABI int
+inline _LIBCUDACXX_HIDE_FROM_ABI int
 gettimeofdayMonotonic(struct timespec64* Output) {
 
   // The POSIX gettimeofday() function is not available on z/OS. Therefore,
@@ -51,4 +51,4 @@ gettimeofdayMonotonic(struct timespec64* Output) {
   return 0;
 }
 
-#endif // _LIBCPP_SUPPORT_IBM_GETTOD_ZOS_H
+#endif // _LIBCUDACXX_SUPPORT_IBM_GETTOD_ZOS_H

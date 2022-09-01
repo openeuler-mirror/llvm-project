@@ -8,7 +8,7 @@
 
 // UNSUPPORTED: c++03, c++11
 
-// XFAIL: libcpp-has-debug-mode
+// XFAIL: LIBCUDACXX-has-debug-mode
 
 #include <experimental/coroutine>
 #include <vector>

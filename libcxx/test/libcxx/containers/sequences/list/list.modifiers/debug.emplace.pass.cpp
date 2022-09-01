@@ -11,7 +11,7 @@
 // template <class... Args> void emplace(const_iterator p, Args&&... args);
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <list>
 
@@ -27,7 +27,7 @@ struct A {
 int main(int, char**) {
     std::list<A> c1;
     std::list<A> c2;
-    TEST_LIBCPP_ASSERT_FAILURE(c1.emplace(c2.cbegin(), 2, 3.5),
+    TEST_LIBCUDACXX_ASSERT_FAILURE(c1.emplace(c2.cbegin(), 2, 3.5),
                                "list::emplace(iterator, args...) called with an iterator not referring to this list");
 
     return 0;

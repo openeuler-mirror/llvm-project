@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_GAMMA_DISTRIBUTION_H
-#define _LIBCPP___RANDOM_GAMMA_DISTRIBUTION_H
+#ifndef _LIBCUDACXX___RANDOM_GAMMA_DISTRIBUTION_H
+#define _LIBCUDACXX___RANDOM_GAMMA_DISTRIBUTION_H
 
 #include <__config>
 #include <__random/exponential_distribution.h>
@@ -17,42 +17,42 @@
 #include <iosfwd>
 #include <limits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _RealType = double>
-class _LIBCPP_TEMPLATE_VIS gamma_distribution
+class _LIBCUDACXX_TEMPLATE_VIS gamma_distribution
 {
 public:
     // types
     typedef _RealType result_type;
 
-    class _LIBCPP_TEMPLATE_VIS param_type
+    class _LIBCUDACXX_TEMPLATE_VIS param_type
     {
         result_type __alpha_;
         result_type __beta_;
     public:
         typedef gamma_distribution distribution_type;
 
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         explicit param_type(result_type __alpha = 1, result_type __beta = 1)
             : __alpha_(__alpha), __beta_(__beta) {}
 
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         result_type alpha() const {return __alpha_;}
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         result_type beta() const {return __beta_;}
 
-        friend _LIBCPP_INLINE_VISIBILITY
+        friend _LIBCUDACXX_INLINE_VISIBILITY
             bool operator==(const param_type& __x, const param_type& __y)
             {return __x.__alpha_ == __y.__alpha_ && __x.__beta_ == __y.__beta_;}
-        friend _LIBCPP_INLINE_VISIBILITY
+        friend _LIBCUDACXX_INLINE_VISIBILITY
             bool operator!=(const param_type& __x, const param_type& __y)
             {return !(__x == __y);}
     };
@@ -62,52 +62,52 @@ private:
 
 public:
     // constructors and reset functions
-#ifndef _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
     gamma_distribution() : gamma_distribution(1) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit gamma_distribution(result_type __alpha, result_type __beta = 1)
         : __p_(param_type(__alpha, __beta)) {}
 #else
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit gamma_distribution(result_type __alpha = 1,
                                 result_type __beta = 1)
         : __p_(param_type(__alpha, __beta)) {}
 #endif
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit gamma_distribution(const param_type& __p)
         : __p_(__p) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void reset() {}
 
     // generating functions
     template<class _URNG>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         result_type operator()(_URNG& __g)
         {return (*this)(__g, __p_);}
     template<class _URNG> result_type operator()(_URNG& __g, const param_type& __p);
 
     // property functions
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type alpha() const {return __p_.alpha();}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type beta() const {return __p_.beta();}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     param_type param() const {return __p_;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void param(const param_type& __p) {__p_ = __p;}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type min() const {return 0;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type max() const {return numeric_limits<result_type>::infinity();}
 
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
         bool operator==(const gamma_distribution& __x,
                         const gamma_distribution& __y)
         {return __x.__p_ == __y.__p_;}
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
         bool operator!=(const gamma_distribution& __x,
                         const gamma_distribution& __y)
         {return !(__x == __y);}
@@ -118,7 +118,7 @@ template<class _URNG>
 _RealType
 gamma_distribution<_RealType>::operator()(_URNG& __g, const param_type& __p)
 {
-    static_assert(__libcpp_random_is_valid_urng<_URNG>::value, "");
+    static_assert(__LIBCUDACXX_random_is_valid_urng<_URNG>::value, "");
     result_type __a = __p.alpha();
     uniform_real_distribution<result_type> __gen(0, 1);
     exponential_distribution<result_type> __egen;
@@ -136,7 +136,7 @@ gamma_distribution<_RealType>::operator()(_URNG& __g, const param_type& __p)
             const result_type __w = __u * (1 - __u);
             if (__w != 0)
             {
-                const result_type __y = _VSTD::sqrt(__c / __w) *
+                const result_type __y = _CUDA_VSTD::sqrt(__c / __w) *
                                         (__u - result_type(0.5));
                 __x = __b + __y;
                 if (__x >= 0)
@@ -144,7 +144,7 @@ gamma_distribution<_RealType>::operator()(_URNG& __g, const param_type& __p)
                     const result_type __z = 64 * __w * __w * __w * __v * __v;
                     if (__z <= 1 - 2 * __y * __y / __x)
                         break;
-                    if (_VSTD::log(__z) <= 2 * (__b * _VSTD::log(__x / __b) - __y))
+                    if (_CUDA_VSTD::log(__z) <= 2 * (__b * _CUDA_VSTD::log(__x / __b) - __y))
                         break;
                 }
             }
@@ -158,14 +158,14 @@ gamma_distribution<_RealType>::operator()(_URNG& __g, const param_type& __p)
             const result_type __es = __egen(__g);
             if (__u <= 1 - __a)
             {
-                __x = _VSTD::pow(__u, 1 / __a);
+                __x = _CUDA_VSTD::pow(__u, 1 / __a);
                 if (__x <= __es)
                     break;
             }
             else
             {
-                const result_type __e = -_VSTD::log((1-__u)/__a);
-                __x = _VSTD::pow(1 - __a + __a * __e, 1 / __a);
+                const result_type __e = -_CUDA_VSTD::log((1-__u)/__a);
+                __x = _CUDA_VSTD::pow(1 - __a + __a * __e, 1 / __a);
                 if (__x <= __e + __es)
                     break;
             }
@@ -208,8 +208,8 @@ operator>>(basic_istream<_CharT, _Traits>& __is,
     return __is;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_GAMMA_DISTRIBUTION_H
+#endif // _LIBCUDACXX___RANDOM_GAMMA_DISTRIBUTION_H

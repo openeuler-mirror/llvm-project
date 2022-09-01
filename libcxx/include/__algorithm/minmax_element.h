@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_MINMAX_ELEMENT_H
-#define _LIBCPP___ALGORITHM_MINMAX_ELEMENT_H
+#ifndef _LIBCUDACXX___ALGORITHM_MINMAX_ELEMENT_H
+#define _LIBCUDACXX___ALGORITHM_MINMAX_ELEMENT_H
 
 #include <__algorithm/comp.h>
 #include <__config>
@@ -16,11 +16,11 @@
 #include <__utility/pair.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Comp, class _Proj>
 class _MinmaxElementLessFunc {
@@ -28,18 +28,18 @@ class _MinmaxElementLessFunc {
   _Proj& __proj_;
 
 public:
-  _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR
+  _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR
   _MinmaxElementLessFunc(_Comp& __comp, _Proj& __proj) : __comp_(__comp), __proj_(__proj) {}
 
   template <class _Iter>
-  _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+  _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
   bool operator()(_Iter& __it1, _Iter& __it2) {
     return std::__invoke(__comp_, std::__invoke(__proj_, *__it1), std::__invoke(__proj_, *__it2));
   }
 };
 
 template <class _Iter, class _Sent, class _Proj, class _Comp>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 pair<_Iter, _Iter> __minmax_element_impl(_Iter __first, _Sent __last, _Comp& __comp, _Proj& __proj) {
   auto __less = _MinmaxElementLessFunc<_Comp, _Proj>(__comp, __proj);
 
@@ -79,7 +79,7 @@ pair<_Iter, _Iter> __minmax_element_impl(_Iter __first, _Sent __last, _Comp& __c
 }
 
 template <class _ForwardIterator, class _Compare>
-_LIBCPP_NODISCARD_EXT _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_NODISCARD_EXT _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 pair<_ForwardIterator, _ForwardIterator>
 minmax_element(_ForwardIterator __first, _ForwardIterator __last, _Compare __comp) {
   static_assert(__is_cpp17_forward_iterator<_ForwardIterator>::value,
@@ -91,11 +91,11 @@ minmax_element(_ForwardIterator __first, _ForwardIterator __last, _Compare __com
 }
 
 template <class _ForwardIterator>
-_LIBCPP_NODISCARD_EXT inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_NODISCARD_EXT inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 pair<_ForwardIterator, _ForwardIterator> minmax_element(_ForwardIterator __first, _ForwardIterator __last) {
     return std::minmax_element(__first, __last, __less<typename iterator_traits<_ForwardIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_MINMAX_ELEMENT_H
+#endif // _LIBCUDACXX___ALGORITHM_MINMAX_ELEMENT_H

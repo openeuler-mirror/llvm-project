@@ -15,10 +15,10 @@
 // to set it. This is for backwards ABI compatibility with code that has been
 // using this debug handler previously.
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-struct _LIBCPP_TEMPLATE_VIS __libcpp_debug_info {
-  _LIBCPP_EXPORTED_FROM_ABI string what() const;
+struct _LIBCUDACXX_TEMPLATE_VIS __LIBCUDACXX_debug_info {
+  _LIBCUDACXX_EXPORTED_FROM_ABI string what() const;
 
   const char* __file_;
   int __line_;
@@ -26,29 +26,29 @@ struct _LIBCPP_TEMPLATE_VIS __libcpp_debug_info {
   const char* __msg_;
 };
 
-std::string __libcpp_debug_info::what() const {
+std::string __LIBCUDACXX_debug_info::what() const {
   string msg = __file_;
-  msg += ":" + std::to_string(__line_) + ": _LIBCPP_ASSERT '";
+  msg += ":" + std::to_string(__line_) + ": _LIBCUDACXX_ASSERT '";
   msg += __pred_;
   msg += "' failed. ";
   msg += __msg_;
   return msg;
 }
 
-_LIBCPP_NORETURN _LIBCPP_EXPORTED_FROM_ABI void __libcpp_abort_debug_function(__libcpp_debug_info const& info) {
+_LIBCUDACXX_NORETURN _LIBCUDACXX_EXPORTED_FROM_ABI void __LIBCUDACXX_abort_debug_function(__LIBCUDACXX_debug_info const& info) {
   std::fprintf(stderr, "%s\n", info.what().c_str());
   std::abort();
 }
 
-typedef void (*__libcpp_debug_function_type)(__libcpp_debug_info const&);
+typedef void (*__LIBCUDACXX_debug_function_type)(__LIBCUDACXX_debug_info const&);
 
-_LIBCPP_EXPORTED_FROM_ABI
-constinit __libcpp_debug_function_type __libcpp_debug_function = __libcpp_abort_debug_function;
+_LIBCUDACXX_EXPORTED_FROM_ABI
+constinit __LIBCUDACXX_debug_function_type __LIBCUDACXX_debug_function = __LIBCUDACXX_abort_debug_function;
 
-_LIBCPP_EXPORTED_FROM_ABI
-bool __libcpp_set_debug_function(__libcpp_debug_function_type __func) {
-  __libcpp_debug_function = __func;
+_LIBCUDACXX_EXPORTED_FROM_ABI
+bool __LIBCUDACXX_set_debug_function(__LIBCUDACXX_debug_function_type __func) {
+  __LIBCUDACXX_debug_function = __func;
   return true;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

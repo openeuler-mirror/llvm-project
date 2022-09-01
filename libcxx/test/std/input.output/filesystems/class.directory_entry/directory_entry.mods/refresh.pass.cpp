@@ -120,7 +120,7 @@ TEST_CASE(refresh_on_bad_symlink) {
   // test file doesn't exist
   {
     directory_entry ent(sym);
-    LIBCPP_ONLY(remove(file));
+    LIBCUDACXX_ONLY(remove(file));
     TEST_CHECK(ent.is_symlink());
     TEST_CHECK(ent.is_regular_file());
     TEST_CHECK(ent.exists());
@@ -128,7 +128,7 @@ TEST_CASE(refresh_on_bad_symlink) {
     remove_if_exists(file);
     ent.refresh();
 
-    LIBCPP_ONLY(permissions(dir, perms::none));
+    LIBCUDACXX_ONLY(permissions(dir, perms::none));
     TEST_CHECK(ent.is_symlink());
 #ifndef TEST_WIN_NO_FILESYSTEM_PERMS_NONE
     TEST_CHECK(!ent.is_regular_file());
@@ -139,7 +139,7 @@ TEST_CASE(refresh_on_bad_symlink) {
   env.create_file("dir/file", 101);
   {
     directory_entry ent(sym);
-    LIBCPP_ONLY(remove(file));
+    LIBCUDACXX_ONLY(remove(file));
     TEST_CHECK(ent.is_symlink());
     TEST_CHECK(ent.is_regular_file());
     TEST_CHECK(ent.exists());
@@ -150,7 +150,7 @@ TEST_CASE(refresh_on_bad_symlink) {
     ent.refresh(ec);
     TEST_CHECK(!ec); // we don't report bad symlinks as an error.
 
-    LIBCPP_ONLY(permissions(dir, perms::none));
+    LIBCUDACXX_ONLY(permissions(dir, perms::none));
 #ifndef TEST_WIN_NO_FILESYSTEM_PERMS_NONE
     TEST_CHECK(!ent.exists());
 #endif

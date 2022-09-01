@@ -6,22 +6,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_HALF_POSITIVE_H
-#define _LIBCPP___ALGORITHM_HALF_POSITIVE_H
+#ifndef _LIBCUDACXX___ALGORITHM_HALF_POSITIVE_H
+#define _LIBCUDACXX___ALGORITHM_HALF_POSITIVE_H
 
 #include <__config>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // Perform division by two quickly for positive integers (llvm.org/PR39129)
 
 template <typename _Integral>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
 typename enable_if
 <
     is_integral<_Integral>::value,
@@ -33,7 +33,7 @@ __half_positive(_Integral __value)
 }
 
 template <typename _Tp>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
 typename enable_if
 <
     !is_integral<_Tp>::value,
@@ -44,6 +44,6 @@ __half_positive(_Tp __value)
     return __value / 2;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_HALF_POSITIVE_H
+#endif // _LIBCUDACXX___ALGORITHM_HALF_POSITIVE_H

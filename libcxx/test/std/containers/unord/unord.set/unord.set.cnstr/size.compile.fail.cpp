@@ -32,7 +32,7 @@ int main(int, char**)
                                    test_allocator<NotConstructible>
                                    > C;
         C c = 7;
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.hash_function() == test_hash<NotConstructible>());
         assert(c.key_eq() == test_equal_to<NotConstructible>());
         assert(c.get_allocator() == (test_allocator<NotConstructible>()));

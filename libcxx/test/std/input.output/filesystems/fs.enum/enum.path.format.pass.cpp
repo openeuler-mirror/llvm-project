@@ -25,7 +25,7 @@ int main(int, char**) {
 
   typedef std::underlying_type<E>::type UT;
 
-  LIBCPP_ONLY(static_assert(std::is_same<UT, unsigned char>::value, "")); // Implementation detail
+  LIBCUDACXX_ONLY(static_assert(std::is_same<UT, unsigned char>::value, "")); // Implementation detail
 
   static_assert(
           E::auto_format   != E::native_format &&

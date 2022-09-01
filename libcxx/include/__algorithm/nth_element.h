@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_NTH_ELEMENT_H
-#define _LIBCPP___ALGORITHM_NTH_ELEMENT_H
+#ifndef _LIBCUDACXX___ALGORITHM_NTH_ELEMENT_H
+#define _LIBCUDACXX___ALGORITHM_NTH_ELEMENT_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -19,14 +19,14 @@
 #include <__iterator/iterator_traits.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _Compare, class _RandomAccessIterator>
-_LIBCPP_CONSTEXPR_AFTER_CXX11 bool
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX11 bool
 __nth_element_find_guard(_RandomAccessIterator& __i, _RandomAccessIterator& __j,
                          _RandomAccessIterator __m, _Compare __comp)
 {
@@ -42,7 +42,7 @@ __nth_element_find_guard(_RandomAccessIterator& __i, _RandomAccessIterator& __j,
 }
 
 template <class _AlgPolicy, class _Compare, class _RandomAccessIterator>
-_LIBCPP_CONSTEXPR_AFTER_CXX11 void
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX11 void
 __nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth, _RandomAccessIterator __last, _Compare __comp)
 {
     using _Ops = _IterOps<_AlgPolicy>;
@@ -91,7 +91,7 @@ __nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth, _Rando
         if (!__comp(*__i, *__m))  // if *__first == *__m
         {
             // *__first == *__m, *__first doesn't go in first part
-            if (_VSTD::__nth_element_find_guard<_Compare>(__i, __j, __m, __comp)) {
+            if (_CUDA_VSTD::__nth_element_find_guard<_Compare>(__i, __j, __m, __comp)) {
                 _Ops::iter_swap(__i, __j);
                 ++__n_swaps;
             } else {
@@ -133,7 +133,7 @@ __nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth, _Rando
                     return;
                 }
                 // __nth_element the second part
-                // _VSTD::__nth_element<_Compare>(__i, __nth, __last, __comp);
+                // _CUDA_VSTD::__nth_element<_Compare>(__i, __nth, __last, __comp);
                 __first = __i;
                 continue;
             }
@@ -211,19 +211,19 @@ __nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth, _Rando
         // __nth_element on range containing __nth
         if (__nth < __i)
         {
-            // _VSTD::__nth_element<_Compare>(__first, __nth, __i, __comp);
+            // _CUDA_VSTD::__nth_element<_Compare>(__first, __nth, __i, __comp);
             __last = __i;
         }
         else
         {
-            // _VSTD::__nth_element<_Compare>(__i+1, __nth, __last, __comp);
+            // _CUDA_VSTD::__nth_element<_Compare>(__i+1, __nth, __last, __comp);
             __first = ++__i;
         }
     }
 }
 
 template <class _AlgPolicy, class _RandomAccessIterator, class _Compare>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 void __nth_element_impl(_RandomAccessIterator __first, _RandomAccessIterator __nth, _RandomAccessIterator __last,
                         _Compare& __comp) {
   if (__nth == __last)
@@ -241,19 +241,19 @@ void __nth_element_impl(_RandomAccessIterator __first, _RandomAccessIterator __n
 }
 
 template <class _RandomAccessIterator, class _Compare>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 void nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth, _RandomAccessIterator __last,
                  _Compare __comp) {
   std::__nth_element_impl<_ClassicAlgPolicy>(std::move(__first), std::move(__nth), std::move(__last), __comp);
 }
 
 template <class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 void nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth, _RandomAccessIterator __last) {
   std::nth_element(std::move(__first), std::move(__nth), std::move(__last), __less<typename
       iterator_traits<_RandomAccessIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_NTH_ELEMENT_H
+#endif // _LIBCUDACXX___ALGORITHM_NTH_ELEMENT_H

@@ -6,26 +6,26 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_IS_SEED_SEQUENCE_H
-#define _LIBCPP___RANDOM_IS_SEED_SEQUENCE_H
+#ifndef _LIBCUDACXX___RANDOM_IS_SEED_SEQUENCE_H
+#define _LIBCUDACXX___RANDOM_IS_SEED_SEQUENCE_H
 
 #include <__config>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Sseq, class _Engine>
 struct __is_seed_sequence
 {
-    static _LIBCPP_CONSTEXPR const bool value =
+    static _LIBCUDACXX_CONSTEXPR const bool value =
               !is_convertible<_Sseq, typename _Engine::result_type>::value &&
               !is_same<typename remove_cv<_Sseq>::type, _Engine>::value;
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANDOM_IS_SEED_SEQUENCE_H
+#endif // _LIBCUDACXX___RANDOM_IS_SEED_SEQUENCE_H

@@ -113,14 +113,14 @@
 #   error "__cpp_lib_constexpr_algorithms should not be defined before c++20"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_parallel_algorithm
 #     error "__cpp_lib_parallel_algorithm should be defined in c++17"
 #   endif
 #   if __cpp_lib_parallel_algorithm != 201603L
 #     error "__cpp_lib_parallel_algorithm should have the value 201603L in c++17"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_parallel_algorithm
 #     error "__cpp_lib_parallel_algorithm should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -168,20 +168,20 @@
 #   error "__cpp_lib_constexpr_algorithms should have the value 201806L in c++20"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_parallel_algorithm
 #     error "__cpp_lib_parallel_algorithm should be defined in c++20"
 #   endif
 #   if __cpp_lib_parallel_algorithm != 201603L
 #     error "__cpp_lib_parallel_algorithm should have the value 201603L in c++20"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_parallel_algorithm
 #     error "__cpp_lib_parallel_algorithm should not be defined because it is unimplemented in libc++!"
 #   endif
 # endif
 
-# if !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+# if !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 #   ifndef __cpp_lib_ranges
 #     error "__cpp_lib_ranges should be defined in c++20"
 #   endif
@@ -190,7 +190,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_ranges
-#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES) is not defined!"
+#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES) is not defined!"
 #   endif
 # endif
 
@@ -235,20 +235,20 @@
 #   error "__cpp_lib_constexpr_algorithms should have the value 201806L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_parallel_algorithm
 #     error "__cpp_lib_parallel_algorithm should be defined in c++2b"
 #   endif
 #   if __cpp_lib_parallel_algorithm != 201603L
 #     error "__cpp_lib_parallel_algorithm should have the value 201603L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_parallel_algorithm
 #     error "__cpp_lib_parallel_algorithm should not be defined because it is unimplemented in libc++!"
 #   endif
 # endif
 
-# if !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+# if !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 #   ifndef __cpp_lib_ranges
 #     error "__cpp_lib_ranges should be defined in c++2b"
 #   endif
@@ -257,18 +257,18 @@
 #   endif
 # else
 #   ifdef __cpp_lib_ranges
-#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES) is not defined!"
+#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES) is not defined!"
 #   endif
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_ranges_starts_ends_with
 #     error "__cpp_lib_ranges_starts_ends_with should be defined in c++2b"
 #   endif
 #   if __cpp_lib_ranges_starts_ends_with != 202106L
 #     error "__cpp_lib_ranges_starts_ends_with should have the value 202106L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_ranges_starts_ends_with
 #     error "__cpp_lib_ranges_starts_ends_with should not be defined because it is unimplemented in libc++!"
 #   endif

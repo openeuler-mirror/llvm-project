@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_PARTITION_COPY_H
-#define _LIBCPP___ALGORITHM_RANGES_PARTITION_COPY_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_PARTITION_COPY_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_PARTITION_COPY_H
 
 #include <__algorithm/in_out_out_result.h>
 #include <__config>
@@ -22,13 +22,13 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -41,7 +41,7 @@ struct __fn {
 
   // TODO(ranges): delegate to the classic algorithm.
   template <class _InIter, class _Sent, class _OutIter1, class _OutIter2, class _Proj, class _Pred>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   static partition_copy_result<
       __uncvref_t<_InIter>, __uncvref_t<_OutIter1>, __uncvref_t<_OutIter2>
   > __partition_copy_fn_impl( _InIter&& __first, _Sent&& __last, _OutIter1&& __out_true, _OutIter2&& __out_false,
@@ -64,7 +64,7 @@ struct __fn {
             weakly_incrementable _OutIter1, weakly_incrementable _OutIter2,
             class _Proj = identity, indirect_unary_predicate<projected<_InIter, _Proj>> _Pred>
   requires indirectly_copyable<_InIter, _OutIter1> && indirectly_copyable<_InIter, _OutIter2>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   partition_copy_result<_InIter, _OutIter1, _OutIter2>
   operator()(_InIter __first, _Sent __last, _OutIter1 __out_true, _OutIter2 __out_false,
              _Pred __pred, _Proj __proj = {}) const {
@@ -75,7 +75,7 @@ struct __fn {
   template <input_range _Range, weakly_incrementable _OutIter1, weakly_incrementable _OutIter2,
             class _Proj = identity, indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
   requires indirectly_copyable<iterator_t<_Range>, _OutIter1> && indirectly_copyable<iterator_t<_Range>, _OutIter2>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   partition_copy_result<borrowed_iterator_t<_Range>, _OutIter1, _OutIter2>
   operator()(_Range&& __range, _OutIter1 __out_true, _OutIter2 __out_false, _Pred __pred, _Proj __proj = {}) const {
     return __partition_copy_fn_impl(
@@ -91,8 +91,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_PARTITION_COPY_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_PARTITION_COPY_H

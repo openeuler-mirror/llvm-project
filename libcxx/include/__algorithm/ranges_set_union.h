@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_SET_UNION_H
-#define _LIBCPP___ALGORITHM_RANGES_SET_UNION_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_SET_UNION_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_SET_UNION_H
 
 #include <__algorithm/in_in_out_result.h>
 #include <__algorithm/make_projected.h>
@@ -26,13 +26,13 @@
 #include <__utility/forward.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -52,7 +52,7 @@ struct __fn {
       class _Proj1 = identity,
       class _Proj2 = identity>
     requires mergeable<_InIter1, _InIter2, _OutIter, _Comp, _Proj1, _Proj2>
-  _LIBCPP_HIDE_FROM_ABI constexpr set_union_result<_InIter1, _InIter2, _OutIter> operator()(
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr set_union_result<_InIter1, _InIter2, _OutIter> operator()(
       _InIter1 __first1,
       _Sent1 __last1,
       _InIter2 __first2,
@@ -85,7 +85,7 @@ struct __fn {
         _Comp,
         _Proj1,
         _Proj2> 
-  _LIBCPP_HIDE_FROM_ABI constexpr set_union_result<borrowed_iterator_t<_Range1>,
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr set_union_result<borrowed_iterator_t<_Range1>,
                                                    borrowed_iterator_t<_Range2>,
                                                    _OutIter>
     operator()(
@@ -113,8 +113,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_SET_UNION_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_SET_UNION_H

@@ -6,34 +6,34 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___UTILITY_IN_PLACE_H
-#define _LIBCPP___UTILITY_IN_PLACE_H
+#ifndef _LIBCUDACXX___UTILITY_IN_PLACE_H
+#define _LIBCUDACXX___UTILITY_IN_PLACE_H
 
 #include <__config>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 
-struct _LIBCPP_TYPE_VIS in_place_t {
+struct _LIBCUDACXX_TYPE_VIS in_place_t {
     explicit in_place_t() = default;
 };
 inline constexpr in_place_t in_place{};
 
 template <class _Tp>
-struct _LIBCPP_TEMPLATE_VIS in_place_type_t {
+struct _LIBCUDACXX_TEMPLATE_VIS in_place_type_t {
     explicit in_place_type_t() = default;
 };
 template <class _Tp>
 inline constexpr in_place_type_t<_Tp> in_place_type{};
 
 template <size_t _Idx>
-struct _LIBCPP_TEMPLATE_VIS in_place_index_t {
+struct _LIBCUDACXX_TEMPLATE_VIS in_place_index_t {
     explicit in_place_index_t() = default;
 };
 template <size_t _Idx>
@@ -51,8 +51,8 @@ template <size_t _Idx> struct __is_inplace_index_imp<in_place_index_t<_Idx>> : t
 template <class _Tp>
 using __is_inplace_index = __is_inplace_index_imp<__uncvref_t<_Tp>>;
 
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___UTILITY_IN_PLACE_H
+#endif // _LIBCUDACXX___UTILITY_IN_PLACE_H

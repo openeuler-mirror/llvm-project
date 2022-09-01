@@ -28,7 +28,7 @@ constexpr bool test() {
 //     S  s5 { s, 5 };
     S  sNot {"def", 3 };
 
-    LIBCPP_ASSERT_NOEXCEPT(s0.starts_with(""));
+    LIBCUDACXX_ASSERT_NOEXCEPT(s0.starts_with(""));
 
     assert ( s0.starts_with(""));
     assert (!s0.starts_with("a"));

@@ -44,7 +44,7 @@ int main(int, char**)
            );
         C::iterator it0 = c0.begin();
         C c = std::move(c0);
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 0);
         assert(c.hash_function() == test_hash<int>(8));
         assert(c.key_eq() == test_equal_to<int>(9));
@@ -83,7 +83,7 @@ int main(int, char**)
            );
         C::iterator it0 = c0.begin();
         C c = std::move(c0);
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.at(1) == "one");
         assert(c.at(2) == "two");
@@ -115,7 +115,7 @@ int main(int, char**)
            );
         C::iterator it0 = c0.begin();
         C c = std::move(c0);
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 0);
         assert(c.hash_function() == test_hash<int>(8));
         assert(c.key_eq() == test_equal_to<int>(9));
@@ -154,7 +154,7 @@ int main(int, char**)
            );
         C::iterator it0 = c0.begin();
         C c = std::move(c0);
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.at(1) == "one");
         assert(c.at(2) == "two");

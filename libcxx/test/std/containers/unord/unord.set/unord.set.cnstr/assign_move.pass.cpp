@@ -60,7 +60,7 @@ int main(int, char**)
             A(4)
            );
         c = std::move(c0);
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.count(1) == 1);
         assert(c.count(2) == 1);
@@ -106,7 +106,7 @@ int main(int, char**)
            );
         C::iterator it0 = c0.begin();
         c = std::move(c0);
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.count(1) == 1);
         assert(c.count(2) == 1);
@@ -153,7 +153,7 @@ int main(int, char**)
            );
         C::iterator it0 = c0.begin();
         c = std::move(c0);
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.count(1) == 1);
         assert(c.count(2) == 1);
@@ -200,7 +200,7 @@ int main(int, char**)
            );
         C::iterator it0 = c0.begin();
         c = std::move(c0);
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.count(1) == 1);
         assert(c.count(2) == 1);

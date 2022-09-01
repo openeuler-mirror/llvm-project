@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_SEMAPHORE
-#define _LIBCPP_SEMAPHORE
+#ifndef _LIBCUDACXX_SEMAPHORE
+#define _LIBCUDACXX_SEMAPHORE
 
 /*
     semaphore synopsis
@@ -55,20 +55,20 @@ using binary_semaphore = counting_semaphore<1>;
 #include <limits>
 #include <version>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#ifdef _LIBCPP_HAS_NO_THREADS
+#ifdef _LIBCUDACXX_HAS_NO_THREADS
 # error "<semaphore> is not supported since libc++ has been configured without support for threads."
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-#if _LIBCPP_STD_VER >= 14
+#if _LIBCUDACXX_STD_VER >= 14
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 /*
 
@@ -83,11 +83,11 @@ class __atomic_semaphore_base
     __atomic_base<ptrdiff_t> __a;
 
 public:
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     constexpr explicit __atomic_semaphore_base(ptrdiff_t __count) : __a(__count)
     {
     }
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_AVAILABILITY_SYNC _LIBCUDACXX_INLINE_VISIBILITY
     void release(ptrdiff_t __update = 1)
     {
         if(0 < __a.fetch_add(__update, memory_order_release))
@@ -97,7 +97,7 @@ public:
         else
             __a.notify_one();
     }
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_AVAILABILITY_SYNC _LIBCUDACXX_INLINE_VISIBILITY
     void acquire()
     {
         auto const __test_fn = [this]() -> bool {
@@ -107,15 +107,15 @@ public:
         __cxx_atomic_wait(&__a.__a_, __test_fn);
     }
     template <class Rep, class Period>
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_AVAILABILITY_SYNC _LIBCUDACXX_INLINE_VISIBILITY
     bool try_acquire_for(chrono::duration<Rep, Period> const& __rel_time)
     {
         if (__rel_time == chrono::duration<Rep, Period>::zero())
             return try_acquire();
         auto const __test_fn = [this]() { return try_acquire(); };
-        return __libcpp_thread_poll_with_backoff(__test_fn, __libcpp_timed_backoff_policy(), __rel_time);
+        return __LIBCUDACXX_thread_poll_with_backoff(__test_fn, __LIBCUDACXX_timed_backoff_policy(), __rel_time);
     }
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_AVAILABILITY_SYNC _LIBCUDACXX_INLINE_VISIBILITY
     bool try_acquire()
     {
         auto __old = __a.load(memory_order_acquire);
@@ -128,9 +128,9 @@ public:
     }
 };
 
-#define _LIBCPP_SEMAPHORE_MAX (numeric_limits<ptrdiff_t>::max())
+#define _LIBCUDACXX_SEMAPHORE_MAX (numeric_limits<ptrdiff_t>::max())
 
-template<ptrdiff_t __least_max_value = _LIBCPP_SEMAPHORE_MAX>
+template<ptrdiff_t __least_max_value = _LIBCUDACXX_SEMAPHORE_MAX>
 class counting_semaphore
 {
     __atomic_semaphore_base __semaphore;
@@ -140,36 +140,36 @@ public:
         return __least_max_value;
     }
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     constexpr explicit counting_semaphore(ptrdiff_t __count) : __semaphore(__count) { }
     ~counting_semaphore() = default;
 
     counting_semaphore(const counting_semaphore&) = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_AVAILABILITY_SYNC _LIBCUDACXX_INLINE_VISIBILITY
     void release(ptrdiff_t __update = 1)
     {
         __semaphore.release(__update);
     }
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_AVAILABILITY_SYNC _LIBCUDACXX_INLINE_VISIBILITY
     void acquire()
     {
         __semaphore.acquire();
     }
     template<class Rep, class Period>
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_AVAILABILITY_SYNC _LIBCUDACXX_INLINE_VISIBILITY
     bool try_acquire_for(chrono::duration<Rep, Period> const& __rel_time)
     {
         return __semaphore.try_acquire_for(chrono::duration_cast<chrono::nanoseconds>(__rel_time));
     }
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_AVAILABILITY_SYNC _LIBCUDACXX_INLINE_VISIBILITY
     bool try_acquire()
     {
         return __semaphore.try_acquire();
     }
     template <class Clock, class Duration>
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_AVAILABILITY_SYNC _LIBCUDACXX_INLINE_VISIBILITY
     bool try_acquire_until(chrono::time_point<Clock, Duration> const& __abs_time)
     {
         auto const current = Clock::now();
@@ -182,10 +182,10 @@ public:
 
 using binary_semaphore = counting_semaphore<1>;
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER >= 14
+#endif // _LIBCUDACXX_STD_VER >= 14
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif //_LIBCPP_SEMAPHORE
+#endif //_LIBCUDACXX_SEMAPHORE

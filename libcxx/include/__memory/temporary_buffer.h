@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___MEMORY_TEMPORARY_BUFFER_H
-#define _LIBCPP___MEMORY_TEMPORARY_BUFFER_H
+#ifndef _LIBCUDACXX___MEMORY_TEMPORARY_BUFFER_H
+#define _LIBCUDACXX___MEMORY_TEMPORARY_BUFFER_H
 
 #include <__config>
 #include <__type_traits/alignment_of.h>
@@ -16,14 +16,14 @@
 #include <cstddef>
 #include <new>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp>
-_LIBCPP_NODISCARD_EXT _LIBCPP_NO_CFI _LIBCPP_DEPRECATED_IN_CXX17
+_LIBCUDACXX_NODISCARD_EXT _LIBCUDACXX_NO_CFI _LIBCUDACXX_DEPRECATED_IN_CXX17
 pair<_Tp*, ptrdiff_t>
 get_temporary_buffer(ptrdiff_t __n) _NOEXCEPT
 {
@@ -35,8 +35,8 @@ get_temporary_buffer(ptrdiff_t __n) _NOEXCEPT
         __n = __m;
     while (__n > 0)
     {
-#if !defined(_LIBCPP_HAS_NO_ALIGNED_ALLOCATION)
-    if (__is_overaligned_for_new(_LIBCPP_ALIGNOF(_Tp)))
+#if !defined(_LIBCUDACXX_HAS_NO_ALIGNED_ALLOCATION)
+    if (__is_overaligned_for_new(_LIBCUDACXX_ALIGNOF(_Tp)))
         {
             align_val_t __al =
                 align_val_t(alignment_of<_Tp>::value);
@@ -47,7 +47,7 @@ get_temporary_buffer(ptrdiff_t __n) _NOEXCEPT
                 __n * sizeof(_Tp), nothrow));
         }
 #else
-    if (__is_overaligned_for_new(_LIBCPP_ALIGNOF(_Tp)))
+    if (__is_overaligned_for_new(_LIBCUDACXX_ALIGNOF(_Tp)))
         {
             // Since aligned operator new is unavailable, return an empty
             // buffer rather than one with invalid alignment.
@@ -68,20 +68,20 @@ get_temporary_buffer(ptrdiff_t __n) _NOEXCEPT
 }
 
 template <class _Tp>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_DEPRECATED_IN_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_DEPRECATED_IN_CXX17
 void return_temporary_buffer(_Tp* __p) _NOEXCEPT
 {
-  _VSTD::__libcpp_deallocate_unsized((void*)__p, _LIBCPP_ALIGNOF(_Tp));
+  _CUDA_VSTD::__LIBCUDACXX_deallocate_unsized((void*)__p, _LIBCUDACXX_ALIGNOF(_Tp));
 }
 
 struct __return_temporary_buffer
 {
-_LIBCPP_SUPPRESS_DEPRECATED_PUSH
+_LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH
     template <class _Tp>
-    _LIBCPP_INLINE_VISIBILITY void operator()(_Tp* __p) const {_VSTD::return_temporary_buffer(__p);}
-_LIBCPP_SUPPRESS_DEPRECATED_POP
+    _LIBCUDACXX_INLINE_VISIBILITY void operator()(_Tp* __p) const {_CUDA_VSTD::return_temporary_buffer(__p);}
+_LIBCUDACXX_SUPPRESS_DEPRECATED_POP
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___MEMORY_TEMPORARY_BUFFER_H
+#endif // _LIBCUDACXX___MEMORY_TEMPORARY_BUFFER_H

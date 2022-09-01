@@ -24,10 +24,10 @@ test(const C& x)
 {
     typename C::size_type s = x.size();
     C c(x);
-    LIBCPP_ASSERT(c.__invariants());
+    LIBCUDACXX_ASSERT(c.__invariants());
     assert(c.size() == s);
     assert(c == x);
-    LIBCPP_ASSERT(is_contiguous_container_asan_correct(c));
+    LIBCUDACXX_ASSERT(is_contiguous_container_asan_correct(c));
 }
 
 TEST_CONSTEXPR_CXX20 bool tests() {

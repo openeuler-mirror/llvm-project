@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_REND_H
-#define _LIBCPP___RANGES_REND_H
+#ifndef _LIBCUDACXX___RANGES_REND_H
+#define _LIBCUDACXX___RANGES_REND_H
 
 #include <__concepts/class_or_enum.h>
 #include <__concepts/same_as.h>
@@ -20,13 +20,13 @@
 #include <__utility/auto_cast.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 // [range.access.rend]
 
@@ -38,7 +38,7 @@ concept __member_rend =
   __workaround_52970<_Tp> &&
   requires(_Tp&& __t) {
     ranges::rbegin(__t);
-    { _LIBCPP_AUTO_CAST(__t.rend()) } -> sentinel_for<decltype(ranges::rbegin(__t))>;
+    { _LIBCUDACXX_AUTO_CAST(__t.rend()) } -> sentinel_for<decltype(ranges::rbegin(__t))>;
   };
 
 void rend(auto&) = delete;
@@ -51,7 +51,7 @@ concept __unqualified_rend =
   __class_or_enum<remove_cvref_t<_Tp>> &&
   requires(_Tp&& __t) {
     ranges::rbegin(__t);
-    { _LIBCPP_AUTO_CAST(rend(__t)) } -> sentinel_for<decltype(ranges::rbegin(__t))>;
+    { _LIBCUDACXX_AUTO_CAST(rend(__t)) } -> sentinel_for<decltype(ranges::rbegin(__t))>;
   };
 
 template <class _Tp>
@@ -68,23 +68,23 @@ class __fn {
 public:
   template <class _Tp>
     requires __member_rend<_Tp>
-  [[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr auto operator()(_Tp&& __t) const
-    noexcept(noexcept(_LIBCPP_AUTO_CAST(__t.rend())))
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr auto operator()(_Tp&& __t) const
+    noexcept(noexcept(_LIBCUDACXX_AUTO_CAST(__t.rend())))
   {
-    return _LIBCPP_AUTO_CAST(__t.rend());
+    return _LIBCUDACXX_AUTO_CAST(__t.rend());
   }
 
   template <class _Tp>
     requires __unqualified_rend<_Tp>
-  [[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr auto operator()(_Tp&& __t) const
-    noexcept(noexcept(_LIBCPP_AUTO_CAST(rend(__t))))
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr auto operator()(_Tp&& __t) const
+    noexcept(noexcept(_LIBCUDACXX_AUTO_CAST(rend(__t))))
   {
-    return _LIBCPP_AUTO_CAST(rend(__t));
+    return _LIBCUDACXX_AUTO_CAST(rend(__t));
   }
 
   template <class _Tp>
     requires __can_reverse<_Tp>
-  [[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr auto operator()(_Tp&& __t) const
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr auto operator()(_Tp&& __t) const
     noexcept(noexcept(ranges::begin(__t)))
   {
     return std::make_reverse_iterator(ranges::begin(__t));
@@ -106,7 +106,7 @@ namespace __crend {
 struct __fn {
   template <class _Tp>
     requires is_lvalue_reference_v<_Tp&&>
-  [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
   constexpr auto operator()(_Tp&& __t) const
     noexcept(noexcept(ranges::rend(static_cast<const remove_reference_t<_Tp>&>(__t))))
     -> decltype(      ranges::rend(static_cast<const remove_reference_t<_Tp>&>(__t)))
@@ -114,7 +114,7 @@ struct __fn {
 
   template <class _Tp>
     requires is_rvalue_reference_v<_Tp&&>
-  [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
   constexpr auto operator()(_Tp&& __t) const
     noexcept(noexcept(ranges::rend(static_cast<const _Tp&&>(__t))))
     -> decltype(      ranges::rend(static_cast<const _Tp&&>(__t)))
@@ -127,8 +127,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_REND_H
+#endif // _LIBCUDACXX___RANGES_REND_H

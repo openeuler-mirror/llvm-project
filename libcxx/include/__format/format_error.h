@@ -7,45 +7,45 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMAT_ERROR_H
-#define _LIBCPP___FORMAT_FORMAT_ERROR_H
+#ifndef _LIBCUDACXX___FORMAT_FORMAT_ERROR_H
+#define _LIBCUDACXX___FORMAT_FORMAT_ERROR_H
 
 #include <__config>
 #include <stdexcept>
 
-#ifdef _LIBCPP_NO_EXCEPTIONS
+#ifdef _LIBCUDACXX_NO_EXCEPTIONS
 #include <cstdlib>
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
-class _LIBCPP_EXCEPTION_ABI format_error : public runtime_error {
+class _LIBCUDACXX_EXCEPTION_ABI format_error : public runtime_error {
 public:
-  _LIBCPP_HIDE_FROM_ABI explicit format_error(const string& __s)
+  _LIBCUDACXX_HIDE_FROM_ABI explicit format_error(const string& __s)
       : runtime_error(__s) {}
-  _LIBCPP_HIDE_FROM_ABI explicit format_error(const char* __s)
+  _LIBCUDACXX_HIDE_FROM_ABI explicit format_error(const char* __s)
       : runtime_error(__s) {}
   virtual ~format_error() noexcept;
 };
 
-_LIBCPP_NORETURN inline _LIBCPP_HIDE_FROM_ABI void
+_LIBCUDACXX_NORETURN inline _LIBCUDACXX_HIDE_FROM_ABI void
 __throw_format_error(const char* __s) {
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
   throw format_error(__s);
 #else
   (void)__s;
-  _VSTD::abort();
+  _CUDA_VSTD::abort();
 #endif
 }
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_FORMAT_ERROR_H
+#endif // _LIBCUDACXX___FORMAT_FORMAT_ERROR_H

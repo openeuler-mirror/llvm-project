@@ -7,35 +7,35 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___COMPARE_COMPARE_THREE_WAY_H
-#define _LIBCPP___COMPARE_COMPARE_THREE_WAY_H
+#ifndef _LIBCUDACXX___COMPARE_COMPARE_THREE_WAY_H
+#define _LIBCUDACXX___COMPARE_COMPARE_THREE_WAY_H
 
 #include <__compare/three_way_comparable.h>
 #include <__config>
 #include <__utility/forward.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
-struct _LIBCPP_TEMPLATE_VIS compare_three_way
+struct _LIBCUDACXX_TEMPLATE_VIS compare_three_way
 {
     template<class _T1, class _T2>
         requires three_way_comparable_with<_T1, _T2>
-    constexpr _LIBCPP_HIDE_FROM_ABI
+    constexpr _LIBCUDACXX_HIDE_FROM_ABI
     auto operator()(_T1&& __t, _T2&& __u) const
-        noexcept(noexcept(_VSTD::forward<_T1>(__t) <=> _VSTD::forward<_T2>(__u)))
-        { return          _VSTD::forward<_T1>(__t) <=> _VSTD::forward<_T2>(__u); }
+        noexcept(noexcept(_CUDA_VSTD::forward<_T1>(__t) <=> _CUDA_VSTD::forward<_T2>(__u)))
+        { return          _CUDA_VSTD::forward<_T1>(__t) <=> _CUDA_VSTD::forward<_T2>(__u); }
 
     using is_transparent = void;
 };
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___COMPARE_COMPARE_THREE_WAY_H
+#endif // _LIBCUDACXX___COMPARE_COMPARE_THREE_WAY_H

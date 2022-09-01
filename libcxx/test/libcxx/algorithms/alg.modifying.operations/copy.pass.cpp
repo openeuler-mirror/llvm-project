@@ -7,11 +7,11 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // When the debug mode is enabled, we don't unwrap iterators in std::copy
 // so we don't get this optimization.
-// UNSUPPORTED: libcpp-has-debug-mode
+// UNSUPPORTED: LIBCUDACXX-has-debug-mode
 
 // <algorithm>
 

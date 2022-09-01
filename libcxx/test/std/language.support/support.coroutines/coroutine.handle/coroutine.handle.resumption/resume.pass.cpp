@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-no-coroutines
+// UNSUPPORTED: LIBCUDACXX-no-coroutines
 
 // <coroutine>
 
@@ -54,8 +54,8 @@ void do_test(std::coroutine_handle<Promise>&& H) {
   {
     ASSERT_SAME_TYPE(decltype(H.resume()), void);
     ASSERT_SAME_TYPE(decltype(H()), void);
-    LIBCPP_ASSERT_NOT_NOEXCEPT(H.resume());
-    LIBCPP_ASSERT_NOT_NOEXCEPT(H());
+    LIBCUDACXX_ASSERT_NOT_NOEXCEPT(H.resume());
+    LIBCUDACXX_ASSERT_NOT_NOEXCEPT(H());
     static_assert(has_resume<HType&>(), "");
     static_assert(has_resume<HType&&>(), "");
     static_assert(has_call_operator<HType&>(), "");

@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_CONCEPTS_H
-#define _LIBCPP___ITERATOR_CONCEPTS_H
+#ifndef _LIBCUDACXX___ITERATOR_CONCEPTS_H
+#define _LIBCUDACXX___ITERATOR_CONCEPTS_H
 
 #include <__config>
 #include <__iterator/incrementable_traits.h>
@@ -20,13 +20,13 @@
 #include <concepts>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [iterator.concept.readable]
 template<class _In>
@@ -52,10 +52,10 @@ using iter_common_reference_t = common_reference_t<iter_reference_t<_Tp>, iter_v
 template<class _Out, class _Tp>
 concept indirectly_writable =
   requires(_Out&& __o, _Tp&& __t) {
-    *__o = _VSTD::forward<_Tp>(__t);                        // not required to be equality-preserving
-    *_VSTD::forward<_Out>(__o) = _VSTD::forward<_Tp>(__t);  // not required to be equality-preserving
-    const_cast<const iter_reference_t<_Out>&&>(*__o) = _VSTD::forward<_Tp>(__t);                       // not required to be equality-preserving
-    const_cast<const iter_reference_t<_Out>&&>(*_VSTD::forward<_Out>(__o)) = _VSTD::forward<_Tp>(__t); // not required to be equality-preserving
+    *__o = _CUDA_VSTD::forward<_Tp>(__t);                        // not required to be equality-preserving
+    *_CUDA_VSTD::forward<_Out>(__o) = _CUDA_VSTD::forward<_Tp>(__t);  // not required to be equality-preserving
+    const_cast<const iter_reference_t<_Out>&&>(*__o) = _CUDA_VSTD::forward<_Tp>(__t);                       // not required to be equality-preserving
+    const_cast<const iter_reference_t<_Out>&&>(*_CUDA_VSTD::forward<_Out>(__o)) = _CUDA_VSTD::forward<_Tp>(__t); // not required to be equality-preserving
   };
 
 // [iterator.concept.winc]
@@ -127,7 +127,7 @@ concept output_iterator =
   input_or_output_iterator<_Ip> &&
   indirectly_writable<_Ip, _Tp> &&
   requires (_Ip __it, _Tp&& __t) {
-    *__it++ = _VSTD::forward<_Tp>(__t); // not required to be equality-preserving
+    *__it++ = _CUDA_VSTD::forward<_Tp>(__t); // not required to be equality-preserving
   };
 
 // [iterator.concept.forward]
@@ -170,7 +170,7 @@ concept contiguous_iterator =
   is_lvalue_reference_v<iter_reference_t<_Ip>> &&
   same_as<iter_value_t<_Ip>, remove_cvref_t<iter_reference_t<_Ip>>> &&
   requires(const _Ip& __i) {
-    { _VSTD::to_address(__i) } -> same_as<add_pointer_t<iter_reference_t<_Ip>>>;
+    { _CUDA_VSTD::to_address(__i) } -> same_as<add_pointer_t<iter_reference_t<_Ip>>>;
   };
 
 template<class _Ip>
@@ -273,8 +273,8 @@ concept indirectly_copyable_storable =
 // Note: indirectly_swappable is located in iter_swap.h to prevent a dependency cycle
 // (both iter_swap and indirectly_swappable require indirectly_readable).
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_CONCEPTS_H
+#endif // _LIBCUDACXX___ITERATOR_CONCEPTS_H

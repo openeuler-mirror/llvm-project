@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FUNCTIONAL_DEFAULT_SEARCHER_H
-#define _LIBCPP___FUNCTIONAL_DEFAULT_SEARCHER_H
+#ifndef _LIBCUDACXX___FUNCTIONAL_DEFAULT_SEARCHER_H
+#define _LIBCUDACXX___FUNCTIONAL_DEFAULT_SEARCHER_H
 
 #include <__algorithm/search.h>
 #include <__config>
@@ -17,25 +17,25 @@
 #include <__iterator/iterator_traits.h>
 #include <__utility/pair.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 
 // default searcher
 template<class _ForwardIterator, class _BinaryPredicate = equal_to<>>
-class _LIBCPP_TEMPLATE_VIS default_searcher {
+class _LIBCUDACXX_TEMPLATE_VIS default_searcher {
 public:
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
     default_searcher(_ForwardIterator __f, _ForwardIterator __l,
                        _BinaryPredicate __p = _BinaryPredicate())
         : __first_(__f), __last_(__l), __pred_(__p) {}
 
     template <typename _ForwardIterator2>
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
     pair<_ForwardIterator2, _ForwardIterator2>
     operator () (_ForwardIterator2 __f, _ForwardIterator2 __l) const
     {
@@ -49,8 +49,8 @@ private:
     _BinaryPredicate __pred_;
 };
 
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FUNCTIONAL_DEFAULT_SEARCHER_H
+#endif // _LIBCUDACXX___FUNCTIONAL_DEFAULT_SEARCHER_H

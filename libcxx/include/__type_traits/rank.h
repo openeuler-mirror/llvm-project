@@ -6,31 +6,31 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_RANK_H
-#define _LIBCPP___TYPE_TRAITS_RANK_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_RANK_H
+#define _LIBCUDACXX___TYPE_TRAITS_RANK_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 #include <cstddef>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS rank
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS rank
     : public integral_constant<size_t, 0> {};
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS rank<_Tp[]>
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS rank<_Tp[]>
     : public integral_constant<size_t, rank<_Tp>::value + 1> {};
-template <class _Tp, size_t _Np> struct _LIBCPP_TEMPLATE_VIS rank<_Tp[_Np]>
+template <class _Tp, size_t _Np> struct _LIBCUDACXX_TEMPLATE_VIS rank<_Tp[_Np]>
     : public integral_constant<size_t, rank<_Tp>::value + 1> {};
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr size_t rank_v = rank<_Tp>::value;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_RANK_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_RANK_H

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_SET_INTERSECTION_H
-#define _LIBCPP___ALGORITHM_SET_INTERSECTION_H
+#ifndef _LIBCUDACXX___ALGORITHM_SET_INTERSECTION_H
+#define _LIBCUDACXX___ALGORITHM_SET_INTERSECTION_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -17,11 +17,11 @@
 #include <__iterator/next.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _InIter1, class _InIter2, class _OutIter>
 struct __set_intersection_result {
@@ -30,13 +30,13 @@ struct __set_intersection_result {
   _OutIter __out_;
 
   // need a constructor as C++03 aggregate init is hard
-  _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+  _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
   __set_intersection_result(_InIter1&& __in_iter1, _InIter2&& __in_iter2, _OutIter&& __out_iter)
       : __in1_(std::move(__in_iter1)), __in2_(std::move(__in_iter2)), __out_(std::move(__out_iter)) {}
 };
 
 template <class _AlgPolicy, class _Compare, class _InIter1, class _Sent1, class _InIter2, class _Sent2, class _OutIter>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 __set_intersection_result<_InIter1, _InIter2, _OutIter>
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 __set_intersection_result<_InIter1, _InIter2, _OutIter>
 __set_intersection(
     _InIter1 __first1, _Sent1 __last1, _InIter2 __first2, _Sent2 __last2, _OutIter __result, _Compare&& __comp) {
   while (__first1 != __last1 && __first2 != __last2) {
@@ -59,7 +59,7 @@ __set_intersection(
 }
 
 template <class _InputIterator1, class _InputIterator2, class _OutputIterator, class _Compare>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 _OutputIterator set_intersection(
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _OutputIterator set_intersection(
     _InputIterator1 __first1,
     _InputIterator1 __last1,
     _InputIterator2 __first2,
@@ -78,7 +78,7 @@ inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 _OutputIterator set_i
 }
 
 template <class _InputIterator1, class _InputIterator2, class _OutputIterator>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 _OutputIterator set_intersection(
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _OutputIterator set_intersection(
     _InputIterator1 __first1,
     _InputIterator1 __last1,
     _InputIterator2 __first2,
@@ -95,6 +95,6 @@ inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 _OutputIterator set_i
       .__out_;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_SET_INTERSECTION_H
+#endif // _LIBCUDACXX___ALGORITHM_SET_INTERSECTION_H

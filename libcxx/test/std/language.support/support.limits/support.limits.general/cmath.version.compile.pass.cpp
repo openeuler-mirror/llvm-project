@@ -78,14 +78,14 @@
 #   error "__cpp_lib_interpolate should not be defined before c++20"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_math_special_functions
 #     error "__cpp_lib_math_special_functions should be defined in c++17"
 #   endif
 #   if __cpp_lib_math_special_functions != 201603L
 #     error "__cpp_lib_math_special_functions should have the value 201603L in c++17"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_math_special_functions
 #     error "__cpp_lib_math_special_functions should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -111,14 +111,14 @@
 #   error "__cpp_lib_interpolate should have the value 201902L in c++20"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_math_special_functions
 #     error "__cpp_lib_math_special_functions should be defined in c++20"
 #   endif
 #   if __cpp_lib_math_special_functions != 201603L
 #     error "__cpp_lib_math_special_functions should have the value 201603L in c++20"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_math_special_functions
 #     error "__cpp_lib_math_special_functions should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -126,14 +126,14 @@
 
 #elif TEST_STD_VER > 20
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_constexpr_cmath
 #     error "__cpp_lib_constexpr_cmath should be defined in c++2b"
 #   endif
 #   if __cpp_lib_constexpr_cmath != 202202L
 #     error "__cpp_lib_constexpr_cmath should have the value 202202L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_constexpr_cmath
 #     error "__cpp_lib_constexpr_cmath should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -153,14 +153,14 @@
 #   error "__cpp_lib_interpolate should have the value 201902L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_math_special_functions
 #     error "__cpp_lib_math_special_functions should be defined in c++2b"
 #   endif
 #   if __cpp_lib_math_special_functions != 201603L
 #     error "__cpp_lib_math_special_functions should have the value 201603L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_math_special_functions
 #     error "__cpp_lib_math_special_functions should not be defined because it is unimplemented in libc++!"
 #   endif

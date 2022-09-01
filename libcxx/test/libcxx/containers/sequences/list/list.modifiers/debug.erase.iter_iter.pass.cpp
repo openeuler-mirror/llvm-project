@@ -11,7 +11,7 @@
 // Call erase(const_iterator first, const_iterator last); with various invalid iterators
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <list>
 
@@ -23,7 +23,7 @@ int main(int, char**) {
         int a1[] = {1, 2, 3};
         std::list<int> l1(a1, a1+3);
         std::list<int> l2(a1, a1+3);
-        TEST_LIBCPP_ASSERT_FAILURE(l1.erase(l2.cbegin(), std::next(l1.cbegin())),
+        TEST_LIBCUDACXX_ASSERT_FAILURE(l1.erase(l2.cbegin(), std::next(l1.cbegin())),
                                 "list::erase(iterator, iterator) called with an iterator not referring to this list");
     }
 
@@ -32,7 +32,7 @@ int main(int, char**) {
         int a1[] = {1, 2, 3};
         std::list<int> l1(a1, a1+3);
         std::list<int> l2(a1, a1+3);
-        TEST_LIBCPP_ASSERT_FAILURE(l1.erase(l1.cbegin(), std::next(l2.cbegin())),
+        TEST_LIBCUDACXX_ASSERT_FAILURE(l1.erase(l1.cbegin(), std::next(l2.cbegin())),
                                 "list::erase(iterator, iterator) called with an iterator not referring to this list");
     }
 
@@ -41,7 +41,7 @@ int main(int, char**) {
         int a1[] = {1, 2, 3};
         std::list<int> l1(a1, a1+3);
         std::list<int> l2(a1, a1+3);
-        TEST_LIBCPP_ASSERT_FAILURE(l1.erase(l2.cbegin(), std::next(l2.cbegin())),
+        TEST_LIBCUDACXX_ASSERT_FAILURE(l1.erase(l2.cbegin(), std::next(l2.cbegin())),
                                 "list::erase(iterator, iterator) called with an iterator not referring to this list");
     }
 
@@ -49,7 +49,7 @@ int main(int, char**) {
     {
         int a1[] = {1, 2, 3};
         std::list<int> l1(a1, a1+3);
-        TEST_LIBCPP_ASSERT_FAILURE(l1.erase(std::next(l1.cbegin()), l1.cbegin()),
+        TEST_LIBCUDACXX_ASSERT_FAILURE(l1.erase(std::next(l1.cbegin()), l1.cbegin()),
                                 "Attempted to increment a non-incrementable list::const_iterator");
     }
 

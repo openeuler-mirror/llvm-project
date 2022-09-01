@@ -23,7 +23,7 @@ TEST_CONSTEXPR_CXX20 void
 test(S s, It first, It last, S expected)
 {
     s.assign(first, last);
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == expected);
 }
 
@@ -45,7 +45,7 @@ test_exceptions(S s, It first, It last)
 
     // Part of "no effects" is that iterators and pointers
     // into the string must not have been invalidated.
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == original);
     assert(s.begin() == begin);
     assert(s.end() == end);

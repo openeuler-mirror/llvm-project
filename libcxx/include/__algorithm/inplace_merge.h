@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_INPLACE_MERGE_H
-#define _LIBCPP___ALGORITHM_INPLACE_MERGE_H
+#ifndef _LIBCUDACXX___ALGORITHM_INPLACE_MERGE_H
+#define _LIBCUDACXX___ALGORITHM_INPLACE_MERGE_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -25,14 +25,14 @@
 #include <__iterator/reverse_iterator.h>
 #include <memory>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Predicate>
 class __invert // invert the sense of a comparison
@@ -40,17 +40,17 @@ class __invert // invert the sense of a comparison
 private:
     _Predicate __p_;
 public:
-    _LIBCPP_INLINE_VISIBILITY __invert() {}
+    _LIBCUDACXX_INLINE_VISIBILITY __invert() {}
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit __invert(_Predicate __p) : __p_(__p) {}
 
     template <class _T1>
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     bool operator()(const _T1& __x) {return !__p_(__x);}
 
     template <class _T1, class _T2>
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     bool operator()(const _T1& __x, const _T2& __y) {return __p_(__y, __x);}
 };
 
@@ -209,7 +209,7 @@ void __inplace_merge(
 }
 
 template <class _AlgPolicy, class _BidirectionalIterator, class _Compare>
-_LIBCPP_HIDE_FROM_ABI
+_LIBCUDACXX_HIDE_FROM_ABI
 void
 __inplace_merge(_BidirectionalIterator __first, _BidirectionalIterator __middle, _BidirectionalIterator __last,
               _Compare&& __comp)
@@ -218,18 +218,18 @@ __inplace_merge(_BidirectionalIterator __first, _BidirectionalIterator __middle,
     typedef typename iterator_traits<_BidirectionalIterator>::difference_type difference_type;
     difference_type __len1 = _IterOps<_AlgPolicy>::distance(__first, __middle);
     difference_type __len2 = _IterOps<_AlgPolicy>::distance(__middle, __last);
-    difference_type __buf_size = _VSTD::min(__len1, __len2);
+    difference_type __buf_size = _CUDA_VSTD::min(__len1, __len2);
 // TODO: Remove the use of std::get_temporary_buffer
-_LIBCPP_SUPPRESS_DEPRECATED_PUSH
-    pair<value_type*, ptrdiff_t> __buf = _VSTD::get_temporary_buffer<value_type>(__buf_size);
-_LIBCPP_SUPPRESS_DEPRECATED_POP
+_LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH
+    pair<value_type*, ptrdiff_t> __buf = _CUDA_VSTD::get_temporary_buffer<value_type>(__buf_size);
+_LIBCUDACXX_SUPPRESS_DEPRECATED_POP
     unique_ptr<value_type, __return_temporary_buffer> __h(__buf.first);
     return std::__inplace_merge<_AlgPolicy>(
         std::move(__first), std::move(__middle), std::move(__last), __comp, __len1, __len2, __buf.first, __buf.second);
 }
 
 template <class _BidirectionalIterator, class _Compare>
-inline _LIBCPP_HIDE_FROM_ABI void inplace_merge(
+inline _LIBCUDACXX_HIDE_FROM_ABI void inplace_merge(
     _BidirectionalIterator __first, _BidirectionalIterator __middle, _BidirectionalIterator __last, _Compare __comp) {
   typedef typename __comp_ref_type<_Compare>::type _Comp_ref;
   std::__inplace_merge<_ClassicAlgPolicy>(
@@ -237,7 +237,7 @@ inline _LIBCPP_HIDE_FROM_ABI void inplace_merge(
 }
 
 template <class _BidirectionalIterator>
-inline _LIBCPP_HIDE_FROM_ABI
+inline _LIBCUDACXX_HIDE_FROM_ABI
 void
 inplace_merge(_BidirectionalIterator __first, _BidirectionalIterator __middle, _BidirectionalIterator __last)
 {
@@ -245,8 +245,8 @@ inplace_merge(_BidirectionalIterator __first, _BidirectionalIterator __middle, _
                         __less<typename iterator_traits<_BidirectionalIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___ALGORITHM_INPLACE_MERGE_H
+#endif // _LIBCUDACXX___ALGORITHM_INPLACE_MERGE_H

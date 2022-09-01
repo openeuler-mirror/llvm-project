@@ -18,9 +18,9 @@
 #include <algorithm>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_ALGORITHM)
- #   error "<algorithm> was expected to define _LIBCPP_ALGORITHM"
+#if !defined(_LIBCUDACXX_ALGORITHM)
+ #   error "<algorithm> was expected to define _LIBCUDACXX_ALGORITHM"
 #endif
-#if TEST_STD_VER > 03 && !defined(_LIBCPP_INITIALIZER_LIST)
+#if TEST_STD_VER > 03 && !defined(_LIBCUDACXX_INITIALIZER_LIST)
  #   error "<algorithm> should include <initializer_list> in C++11 and later"
 #endif

@@ -6,31 +6,31 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_FINAL_H
-#define _LIBCPP___TYPE_TRAITS_IS_FINAL_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_FINAL_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_FINAL_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS
-__libcpp_is_final : public integral_constant<bool, __is_final(_Tp)> {};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS
+__LIBCUDACXX_is_final : public integral_constant<bool, __is_final(_Tp)> {};
 
-#if _LIBCPP_STD_VER > 11
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS
+#if _LIBCUDACXX_STD_VER > 11
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS
 is_final : public integral_constant<bool, __is_final(_Tp)> {};
 #endif
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr bool is_final_v = __is_final(_Tp);
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_FINAL_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_FINAL_H

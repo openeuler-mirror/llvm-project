@@ -6,20 +6,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CONCEPTS_BOOLEAN_TESTABLE_H
-#define _LIBCPP___CONCEPTS_BOOLEAN_TESTABLE_H
+#ifndef _LIBCUDACXX___CONCEPTS_BOOLEAN_TESTABLE_H
+#define _LIBCUDACXX___CONCEPTS_BOOLEAN_TESTABLE_H
 
 #include <__concepts/convertible_to.h>
 #include <__config>
 #include <__utility/forward.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [concepts.booleantestable]
 
@@ -28,11 +28,11 @@ concept __boolean_testable_impl = convertible_to<_Tp, bool>;
 
 template<class _Tp>
 concept __boolean_testable = __boolean_testable_impl<_Tp> && requires(_Tp&& __t) {
-  { !_VSTD::forward<_Tp>(__t) } -> __boolean_testable_impl;
+  { !_CUDA_VSTD::forward<_Tp>(__t) } -> __boolean_testable_impl;
 };
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___CONCEPTS_BOOLEAN_TESTABLE_H
+#endif // _LIBCUDACXX___CONCEPTS_BOOLEAN_TESTABLE_H

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_STABLE_SORT_H
-#define _LIBCPP___ALGORITHM_STABLE_SORT_H
+#ifndef _LIBCUDACXX___ALGORITHM_STABLE_SORT_H
+#define _LIBCUDACXX___ALGORITHM_STABLE_SORT_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -20,11 +20,11 @@
 #include <memory>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy, class _Compare, class _InputIterator1, class _InputIterator2>
 void
@@ -194,7 +194,7 @@ __stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last, _Comp
         __d.__set(__len, (value_type*)nullptr);
         std::__merge_move_assign<_AlgPolicy, _Compare>(
             __buff, __buff + __l2, __buff + __l2, __buff + __len, __first, __comp);
-//         _VSTD::__merge<_Compare>(move_iterator<value_type*>(__buff),
+//         _CUDA_VSTD::__merge<_Compare>(move_iterator<value_type*>(__buff),
 //                                  move_iterator<value_type*>(__buff + __l2),
 //                                  move_iterator<_RandomAccessIterator>(__buff + __l2),
 //                                  move_iterator<_RandomAccessIterator>(__buff + __len),
@@ -207,7 +207,7 @@ __stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last, _Comp
 }
 
 template <class _AlgPolicy, class _RandomAccessIterator, class _Compare>
-inline _LIBCPP_HIDE_FROM_ABI
+inline _LIBCUDACXX_HIDE_FROM_ABI
 void __stable_sort_impl(_RandomAccessIterator __first, _RandomAccessIterator __last, _Compare& __comp) {
   using value_type = typename iterator_traits<_RandomAccessIterator>::value_type;
   using difference_type = typename iterator_traits<_RandomAccessIterator>::difference_type;
@@ -217,9 +217,9 @@ void __stable_sort_impl(_RandomAccessIterator __first, _RandomAccessIterator __l
   unique_ptr<value_type, __return_temporary_buffer> __h;
   if (__len > static_cast<difference_type>(__stable_sort_switch<value_type>::value)) {
 // TODO: Remove the use of std::get_temporary_buffer
-_LIBCPP_SUPPRESS_DEPRECATED_PUSH
+_LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH
       __buf = std::get_temporary_buffer<value_type>(__len);
-_LIBCPP_SUPPRESS_DEPRECATED_POP
+_LIBCUDACXX_SUPPRESS_DEPRECATED_POP
       __h.reset(__buf.first);
   }
 
@@ -228,17 +228,17 @@ _LIBCPP_SUPPRESS_DEPRECATED_POP
 }
 
 template <class _RandomAccessIterator, class _Compare>
-inline _LIBCPP_HIDE_FROM_ABI
+inline _LIBCUDACXX_HIDE_FROM_ABI
 void stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last, _Compare __comp) {
   std::__stable_sort_impl<_ClassicAlgPolicy>(std::move(__first), std::move(__last), __comp);
 }
 
 template <class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI
+inline _LIBCUDACXX_HIDE_FROM_ABI
 void stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last) {
   std::stable_sort(__first, __last, __less<typename iterator_traits<_RandomAccessIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_STABLE_SORT_H
+#endif // _LIBCUDACXX___ALGORITHM_STABLE_SORT_H

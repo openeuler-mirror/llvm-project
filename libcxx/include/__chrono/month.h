@@ -7,19 +7,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CHRONO_MONTH_H
-#define _LIBCPP___CHRONO_MONTH_H
+#ifndef _LIBCUDACXX___CHRONO_MONTH_H
+#define _LIBCUDACXX___CHRONO_MONTH_H
 
 #include <__chrono/duration.h>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace chrono
 {
@@ -28,44 +28,44 @@ class month {
 private:
     unsigned char __m;
 public:
-    _LIBCPP_HIDE_FROM_ABI month() = default;
-    _LIBCPP_HIDE_FROM_ABI explicit inline constexpr month(unsigned __val) noexcept : __m(static_cast<unsigned char>(__val)) {}
-    _LIBCPP_HIDE_FROM_ABI inline constexpr month& operator++()    noexcept { ++__m; return *this; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr month  operator++(int) noexcept { month __tmp = *this; ++(*this); return __tmp; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr month& operator--()    noexcept { --__m; return *this; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr month  operator--(int) noexcept { month __tmp = *this; --(*this); return __tmp; }
-    _LIBCPP_HIDE_FROM_ABI        constexpr month& operator+=(const months& __m1) noexcept;
-    _LIBCPP_HIDE_FROM_ABI        constexpr month& operator-=(const months& __m1) noexcept;
-    _LIBCPP_HIDE_FROM_ABI explicit inline constexpr operator unsigned() const noexcept { return __m; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr bool ok() const noexcept { return __m >= 1 && __m <= 12; }
+    _LIBCUDACXX_HIDE_FROM_ABI month() = default;
+    _LIBCUDACXX_HIDE_FROM_ABI explicit inline constexpr month(unsigned __val) noexcept : __m(static_cast<unsigned char>(__val)) {}
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr month& operator++()    noexcept { ++__m; return *this; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr month  operator++(int) noexcept { month __tmp = *this; ++(*this); return __tmp; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr month& operator--()    noexcept { --__m; return *this; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr month  operator--(int) noexcept { month __tmp = *this; --(*this); return __tmp; }
+    _LIBCUDACXX_HIDE_FROM_ABI        constexpr month& operator+=(const months& __m1) noexcept;
+    _LIBCUDACXX_HIDE_FROM_ABI        constexpr month& operator-=(const months& __m1) noexcept;
+    _LIBCUDACXX_HIDE_FROM_ABI explicit inline constexpr operator unsigned() const noexcept { return __m; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr bool ok() const noexcept { return __m >= 1 && __m <= 12; }
 };
 
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator==(const month& __lhs, const month& __rhs) noexcept
 { return static_cast<unsigned>(__lhs) == static_cast<unsigned>(__rhs); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator!=(const month& __lhs, const month& __rhs) noexcept
 { return !(__lhs == __rhs); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator< (const month& __lhs, const month& __rhs) noexcept
 { return static_cast<unsigned>(__lhs)  < static_cast<unsigned>(__rhs); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator> (const month& __lhs, const month& __rhs) noexcept
 { return __rhs < __lhs; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator<=(const month& __lhs, const month& __rhs) noexcept
 { return !(__rhs < __lhs); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator>=(const month& __lhs, const month& __rhs) noexcept
 { return !(__lhs < __rhs); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month operator+ (const month& __lhs, const months& __rhs) noexcept
 {
     auto const __mu = static_cast<long long>(static_cast<unsigned>(__lhs)) + (__rhs.count() - 1);
@@ -73,26 +73,26 @@ month operator+ (const month& __lhs, const months& __rhs) noexcept
     return month{static_cast<unsigned>(__mu - __yr * 12 + 1)};
 }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month operator+ (const months& __lhs, const month& __rhs) noexcept
 { return __rhs + __lhs; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month operator- (const month& __lhs, const months& __rhs) noexcept
 { return __lhs + -__rhs; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 months operator-(const month& __lhs, const month& __rhs) noexcept
 {
     auto const __dm = static_cast<unsigned>(__lhs) - static_cast<unsigned>(__rhs);
     return months(__dm <= 11 ? __dm : __dm + 12);
 }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month& month::operator+=(const months& __dm) noexcept
 { *this = *this + __dm; return *this; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month& month::operator-=(const months& __dm) noexcept
 { *this = *this - __dm; return *this; }
 
@@ -111,8 +111,8 @@ inline constexpr month December{12};
 
 } // namespace chrono
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-#endif // _LIBCPP___CHRONO_MONTH_H
+#endif // _LIBCUDACXX___CHRONO_MONTH_H

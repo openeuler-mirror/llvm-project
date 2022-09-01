@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_STABLE_PARTITION_H
-#define _LIBCPP___ALGORITHM_STABLE_PARTITION_H
+#ifndef _LIBCUDACXX___ALGORITHM_STABLE_PARTITION_H
+#define _LIBCUDACXX___ALGORITHM_STABLE_PARTITION_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__algorithm/rotate.h>
@@ -18,11 +18,11 @@
 #include <memory>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy, class _Predicate, class _ForwardIterator, class _Distance, class _Pair>
 _ForwardIterator
@@ -138,9 +138,9 @@ __stable_partition_impl(_ForwardIterator __first, _ForwardIterator __last, _Pred
     if (__len >= __alloc_limit)
     {
 // TODO: Remove the use of std::get_temporary_buffer
-_LIBCPP_SUPPRESS_DEPRECATED_PUSH
-        __p = _VSTD::get_temporary_buffer<value_type>(__len);
-_LIBCPP_SUPPRESS_DEPRECATED_POP
+_LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH
+        __p = _CUDA_VSTD::get_temporary_buffer<value_type>(__len);
+_LIBCUDACXX_SUPPRESS_DEPRECATED_POP
         __h.reset(__p.first);
     }
     return std::__stable_partition_impl<_AlgPolicy, _Predicate&>(
@@ -292,9 +292,9 @@ __stable_partition_impl(_BidirectionalIterator __first, _BidirectionalIterator _
     if (__len >= __alloc_limit)
     {
 // TODO: Remove the use of std::get_temporary_buffer
-_LIBCPP_SUPPRESS_DEPRECATED_PUSH
-        __p = _VSTD::get_temporary_buffer<value_type>(__len);
-_LIBCPP_SUPPRESS_DEPRECATED_POP
+_LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH
+        __p = _CUDA_VSTD::get_temporary_buffer<value_type>(__len);
+_LIBCUDACXX_SUPPRESS_DEPRECATED_POP
         __h.reset(__p.first);
     }
     return std::__stable_partition_impl<_AlgPolicy, _Predicate&>(
@@ -302,7 +302,7 @@ _LIBCPP_SUPPRESS_DEPRECATED_POP
 }
 
 template <class _AlgPolicy, class _Predicate, class _ForwardIterator, class _IterCategory>
-_LIBCPP_HIDE_FROM_ABI
+_LIBCUDACXX_HIDE_FROM_ABI
 _ForwardIterator __stable_partition(
     _ForwardIterator __first, _ForwardIterator __last, _Predicate&& __pred, _IterCategory __iter_category) {
   return std::__stable_partition_impl<_AlgPolicy, __uncvref_t<_Predicate>&>(
@@ -310,7 +310,7 @@ _ForwardIterator __stable_partition(
 }
 
 template <class _ForwardIterator, class _Predicate>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 _ForwardIterator
 stable_partition(_ForwardIterator __first, _ForwardIterator __last, _Predicate __pred)
 {
@@ -319,6 +319,6 @@ stable_partition(_ForwardIterator __first, _ForwardIterator __last, _Predicate _
       std::move(__first), std::move(__last), __pred, _IterCategory());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_STABLE_PARTITION_H
+#endif // _LIBCUDACXX___ALGORITHM_STABLE_PARTITION_H

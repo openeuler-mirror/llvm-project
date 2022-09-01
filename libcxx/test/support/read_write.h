@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef LIBCPP_TEST_SUPPORT_READ_WRITE_H
-#define LIBCPP_TEST_SUPPORT_READ_WRITE_H
+#ifndef LIBCUDACXX_TEST_SUPPORT_READ_WRITE_H
+#define LIBCUDACXX_TEST_SUPPORT_READ_WRITE_H
 
 struct value_type_indirection {
   using value_type = int;
@@ -33,4 +33,4 @@ struct missing_dereference {
   using value_type = int;
 };
 
-#endif // LIBCPP_TEST_SUPPORT_READ_WRITE_H
+#endif // LIBCUDACXX_TEST_SUPPORT_READ_WRITE_H

@@ -19,11 +19,11 @@
 
 //
 //  In C++17, random_shuffle has been removed.
-//  However, for backwards compatibility, if _LIBCPP_ENABLE_CXX17_REMOVED_RANDOM_SHUFFLE
+//  However, for backwards compatibility, if _LIBCUDACXX_ENABLE_CXX17_REMOVED_RANDOM_SHUFFLE
 //  is defined before including <algorithm>, then random_shuffle will be restored.
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_CXX17_REMOVED_RANDOM_SHUFFLE
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_CXX17_REMOVED_RANDOM_SHUFFLE
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS
 
 #include <algorithm>
 #include <vector>

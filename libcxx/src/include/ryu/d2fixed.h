@@ -36,8 +36,8 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef _LIBCPP_SRC_INCLUDE_RYU_D2FIXED_H
-#define _LIBCPP_SRC_INCLUDE_RYU_D2FIXED_H
+#ifndef _LIBCUDACXX_SRC_INCLUDE_RYU_D2FIXED_H
+#define _LIBCUDACXX_SRC_INCLUDE_RYU_D2FIXED_H
 
 // Avoid formatting to keep the changes with the original code minimal.
 // clang-format off
@@ -45,7 +45,7 @@
 #include <__config>
 #include <cstdint>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 void __append_n_digits(const uint32_t __olength, uint32_t __digits, char* const __result);
 void __append_nine_digits(uint32_t __digits, char* const __result);
@@ -53,8 +53,8 @@ void __append_nine_digits(uint32_t __digits, char* const __result);
 [[nodiscard]] to_chars_result __d2fixed_buffered_n(char* _First, char* const _Last, const double __d, const uint32_t __precision);
 [[nodiscard]] to_chars_result __d2exp_buffered_n(char* _First, char* const _Last, const double __d, uint32_t __precision);
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
 // clang-format on
 
-#endif // _LIBCPP_SRC_INCLUDE_RYU_D2FIXED_H
+#endif // _LIBCUDACXX_SRC_INCLUDE_RYU_D2FIXED_H

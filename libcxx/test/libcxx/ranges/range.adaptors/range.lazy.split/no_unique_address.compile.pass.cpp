@@ -7,14 +7,14 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // clang-cl and cl currently don't support [[no_unique_address]]
 // XFAIL: msvc
 
 // class lazy_split_view {
-//   _LIBCPP_NO_UNIQUE_ADDRESS _View __base_ = _View();
-//   _LIBCPP_NO_UNIQUE_ADDRESS _Pattern __pattern_ = _Pattern();
+//   _LIBCUDACXX_NO_UNIQUE_ADDRESS _View __base_ = _View();
+//   _LIBCUDACXX_NO_UNIQUE_ADDRESS _Pattern __pattern_ = _Pattern();
 // };
 
 #include <ranges>

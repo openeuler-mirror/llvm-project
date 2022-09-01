@@ -36,7 +36,7 @@ int main(int, char**)
         c2.max_load_factor(2);
         c1.swap(c2);
 
-        LIBCPP_ASSERT(c1.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c1.bucket_count() == 0);
         assert(c1.size() == 0);
         assert(c1.hash_function() == Hash(2));
         assert(c1.key_eq() == Compare(2));
@@ -45,7 +45,7 @@ int main(int, char**)
         assert(static_cast<std::size_t>(std::distance(c1.cbegin(), c1.cend())) == c1.size());
         assert(c1.max_load_factor() == 2);
 
-        LIBCPP_ASSERT(c2.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c2.bucket_count() == 0);
         assert(c2.size() == 0);
         assert(c2.hash_function() == Hash(1));
         assert(c2.key_eq() == Compare(1));
@@ -93,7 +93,7 @@ int main(int, char**)
         assert(static_cast<std::size_t>(std::distance(c1.cbegin(), c1.cend())) == c1.size());
         assert(c1.max_load_factor() == 2);
 
-        LIBCPP_ASSERT(c2.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c2.bucket_count() == 0);
         assert(c2.size() == 0);
         assert(c2.hash_function() == Hash(1));
         assert(c2.key_eq() == Compare(1));
@@ -122,7 +122,7 @@ int main(int, char**)
         c2.max_load_factor(2);
         c1.swap(c2);
 
-        LIBCPP_ASSERT(c1.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c1.bucket_count() == 0);
         assert(c1.size() == 0);
         assert(c1.hash_function() == Hash(2));
         assert(c1.key_eq() == Compare(2));
@@ -216,7 +216,7 @@ int main(int, char**)
         c2.max_load_factor(2);
         c1.swap(c2);
 
-        LIBCPP_ASSERT(c1.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c1.bucket_count() == 0);
         assert(c1.size() == 0);
         assert(c1.hash_function() == Hash(2));
         assert(c1.key_eq() == Compare(2));
@@ -225,7 +225,7 @@ int main(int, char**)
         assert(static_cast<std::size_t>(std::distance(c1.cbegin(), c1.cend())) == c1.size());
         assert(c1.max_load_factor() == 2);
 
-        LIBCPP_ASSERT(c2.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c2.bucket_count() == 0);
         assert(c2.size() == 0);
         assert(c2.hash_function() == Hash(1));
         assert(c2.key_eq() == Compare(1));
@@ -273,7 +273,7 @@ int main(int, char**)
         assert(static_cast<std::size_t>(std::distance(c1.cbegin(), c1.cend())) == c1.size());
         assert(c1.max_load_factor() == 2);
 
-        LIBCPP_ASSERT(c2.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c2.bucket_count() == 0);
         assert(c2.size() == 0);
         assert(c2.hash_function() == Hash(1));
         assert(c2.key_eq() == Compare(1));
@@ -302,7 +302,7 @@ int main(int, char**)
         c2.max_load_factor(2);
         c1.swap(c2);
 
-        LIBCPP_ASSERT(c1.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c1.bucket_count() == 0);
         assert(c1.size() == 0);
         assert(c1.hash_function() == Hash(2));
         assert(c1.key_eq() == Compare(2));
@@ -396,7 +396,7 @@ int main(int, char**)
         c2.max_load_factor(2);
         c1.swap(c2);
 
-        LIBCPP_ASSERT(c1.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c1.bucket_count() == 0);
         assert(c1.size() == 0);
         assert(c1.hash_function() == Hash(2));
         assert(c1.key_eq() == Compare(2));
@@ -405,7 +405,7 @@ int main(int, char**)
         assert(static_cast<std::size_t>(std::distance(c1.cbegin(), c1.cend())) == c1.size());
         assert(c1.max_load_factor() == 2);
 
-        LIBCPP_ASSERT(c2.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c2.bucket_count() == 0);
         assert(c2.size() == 0);
         assert(c2.hash_function() == Hash(1));
         assert(c2.key_eq() == Compare(1));
@@ -453,7 +453,7 @@ int main(int, char**)
         assert(static_cast<std::size_t>(std::distance(c1.cbegin(), c1.cend())) == c1.size());
         assert(c1.max_load_factor() == 2);
 
-        LIBCPP_ASSERT(c2.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c2.bucket_count() == 0);
         assert(c2.size() == 0);
         assert(c2.hash_function() == Hash(1));
         assert(c2.key_eq() == Compare(1));
@@ -482,7 +482,7 @@ int main(int, char**)
         c2.max_load_factor(2);
         c1.swap(c2);
 
-        LIBCPP_ASSERT(c1.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c1.bucket_count() == 0);
         assert(c1.size() == 0);
         assert(c1.hash_function() == Hash(2));
         assert(c1.key_eq() == Compare(2));

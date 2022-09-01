@@ -6,23 +6,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_UNIFORM_RANDOM_BIT_GENERATOR_ADAPTOR_H
-#define _LIBCPP___ALGORITHM_RANGES_UNIFORM_RANDOM_BIT_GENERATOR_ADAPTOR_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_UNIFORM_RANDOM_BIT_GENERATOR_ADAPTOR_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_UNIFORM_RANDOM_BIT_GENERATOR_ADAPTOR_H
 
 #include <__config>
 #include <__functional/invoke.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // Range versions of random algorithms (e.g. `std::shuffle`) are less constrained than their classic counterparts.
 // Range algorithms only require the given generator to satisfy the `std::uniform_random_bit_generator` concept.
@@ -41,22 +41,22 @@ private:
 public:
   using result_type = invoke_result_t<_Gen&>;
 
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   static constexpr auto min() { return __uncvref_t<_Gen>::min(); }
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   static constexpr auto max() { return __uncvref_t<_Gen>::max(); }
 
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   constexpr explicit _ClassicGenAdaptor(_Gen& __g) : __gen(__g) {}
 
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   constexpr auto operator()() const { return __gen(); }
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-#endif // _LIBCPP___ALGORITHM_RANGES_UNIFORM_RANDOM_BIT_GENERATOR_ADAPTOR_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_UNIFORM_RANDOM_BIT_GENERATOR_ADAPTOR_H

@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_OSTREAM_ITERATOR_H
-#define _LIBCPP___ITERATOR_OSTREAM_ITERATOR_H
+#ifndef _LIBCUDACXX___ITERATOR_OSTREAM_ITERATOR_H
+#define _LIBCUDACXX___ITERATOR_OSTREAM_ITERATOR_H
 
 #include <__config>
 #include <__iterator/iterator.h>
@@ -17,24 +17,24 @@
 #include <cstddef>
 #include <iosfwd> // for forward declarations of char_traits and basic_ostream
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-_LIBCPP_SUPPRESS_DEPRECATED_PUSH
+_LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH
 template <class _Tp, class _CharT = char, class _Traits = char_traits<_CharT> >
-class _LIBCPP_TEMPLATE_VIS ostream_iterator
-#if _LIBCPP_STD_VER <= 14 || !defined(_LIBCPP_ABI_NO_ITERATOR_BASES)
+class _LIBCUDACXX_TEMPLATE_VIS ostream_iterator
+#if _LIBCUDACXX_STD_VER <= 14 || !defined(_LIBCUDACXX_ABI_NO_ITERATOR_BASES)
     : public iterator<output_iterator_tag, void, void, void, void>
 #endif
 {
-_LIBCPP_SUPPRESS_DEPRECATED_POP
+_LIBCUDACXX_SUPPRESS_DEPRECATED_POP
 public:
     typedef output_iterator_tag             iterator_category;
     typedef void                            value_type;
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
     typedef ptrdiff_t                       difference_type;
 #else
     typedef void                            difference_type;
@@ -49,11 +49,11 @@ private:
     ostream_type* __out_stream_;
     const char_type* __delim_;
 public:
-    _LIBCPP_INLINE_VISIBILITY ostream_iterator(ostream_type& __s) _NOEXCEPT
-        : __out_stream_(_VSTD::addressof(__s)), __delim_(nullptr) {}
-    _LIBCPP_INLINE_VISIBILITY ostream_iterator(ostream_type& __s, const _CharT* __delimiter) _NOEXCEPT
-        : __out_stream_(_VSTD::addressof(__s)), __delim_(__delimiter) {}
-    _LIBCPP_INLINE_VISIBILITY ostream_iterator& operator=(const _Tp& __value)
+    _LIBCUDACXX_INLINE_VISIBILITY ostream_iterator(ostream_type& __s) _NOEXCEPT
+        : __out_stream_(_CUDA_VSTD::addressof(__s)), __delim_(nullptr) {}
+    _LIBCUDACXX_INLINE_VISIBILITY ostream_iterator(ostream_type& __s, const _CharT* __delimiter) _NOEXCEPT
+        : __out_stream_(_CUDA_VSTD::addressof(__s)), __delim_(__delimiter) {}
+    _LIBCUDACXX_INLINE_VISIBILITY ostream_iterator& operator=(const _Tp& __value)
         {
             *__out_stream_ << __value;
             if (__delim_)
@@ -61,11 +61,11 @@ public:
             return *this;
         }
 
-    _LIBCPP_INLINE_VISIBILITY ostream_iterator& operator*()     {return *this;}
-    _LIBCPP_INLINE_VISIBILITY ostream_iterator& operator++()    {return *this;}
-    _LIBCPP_INLINE_VISIBILITY ostream_iterator& operator++(int) {return *this;}
+    _LIBCUDACXX_INLINE_VISIBILITY ostream_iterator& operator*()     {return *this;}
+    _LIBCUDACXX_INLINE_VISIBILITY ostream_iterator& operator++()    {return *this;}
+    _LIBCUDACXX_INLINE_VISIBILITY ostream_iterator& operator++(int) {return *this;}
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_OSTREAM_ITERATOR_H
+#endif // _LIBCUDACXX___ITERATOR_OSTREAM_ITERATOR_H

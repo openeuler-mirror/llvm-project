@@ -23,7 +23,7 @@ TEST_CONSTEXPR_CXX20 void test(const C& x)
 {
     typename C::size_type s = x.size();
     C c(x);
-    LIBCPP_ASSERT(c.__invariants());
+    LIBCUDACXX_ASSERT(c.__invariants());
     assert(c.size() == s);
     assert(c == x);
 }

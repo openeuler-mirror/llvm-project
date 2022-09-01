@@ -6,24 +6,24 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_SHIFT_LEFT_H
-#define _LIBCPP___ALGORITHM_SHIFT_LEFT_H
+#ifndef _LIBCUDACXX___ALGORITHM_SHIFT_LEFT_H
+#define _LIBCUDACXX___ALGORITHM_SHIFT_LEFT_H
 
 #include <__algorithm/move.h>
 #include <__config>
 #include <__iterator/iterator_traits.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <class _ForwardIterator>
-inline _LIBCPP_INLINE_VISIBILITY constexpr
+inline _LIBCUDACXX_INLINE_VISIBILITY constexpr
 _ForwardIterator
 shift_left(_ForwardIterator __first, _ForwardIterator __last,
            typename iterator_traits<_ForwardIterator>::difference_type __n)
@@ -46,11 +46,11 @@ shift_left(_ForwardIterator __first, _ForwardIterator __last,
             ++__m;
         }
     }
-    return _VSTD::move(__m, __last, __first);
+    return _CUDA_VSTD::move(__m, __last, __first);
 }
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_SHIFT_LEFT_H
+#endif // _LIBCUDACXX___ALGORITHM_SHIFT_LEFT_H

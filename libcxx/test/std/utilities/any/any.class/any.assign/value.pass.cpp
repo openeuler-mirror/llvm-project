@@ -66,7 +66,7 @@ void test_assign_value() {
         assert(RHS::copied == 0);
         assert(LHS::count == 0);
         assert(RHS::count == 1 + rhs.has_value());
-        LIBCPP_ASSERT(!rhs.has_value());
+        LIBCUDACXX_ASSERT(!rhs.has_value());
 
         assertContains<RHS>(lhs, 2);
         if (rhs.has_value())

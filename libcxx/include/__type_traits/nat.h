@@ -6,20 +6,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_NAT_H
-#define _LIBCPP___TYPE_TRAITS_NAT_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_NAT_H
+#define _LIBCUDACXX___TYPE_TRAITS_NAT_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 struct __nat
 {
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
     __nat() = delete;
     __nat(const __nat&) = delete;
     __nat& operator=(const __nat&) = delete;
@@ -27,6 +27,6 @@ struct __nat
 #endif
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_NAT_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_NAT_H

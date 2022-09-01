@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_EXPERIMENTAL___MEMORY
-#define _LIBCPP_EXPERIMENTAL___MEMORY
+#ifndef _LIBCUDACXX_EXPERIMENTAL___MEMORY
+#define _LIBCUDACXX_EXPERIMENTAL___MEMORY
 
 #include <__memory/allocator_arg_t.h>
 #include <__memory/uses_allocator.h>
@@ -16,11 +16,11 @@
 #include <experimental/utility> // for erased_type
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_LFTS
+_LIBCUDACXX_BEGIN_NAMESPACE_LFTS
 
 template <
     class _Tp, class _Alloc
@@ -79,39 +79,39 @@ struct __lfts_uses_alloc_ctor
 {};
 
 template <class _Tp, class _Allocator, class... _Args>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 void __user_alloc_construct_impl (integral_constant<int, 0>, _Tp *__storage, const _Allocator &, _Args &&... __args )
 {
-    new (__storage) _Tp (_VSTD::forward<_Args>(__args)...);
+    new (__storage) _Tp (_CUDA_VSTD::forward<_Args>(__args)...);
 }
 
 // FIXME: This should have a version which takes a non-const alloc.
 template <class _Tp, class _Allocator, class... _Args>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 void __user_alloc_construct_impl (integral_constant<int, 1>, _Tp *__storage, const _Allocator &__a, _Args &&... __args )
 {
-    new (__storage) _Tp (allocator_arg, __a, _VSTD::forward<_Args>(__args)...);
+    new (__storage) _Tp (allocator_arg, __a, _CUDA_VSTD::forward<_Args>(__args)...);
 }
 
 // FIXME: This should have a version which takes a non-const alloc.
 template <class _Tp, class _Allocator, class... _Args>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 void __user_alloc_construct_impl (integral_constant<int, 2>, _Tp *__storage, const _Allocator &__a, _Args &&... __args )
 {
-    new (__storage) _Tp (_VSTD::forward<_Args>(__args)..., __a);
+    new (__storage) _Tp (_CUDA_VSTD::forward<_Args>(__args)..., __a);
 }
 
 template <class _Tp, class _Alloc, class ..._Args>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 void __lfts_user_alloc_construct(
     _Tp * __store, const _Alloc & __a, _Args &&... __args)
 {
     ::std::experimental::fundamentals_v1::__user_alloc_construct_impl(
         typename __lfts_uses_alloc_ctor<_Tp, _Alloc, _Args...>::type()
-       , __store, __a, _VSTD::forward<_Args>(__args)...
+       , __store, __a, _CUDA_VSTD::forward<_Args>(__args)...
        );
 }
 
-_LIBCPP_END_NAMESPACE_LFTS
+_LIBCUDACXX_END_NAMESPACE_LFTS
 
-#endif /* _LIBCPP_EXPERIMENTAL___MEMORY */
+#endif /* _LIBCUDACXX_EXPERIMENTAL___MEMORY */

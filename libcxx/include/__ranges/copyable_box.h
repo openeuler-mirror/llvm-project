@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANGES_COPYABLE_BOX_H
-#define _LIBCPP___RANGES_COPYABLE_BOX_H
+#ifndef _LIBCUDACXX___RANGES_COPYABLE_BOX_H
+#define _LIBCUDACXX___RANGES_COPYABLE_BOX_H
 
 #include <__config>
 #include <__memory/addressof.h>
@@ -18,13 +18,13 @@
 #include <optional>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 // __copyable_box allows turning a type that is copy-constructible (but maybe not copy-assignable) into
 // a type that is both copy-constructible and copy-assignable. It does that by introducing an empty state
@@ -41,27 +41,27 @@ namespace ranges {
   // Primary template - uses std::optional and introduces an empty state in case assignment fails.
   template<__copy_constructible_object _Tp>
   class __copyable_box {
-    _LIBCPP_NO_UNIQUE_ADDRESS optional<_Tp> __val_;
+    _LIBCUDACXX_NO_UNIQUE_ADDRESS optional<_Tp> __val_;
 
   public:
     template<class ..._Args>
       requires is_constructible_v<_Tp, _Args...>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr explicit __copyable_box(in_place_t, _Args&& ...__args)
       noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
       : __val_(in_place, std::forward<_Args>(__args)...)
     { }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __copyable_box() noexcept(is_nothrow_default_constructible_v<_Tp>)
       requires default_initializable<_Tp>
       : __val_(in_place)
     { }
 
-    _LIBCPP_HIDE_FROM_ABI __copyable_box(__copyable_box const&) = default;
-    _LIBCPP_HIDE_FROM_ABI __copyable_box(__copyable_box&&) = default;
+    _LIBCUDACXX_HIDE_FROM_ABI __copyable_box(__copyable_box const&) = default;
+    _LIBCUDACXX_HIDE_FROM_ABI __copyable_box(__copyable_box&&) = default;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __copyable_box& operator=(__copyable_box const& __other)
       noexcept(is_nothrow_copy_constructible_v<_Tp>)
     {
@@ -72,10 +72,10 @@ namespace ranges {
       return *this;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     __copyable_box& operator=(__copyable_box&&) requires movable<_Tp> = default;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __copyable_box& operator=(__copyable_box&& __other)
       noexcept(is_nothrow_move_constructible_v<_Tp>)
     {
@@ -86,13 +86,13 @@ namespace ranges {
       return *this;
     }
 
-    _LIBCPP_HIDE_FROM_ABI constexpr _Tp const& operator*() const noexcept { return *__val_; }
-    _LIBCPP_HIDE_FROM_ABI constexpr _Tp& operator*() noexcept { return *__val_; }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp const& operator*() const noexcept { return *__val_; }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp& operator*() noexcept { return *__val_; }
 
-    _LIBCPP_HIDE_FROM_ABI constexpr const _Tp *operator->() const noexcept { return __val_.operator->(); }
-    _LIBCPP_HIDE_FROM_ABI constexpr _Tp *operator->() noexcept { return __val_.operator->(); }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr const _Tp *operator->() const noexcept { return __val_.operator->(); }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp *operator->() noexcept { return __val_.operator->(); }
 
-    _LIBCPP_HIDE_FROM_ABI constexpr bool __has_value() const noexcept { return __val_.has_value(); }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr bool __has_value() const noexcept { return __val_.has_value(); }
   };
 
   // This partial specialization implements an optimization for when we know we don't need to store
@@ -116,32 +116,32 @@ namespace ranges {
   template<__copy_constructible_object _Tp>
     requires __doesnt_need_empty_state_for_copy<_Tp> && __doesnt_need_empty_state_for_move<_Tp>
   class __copyable_box<_Tp> {
-    _LIBCPP_NO_UNIQUE_ADDRESS _Tp __val_;
+    _LIBCUDACXX_NO_UNIQUE_ADDRESS _Tp __val_;
 
   public:
     template<class ..._Args>
       requires is_constructible_v<_Tp, _Args...>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr explicit __copyable_box(in_place_t, _Args&& ...__args)
       noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
       : __val_(std::forward<_Args>(__args)...)
     { }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __copyable_box() noexcept(is_nothrow_default_constructible_v<_Tp>)
       requires default_initializable<_Tp>
       : __val_()
     { }
 
-    _LIBCPP_HIDE_FROM_ABI __copyable_box(__copyable_box const&) = default;
-    _LIBCPP_HIDE_FROM_ABI __copyable_box(__copyable_box&&) = default;
+    _LIBCUDACXX_HIDE_FROM_ABI __copyable_box(__copyable_box const&) = default;
+    _LIBCUDACXX_HIDE_FROM_ABI __copyable_box(__copyable_box&&) = default;
 
     // Implementation of assignment operators in case we perform optimization (1)
-    _LIBCPP_HIDE_FROM_ABI __copyable_box& operator=(__copyable_box const&) requires copyable<_Tp> = default;
-    _LIBCPP_HIDE_FROM_ABI __copyable_box& operator=(__copyable_box&&) requires movable<_Tp> = default;
+    _LIBCUDACXX_HIDE_FROM_ABI __copyable_box& operator=(__copyable_box const&) requires copyable<_Tp> = default;
+    _LIBCUDACXX_HIDE_FROM_ABI __copyable_box& operator=(__copyable_box&&) requires movable<_Tp> = default;
 
     // Implementation of assignment operators in case we perform optimization (2)
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __copyable_box& operator=(__copyable_box const& __other) noexcept {
       static_assert(is_nothrow_copy_constructible_v<_Tp>);
       if (this != std::addressof(__other)) {
@@ -151,7 +151,7 @@ namespace ranges {
       return *this;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __copyable_box& operator=(__copyable_box&& __other) noexcept {
       static_assert(is_nothrow_move_constructible_v<_Tp>);
       if (this != std::addressof(__other)) {
@@ -161,18 +161,18 @@ namespace ranges {
       return *this;
     }
 
-    _LIBCPP_HIDE_FROM_ABI constexpr _Tp const& operator*() const noexcept { return __val_; }
-    _LIBCPP_HIDE_FROM_ABI constexpr _Tp& operator*() noexcept { return __val_; }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp const& operator*() const noexcept { return __val_; }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp& operator*() noexcept { return __val_; }
 
-    _LIBCPP_HIDE_FROM_ABI constexpr const _Tp *operator->() const noexcept { return std::addressof(__val_); }
-    _LIBCPP_HIDE_FROM_ABI constexpr _Tp *operator->() noexcept { return std::addressof(__val_); }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr const _Tp *operator->() const noexcept { return std::addressof(__val_); }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp *operator->() noexcept { return std::addressof(__val_); }
 
-    _LIBCPP_HIDE_FROM_ABI constexpr bool __has_value() const noexcept { return true; }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr bool __has_value() const noexcept { return true; }
   };
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_COPYABLE_BOX_H
+#endif // _LIBCUDACXX___RANGES_COPYABLE_BOX_H

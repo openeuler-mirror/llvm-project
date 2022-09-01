@@ -6,23 +6,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_REMOVE_CONST_H
-#define _LIBCPP___TYPE_TRAITS_REMOVE_CONST_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_REMOVE_CONST_H
+#define _LIBCUDACXX___TYPE_TRAITS_REMOVE_CONST_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS remove_const            {typedef _Tp type;};
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS remove_const<const _Tp> {typedef _Tp type;};
-#if _LIBCPP_STD_VER > 11
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS remove_const            {typedef _Tp type;};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS remove_const<const _Tp> {typedef _Tp type;};
+#if _LIBCUDACXX_STD_VER > 11
 template <class _Tp> using remove_const_t = typename remove_const<_Tp>::type;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_REMOVE_CONST_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_REMOVE_CONST_H

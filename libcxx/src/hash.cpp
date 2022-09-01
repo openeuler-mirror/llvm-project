@@ -11,9 +11,9 @@
 #include <stdexcept>
 #include <type_traits>
 
-_LIBCPP_CLANG_DIAGNOSTIC_IGNORED("-Wtautological-constant-out-of-range-compare")
+_LIBCUDACXX_CLANG_DIAGNOSTIC_IGNORED("-Wtautological-constant-out-of-range-compare")
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace {
 
@@ -147,7 +147,7 @@ const unsigned indices[] =
 // against.
 
 template <size_t _Sz = sizeof(size_t)>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 typename enable_if<_Sz == 4, void>::type
 __check_for_overflow(size_t N)
 {
@@ -156,7 +156,7 @@ __check_for_overflow(size_t N)
 }
 
 template <size_t _Sz = sizeof(size_t)>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 typename enable_if<_Sz == 8, void>::type
 __check_for_overflow(size_t N)
 {
@@ -556,4 +556,4 @@ next:
     }
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

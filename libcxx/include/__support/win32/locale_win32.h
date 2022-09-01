@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_SUPPORT_WIN32_LOCALE_WIN32_H
-#define _LIBCPP_SUPPORT_WIN32_LOCALE_WIN32_H
+#ifndef _LIBCUDACXX_SUPPORT_WIN32_LOCALE_WIN32_H
+#define _LIBCUDACXX_SUPPORT_WIN32_LOCALE_WIN32_H
 
 #include <__config>
 #include <cstddef>
@@ -216,20 +216,20 @@ decltype(MB_CUR_MAX) MB_CUR_MAX_L( locale_t __l );
 #define strtoll_l _strtoi64_l
 #define strtoull_l _strtoui64_l
 #define strtod_l _strtod_l
-#if defined(_LIBCPP_MSVCRT)
+#if defined(_LIBCUDACXX_MSVCRT)
 #define strtof_l _strtof_l
 #define strtold_l _strtold_l
 #else
-_LIBCPP_FUNC_VIS float strtof_l(const char*, char**, locale_t);
-_LIBCPP_FUNC_VIS long double strtold_l(const char*, char**, locale_t);
+_LIBCUDACXX_FUNC_VIS float strtof_l(const char*, char**, locale_t);
+_LIBCUDACXX_FUNC_VIS long double strtold_l(const char*, char**, locale_t);
 #endif
-inline _LIBCPP_HIDE_FROM_ABI int
+inline _LIBCUDACXX_HIDE_FROM_ABI int
 islower_l(int __c, _locale_t __loc)
 {
  return _islower_l((int)__c, __loc);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI int
+inline _LIBCUDACXX_HIDE_FROM_ABI int
 isupper_l(int __c, _locale_t __loc)
 {
  return _isupper_l((int)__c, __loc);
@@ -255,7 +255,7 @@ isupper_l(int __c, _locale_t __loc)
 #define towupper_l _towupper_l
 #define towlower_l _towlower_l
 #if defined(__MINGW32__) && __MSVCRT_VERSION__ < 0x0800
-_LIBCPP_FUNC_VIS size_t strftime_l(char *ret, size_t n, const char *format,
+_LIBCUDACXX_FUNC_VIS size_t strftime_l(char *ret, size_t n, const char *format,
                                    const struct tm *tm, locale_t loc);
 #else
 #define strftime_l _strftime_l
@@ -264,9 +264,9 @@ _LIBCPP_FUNC_VIS size_t strftime_l(char *ret, size_t n, const char *format,
 #define sprintf_l( __s, __l, __f, ... ) _sprintf_l( __s, __f, __l, __VA_ARGS__ )
 #define vsprintf_l( __s, __l, __f, ... ) _vsprintf_l( __s, __f, __l, __VA_ARGS__ )
 #define vsnprintf_l( __s, __n, __l, __f, ... ) _vsnprintf_l( __s, __n, __f, __l, __VA_ARGS__ )
-_LIBCPP_FUNC_VIS int snprintf_l(char *__ret, size_t __n, locale_t __loc, const char *__format, ...);
-_LIBCPP_FUNC_VIS int asprintf_l( char **__ret, locale_t __loc, const char *__format, ... );
-_LIBCPP_FUNC_VIS int vasprintf_l( char **__ret, locale_t __loc, const char *__format, va_list __ap );
+_LIBCUDACXX_FUNC_VIS int snprintf_l(char *__ret, size_t __n, locale_t __loc, const char *__format, ...);
+_LIBCUDACXX_FUNC_VIS int asprintf_l( char **__ret, locale_t __loc, const char *__format, ... );
+_LIBCUDACXX_FUNC_VIS int vasprintf_l( char **__ret, locale_t __loc, const char *__format, va_list __ap );
 
 // not-so-pressing FIXME: use locale to determine blank characters
 inline int isblank_l( int __c, locale_t /*loc*/ )
@@ -278,4 +278,4 @@ inline int iswblank_l( wint_t __c, locale_t /*loc*/ )
     return ( __c == L' ' || __c == L'\t' );
 }
 
-#endif // _LIBCPP_SUPPORT_WIN32_LOCALE_WIN32_H
+#endif // _LIBCUDACXX_SUPPORT_WIN32_LOCALE_WIN32_H

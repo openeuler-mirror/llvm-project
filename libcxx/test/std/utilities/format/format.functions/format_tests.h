@@ -238,7 +238,7 @@ void format_test_string(const W& world, const U& universe, TestFunction check, E
   check_exception("A format-spec width field shouldn't have a leading zero", SV("hello {:0}"), world);
 
   // *** width ***
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
   // This limit isn't specified in the Standard.
   static_assert(std::__format::__number_max == 2'147'483'647, "Update the assert and the test.");
   check_exception("The numeric value of the format-spec is too large", SV("{:2147483648}"), world);
@@ -259,7 +259,7 @@ void format_test_string(const W& world, const U& universe, TestFunction check, E
   check_exception("Invalid arg-id", SV("hello {0:{01}}"), world, 1);
 
   // *** precision ***
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
   // This limit isn't specified in the Standard.
   static_assert(std::__format::__number_max == 2'147'483'647, "Update the assert and the test.");
   check_exception("The numeric value of the format-spec is too large", SV("{:.2147483648}"), world);

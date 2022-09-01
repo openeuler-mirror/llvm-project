@@ -174,7 +174,7 @@
 #   error "__cpp_lib_null_iterators should have the value 201304L in c++20"
 # endif
 
-# if !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+# if !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 #   ifndef __cpp_lib_ranges
 #     error "__cpp_lib_ranges should be defined in c++20"
 #   endif
@@ -183,7 +183,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_ranges
-#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES) is not defined!"
+#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES) is not defined!"
 #   endif
 # endif
 
@@ -231,7 +231,7 @@
 #   error "__cpp_lib_null_iterators should have the value 201304L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+# if !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 #   ifndef __cpp_lib_ranges
 #     error "__cpp_lib_ranges should be defined in c++2b"
 #   endif
@@ -240,7 +240,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_ranges
-#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES) is not defined!"
+#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES) is not defined!"
 #   endif
 # endif
 

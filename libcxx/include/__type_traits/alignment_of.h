@@ -6,27 +6,27 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_ALIGNMENT_OF_H
-#define _LIBCPP___TYPE_TRAITS_ALIGNMENT_OF_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_ALIGNMENT_OF_H
+#define _LIBCUDACXX___TYPE_TRAITS_ALIGNMENT_OF_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 #include <cstddef>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS alignment_of
-    : public integral_constant<size_t, _LIBCPP_ALIGNOF(_Tp)> {};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS alignment_of
+    : public integral_constant<size_t, _LIBCUDACXX_ALIGNOF(_Tp)> {};
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr size_t alignment_of_v = alignment_of<_Tp>::value;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_ALIGNMENT_OF_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_ALIGNMENT_OF_H

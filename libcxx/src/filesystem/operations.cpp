@@ -21,7 +21,7 @@
 
 #include "posix_compat.h"
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 # define WIN32_LEAN_AND_MEAN
 # define NOMINMAX
 # include <windows.h>
@@ -36,31 +36,31 @@
 
 #if __has_include(<sys/sendfile.h>)
 # include <sys/sendfile.h>
-# define _LIBCPP_FILESYSTEM_USE_SENDFILE
+# define _LIBCUDACXX_FILESYSTEM_USE_SENDFILE
 #elif defined(__APPLE__) || __has_include(<copyfile.h>)
 # include <copyfile.h>
-# define _LIBCPP_FILESYSTEM_USE_COPYFILE
+# define _LIBCUDACXX_FILESYSTEM_USE_COPYFILE
 #else
 # include <fstream>
-# define _LIBCPP_FILESYSTEM_USE_FSTREAM
+# define _LIBCUDACXX_FILESYSTEM_USE_FSTREAM
 #endif
 
-#if !defined(CLOCK_REALTIME) && !defined(_LIBCPP_WIN32API)
+#if !defined(CLOCK_REALTIME) && !defined(_LIBCUDACXX_WIN32API)
 # include <sys/time.h> // for gettimeofday and timeval
 #endif
 
-#if defined(__ELF__) && defined(_LIBCPP_LINK_RT_LIB)
+#if defined(__ELF__) && defined(_LIBCUDACXX_LINK_RT_LIB)
 # pragma comment(lib, "rt")
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_BEGIN_NAMESPACE_FILESYSTEM
 
 namespace {
 
 bool isSeparator(path::value_type C) {
   if (C == '/')
     return true;
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
   if (C == '\\')
     return true;
 #endif
@@ -131,7 +131,7 @@ public:
       if (TkEnd)
         return makeState(PS_InRootName, Start, TkEnd);
     }
-      _LIBCPP_FALLTHROUGH();
+      _LIBCUDACXX_FALLTHROUGH();
     case PS_InRootName: {
       PosPtr TkEnd = consumeAllSeparators(Start, End);
       if (TkEnd)
@@ -156,7 +156,7 @@ public:
       return makeState(PS_AtEnd);
 
     case PS_AtEnd:
-      __libcpp_unreachable();
+      __LIBCUDACXX_unreachable();
     }
   }
 
@@ -204,7 +204,7 @@ public:
       return makeState(PS_InRootName, Path.data(), RStart + 1);
     case PS_InRootName:
     case PS_BeforeBegin:
-      __libcpp_unreachable();
+      __LIBCUDACXX_unreachable();
     }
   }
 
@@ -226,7 +226,7 @@ public:
     case PS_InFilenames:
       return RawEntry;
     }
-    __libcpp_unreachable();
+    __LIBCUDACXX_unreachable();
   }
 
   explicit operator bool() const noexcept {
@@ -287,7 +287,7 @@ private:
     case PS_AtEnd:
       return getAfterBack();
     }
-    __libcpp_unreachable();
+    __LIBCUDACXX_unreachable();
   }
 
   /// \brief Return a pointer to the first character in the currently lexed
@@ -304,7 +304,7 @@ private:
     case PS_AtEnd:
       return &Path.back() + 1;
     }
-    __libcpp_unreachable();
+    __LIBCUDACXX_unreachable();
   }
 
   // Consume all consecutive separators.
@@ -376,7 +376,7 @@ private:
   }
 
   PosPtr consumeRootName(PosPtr P, PosPtr End) const noexcept {
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
     if (PosPtr Ret = consumeDriveLetter(P, End))
       return Ret;
     if (PosPtr Ret = consumeNetworkRoot(P, End))
@@ -404,7 +404,7 @@ string_view_t createView(PosPtr S, PosPtr E) noexcept {
 
 //                       POSIX HELPERS
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 namespace detail {
 
 errc __win_err_to_errc(int err) {
@@ -646,7 +646,7 @@ const bool _FilesystemClock::is_steady;
 
 _FilesystemClock::time_point _FilesystemClock::now() noexcept {
   typedef chrono::duration<rep> __secs;
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
   typedef chrono::duration<rep, nano> __nsecs;
   FILETIME time;
   GetSystemTimeAsFileTime(&time);
@@ -683,7 +683,7 @@ void filesystem_error::__create_what(int __num_paths) {
       return detail::format_string("filesystem error: %s [" PATH_CSTR_FMT "] [" PATH_CSTR_FMT "]",
                                    derived_what, path1().c_str(), path2().c_str());
     }
-    __libcpp_unreachable();
+    __LIBCUDACXX_unreachable();
   }();
 }
 
@@ -708,7 +708,7 @@ path __canonical(path const& orig_p, error_code* ec) {
   ErrorHandler<path> err("canonical", ec, &orig_p, &cwd);
 
   path p = __do_absolute(orig_p, &cwd, ec);
-#if (defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112) || defined(_LIBCPP_WIN32API)
+#if (defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112) || defined(_LIBCUDACXX_WIN32API)
   std::unique_ptr<path::value_type, decltype(&::free)>
     hold(detail::realpath(p.c_str(), nullptr), &::free);
   if (hold.get() == nullptr)
@@ -816,7 +816,7 @@ void __copy(const path& from, const path& to, copy_options options,
 namespace detail {
 namespace {
 
-#if defined(_LIBCPP_FILESYSTEM_USE_SENDFILE)
+#if defined(_LIBCUDACXX_FILESYSTEM_USE_SENDFILE)
   bool copy_file_impl(FileDescriptor& read_fd, FileDescriptor& write_fd, error_code& ec) {
     size_t count = read_fd.get_stat().st_size;
     do {
@@ -832,7 +832,7 @@ namespace {
 
     return true;
   }
-#elif defined(_LIBCPP_FILESYSTEM_USE_COPYFILE)
+#elif defined(_LIBCUDACXX_FILESYSTEM_USE_COPYFILE)
   bool copy_file_impl(FileDescriptor& read_fd, FileDescriptor& write_fd, error_code& ec) {
     struct CopyFileState {
       copyfile_state_t state;
@@ -853,7 +853,7 @@ namespace {
     ec.clear();
     return true;
   }
-#elif defined(_LIBCPP_FILESYSTEM_USE_FSTREAM)
+#elif defined(_LIBCUDACXX_FILESYSTEM_USE_FSTREAM)
   bool copy_file_impl(FileDescriptor& read_fd, FileDescriptor& write_fd, error_code& ec) {
     ifstream in;
     in.__open(read_fd.fd, ios::binary);
@@ -989,7 +989,7 @@ void __copy_symlink(const path& existing_symlink, const path& new_symlink,
   if (ec && *ec) {
     return;
   }
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
   error_code local_ec;
   if (is_directory(real_path, local_ec))
     __create_directory_symlink(real_path, new_symlink, ec);
@@ -1095,7 +1095,7 @@ void __create_symlink(path const& from, path const& to, error_code* ec) {
 path __current_path(error_code* ec) {
   ErrorHandler<path> err("current_path", ec);
 
-#if defined(_LIBCPP_WIN32API) || defined(__GLIBC__) || defined(__APPLE__)
+#if defined(_LIBCUDACXX_WIN32API) || defined(__GLIBC__) || defined(__APPLE__)
   // Common extension outside of POSIX getcwd() spec, without needing to
   // preallocate a buffer. Also supported by a number of other POSIX libcs.
   int size = 0;
@@ -1104,7 +1104,7 @@ path __current_path(error_code* ec) {
   Deleter deleter = &::free;
 #else
   auto size = ::pathconf(".", _PC_PATH_MAX);
-  _LIBCPP_ASSERT(size >= 0, "pathconf returned a 0 as max size");
+  _LIBCUDACXX_ASSERT(size >= 0, "pathconf returned a 0 as max size");
 
   auto buff = unique_ptr<path::value_type[]>(new path::value_type[size + 1]);
   path::value_type* ptr = buff.get();
@@ -1190,7 +1190,7 @@ bool __fs_is_empty(const path& p, error_code* ec) {
   } else if (is_regular_file(st))
     return static_cast<uintmax_t>(pst.st_size) == 0;
 
-  __libcpp_unreachable();
+  __LIBCUDACXX_unreachable();
 }
 
 static file_time_type __extract_last_write_time(const path& p, const StatT& st,
@@ -1221,7 +1221,7 @@ void __last_write_time(const path& p, file_time_type new_time, error_code* ec) {
   using detail::fs_time;
   ErrorHandler<void> err("last_write_time", ec, &p);
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
   TimeSpec ts;
   if (!fs_time::convert_to_timespec(ts, new_time))
     return err.report(errc::value_too_large);
@@ -1234,7 +1234,7 @@ void __last_write_time(const path& p, file_time_type new_time, error_code* ec) {
 #else
   error_code m_ec;
   array<TimeSpec, 2> tbuf;
-#if !defined(_LIBCPP_USE_UTIMENSAT)
+#if !defined(_LIBCUDACXX_USE_UTIMENSAT)
   // This implementation has a race condition between determining the
   // last access time and attempting to set it to the same value using
   // ::utimes
@@ -1264,7 +1264,7 @@ void __permissions(const path& p, perms prms, perm_options opts,
   const bool resolve_symlinks = !has_opt(perm_options::nofollow);
   const bool add_perms = has_opt(perm_options::add);
   const bool remove_perms = has_opt(perm_options::remove);
-  _LIBCPP_ASSERT(
+  _LIBCUDACXX_ASSERT(
       (add_perms + remove_perms + has_opt(perm_options::replace)) == 1,
       "One and only one of the perm_options constants replace, add, or remove "
       "is present in opts");
@@ -1278,7 +1278,7 @@ void __permissions(const path& p, perms prms, perm_options opts,
     set_sym_perms = is_symlink(st);
     if (m_ec)
       return err.report(m_ec);
-    _LIBCPP_ASSERT(st.permissions() != perms::unknown,
+    _LIBCUDACXX_ASSERT(st.permissions() != perms::unknown,
                    "Permissions unexpectedly unknown");
     if (add_perms)
       prms |= st.permissions();
@@ -1324,7 +1324,7 @@ path __read_symlink(const path& p, error_code* ec) {
   detail::SSizeT ret;
   if ((ret = detail::readlink(p.c_str(), buff.get(), size)) == -1)
     return err.report(capture_errno());
-  _LIBCPP_ASSERT(ret > 0, "TODO");
+  _LIBCUDACXX_ASSERT(ret > 0, "TODO");
   if (static_cast<size_t>(ret) >= size)
     return err.report(errc::value_too_large);
   buff[ret] = 0;
@@ -1348,7 +1348,7 @@ bool __remove(const path& p, error_code* ec) {
 //
 // The second implementation is used on platforms where `openat()` & friends are available,
 // and it threads file descriptors through recursive calls to avoid such race conditions.
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 # define REMOVE_ALL_USE_DIRECTORY_ITERATOR
 #endif
 
@@ -1530,7 +1530,7 @@ file_status __symlink_status(const path& p, error_code* ec) {
 path __temp_directory_path(error_code* ec) {
   ErrorHandler<path> err("temp_directory_path", ec);
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
   wchar_t buf[MAX_PATH];
   DWORD retval = GetTempPathW(MAX_PATH, buf);
   if (!retval)
@@ -1744,7 +1744,7 @@ static PathPartKind ClassifyPathPart(string_view_t Part) {
     return PK_DotDot;
   if (Part == PATHSTR("/"))
     return PK_RootSep;
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
   if (Part == PATHSTR("\\"))
     return PK_RootSep;
 #endif
@@ -1805,7 +1805,7 @@ path path::lexically_normal() const {
       break;
     }
     case PK_None:
-      __libcpp_unreachable();
+      __LIBCUDACXX_unreachable();
     }
   }
   // [fs.path.generic]p6.8: If the path is empty, add a dot.
@@ -2011,7 +2011,7 @@ path::iterator& path::iterator::__decrement() {
   return *this;
 }
 
-#if defined(_LIBCPP_WIN32API)
+#if defined(_LIBCUDACXX_WIN32API)
 ////////////////////////////////////////////////////////////////////////////
 // Windows path conversions
 size_t __wide_to_char(const wstring &str, char *out, size_t outlen) {
@@ -2099,4 +2099,4 @@ error_code directory_entry::__do_refresh() noexcept {
   return failure_ec;
 }
 
-_LIBCPP_END_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_END_NAMESPACE_FILESYSTEM

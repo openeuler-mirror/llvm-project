@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_CONCEPTS_H
-#define _LIBCPP___RANGES_CONCEPTS_H
+#ifndef _LIBCUDACXX___RANGES_CONCEPTS_H
+#define _LIBCUDACXX___RANGES_CONCEPTS_H
 
 #include <__concepts/constructible.h>
 #include <__concepts/movable.h>
@@ -26,13 +26,13 @@
 #include <initializer_list>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace ranges {
 
@@ -135,8 +135,8 @@ namespace ranges {
 
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_CONCEPTS_H
+#endif // _LIBCUDACXX___RANGES_CONCEPTS_H

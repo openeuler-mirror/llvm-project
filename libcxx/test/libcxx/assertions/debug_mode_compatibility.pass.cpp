@@ -6,11 +6,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-// This test ensures that assertions are still enabled when _LIBCPP_DEBUG=0 is
+// This test ensures that assertions are still enabled when _LIBCUDACXX_DEBUG=0 is
 // defined, for backwards compatibility with code that might have been using
 // it to enable assertions previously.
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DEBUG=0
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DEBUG=0
 
 // We flag uses of the assertion handler in older dylibs at compile-time to avoid runtime
 // failures when back-deploying.
@@ -18,11 +18,11 @@
 
 #include <cstdlib>
 
-void std::__libcpp_verbose_abort(char const*, ...) {
+void std::__LIBCUDACXX_verbose_abort(char const*, ...) {
   std::exit(EXIT_SUCCESS);
 }
 
 int main(int, char**) {
-  _LIBCPP_ASSERT(false, "message");
+  _LIBCUDACXX_ASSERT(false, "message");
   return EXIT_FAILURE;
 }

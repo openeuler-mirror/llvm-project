@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_PROMOTE_H
-#define _LIBCPP___TYPE_TRAITS_PROMOTE_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_PROMOTE_H
+#define _LIBCUDACXX___TYPE_TRAITS_PROMOTE_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
@@ -15,11 +15,11 @@
 #include <__utility/declval.h>
 #include <cstddef>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp>
 struct __numeric_type
@@ -90,6 +90,6 @@ public:
 template <class _A1, class _A2 = void, class _A3 = void>
 class __promote : public __promote_imp<_A1, _A2, _A3> {};
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_PROMOTE_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_PROMOTE_H

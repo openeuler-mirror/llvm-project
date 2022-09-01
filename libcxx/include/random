@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_RANDOM
-#define _LIBCPP_RANDOM
+#ifndef _LIBCUDACXX_RANDOM
+#define _LIBCUDACXX_RANDOM
 
 /*
     random synopsis
@@ -1718,7 +1718,7 @@ class piecewise_linear_distribution
 #include <__random/weibull_distribution.h>
 #include <version>
 
-#ifndef _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
+#ifndef _LIBCUDACXX_REMOVE_TRANSITIVE_INCLUDES
 #  include <algorithm>
 #endif
 
@@ -1735,8 +1735,8 @@ class piecewise_linear_distribution
 #include <type_traits> // for backward compatibility; TODO remove it
 #include <vector>      // for backward compatibility; TODO remove it
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#endif // _LIBCPP_RANDOM
+#endif // _LIBCUDACXX_RANDOM

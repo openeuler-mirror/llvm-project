@@ -6,28 +6,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_CLAMP_TO_INTEGRAL_H
-#define _LIBCPP___RANDOM_CLAMP_TO_INTEGRAL_H
+#ifndef _LIBCUDACXX___RANDOM_CLAMP_TO_INTEGRAL_H
+#define _LIBCUDACXX___RANDOM_CLAMP_TO_INTEGRAL_H
 
 #include <__config>
 #include <cmath>
 #include <limits>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _IntT, class _FloatT,
     bool _FloatBigger = (numeric_limits<_FloatT>::digits > numeric_limits<_IntT>::digits),
     int _Bits = (numeric_limits<_IntT>::digits - numeric_limits<_FloatT>::digits)>
-_LIBCPP_INLINE_VISIBILITY
-_LIBCPP_CONSTEXPR _IntT __max_representable_int_for_float() _NOEXCEPT {
+_LIBCUDACXX_INLINE_VISIBILITY
+_LIBCUDACXX_CONSTEXPR _IntT __max_representable_int_for_float() _NOEXCEPT {
   static_assert(is_floating_point<_FloatT>::value, "must be a floating point type");
   static_assert(is_integral<_IntT>::value, "must be an integral type");
   static_assert(numeric_limits<_FloatT>::radix == 2, "FloatT has incorrect radix");
@@ -41,7 +41,7 @@ _LIBCPP_CONSTEXPR _IntT __max_representable_int_for_float() _NOEXCEPT {
 //
 // The behavior is undefined if `__r` is NaN.
 template <class _IntT, class _RealT>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 _IntT __clamp_to_integral(_RealT __r) _NOEXCEPT {
   using _Lim = numeric_limits<_IntT>;
   const _IntT _MaxVal = __max_representable_int_for_float<_IntT, _RealT>();
@@ -53,8 +53,8 @@ _IntT __clamp_to_integral(_RealT __r) _NOEXCEPT {
   return static_cast<_IntT>(__r);
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_CLAMP_TO_INTEGRAL_H
+#endif // _LIBCUDACXX___RANDOM_CLAMP_TO_INTEGRAL_H

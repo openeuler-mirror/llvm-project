@@ -33,7 +33,7 @@ template <typename T>
 void test()
 {
     ASSERT_SAME_TYPE(T, decltype(std::lerp(T(), T(), T())));
-    LIBCPP_ASSERT_NOEXCEPT(      std::lerp(T(), T(), T()));
+    LIBCUDACXX_ASSERT_NOEXCEPT(      std::lerp(T(), T(), T()));
 
 //     constexpr T minV = std::numeric_limits<T>::min();
     constexpr T maxV = std::numeric_limits<T>::max();

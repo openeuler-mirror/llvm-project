@@ -7,19 +7,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FUNCTIONAL_IS_TRANSPARENT
-#define _LIBCPP___FUNCTIONAL_IS_TRANSPARENT
+#ifndef _LIBCUDACXX___FUNCTIONAL_IS_TRANSPARENT
+#define _LIBCUDACXX___FUNCTIONAL_IS_TRANSPARENT
 
 #include <__config>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 11
+#if _LIBCUDACXX_STD_VER > 11
 
 template <class _Tp, class, class = void>
 struct __is_transparent : false_type {};
@@ -31,6 +31,6 @@ struct __is_transparent<_Tp, _Up,
 
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FUNCTIONAL_IS_TRANSPARENT
+#endif // _LIBCUDACXX___FUNCTIONAL_IS_TRANSPARENT

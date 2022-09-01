@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_ITERATOR
-#define _LIBCPP_ITERATOR
+#ifndef _LIBCUDACXX_ITERATOR
+#define _LIBCUDACXX_ITERATOR
 
 /*
     iterator synopsis
@@ -724,15 +724,15 @@ template <class E> constexpr const E* data(initializer_list<E> il) noexcept;    
 #include <type_traits>
 #include <version>
 
-#ifndef _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
+#ifndef _LIBCUDACXX_REMOVE_TRANSITIVE_INCLUDES
 #  include <exception>
 #  include <new>
 #  include <typeinfo>
 #  include <utility>
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#endif // _LIBCPP_ITERATOR
+#endif // _LIBCUDACXX_ITERATOR

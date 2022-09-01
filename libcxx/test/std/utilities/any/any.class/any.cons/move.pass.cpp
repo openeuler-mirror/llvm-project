@@ -80,7 +80,7 @@ void test_move() {
         assert(Type::copied == 0); // no copies can be performed.
         assert(Type::count == 1 + a.has_value());
         assertContains<Type>(a2, 42);
-        LIBCPP_ASSERT(!a.has_value()); // Moves are always destructive.
+        LIBCUDACXX_ASSERT(!a.has_value()); // Moves are always destructive.
         if (a.has_value())
             assertContains<Type>(a, 0);
     }

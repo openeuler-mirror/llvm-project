@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_MOVE_SENTINEL_H
-#define _LIBCPP___ITERATOR_MOVE_SENTINEL_H
+#ifndef _LIBCUDACXX___ITERATOR_MOVE_SENTINEL_H
+#define _LIBCUDACXX___ITERATOR_MOVE_SENTINEL_H
 
 #include <__concepts/assignable.h>
 #include <__concepts/convertible_to.h>
@@ -15,32 +15,32 @@
 #include <__config>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <semiregular _Sent>
-class _LIBCPP_TEMPLATE_VIS move_sentinel
+class _LIBCUDACXX_TEMPLATE_VIS move_sentinel
 {
 public:
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   move_sentinel() = default;
 
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   explicit move_sentinel(_Sent __s) : __last_(std::move(__s)) {}
 
   template <class _S2>
     requires convertible_to<const _S2&, _Sent>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   move_sentinel(const move_sentinel<_S2>& __s) : __last_(__s.base()) {}
 
   template <class _S2>
     requires assignable_from<_Sent&, const _S2&>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   move_sentinel& operator=(const move_sentinel<_S2>& __s)
     { __last_ = __s.base(); return *this; }
 
@@ -50,8 +50,8 @@ private:
     _Sent __last_ = _Sent();
 };
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_MOVE_SENTINEL_H
+#endif // _LIBCUDACXX___ITERATOR_MOVE_SENTINEL_H

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_COPY_N_H
-#define _LIBCPP___ALGORITHM_RANGES_COPY_N_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_COPY_N_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_COPY_N_H
 
 #include <__algorithm/copy.h>
 #include <__algorithm/in_out_result.h>
@@ -20,13 +20,13 @@
 #include <__iterator/wrap_iter.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
 
@@ -37,7 +37,7 @@ namespace __copy_n {
 struct __fn {
 
   template <class _InIter, class _DiffType, class _OutIter>
-  _LIBCPP_HIDE_FROM_ABI constexpr static
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr static
   copy_n_result<_InIter, _OutIter> __go(_InIter __first, _DiffType __n, _OutIter __result) {
     while (__n != 0) {
       *__result = *__first;
@@ -49,7 +49,7 @@ struct __fn {
   }
 
   template <random_access_iterator _InIter, class _DiffType, random_access_iterator _OutIter>
-  _LIBCPP_HIDE_FROM_ABI constexpr static
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr static
   copy_n_result<_InIter, _OutIter> __go(_InIter __first, _DiffType __n, _OutIter __result) {
     auto __ret = std::__copy(__first, __first + __n, __result);
     return {__ret.first, __ret.second};
@@ -57,7 +57,7 @@ struct __fn {
 
   template <input_iterator _Ip, weakly_incrementable _Op>
     requires indirectly_copyable<_Ip, _Op>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   copy_n_result<_Ip, _Op> operator()(_Ip __first, iter_difference_t<_Ip> __n, _Op __result) const {
     return __go(std::move(__first), __n, std::move(__result));
   }
@@ -69,8 +69,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_RANGES_COPY_N_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_COPY_N_H

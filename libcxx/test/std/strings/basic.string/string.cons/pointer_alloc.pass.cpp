@@ -29,7 +29,7 @@ test(const charT* s)
     typedef typename S::allocator_type A;
     std::size_t n = T::length(s);
     S s2(s);
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s2.size() == n);
     assert(T::compare(s2.data(), s, n) == 0);
     assert(s2.get_allocator() == A());
@@ -44,7 +44,7 @@ test(const charT* s, const A& a)
     typedef typename S::traits_type T;
     std::size_t n = T::length(s);
     S s2(s, a);
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s2.size() == n);
     assert(T::compare(s2.data(), s, n) == 0);
     assert(s2.get_allocator() == a);

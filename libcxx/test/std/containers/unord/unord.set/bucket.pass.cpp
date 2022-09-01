@@ -38,7 +38,7 @@ int main(int, char**)
         size_t bc = c.bucket_count();
         assert(bc >= 5);
         for (size_t i = 0; i < 13; ++i)
-            LIBCPP_ASSERT(c.bucket(i) == i % bc);
+            LIBCUDACXX_ASSERT(c.bucket(i) == i % bc);
     }
 #if TEST_STD_VER >= 11
     {
@@ -57,7 +57,7 @@ int main(int, char**)
         size_t bc = c.bucket_count();
         assert(bc >= 5);
         for (size_t i = 0; i < 13; ++i)
-            LIBCPP_ASSERT(c.bucket(i) == i % bc);
+            LIBCUDACXX_ASSERT(c.bucket(i) == i % bc);
     }
 #endif
 

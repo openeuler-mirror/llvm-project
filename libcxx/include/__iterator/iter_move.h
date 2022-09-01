@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_ITER_MOVE_H
-#define _LIBCPP___ITERATOR_ITER_MOVE_H
+#ifndef _LIBCUDACXX___ITERATOR_ITER_MOVE_H
+#define _LIBCUDACXX___ITERATOR_ITER_MOVE_H
 
 #include <__concepts/class_or_enum.h>
 #include <__config>
@@ -17,13 +17,13 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [iterator.cust.move]
 
@@ -61,7 +61,7 @@ concept __just_deref =
 struct __fn {
   template<class _Ip>
     requires __unqualified_iter_move<_Ip>
-  [[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr decltype(auto) operator()(_Ip&& __i) const
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) operator()(_Ip&& __i) const
     noexcept(noexcept(iter_move(std::forward<_Ip>(__i))))
   {
     return iter_move(std::forward<_Ip>(__i));
@@ -69,14 +69,14 @@ struct __fn {
 
   template<class _Ip>
     requires __move_deref<_Ip>
-  [[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr auto operator()(_Ip&& __i) const
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr auto operator()(_Ip&& __i) const
     noexcept(noexcept(std::move(*std::forward<_Ip>(__i))))
     -> decltype(      std::move(*std::forward<_Ip>(__i)))
     { return          std::move(*std::forward<_Ip>(__i)); }
 
   template<class _Ip>
     requires __just_deref<_Ip>
-  [[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr auto operator()(_Ip&& __i) const
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr auto operator()(_Ip&& __i) const
     noexcept(noexcept(*std::forward<_Ip>(__i)))
     -> decltype(      *std::forward<_Ip>(__i))
     { return          *std::forward<_Ip>(__i); }
@@ -92,8 +92,8 @@ template<__dereferenceable _Tp>
   requires requires(_Tp& __t) { { ranges::iter_move(__t) } -> __can_reference; }
 using iter_rvalue_reference_t = decltype(ranges::iter_move(declval<_Tp&>()));
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_ITER_MOVE_H
+#endif // _LIBCUDACXX___ITERATOR_ITER_MOVE_H

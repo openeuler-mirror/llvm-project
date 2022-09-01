@@ -62,7 +62,7 @@ void half_size() {
 
 bool test() {
 
-#if _LIBCPP_ABI_VERSION == 1
+#if _LIBCUDACXX_ABI_VERSION == 1
 
 # if defined(__x86_64__) || defined(__i386__)
   full_size();

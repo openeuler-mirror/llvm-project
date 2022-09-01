@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_SCALAR_H
-#define _LIBCPP___TYPE_TRAITS_IS_SCALAR_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_SCALAR_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_SCALAR_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
@@ -16,18 +16,18 @@
 #include <__type_traits/is_member_pointer.h>
 #include <__type_traits/is_pointer.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 #if __has_builtin(__is_scalar)
 
 template<class _Tp>
-struct _LIBCPP_TEMPLATE_VIS is_scalar : _BoolConstant<__is_scalar(_Tp)> { };
+struct _LIBCUDACXX_TEMPLATE_VIS is_scalar : _BoolConstant<__is_scalar(_Tp)> { };
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr bool is_scalar_v = __is_scalar(_Tp);
 #endif
@@ -35,11 +35,11 @@ inline constexpr bool is_scalar_v = __is_scalar(_Tp);
 #else // __has_builtin(__is_scalar)
 
 template <class _Tp> struct __is_block : false_type {};
-#if defined(_LIBCPP_HAS_EXTENSION_BLOCKS)
+#if defined(_LIBCUDACXX_HAS_EXTENSION_BLOCKS)
 template <class _Rp, class ..._Args> struct __is_block<_Rp (^)(_Args...)> : true_type {};
 #endif
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS is_scalar
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS is_scalar
     : public integral_constant<bool, is_arithmetic<_Tp>::value     ||
                                      is_member_pointer<_Tp>::value ||
                                      is_pointer<_Tp>::value        ||
@@ -47,15 +47,15 @@ template <class _Tp> struct _LIBCPP_TEMPLATE_VIS is_scalar
                                      __is_block<_Tp>::value        ||
                                      is_enum<_Tp>::value           > {};
 
-template <> struct _LIBCPP_TEMPLATE_VIS is_scalar<nullptr_t> : public true_type {};
+template <> struct _LIBCUDACXX_TEMPLATE_VIS is_scalar<nullptr_t> : public true_type {};
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr bool is_scalar_v = is_scalar<_Tp>::value;
 #endif
 
 #endif // __has_builtin(__is_scalar)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_SCALAR_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_SCALAR_H

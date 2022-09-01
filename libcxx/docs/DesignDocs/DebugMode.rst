@@ -58,4 +58,4 @@ the relative order of equal elements in ``std::sort`` or randomizing both parts 
 partition after calling ``std::nth_element``. This effort helps migrating to potential
 future faster versions of these algorithms that might not have the exact same behavior.
 In particular, it makes it easier to deflake tests that depend on unspecified behavior.
-A seed can be used to make such failures reproducible: use ``_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY_SEED=seed``.
+A seed can be used to make such failures reproducible: use ``_LIBCUDACXX_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY_SEED=seed``.

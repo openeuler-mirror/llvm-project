@@ -56,16 +56,16 @@ int main(int, char**)
         assert(c.bucket_count() >= 5);
         c.rehash(3);
         rehash_postcondition(c, 3);
-        LIBCPP_ASSERT(c.bucket_count() == 5);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 5);
         test(c);
         c.max_load_factor(2);
         c.rehash(3);
         rehash_postcondition(c, 3);
-        LIBCPP_ASSERT(c.bucket_count() == 3);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 3);
         test(c);
         c.rehash(31);
         rehash_postcondition(c, 31);
-        LIBCPP_ASSERT(c.bucket_count() == 31);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 31);
         test(c);
     }
 #if TEST_STD_VER >= 11
@@ -87,16 +87,16 @@ int main(int, char**)
         assert(c.bucket_count() >= 5);
         c.rehash(3);
         rehash_postcondition(c, 3);
-        LIBCPP_ASSERT(c.bucket_count() == 5);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 5);
         test(c);
         c.max_load_factor(2);
         c.rehash(3);
         rehash_postcondition(c, 3);
-        LIBCPP_ASSERT(c.bucket_count() == 3);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 3);
         test(c);
         c.rehash(31);
         rehash_postcondition(c, 31);
-        LIBCPP_ASSERT(c.bucket_count() == 31);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 31);
         test(c);
     }
 #endif

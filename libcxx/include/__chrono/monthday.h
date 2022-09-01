@@ -7,21 +7,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CHRONO_MONTHDAY_H
-#define _LIBCPP___CHRONO_MONTHDAY_H
+#ifndef _LIBCUDACXX___CHRONO_MONTHDAY_H
+#define _LIBCUDACXX___CHRONO_MONTHDAY_H
 
 #include <__chrono/calendar.h>
 #include <__chrono/day.h>
 #include <__chrono/month.h>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace chrono
 {
@@ -31,15 +31,15 @@ private:
    chrono::month __m;
    chrono::day   __d;
 public:
-    _LIBCPP_HIDE_FROM_ABI month_day() = default;
-    _LIBCPP_HIDE_FROM_ABI constexpr month_day(const chrono::month& __mval, const chrono::day& __dval) noexcept
+    _LIBCUDACXX_HIDE_FROM_ABI month_day() = default;
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr month_day(const chrono::month& __mval, const chrono::day& __dval) noexcept
         : __m{__mval}, __d{__dval} {}
-    _LIBCPP_HIDE_FROM_ABI inline constexpr chrono::month month() const noexcept { return __m; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr chrono::day   day()   const noexcept { return __d; }
-    _LIBCPP_HIDE_FROM_ABI constexpr bool ok() const noexcept;
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr chrono::month month() const noexcept { return __m; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr chrono::day   day()   const noexcept { return __d; }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept;
 };
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool month_day::ok() const noexcept
 {
     if (!__m.ok()) return false;
@@ -54,48 +54,48 @@ bool month_day::ok() const noexcept
     return true;
 }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator==(const month_day& __lhs, const month_day& __rhs) noexcept
 { return __lhs.month() == __rhs.month() && __lhs.day() == __rhs.day(); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator!=(const month_day& __lhs, const month_day& __rhs) noexcept
 { return !(__lhs == __rhs); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month_day operator/(const month& __lhs, const day& __rhs) noexcept
 { return month_day{__lhs, __rhs}; }
 
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 month_day operator/(const day& __lhs, const month& __rhs) noexcept
 { return __rhs / __lhs; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month_day operator/(const month& __lhs, int __rhs) noexcept
 { return __lhs / day(__rhs); }
 
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 month_day operator/(int __lhs, const day& __rhs) noexcept
 { return month(__lhs) / __rhs; }
 
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 month_day operator/(const day& __lhs, int __rhs) noexcept
 { return month(__rhs) / __lhs; }
 
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator< (const month_day& __lhs, const month_day& __rhs) noexcept
 { return __lhs.month() != __rhs.month() ? __lhs.month() < __rhs.month() : __lhs.day() < __rhs.day(); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator> (const month_day& __lhs, const month_day& __rhs) noexcept
 { return __rhs < __lhs; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator<=(const month_day& __lhs, const month_day& __rhs) noexcept
 { return !(__rhs < __lhs);}
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator>=(const month_day& __lhs, const month_day& __rhs) noexcept
 { return !(__lhs < __rhs); }
 
@@ -105,56 +105,56 @@ class month_day_last {
 private:
     chrono::month __m;
 public:
-    _LIBCPP_HIDE_FROM_ABI explicit constexpr month_day_last(const chrono::month& __val) noexcept
+    _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr month_day_last(const chrono::month& __val) noexcept
         : __m{__val} {}
-    _LIBCPP_HIDE_FROM_ABI inline constexpr chrono::month month() const noexcept { return __m; }
-    _LIBCPP_HIDE_FROM_ABI inline constexpr bool ok() const noexcept { return __m.ok(); }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr chrono::month month() const noexcept { return __m; }
+    _LIBCUDACXX_HIDE_FROM_ABI inline constexpr bool ok() const noexcept { return __m.ok(); }
 };
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator==(const month_day_last& __lhs, const month_day_last& __rhs) noexcept
 { return __lhs.month() == __rhs.month(); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator!=(const month_day_last& __lhs, const month_day_last& __rhs) noexcept
 { return !(__lhs == __rhs); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator< (const month_day_last& __lhs, const month_day_last& __rhs) noexcept
 { return __lhs.month() < __rhs.month(); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator> (const month_day_last& __lhs, const month_day_last& __rhs) noexcept
 { return __rhs < __lhs; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator<=(const month_day_last& __lhs, const month_day_last& __rhs) noexcept
 { return !(__rhs < __lhs);}
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 bool operator>=(const month_day_last& __lhs, const month_day_last& __rhs) noexcept
 { return !(__lhs < __rhs); }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month_day_last operator/(const month& __lhs, last_spec) noexcept
 { return month_day_last{__lhs}; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month_day_last operator/(last_spec, const month& __rhs) noexcept
 { return month_day_last{__rhs}; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month_day_last operator/(int __lhs, last_spec) noexcept
 { return month_day_last{month(__lhs)}; }
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr
 month_day_last operator/(last_spec, int __rhs) noexcept
 { return month_day_last{month(__rhs)}; }
 
 } // namespace chrono
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-#endif // _LIBCPP___CHRONO_MONTHDAY_H
+#endif // _LIBCUDACXX___CHRONO_MONTHDAY_H

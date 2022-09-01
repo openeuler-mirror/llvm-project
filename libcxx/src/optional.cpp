@@ -25,9 +25,9 @@ const char* bad_optional_access::what() const noexcept {
 
 //  Preserve std::experimental::bad_optional_access for ABI compatibility
 //  Even though it no longer exists in a header file
-_LIBCPP_BEGIN_NAMESPACE_EXPERIMENTAL
+_LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL
 
-class _LIBCPP_EXCEPTION_ABI _LIBCPP_AVAILABILITY_BAD_OPTIONAL_ACCESS bad_optional_access
+class _LIBCUDACXX_EXCEPTION_ABI _LIBCUDACXX_AVAILABILITY_BAD_OPTIONAL_ACCESS bad_optional_access
     : public std::logic_error
 {
 public:
@@ -39,4 +39,4 @@ public:
 
 bad_optional_access::~bad_optional_access() noexcept = default;
 
-_LIBCPP_END_NAMESPACE_EXPERIMENTAL
+_LIBCUDACXX_END_NAMESPACE_EXPERIMENTAL

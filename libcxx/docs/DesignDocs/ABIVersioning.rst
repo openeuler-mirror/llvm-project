@@ -18,7 +18,7 @@ To always use the most cutting-edge, most unstable ABI (which is currently ``2``
 but at some point will become ``3``), set the CMake option ``LIBCXX_ABI_UNSTABLE``.
 
 Internally, each ABI-changing feature is placed under its own C++ macro,
-``_LIBCPP_ABI_XXX``. These macros' definitions are controlled by the C++ macro
-``_LIBCPP_ABI_VERSION``, which is controlled by the ``LIBCXX_ABI_VERSION`` set
+``_LIBCUDACXX_ABI_XXX``. These macros' definitions are controlled by the C++ macro
+``_LIBCUDACXX_ABI_VERSION``, which is controlled by the ``LIBCXX_ABI_VERSION`` set
 at build time. Libc++ does not intend users to interact with these C++ macros
 directly.

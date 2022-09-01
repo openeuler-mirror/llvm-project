@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_MOVE_BACKWARD_H
-#define _LIBCPP___ALGORITHM_RANGES_MOVE_BACKWARD_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_MOVE_BACKWARD_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_MOVE_BACKWARD_H
 
 #include <__algorithm/in_out_result.h>
 #include <__algorithm/ranges_move.h>
@@ -21,13 +21,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -38,7 +38,7 @@ namespace __move_backward {
 struct __fn {
 
   template <class _InIter, class _Sent, class _OutIter>
-  _LIBCPP_HIDE_FROM_ABI constexpr static
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr static
   move_backward_result<_InIter, _OutIter> __move_backward_impl(_InIter __first, _Sent __last, _OutIter __result) {
     auto __last_iter = ranges::next(__first, std::move(__last));
     auto __ret = ranges::move(std::make_reverse_iterator(__last_iter),
@@ -49,14 +49,14 @@ struct __fn {
 
   template <bidirectional_iterator _InIter, sentinel_for<_InIter> _Sent, bidirectional_iterator _OutIter>
     requires indirectly_movable<_InIter, _OutIter>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   move_backward_result<_InIter, _OutIter> operator()(_InIter __first, _Sent __last, _OutIter __result) const {
     return __move_backward_impl(std::move(__first), std::move(__last), std::move(__result));
   }
 
   template <bidirectional_range _Range, bidirectional_iterator _Iter>
     requires indirectly_movable<iterator_t<_Range>, _Iter>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   move_backward_result<borrowed_iterator_t<_Range>, _Iter> operator()(_Range&& __range, _Iter __result) const {
     return __move_backward_impl(ranges::begin(__range), ranges::end(__range), std::move(__result));
   }
@@ -69,8 +69,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_MOVE_BACKWARD_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_MOVE_BACKWARD_H

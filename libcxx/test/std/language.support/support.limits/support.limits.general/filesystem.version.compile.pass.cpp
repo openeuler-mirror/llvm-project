@@ -51,7 +51,7 @@
 #   error "__cpp_lib_char8_t should not be defined before c++20"
 # endif
 
-# if !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem)
+# if !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem)
 #   ifndef __cpp_lib_filesystem
 #     error "__cpp_lib_filesystem should be defined in c++17"
 #   endif
@@ -60,7 +60,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_filesystem
-#     error "__cpp_lib_filesystem should not be defined when !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem) is not defined!"
+#     error "__cpp_lib_filesystem should not be defined when !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem) is not defined!"
 #   endif
 # endif
 
@@ -79,7 +79,7 @@
 #   endif
 # endif
 
-# if !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem)
+# if !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem)
 #   ifndef __cpp_lib_filesystem
 #     error "__cpp_lib_filesystem should be defined in c++20"
 #   endif
@@ -88,7 +88,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_filesystem
-#     error "__cpp_lib_filesystem should not be defined when !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem) is not defined!"
+#     error "__cpp_lib_filesystem should not be defined when !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem) is not defined!"
 #   endif
 # endif
 
@@ -107,7 +107,7 @@
 #   endif
 # endif
 
-# if !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem)
+# if !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem)
 #   ifndef __cpp_lib_filesystem
 #     error "__cpp_lib_filesystem should be defined in c++2b"
 #   endif
@@ -116,7 +116,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_filesystem
-#     error "__cpp_lib_filesystem should not be defined when !defined(_LIBCPP_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem) is not defined!"
+#     error "__cpp_lib_filesystem should not be defined when !defined(_LIBCUDACXX_AVAILABILITY_DISABLE_FTM___cpp_lib_filesystem) is not defined!"
 #   endif
 # endif
 

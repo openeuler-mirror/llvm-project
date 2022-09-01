@@ -176,7 +176,7 @@ int main(int, char**)
 #ifndef TEST_HAS_NO_EXCEPTIONS
     // The test below expects `std::thread` to call `new`, which may not be the
     // case for all implementations.
-    LIBCPP_ASSERT(numAllocs > 0); // libc++ should call new.
+    LIBCUDACXX_ASSERT(numAllocs > 0); // libc++ should call new.
     if (numAllocs > 0) {
         try
         {

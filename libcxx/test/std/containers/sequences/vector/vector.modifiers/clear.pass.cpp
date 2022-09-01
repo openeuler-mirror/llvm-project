@@ -25,8 +25,8 @@ TEST_CONSTEXPR_CXX20 bool tests()
     ASSERT_NOEXCEPT(c.clear());
     c.clear();
     assert(c.empty());
-    LIBCPP_ASSERT(c.__invariants());
-    LIBCPP_ASSERT(is_contiguous_container_asan_correct(c));
+    LIBCUDACXX_ASSERT(c.__invariants());
+    LIBCUDACXX_ASSERT(is_contiguous_container_asan_correct(c));
     }
 #if TEST_STD_VER >= 11
     {
@@ -35,8 +35,8 @@ TEST_CONSTEXPR_CXX20 bool tests()
     ASSERT_NOEXCEPT(c.clear());
     c.clear();
     assert(c.empty());
-    LIBCPP_ASSERT(c.__invariants());
-    LIBCPP_ASSERT(is_contiguous_container_asan_correct(c));
+    LIBCUDACXX_ASSERT(c.__invariants());
+    LIBCUDACXX_ASSERT(is_contiguous_container_asan_correct(c));
     }
 #endif
 

@@ -72,12 +72,12 @@ void test() {
   assert(static_cast<std::size_t>(base(end) - oa) == std::min(os, is));
   // sample() is deterministic but non-reproducible;
   // its results can vary between implementations.
-  LIBCPP_ASSERT(std::equal(oa, oa + os, oa1));
+  LIBCUDACXX_ASSERT(std::equal(oa, oa + os, oa1));
   end = std::sample(PopulationIterator(ia),
                                   PopulationIterator(ia + is),
                                   SampleIterator(oa), os, std::move(g));
   assert(static_cast<std::size_t>(base(end) - oa) == std::min(os, is));
-  LIBCPP_ASSERT(std::equal(oa, oa + os, oa2));
+  LIBCUDACXX_ASSERT(std::equal(oa, oa + os, oa2));
 }
 
 template <template<class...> class PopulationIteratorType, class PopulationItem,

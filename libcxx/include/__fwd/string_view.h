@@ -7,31 +7,31 @@
 //
 //===---------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_FWD_STRING_VIEW_H
-#define _LIBCPP_FWD_STRING_VIEW_H
+#ifndef _LIBCUDACXX_FWD_STRING_VIEW_H
+#define _LIBCUDACXX_FWD_STRING_VIEW_H
 
 #include <__config>
 #include <iosfwd> // char_traits
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _CharT, class _Traits = char_traits<_CharT> >
-class _LIBCPP_TEMPLATE_VIS basic_string_view;
+class _LIBCUDACXX_TEMPLATE_VIS basic_string_view;
 
 typedef basic_string_view<char>     string_view;
-#ifndef _LIBCPP_HAS_NO_CHAR8_T
+#ifndef _LIBCUDACXX_HAS_NO_CHAR8_T
 typedef basic_string_view<char8_t>  u8string_view;
 #endif
 typedef basic_string_view<char16_t> u16string_view;
 typedef basic_string_view<char32_t> u32string_view;
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 typedef basic_string_view<wchar_t>  wstring_view;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_FWD_STRING_VIEW_H
+#endif // _LIBCUDACXX_FWD_STRING_VIEW_H

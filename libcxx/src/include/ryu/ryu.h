@@ -38,8 +38,8 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef _LIBCPP_SRC_INCLUDE_RYU_RYU_H
-#define _LIBCPP_SRC_INCLUDE_RYU_RYU_H
+#ifndef _LIBCUDACXX_SRC_INCLUDE_RYU_RYU_H
+#define _LIBCUDACXX_SRC_INCLUDE_RYU_RYU_H
 
 // Avoid formatting to keep the changes with the original code minimal.
 // clang-format off
@@ -62,15 +62,15 @@
 #endif // defined(_MSC_VER)
 
 #if defined(_WIN64) || defined(_M_AMD64) || defined(__x86_64__) ||  defined(__aarch64__)
-#define _LIBCPP_64_BIT
+#define _LIBCUDACXX_64_BIT
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // https://github.com/ulfjack/ryu/tree/59661c3/ryu
 
 #if !defined(_MSC_VER)
-_LIBCPP_HIDE_FROM_ABI inline unsigned char _BitScanForward64(unsigned long* __index, unsigned long long __mask) {
+_LIBCUDACXX_HIDE_FROM_ABI inline unsigned char _BitScanForward64(unsigned long* __index, unsigned long long __mask) {
   if (__mask == 0) {
     return false;
   }
@@ -78,7 +78,7 @@ _LIBCPP_HIDE_FROM_ABI inline unsigned char _BitScanForward64(unsigned long* __in
   return true;
 }
 
-_LIBCPP_HIDE_FROM_ABI inline unsigned char _BitScanForward(unsigned long* __index, unsigned int __mask) {
+_LIBCUDACXX_HIDE_FROM_ABI inline unsigned char _BitScanForward(unsigned long* __index, unsigned int __mask) {
   if (__mask == 0) {
     return false;
   }
@@ -98,7 +98,7 @@ template <class _Floating>
 }
 
 template <class _Floating>
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI to_chars_result _Floating_to_chars_scientific_precision(
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI to_chars_result _Floating_to_chars_scientific_precision(
     char* const _First, char* const _Last, const _Floating _Value, int _Precision) noexcept {
 
     // C11 7.21.6.1 "The fprintf function"/5:
@@ -119,7 +119,7 @@ template <class _Floating>
 }
 
 template <class _Floating>
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI to_chars_result _Floating_to_chars_fixed_precision(
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI to_chars_result _Floating_to_chars_fixed_precision(
     char* const _First, char* const _Last, const _Floating _Value, int _Precision) noexcept {
 
     // C11 7.21.6.1 "The fprintf function"/5:
@@ -139,11 +139,11 @@ template <class _Floating>
     return __d2fixed_buffered_n(_First, _Last, _Value, static_cast<uint32_t>(_Precision));
 }
 
-#undef _LIBCPP_64_BIT
-#undef _LIBCPP_INTRINSIC128
+#undef _LIBCUDACXX_64_BIT
+#undef _LIBCUDACXX_INTRINSIC128
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
 // clang-format on
 
-#endif // _LIBCPP_SRC_INCLUDE_RYU_RYU_H
+#endif // _LIBCUDACXX_SRC_INCLUDE_RYU_RYU_H

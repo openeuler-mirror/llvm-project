@@ -94,7 +94,7 @@ assert all(v == sorted(v) for k, v in mandatory_inclusions.items())
 lit_markup = {
   "barrier": ["UNSUPPORTED: no-threads"],
   "filesystem": ["UNSUPPORTED: no-filesystem"],
-  "format": ["UNSUPPORTED: libcpp-has-no-incomplete-format"],
+  "format": ["UNSUPPORTED: LIBCUDACXX-has-no-incomplete-format"],
   "iomanip": ["UNSUPPORTED: no-localization"],
   "ios": ["UNSUPPORTED: no-localization"],
   "iostream": ["UNSUPPORTED: no-localization"],
@@ -103,7 +103,7 @@ lit_markup = {
   "locale": ["UNSUPPORTED: no-localization"],
   "mutex": ["UNSUPPORTED: no-threads"],
   "ostream": ["UNSUPPORTED: no-localization"],
-  "ranges": ["UNSUPPORTED: libcpp-has-no-incomplete-ranges"],
+  "ranges": ["UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges"],
   "regex": ["UNSUPPORTED: no-localization"],
   "semaphore": ["UNSUPPORTED: no-threads"],
   "shared_mutex": ["UNSUPPORTED: no-threads"],
@@ -131,12 +131,12 @@ def get_unsupported_line(includee):
     }[v]
 
 
-def get_libcpp_header_symbol(header_name):
-    return '_LIBCPP_' + header_name.upper().replace('.', '_')
+def get_LIBCUDACXX_header_symbol(header_name):
+    return '_LIBCUDACXX_' + header_name.upper().replace('.', '_')
 
 
 def get_includer_symbol_test(includer):
-    symbol = get_libcpp_header_symbol(includer)
+    symbol = get_LIBCUDACXX_header_symbol(includer)
     return """
 #if !defined({symbol})
  #   error "{message}"
@@ -149,7 +149,7 @@ def get_includer_symbol_test(includer):
 
 def get_ifdef(includer, includee):
     version = max(new_in_version.get(h, "03") for h in [includer, includee])
-    symbol = get_libcpp_header_symbol(includee)
+    symbol = get_LIBCUDACXX_header_symbol(includee)
     return """
 #if {includee_test}!defined({symbol})
  #   error "{message}"

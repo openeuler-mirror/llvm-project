@@ -6,45 +6,45 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_INTEGRAL_CONSTANT_H
-#define _LIBCPP___TYPE_TRAITS_INTEGRAL_CONSTANT_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_INTEGRAL_CONSTANT_H
+#define _LIBCUDACXX___TYPE_TRAITS_INTEGRAL_CONSTANT_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp, _Tp __v>
-struct _LIBCPP_TEMPLATE_VIS integral_constant
+struct _LIBCUDACXX_TEMPLATE_VIS integral_constant
 {
-  static _LIBCPP_CONSTEXPR const _Tp      value = __v;
+  static _LIBCUDACXX_CONSTEXPR const _Tp      value = __v;
   typedef _Tp               value_type;
   typedef integral_constant type;
-  _LIBCPP_INLINE_VISIBILITY
-  _LIBCPP_CONSTEXPR operator value_type() const _NOEXCEPT {return value;}
-#if _LIBCPP_STD_VER > 11
-  _LIBCPP_INLINE_VISIBILITY
+  _LIBCUDACXX_INLINE_VISIBILITY
+  _LIBCUDACXX_CONSTEXPR operator value_type() const _NOEXCEPT {return value;}
+#if _LIBCUDACXX_STD_VER > 11
+  _LIBCUDACXX_INLINE_VISIBILITY
   constexpr value_type operator ()() const _NOEXCEPT {return value;}
 #endif
 };
 
 template <class _Tp, _Tp __v>
-_LIBCPP_CONSTEXPR const _Tp integral_constant<_Tp, __v>::value;
+_LIBCUDACXX_CONSTEXPR const _Tp integral_constant<_Tp, __v>::value;
 
 typedef integral_constant<bool, true>  true_type;
 typedef integral_constant<bool, false> false_type;
 
 template <bool _Val>
-using _BoolConstant _LIBCPP_NODEBUG = integral_constant<bool, _Val>;
+using _BoolConstant _LIBCUDACXX_NODEBUG = integral_constant<bool, _Val>;
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <bool __b>
 using bool_constant = integral_constant<bool, __b>;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_INTEGRAL_CONSTANT_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_INTEGRAL_CONSTANT_H

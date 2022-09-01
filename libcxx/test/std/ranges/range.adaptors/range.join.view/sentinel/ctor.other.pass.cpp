@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // constexpr sentinel(sentinel<!Const> s);
 //             requires Const && convertible_­to<sentinel_t<V>, sentinel_t<Base>>;
@@ -46,7 +46,7 @@ struct ConstConveritbleView : BufferView<BufferView<int*>*> {
 static_assert(!std::ranges::common_range<ConstConveritbleView>);
 static_assert(std::convertible_to<std::ranges::sentinel_t<ConstConveritbleView>,
                                   std::ranges::sentinel_t<ConstConveritbleView const>>);
-LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<ConstConveritbleView>);
+LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<ConstConveritbleView>);
 
 constexpr bool test() {
   int buffer[4][4] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}};

@@ -6,20 +6,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___MEMORY_ALLOCATE_AT_LEAST_H
-#define _LIBCPP___MEMORY_ALLOCATE_AT_LEAST_H
+#ifndef _LIBCUDACXX___MEMORY_ALLOCATE_AT_LEAST_H
+#define _LIBCUDACXX___MEMORY_ALLOCATE_AT_LEAST_H
 
 #include <__config>
 #include <__memory/allocator_traits.h>
 #include <cstddef>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 20
+#if _LIBCUDACXX_STD_VER > 20
 template <class _Pointer>
 struct allocation_result {
   _Pointer ptr;
@@ -27,7 +27,7 @@ struct allocation_result {
 };
 
 template <class _Alloc>
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr
 allocation_result<typename allocator_traits<_Alloc>::pointer> allocate_at_least(_Alloc& __alloc, size_t __n) {
   if constexpr (requires { __alloc.allocate_at_least(__n); }) {
     return __alloc.allocate_at_least(__n);
@@ -37,7 +37,7 @@ allocation_result<typename allocator_traits<_Alloc>::pointer> allocate_at_least(
 }
 
 template <class _Alloc>
-[[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr
 auto __allocate_at_least(_Alloc& __alloc, size_t __n) {
   return std::allocate_at_least(__alloc, __n);
 }
@@ -49,13 +49,13 @@ struct __allocation_result {
 };
 
 template <class _Alloc>
-_LIBCPP_NODISCARD _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR
+_LIBCUDACXX_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR
 __allocation_result<typename allocator_traits<_Alloc>::pointer> __allocate_at_least(_Alloc& __alloc, size_t __n) {
   return {__alloc.allocate(__n), __n};
 }
 
-#endif // _LIBCPP_STD_VER > 20
+#endif // _LIBCUDACXX_STD_VER > 20
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___MEMORY_ALLOCATE_AT_LEAST_H
+#endif // _LIBCUDACXX___MEMORY_ALLOCATE_AT_LEAST_H

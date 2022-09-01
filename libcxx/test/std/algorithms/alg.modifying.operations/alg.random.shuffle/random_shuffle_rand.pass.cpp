@@ -15,7 +15,7 @@
 //   random_shuffle(Iter first, Iter last, Rand&& rand);
 
 // REQUIRES: c++03 || c++11 || c++14
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS
 
 #include <algorithm>
 #include <cassert>
@@ -45,7 +45,7 @@ test_with_iterator()
     gen r;
 
     std::random_shuffle(ia, ia+sa, r);
-    LIBCPP_ASSERT(std::equal(ia, ia+sa, ia1));
+    LIBCUDACXX_ASSERT(std::equal(ia, ia+sa, ia1));
     assert(std::is_permutation(ia, ia+sa, ia1));
 
     std::random_shuffle(ia, ia+sa, r);

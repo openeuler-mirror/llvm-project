@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // std::ranges::rbegin
 // std::ranges::crbegin
@@ -46,16 +46,16 @@ static_assert(!std::is_invocable_v<RangeCRBeginT, Incomplete(&&)[10]>);
 static_assert(!std::is_invocable_v<RangeCRBeginT, const Incomplete(&&)[10]>);
 
 // This case is IFNDR; we handle it SFINAE-friendly.
-LIBCPP_STATIC_ASSERT(!std::is_invocable_v<RangeRBeginT, Incomplete(&)[]>);
-LIBCPP_STATIC_ASSERT(!std::is_invocable_v<RangeRBeginT, const Incomplete(&)[]>);
-LIBCPP_STATIC_ASSERT(!std::is_invocable_v<RangeCRBeginT, Incomplete(&)[]>);
-LIBCPP_STATIC_ASSERT(!std::is_invocable_v<RangeCRBeginT, const Incomplete(&)[]>);
+LIBCUDACXX_STATIC_ASSERT(!std::is_invocable_v<RangeRBeginT, Incomplete(&)[]>);
+LIBCUDACXX_STATIC_ASSERT(!std::is_invocable_v<RangeRBeginT, const Incomplete(&)[]>);
+LIBCUDACXX_STATIC_ASSERT(!std::is_invocable_v<RangeCRBeginT, Incomplete(&)[]>);
+LIBCUDACXX_STATIC_ASSERT(!std::is_invocable_v<RangeCRBeginT, const Incomplete(&)[]>);
 
 // This case is IFNDR; we handle it SFINAE-friendly.
-LIBCPP_STATIC_ASSERT(!std::is_invocable_v<RangeRBeginT, Incomplete(&)[10]>);
-LIBCPP_STATIC_ASSERT(!std::is_invocable_v<RangeRBeginT, const Incomplete(&)[10]>);
-LIBCPP_STATIC_ASSERT(!std::is_invocable_v<RangeCRBeginT, Incomplete(&)[10]>);
-LIBCPP_STATIC_ASSERT(!std::is_invocable_v<RangeCRBeginT, const Incomplete(&)[10]>);
+LIBCUDACXX_STATIC_ASSERT(!std::is_invocable_v<RangeRBeginT, Incomplete(&)[10]>);
+LIBCUDACXX_STATIC_ASSERT(!std::is_invocable_v<RangeRBeginT, const Incomplete(&)[10]>);
+LIBCUDACXX_STATIC_ASSERT(!std::is_invocable_v<RangeCRBeginT, Incomplete(&)[10]>);
+LIBCUDACXX_STATIC_ASSERT(!std::is_invocable_v<RangeCRBeginT, const Incomplete(&)[10]>);
 
 struct RBeginMember {
   int x;

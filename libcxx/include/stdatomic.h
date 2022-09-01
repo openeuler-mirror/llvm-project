@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_STDATOMIC_H
-#define _LIBCPP_STDATOMIC_H
+#ifndef _LIBCUDACXX_STDATOMIC_H
+#define _LIBCUDACXX_STDATOMIC_H
 
 /*
     stdatomic.h synopsis
@@ -117,11 +117,11 @@ using std::atomic_signal_fence                         // see below
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 20
+#if _LIBCUDACXX_STD_VER > 20
 
 #include <atomic>
 #include <version>
@@ -132,95 +132,95 @@ using std::atomic_signal_fence                         // see below
 
 #define _Atomic(_Tp) ::std::atomic<_Tp>
 
-using std::memory_order _LIBCPP_USING_IF_EXISTS;
-using std::memory_order_relaxed _LIBCPP_USING_IF_EXISTS;
-using std::memory_order_consume _LIBCPP_USING_IF_EXISTS;
-using std::memory_order_acquire _LIBCPP_USING_IF_EXISTS;
-using std::memory_order_release _LIBCPP_USING_IF_EXISTS;
-using std::memory_order_acq_rel _LIBCPP_USING_IF_EXISTS;
-using std::memory_order_seq_cst _LIBCPP_USING_IF_EXISTS;
+using std::memory_order _LIBCUDACXX_USING_IF_EXISTS;
+using std::memory_order_relaxed _LIBCUDACXX_USING_IF_EXISTS;
+using std::memory_order_consume _LIBCUDACXX_USING_IF_EXISTS;
+using std::memory_order_acquire _LIBCUDACXX_USING_IF_EXISTS;
+using std::memory_order_release _LIBCUDACXX_USING_IF_EXISTS;
+using std::memory_order_acq_rel _LIBCUDACXX_USING_IF_EXISTS;
+using std::memory_order_seq_cst _LIBCUDACXX_USING_IF_EXISTS;
 
-using std::atomic_flag _LIBCPP_USING_IF_EXISTS;
+using std::atomic_flag _LIBCUDACXX_USING_IF_EXISTS;
 
-using std::atomic_bool _LIBCPP_USING_IF_EXISTS;
-using std::atomic_char _LIBCPP_USING_IF_EXISTS;
-using std::atomic_schar _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uchar _LIBCPP_USING_IF_EXISTS;
-using std::atomic_short _LIBCPP_USING_IF_EXISTS;
-using std::atomic_ushort _LIBCPP_USING_IF_EXISTS;
-using std::atomic_int _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint _LIBCPP_USING_IF_EXISTS;
-using std::atomic_long _LIBCPP_USING_IF_EXISTS;
-using std::atomic_ulong _LIBCPP_USING_IF_EXISTS;
-using std::atomic_llong _LIBCPP_USING_IF_EXISTS;
-using std::atomic_ullong _LIBCPP_USING_IF_EXISTS;
-using std::atomic_char8_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_char16_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_char32_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_wchar_t _LIBCPP_USING_IF_EXISTS;
+using std::atomic_bool _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_char _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_schar _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uchar _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_short _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_ushort _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_int _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_long _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_ulong _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_llong _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_ullong _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_char8_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_char16_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_char32_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_wchar_t _LIBCUDACXX_USING_IF_EXISTS;
 
-using std::atomic_int8_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint8_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_int16_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint16_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_int32_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint32_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_int64_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint64_t _LIBCPP_USING_IF_EXISTS;
+using std::atomic_int8_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint8_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_int16_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint16_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_int32_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint32_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_int64_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint64_t _LIBCUDACXX_USING_IF_EXISTS;
 
-using std::atomic_int_least8_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint_least8_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_int_least16_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint_least16_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_int_least32_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint_least32_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_int_least64_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint_least64_t _LIBCPP_USING_IF_EXISTS;
+using std::atomic_int_least8_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint_least8_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_int_least16_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint_least16_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_int_least32_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint_least32_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_int_least64_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint_least64_t _LIBCUDACXX_USING_IF_EXISTS;
 
-using std::atomic_int_fast8_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint_fast8_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_int_fast16_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint_fast16_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_int_fast32_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint_fast32_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_int_fast64_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uint_fast64_t _LIBCPP_USING_IF_EXISTS;
+using std::atomic_int_fast8_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint_fast8_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_int_fast16_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint_fast16_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_int_fast32_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint_fast32_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_int_fast64_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uint_fast64_t _LIBCUDACXX_USING_IF_EXISTS;
 
-using std::atomic_intptr_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uintptr_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_size_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_ptrdiff_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_intmax_t _LIBCPP_USING_IF_EXISTS;
-using std::atomic_uintmax_t _LIBCPP_USING_IF_EXISTS;
+using std::atomic_intptr_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uintptr_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_size_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_ptrdiff_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_intmax_t _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_uintmax_t _LIBCUDACXX_USING_IF_EXISTS;
 
-using std::atomic_compare_exchange_strong _LIBCPP_USING_IF_EXISTS;
-using std::atomic_compare_exchange_strong_explicit _LIBCPP_USING_IF_EXISTS;
-using std::atomic_compare_exchange_weak _LIBCPP_USING_IF_EXISTS;
-using std::atomic_compare_exchange_weak_explicit _LIBCPP_USING_IF_EXISTS;
-using std::atomic_exchange _LIBCPP_USING_IF_EXISTS;
-using std::atomic_exchange_explicit _LIBCPP_USING_IF_EXISTS;
-using std::atomic_fetch_add _LIBCPP_USING_IF_EXISTS;
-using std::atomic_fetch_add_explicit _LIBCPP_USING_IF_EXISTS;
-using std::atomic_fetch_and _LIBCPP_USING_IF_EXISTS;
-using std::atomic_fetch_and_explicit _LIBCPP_USING_IF_EXISTS;
-using std::atomic_fetch_or _LIBCPP_USING_IF_EXISTS;
-using std::atomic_fetch_or_explicit _LIBCPP_USING_IF_EXISTS;
-using std::atomic_fetch_sub _LIBCPP_USING_IF_EXISTS;
-using std::atomic_fetch_sub_explicit _LIBCPP_USING_IF_EXISTS;
-using std::atomic_flag_clear _LIBCPP_USING_IF_EXISTS;
-using std::atomic_flag_clear_explicit _LIBCPP_USING_IF_EXISTS;
-using std::atomic_flag_test_and_set _LIBCPP_USING_IF_EXISTS;
-using std::atomic_flag_test_and_set_explicit _LIBCPP_USING_IF_EXISTS;
-using std::atomic_is_lock_free _LIBCPP_USING_IF_EXISTS;
-using std::atomic_load _LIBCPP_USING_IF_EXISTS;
-using std::atomic_load_explicit _LIBCPP_USING_IF_EXISTS;
-using std::atomic_store _LIBCPP_USING_IF_EXISTS;
-using std::atomic_store_explicit _LIBCPP_USING_IF_EXISTS;
+using std::atomic_compare_exchange_strong _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_compare_exchange_strong_explicit _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_compare_exchange_weak _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_compare_exchange_weak_explicit _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_exchange _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_exchange_explicit _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_fetch_add _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_fetch_add_explicit _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_fetch_and _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_fetch_and_explicit _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_fetch_or _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_fetch_or_explicit _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_fetch_sub _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_fetch_sub_explicit _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_flag_clear _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_flag_clear_explicit _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_flag_test_and_set _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_flag_test_and_set_explicit _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_is_lock_free _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_load _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_load_explicit _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_store _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_store_explicit _LIBCUDACXX_USING_IF_EXISTS;
 
-using std::atomic_signal_fence _LIBCPP_USING_IF_EXISTS;
-using std::atomic_thread_fence _LIBCPP_USING_IF_EXISTS;
+using std::atomic_signal_fence _LIBCUDACXX_USING_IF_EXISTS;
+using std::atomic_thread_fence _LIBCUDACXX_USING_IF_EXISTS;
 
-#elif defined(_LIBCPP_COMPILER_CLANG_BASED)
+#elif defined(_LIBCUDACXX_COMPILER_CLANG_BASED)
 
 // Before C++23, we include the next <stdatomic.h> on the path to avoid hijacking
 // the header. We do this because Clang has historically shipped a <stdatomic.h>
@@ -230,6 +230,6 @@ using std::atomic_thread_fence _LIBCPP_USING_IF_EXISTS;
 #   include_next <stdatomic.h>
 # endif
 
-#endif // _LIBCPP_STD_VER > 20
+#endif // _LIBCUDACXX_STD_VER > 20
 
-#endif // _LIBCPP_STDATOMIC_H
+#endif // _LIBCUDACXX_STDATOMIC_H

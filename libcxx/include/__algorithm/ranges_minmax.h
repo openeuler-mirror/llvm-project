@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_MINMAX_H
-#define _LIBCPP___ALGORITHM_RANGES_MINMAX_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_MINMAX_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_MINMAX_H
 
 #include <__algorithm/min_max_result.h>
 #include <__algorithm/minmax_element.h>
@@ -25,16 +25,16 @@
 #include <__utility/move.h>
 #include <initializer_list>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 template <class _T1>
@@ -44,7 +44,7 @@ namespace __minmax {
 struct __fn {
   template <class _Type, class _Proj = identity,
             indirect_strict_weak_order<projected<const _Type*, _Proj>> _Comp = ranges::less>
-  _LIBCPP_HIDE_FROM_ABI constexpr ranges::minmax_result<const _Type&>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr ranges::minmax_result<const _Type&>
   operator()(const _Type& __a, const _Type& __b, _Comp __comp = {}, _Proj __proj = {}) const {
     if (std::invoke(__comp, std::invoke(__proj, __b), std::invoke(__proj, __a)))
       return {__b, __a};
@@ -53,9 +53,9 @@ struct __fn {
 
   template <copyable _Type, class _Proj = identity,
             indirect_strict_weak_order<projected<const _Type*, _Proj>> _Comp = ranges::less>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   ranges::minmax_result<_Type> operator()(initializer_list<_Type> __il, _Comp __comp = {}, _Proj __proj = {}) const {
-    _LIBCPP_ASSERT(__il.begin() != __il.end(), "initializer_list has to contain at least one element");
+    _LIBCUDACXX_ASSERT(__il.begin() != __il.end(), "initializer_list has to contain at least one element");
     auto __iters = std::__minmax_element_impl(__il.begin(), __il.end(), __comp, __proj);
     return ranges::minmax_result<_Type> { *__iters.first, *__iters.second };
   }
@@ -63,13 +63,13 @@ struct __fn {
   template <input_range _Range, class _Proj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>> _Comp = ranges::less>
     requires indirectly_copyable_storable<iterator_t<_Range>, range_value_t<_Range>*>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   ranges::minmax_result<range_value_t<_Range>> operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const {
     auto __first = ranges::begin(__r);
     auto __last = ranges::end(__r);
     using _ValueT = range_value_t<_Range>;
 
-    _LIBCPP_ASSERT(__first != __last, "range has to contain at least one element");
+    _LIBCUDACXX_ASSERT(__first != __last, "range has to contain at least one element");
 
     if constexpr (forward_range<_Range>) {
       auto __result = std::__minmax_element_impl(__first, __last, __comp, __proj);
@@ -124,10 +124,10 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_MINMAX_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_MINMAX_H

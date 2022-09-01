@@ -18,9 +18,9 @@
 #include <valarray>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_VALARRAY)
- #   error "<valarray> was expected to define _LIBCPP_VALARRAY"
+#if !defined(_LIBCUDACXX_VALARRAY)
+ #   error "<valarray> was expected to define _LIBCUDACXX_VALARRAY"
 #endif
-#if TEST_STD_VER > 03 && !defined(_LIBCPP_INITIALIZER_LIST)
+#if TEST_STD_VER > 03 && !defined(_LIBCUDACXX_INITIALIZER_LIST)
  #   error "<valarray> should include <initializer_list> in C++11 and later"
 #endif

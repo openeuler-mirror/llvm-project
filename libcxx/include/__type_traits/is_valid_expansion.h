@@ -6,17 +6,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_VALID_EXPANSION_H
-#define _LIBCPP___TYPE_TRAITS_IS_VALID_EXPANSION_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_VALID_EXPANSION_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_VALID_EXPANSION_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <template <class...> class _Templ, class ..._Args, class = _Templ<_Args...> >
 true_type __sfinae_test_impl(int);
@@ -24,8 +24,8 @@ template <template <class...> class, class ...>
 false_type __sfinae_test_impl(...);
 
 template <template <class ...> class _Templ, class ..._Args>
-using _IsValidExpansion _LIBCPP_NODEBUG = decltype(__sfinae_test_impl<_Templ, _Args...>(0));
+using _IsValidExpansion _LIBCUDACXX_NODEBUG = decltype(__sfinae_test_impl<_Templ, _Args...>(0));
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_VALID_EXPANSION_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_VALID_EXPANSION_H

@@ -11,7 +11,7 @@
 // Call erase(const_iterator position) with invalid iterators
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <unordered_map>
 
@@ -24,7 +24,7 @@ int main(int, char**) {
         P a1[] = {P(1, 1), P(2, 2), P(3, 3)};
         std::unordered_map<int, int> l1(a1, a1+3);
         std::unordered_map<int, int>::const_iterator i = l1.end();
-        TEST_LIBCPP_ASSERT_FAILURE(l1.erase(i),
+        TEST_LIBCUDACXX_ASSERT_FAILURE(l1.erase(i),
                                 "unordered container erase(iterator) called with a non-dereferenceable iterator");
     }
 
@@ -35,7 +35,7 @@ int main(int, char**) {
         std::unordered_map<int, int> l1(a1, a1+3);
         std::unordered_map<int, int> l2(a1, a1+3);
         std::unordered_map<int, int>::const_iterator i = l2.begin();
-        TEST_LIBCPP_ASSERT_FAILURE(
+        TEST_LIBCUDACXX_ASSERT_FAILURE(
             l1.erase(i), "unordered container erase(iterator) called with an iterator not referring to this container");
     }
 

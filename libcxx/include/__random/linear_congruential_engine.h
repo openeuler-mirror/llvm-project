@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_LINEAR_CONGRUENTIAL_ENGINE_H
-#define _LIBCPP___RANDOM_LINEAR_CONGRUENTIAL_ENGINE_H
+#ifndef _LIBCUDACXX___RANDOM_LINEAR_CONGRUENTIAL_ENGINE_H
+#define _LIBCUDACXX___RANDOM_LINEAR_CONGRUENTIAL_ENGINE_H
 
 #include <__config>
 #include <__random/is_seed_sequence.h>
@@ -15,14 +15,14 @@
 #include <iosfwd>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <unsigned long long __a, unsigned long long __c,
           unsigned long long __m, unsigned long long _Mp,
@@ -35,7 +35,7 @@ struct __lce_alg_picker
                   "The current values of a, c, and m cannot generate a number "
                   "within bounds of linear_congruential_engine.");
 
-    static _LIBCPP_CONSTEXPR const bool __use_schrage = _MightOverflow &&
+    static _LIBCUDACXX_CONSTEXPR const bool __use_schrage = _MightOverflow &&
                                                         !_OverflowOK &&
                                                         _SchrageOK;
 };
@@ -51,7 +51,7 @@ template <unsigned long long __a, unsigned long long __c, unsigned long long __m
 struct __lce_ta<__a, __c, __m, (unsigned long long)(~0), true>
 {
     typedef unsigned long long result_type;
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     static result_type next(result_type __x)
     {
         // Schrage's algorithm
@@ -69,7 +69,7 @@ template <unsigned long long __a, unsigned long long __m>
 struct __lce_ta<__a, 0, __m, (unsigned long long)(~0), true>
 {
     typedef unsigned long long result_type;
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     static result_type next(result_type __x)
     {
         // Schrage's algorithm
@@ -86,7 +86,7 @@ template <unsigned long long __a, unsigned long long __c, unsigned long long __m
 struct __lce_ta<__a, __c, __m, (unsigned long long)(~0), false>
 {
     typedef unsigned long long result_type;
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     static result_type next(result_type __x)
     {
         return (__a * __x + __c) % __m;
@@ -97,7 +97,7 @@ template <unsigned long long __a, unsigned long long __c>
 struct __lce_ta<__a, __c, 0, (unsigned long long)(~0), false>
 {
     typedef unsigned long long result_type;
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     static result_type next(result_type __x)
     {
         return __a * __x + __c;
@@ -110,7 +110,7 @@ template <unsigned long long _Ap, unsigned long long _Cp, unsigned long long _Mp
 struct __lce_ta<_Ap, _Cp, _Mp, unsigned(~0), true>
 {
     typedef unsigned result_type;
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     static result_type next(result_type __x)
     {
         const result_type __a = static_cast<result_type>(_Ap);
@@ -131,7 +131,7 @@ template <unsigned long long _Ap, unsigned long long _Mp>
 struct __lce_ta<_Ap, 0, _Mp, unsigned(~0), true>
 {
     typedef unsigned result_type;
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     static result_type next(result_type __x)
     {
         const result_type __a = static_cast<result_type>(_Ap);
@@ -150,7 +150,7 @@ template <unsigned long long _Ap, unsigned long long _Cp, unsigned long long _Mp
 struct __lce_ta<_Ap, _Cp, _Mp, unsigned(~0), false>
 {
     typedef unsigned result_type;
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     static result_type next(result_type __x)
     {
         const result_type __a = static_cast<result_type>(_Ap);
@@ -164,7 +164,7 @@ template <unsigned long long _Ap, unsigned long long _Cp>
 struct __lce_ta<_Ap, _Cp, 0, unsigned(~0), false>
 {
     typedef unsigned result_type;
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     static result_type next(result_type __x)
     {
         const result_type __a = static_cast<result_type>(_Ap);
@@ -179,7 +179,7 @@ template <unsigned long long __a, unsigned long long __c, unsigned long long __m
 struct __lce_ta<__a, __c, __m, (unsigned short)(~0), __b>
 {
     typedef unsigned short result_type;
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     static result_type next(result_type __x)
     {
         return static_cast<result_type>(__lce_ta<__a, __c, __m, unsigned(~0)>::next(__x));
@@ -187,11 +187,11 @@ struct __lce_ta<__a, __c, __m, (unsigned short)(~0), __b>
 };
 
 template <class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-class _LIBCPP_TEMPLATE_VIS linear_congruential_engine;
+class _LIBCUDACXX_TEMPLATE_VIS linear_congruential_engine;
 
 template <class _CharT, class _Traits,
           class _Up, _Up _Ap, _Up _Cp, _Up _Np>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 basic_ostream<_CharT, _Traits>&
 operator<<(basic_ostream<_CharT, _Traits>& __os,
            const linear_congruential_engine<_Up, _Ap, _Cp, _Np>&);
@@ -203,7 +203,7 @@ operator>>(basic_istream<_CharT, _Traits>& __is,
            linear_congruential_engine<_Up, _Ap, _Cp, _Np>& __x);
 
 template <class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-class _LIBCPP_TEMPLATE_VIS linear_congruential_engine
+class _LIBCUDACXX_TEMPLATE_VIS linear_congruential_engine
 {
 public:
     // types
@@ -212,49 +212,49 @@ public:
 private:
     result_type __x_;
 
-    static _LIBCPP_CONSTEXPR const result_type _Mp = result_type(~0);
+    static _LIBCUDACXX_CONSTEXPR const result_type _Mp = result_type(~0);
 
     static_assert(__m == 0 || __a < __m, "linear_congruential_engine invalid parameters");
     static_assert(__m == 0 || __c < __m, "linear_congruential_engine invalid parameters");
     static_assert(is_unsigned<_UIntType>::value, "_UIntType must be unsigned type");
 public:
-    static _LIBCPP_CONSTEXPR const result_type _Min = __c == 0u ? 1u : 0u;
-    static _LIBCPP_CONSTEXPR const result_type _Max = __m - _UIntType(1u);
+    static _LIBCUDACXX_CONSTEXPR const result_type _Min = __c == 0u ? 1u : 0u;
+    static _LIBCUDACXX_CONSTEXPR const result_type _Max = __m - _UIntType(1u);
     static_assert(_Min < _Max,           "linear_congruential_engine invalid parameters");
 
     // engine characteristics
-    static _LIBCPP_CONSTEXPR const result_type multiplier = __a;
-    static _LIBCPP_CONSTEXPR const result_type increment = __c;
-    static _LIBCPP_CONSTEXPR const result_type modulus = __m;
-    _LIBCPP_INLINE_VISIBILITY
-    static _LIBCPP_CONSTEXPR result_type min() {return _Min;}
-    _LIBCPP_INLINE_VISIBILITY
-    static _LIBCPP_CONSTEXPR result_type max() {return _Max;}
-    static _LIBCPP_CONSTEXPR const result_type default_seed = 1u;
+    static _LIBCUDACXX_CONSTEXPR const result_type multiplier = __a;
+    static _LIBCUDACXX_CONSTEXPR const result_type increment = __c;
+    static _LIBCUDACXX_CONSTEXPR const result_type modulus = __m;
+    _LIBCUDACXX_INLINE_VISIBILITY
+    static _LIBCUDACXX_CONSTEXPR result_type min() {return _Min;}
+    _LIBCUDACXX_INLINE_VISIBILITY
+    static _LIBCUDACXX_CONSTEXPR result_type max() {return _Max;}
+    static _LIBCUDACXX_CONSTEXPR const result_type default_seed = 1u;
 
     // constructors and seeding functions
-#ifndef _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
     linear_congruential_engine() : linear_congruential_engine(default_seed) {}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit linear_congruential_engine(result_type __s) { seed(__s); }
 #else
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     explicit linear_congruential_engine(result_type __s = default_seed) {
       seed(__s);
     }
 #endif
     template<class _Sseq>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         explicit linear_congruential_engine(_Sseq& __q,
         typename enable_if<__is_seed_sequence<_Sseq, linear_congruential_engine>::value>::type* = 0)
         {seed(__q);}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void seed(result_type __s = default_seed)
         {seed(integral_constant<bool, __m == 0>(),
               integral_constant<bool, __c == 0>(), __s);}
     template<class _Sseq>
-        _LIBCPP_INLINE_VISIBILITY
+        _LIBCUDACXX_INLINE_VISIBILITY
         typename enable_if
         <
             __is_seed_sequence<_Sseq, linear_congruential_engine>::value,
@@ -266,31 +266,31 @@ public:
                              :  (__m > 0x100000000ull))>());}
 
     // generating functions
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     result_type operator()()
         {return __x_ = static_cast<result_type>(__lce_ta<__a, __c, __m, _Mp>::next(__x_));}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void discard(unsigned long long __z) {for (; __z; --__z) operator()();}
 
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
     bool operator==(const linear_congruential_engine& __x,
                     const linear_congruential_engine& __y)
         {return __x.__x_ == __y.__x_;}
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
     bool operator!=(const linear_congruential_engine& __x,
                     const linear_congruential_engine& __y)
         {return !(__x == __y);}
 
 private:
 
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void seed(true_type, true_type, result_type __s) {__x_ = __s == 0 ? 1 : __s;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void seed(true_type, false_type, result_type __s) {__x_ = __s;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void seed(false_type, true_type, result_type __s) {__x_ = __s % __m == 0 ?
                                                                  1 : __s % __m;}
-    _LIBCPP_INLINE_VISIBILITY
+    _LIBCUDACXX_INLINE_VISIBILITY
     void seed(false_type, false_type, result_type __s) {__x_ = __s % __m;}
 
     template<class _Sseq>
@@ -314,19 +314,19 @@ private:
 };
 
 template <class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-    _LIBCPP_CONSTEXPR const typename linear_congruential_engine<_UIntType, __a, __c, __m>::result_type
+    _LIBCUDACXX_CONSTEXPR const typename linear_congruential_engine<_UIntType, __a, __c, __m>::result_type
     linear_congruential_engine<_UIntType, __a, __c, __m>::multiplier;
 
 template <class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-    _LIBCPP_CONSTEXPR const typename linear_congruential_engine<_UIntType, __a, __c, __m>::result_type
+    _LIBCUDACXX_CONSTEXPR const typename linear_congruential_engine<_UIntType, __a, __c, __m>::result_type
     linear_congruential_engine<_UIntType, __a, __c, __m>::increment;
 
 template <class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-    _LIBCPP_CONSTEXPR const typename linear_congruential_engine<_UIntType, __a, __c, __m>::result_type
+    _LIBCUDACXX_CONSTEXPR const typename linear_congruential_engine<_UIntType, __a, __c, __m>::result_type
     linear_congruential_engine<_UIntType, __a, __c, __m>::modulus;
 
 template <class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-    _LIBCPP_CONSTEXPR const typename linear_congruential_engine<_UIntType, __a, __c, __m>::result_type
+    _LIBCUDACXX_CONSTEXPR const typename linear_congruential_engine<_UIntType, __a, __c, __m>::result_type
     linear_congruential_engine<_UIntType, __a, __c, __m>::default_seed;
 
 template <class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
@@ -358,7 +358,7 @@ linear_congruential_engine<_UIntType, __a, __c, __m>::__seed(_Sseq& __q,
 
 template <class _CharT, class _Traits,
           class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 basic_ostream<_CharT, _Traits>&
 operator<<(basic_ostream<_CharT, _Traits>& __os,
            const linear_congruential_engine<_UIntType, __a, __c, __m>& __x)
@@ -391,8 +391,8 @@ typedef linear_congruential_engine<uint_fast32_t, 16807, 0, 2147483647>
 typedef linear_congruential_engine<uint_fast32_t, 48271, 0, 2147483647>
                                                                     minstd_rand;
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_LINEAR_CONGRUENTIAL_ENGINE_H
+#endif // _LIBCUDACXX___RANDOM_LINEAR_CONGRUENTIAL_ENGINE_H

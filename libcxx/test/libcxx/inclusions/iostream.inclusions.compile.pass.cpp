@@ -20,18 +20,18 @@
 #include <iostream>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_IOSTREAM)
- #   error "<iostream> was expected to define _LIBCPP_IOSTREAM"
+#if !defined(_LIBCUDACXX_IOSTREAM)
+ #   error "<iostream> was expected to define _LIBCUDACXX_IOSTREAM"
 #endif
-#if !defined(_LIBCPP_IOS)
+#if !defined(_LIBCUDACXX_IOS)
  #   error "<iostream> should include <ios> in C++03 and later"
 #endif
-#if !defined(_LIBCPP_ISTREAM)
+#if !defined(_LIBCUDACXX_ISTREAM)
  #   error "<iostream> should include <istream> in C++03 and later"
 #endif
-#if !defined(_LIBCPP_OSTREAM)
+#if !defined(_LIBCUDACXX_OSTREAM)
  #   error "<iostream> should include <ostream> in C++03 and later"
 #endif
-#if !defined(_LIBCPP_STREAMBUF)
+#if !defined(_LIBCUDACXX_STREAMBUF)
  #   error "<iostream> should include <streambuf> in C++03 and later"
 #endif

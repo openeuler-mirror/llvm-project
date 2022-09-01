@@ -31,7 +31,7 @@ test(It first, It last)
     typedef std::basic_string<charT, std::char_traits<charT>, test_allocator<charT> > S;
     typedef typename S::allocator_type A;
     S s2(first, last);
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s2.size() == static_cast<std::size_t>(std::distance(first, last)));
     unsigned i = 0;
     for (It it = first; it != last;) {
@@ -50,7 +50,7 @@ test(It first, It last, const A& a)
     typedef typename std::iterator_traits<It>::value_type charT;
     typedef std::basic_string<charT, std::char_traits<charT>, A> S;
     S s2(first, last, a);
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s2.size() == static_cast<std::size_t>(std::distance(first, last)));
     unsigned i = 0;
     for (It it = first; it != last;) {

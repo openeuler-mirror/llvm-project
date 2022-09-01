@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_SORTABLE_H
-#define _LIBCPP___ITERATOR_SORTABLE_H
+#ifndef _LIBCUDACXX___ITERATOR_SORTABLE_H
+#define _LIBCUDACXX___ITERATOR_SORTABLE_H
 
 #include <__config>
 #include <__functional/identity.h>
@@ -17,21 +17,21 @@
 #include <__iterator/permutable.h>
 #include <__iterator/projected.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <class _Iter, class _Comp = ranges::less, class _Proj = identity>
 concept sortable =
   permutable<_Iter> &&
   indirect_strict_weak_order<_Comp, projected<_Iter, _Proj>>;
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_SORTABLE_H
+#endif // _LIBCUDACXX___ITERATOR_SORTABLE_H

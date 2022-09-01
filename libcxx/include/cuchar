@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_CUCHAR
-#define _LIBCPP_CUCHAR
+#ifndef _LIBCUDACXX_CUCHAR
+#define _LIBCUDACXX_CUCHAR
 
 /*
     cuchar synopsis // since C++11
@@ -38,24 +38,24 @@ size_t c32rtomb(char* s, char32_t c32, mbstate_t* ps);
 #include <__config>
 #include <uchar.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if !defined(_LIBCPP_CXX03_LANG)
+#if !defined(_LIBCUDACXX_CXX03_LANG)
 
-using ::mbstate_t _LIBCPP_USING_IF_EXISTS;
-using ::size_t _LIBCPP_USING_IF_EXISTS;
+using ::mbstate_t _LIBCUDACXX_USING_IF_EXISTS;
+using ::size_t _LIBCUDACXX_USING_IF_EXISTS;
 
-using ::mbrtoc16 _LIBCPP_USING_IF_EXISTS;
-using ::c16rtomb _LIBCPP_USING_IF_EXISTS;
-using ::mbrtoc32 _LIBCPP_USING_IF_EXISTS;
-using ::c32rtomb _LIBCPP_USING_IF_EXISTS;
+using ::mbrtoc16 _LIBCUDACXX_USING_IF_EXISTS;
+using ::c16rtomb _LIBCUDACXX_USING_IF_EXISTS;
+using ::mbrtoc32 _LIBCUDACXX_USING_IF_EXISTS;
+using ::c32rtomb _LIBCUDACXX_USING_IF_EXISTS;
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif  // _LIBCPP_CUCHAR
+#endif  // _LIBCUDACXX_CUCHAR

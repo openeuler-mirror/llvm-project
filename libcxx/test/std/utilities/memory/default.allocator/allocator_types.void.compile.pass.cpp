@@ -23,7 +23,7 @@
 //     template <class _Up> struct rebind {typedef allocator<_Up> other;};
 // };
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS
 
 #include <memory>
 #include <type_traits>

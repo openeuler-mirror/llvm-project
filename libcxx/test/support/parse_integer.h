@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LIBCPP_TEST_SUPPORT_PARSE_INTEGER_H
-#define LIBCPP_TEST_SUPPORT_PARSE_INTEGER_H
+#ifndef LIBCUDACXX_TEST_SUPPORT_PARSE_INTEGER_H
+#define LIBCUDACXX_TEST_SUPPORT_PARSE_INTEGER_H
 
 #include <string>
 
@@ -69,4 +69,4 @@ T parse_integer(std::basic_string<CharT> const& str) {
     return detail::parse_integer_impl<T>()(str);
 }
 
-#endif // LIBCPP_TEST_SUPPORT_PARSE_INTEGER_H
+#endif // LIBCUDACXX_TEST_SUPPORT_PARSE_INTEGER_H

@@ -10,7 +10,7 @@
 #ifndef SUPPORT_TEST_MACROS_HPP
 #define SUPPORT_TEST_MACROS_HPP
 
-// Attempt to get STL specific macros like _LIBCPP_VERSION using the most
+// Attempt to get STL specific macros like _LIBCUDACXX_VERSION using the most
 // minimal header possible. If we're testing libc++, we should use `<__config>`.
 // If <__config> isn't available, fall back to <ciso646>.
 #ifdef __has_include
@@ -100,7 +100,7 @@
 # define TEST_STD_VER 20
 #else
 # define TEST_STD_VER 99    // greater than current standard
-// This is deliberately different than _LIBCPP_STD_VER to discourage matching them up.
+// This is deliberately different than _LIBCUDACXX_STD_VER to discourage matching them up.
 #endif
 #endif
 
@@ -189,13 +189,13 @@
 #define TEST_HAS_SANITIZERS
 #endif
 
-#if defined(_LIBCPP_NORETURN)
-#define TEST_NORETURN _LIBCPP_NORETURN
+#if defined(_LIBCUDACXX_NORETURN)
+#define TEST_NORETURN _LIBCUDACXX_NORETURN
 #else
 #define TEST_NORETURN [[noreturn]]
 #endif
 
-#if defined(_LIBCPP_HAS_NO_ALIGNED_ALLOCATION) || \
+#if defined(_LIBCUDACXX_HAS_NO_ALIGNED_ALLOCATION) || \
   (!(TEST_STD_VER > 14 || \
     (defined(__cpp_aligned_new) && __cpp_aligned_new >= 201606L)))
 #define TEST_HAS_NO_ALIGNED_ALLOCATION
@@ -203,8 +203,8 @@
 
 #if TEST_STD_VER > 17
 #define TEST_CONSTINIT constinit
-#elif defined(_LIBCPP_CONSTINIT)
-#define TEST_CONSTINIT _LIBCPP_CONSTINIT
+#elif defined(_LIBCUDACXX_CONSTINIT)
+#define TEST_CONSTINIT _LIBCUDACXX_CONSTINIT
 #else
 #define TEST_CONSTINIT
 #endif
@@ -226,18 +226,18 @@
 #endif
 
 /* Macros for testing libc++ specific behavior and extensions */
-#if defined(_LIBCPP_VERSION)
-#define LIBCPP_ASSERT(...) assert(__VA_ARGS__)
-#define LIBCPP_STATIC_ASSERT(...) static_assert(__VA_ARGS__)
-#define LIBCPP_ASSERT_NOEXCEPT(...) ASSERT_NOEXCEPT(__VA_ARGS__)
-#define LIBCPP_ASSERT_NOT_NOEXCEPT(...) ASSERT_NOT_NOEXCEPT(__VA_ARGS__)
-#define LIBCPP_ONLY(...) __VA_ARGS__
+#if defined(_LIBCUDACXX_VERSION)
+#define LIBCUDACXX_ASSERT(...) assert(__VA_ARGS__)
+#define LIBCUDACXX_STATIC_ASSERT(...) static_assert(__VA_ARGS__)
+#define LIBCUDACXX_ASSERT_NOEXCEPT(...) ASSERT_NOEXCEPT(__VA_ARGS__)
+#define LIBCUDACXX_ASSERT_NOT_NOEXCEPT(...) ASSERT_NOT_NOEXCEPT(__VA_ARGS__)
+#define LIBCUDACXX_ONLY(...) __VA_ARGS__
 #else
-#define LIBCPP_ASSERT(...) static_assert(true, "")
-#define LIBCPP_STATIC_ASSERT(...) static_assert(true, "")
-#define LIBCPP_ASSERT_NOEXCEPT(...) static_assert(true, "")
-#define LIBCPP_ASSERT_NOT_NOEXCEPT(...) static_assert(true, "")
-#define LIBCPP_ONLY(...) static_assert(true, "")
+#define LIBCUDACXX_ASSERT(...) static_assert(true, "")
+#define LIBCUDACXX_STATIC_ASSERT(...) static_assert(true, "")
+#define LIBCUDACXX_ASSERT_NOEXCEPT(...) static_assert(true, "")
+#define LIBCUDACXX_ASSERT_NOT_NOEXCEPT(...) static_assert(true, "")
+#define LIBCUDACXX_ONLY(...) static_assert(true, "")
 #endif
 
 #define TEST_IGNORE_NODISCARD (void)
@@ -349,21 +349,21 @@ inline void DoNotOptimize(Tp const& value) {
 #endif
 
 // Support for carving out parts of the test suite, like removing wide characters, etc.
-#if defined(_LIBCPP_HAS_NO_WIDE_CHARACTERS)
+#if defined(_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS)
 #   define TEST_HAS_NO_WIDE_CHARACTERS
 #endif
 
-#if defined(_LIBCPP_HAS_NO_UNICODE)
+#if defined(_LIBCUDACXX_HAS_NO_UNICODE)
 #   define TEST_HAS_NO_UNICODE
 #elif defined(_MSVC_EXECUTION_CHARACTER_SET) && _MSVC_EXECUTION_CHARACTER_SET != 65001
 #   define TEST_HAS_NO_UNICODE
 #endif
 
-#if defined(_LIBCPP_HAS_NO_INT128) || defined(_MSVC_STL_VERSION)
+#if defined(_LIBCUDACXX_HAS_NO_INT128) || defined(_MSVC_STL_VERSION)
 #   define TEST_HAS_NO_INT128
 #endif
 
-#if defined(_LIBCPP_HAS_NO_LOCALIZATION)
+#if defined(_LIBCUDACXX_HAS_NO_LOCALIZATION)
 #  define TEST_HAS_NO_LOCALIZATION
 #endif
 
@@ -371,15 +371,15 @@ inline void DoNotOptimize(Tp const& value) {
 #  define TEST_HAS_NO_CHAR8_T
 #endif
 
-#if defined(_LIBCPP_HAS_NO_THREADS)
+#if defined(_LIBCUDACXX_HAS_NO_THREADS)
 #  define TEST_HAS_NO_THREADS
 #endif
 
-#if defined(_LIBCPP_HAS_NO_FILESYSTEM_LIBRARY)
+#if defined(_LIBCUDACXX_HAS_NO_FILESYSTEM_LIBRARY)
 #  define TEST_HAS_NO_FILESYSTEM_LIBRARY
 #endif
 
-#if defined(_LIBCPP_HAS_NO_FGETPOS_FSETPOS)
+#if defined(_LIBCUDACXX_HAS_NO_FGETPOS_FSETPOS)
 #  define TEST_HAS_NO_FGETPOS_FSETPOS
 #endif
 

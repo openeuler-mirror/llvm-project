@@ -18,9 +18,9 @@
 #include <typeindex>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_TYPEINDEX)
- #   error "<typeindex> was expected to define _LIBCPP_TYPEINDEX"
+#if !defined(_LIBCUDACXX_TYPEINDEX)
+ #   error "<typeindex> was expected to define _LIBCUDACXX_TYPEINDEX"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<typeindex> should include <compare> in C++20 and later"
 #endif

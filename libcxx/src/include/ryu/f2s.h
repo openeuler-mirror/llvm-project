@@ -36,20 +36,20 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef _LIBCPP_SRC_INCLUDE_RYU_FS2_H
-#define _LIBCPP_SRC_INCLUDE_RYU_FS2_H
+#ifndef _LIBCUDACXX_SRC_INCLUDE_RYU_FS2_H
+#define _LIBCUDACXX_SRC_INCLUDE_RYU_FS2_H
 
 // Avoid formatting to keep the changes with the original code minimal.
 // clang-format off
 
 #include <__config>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 [[nodiscard]] to_chars_result __f2s_buffered_n(char* const _First, char* const _Last, const float __f, const chars_format _Fmt);
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
 // clang-format on
 
-#endif // _LIBCPP_SRC_INCLUDE_RYU_FS2_H
+#endif // _LIBCUDACXX_SRC_INCLUDE_RYU_FS2_H

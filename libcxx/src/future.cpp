@@ -8,14 +8,14 @@
 
 #include <__config>
 
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
 
 #include <future>
 #include <string>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-class _LIBCPP_HIDDEN __future_error_category
+class _LIBCUDACXX_HIDDEN __future_error_category
     : public __do_message
 {
 public:
@@ -29,9 +29,9 @@ __future_error_category::name() const noexcept
     return "future";
 }
 
-_LIBCPP_DIAGNOSTIC_PUSH
-_LIBCPP_CLANG_DIAGNOSTIC_IGNORED("-Wswitch")
-_LIBCPP_GCC_DIAGNOSTIC_IGNORED("-Wswitch")
+_LIBCUDACXX_DIAGNOSTIC_PUSH
+_LIBCUDACXX_CLANG_DIAGNOSTIC_IGNORED("-Wswitch")
+_LIBCUDACXX_GCC_DIAGNOSTIC_IGNORED("-Wswitch")
 
 string
 __future_error_category::message(int ev) const
@@ -54,7 +54,7 @@ __future_error_category::message(int ev) const
     return string("unspecified future_errc value\n");
 }
 
-_LIBCPP_DIAGNOSTIC_POP
+_LIBCUDACXX_DIAGNOSTIC_POP
 
 const error_category&
 future_category() noexcept
@@ -197,12 +197,12 @@ promise<void>::~promise()
 {
     if (__state_)
     {
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
         if (!__state_->__has_value() && __state_->use_count() > 1)
             __state_->set_exception(make_exception_ptr(
                       future_error(make_error_code(future_errc::broken_promise))
                                                       ));
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
         __state_->__release_shared();
     }
 }
@@ -264,6 +264,6 @@ shared_future<void>::operator=(const shared_future& __rhs)
     return *this;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // !_LIBCPP_HAS_NO_THREADS
+#endif // !_LIBCUDACXX_HAS_NO_THREADS

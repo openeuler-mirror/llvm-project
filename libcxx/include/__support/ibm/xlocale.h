@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_SUPPORT_IBM_XLOCALE_H
-#define _LIBCPP_SUPPORT_IBM_XLOCALE_H
+#ifndef _LIBCUDACXX_SUPPORT_IBM_XLOCALE_H
+#define _LIBCUDACXX_SUPPORT_IBM_XLOCALE_H
 
 #if defined(__MVS__)
 #include <__support/ibm/locale_mgmt_zos.h>
@@ -55,49 +55,49 @@ private:
 
 // The following are not POSIX routines.  These are quick-and-dirty hacks
 // to make things pretend to work
-inline _LIBCPP_HIDE_FROM_ABI long long
+inline _LIBCUDACXX_HIDE_FROM_ABI long long
 strtoll_l(const char *__nptr, char **__endptr, int __base, locale_t locale) {
   __setAndRestore __newloc(locale);
   return ::strtoll(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI long
+inline _LIBCUDACXX_HIDE_FROM_ABI long
 strtol_l(const char *__nptr, char **__endptr, int __base, locale_t locale) {
   __setAndRestore __newloc(locale);
   return ::strtol(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI double
+inline _LIBCUDACXX_HIDE_FROM_ABI double
 strtod_l(const char *__nptr, char **__endptr, locale_t locale) {
   __setAndRestore __newloc(locale);
   return ::strtod(__nptr, __endptr);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI float
+inline _LIBCUDACXX_HIDE_FROM_ABI float
 strtof_l(const char *__nptr, char **__endptr, locale_t locale) {
   __setAndRestore __newloc(locale);
   return ::strtof(__nptr, __endptr);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI long double
+inline _LIBCUDACXX_HIDE_FROM_ABI long double
 strtold_l(const char *__nptr, char **__endptr, locale_t locale) {
   __setAndRestore __newloc(locale);
   return ::strtold(__nptr, __endptr);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI unsigned long long
+inline _LIBCUDACXX_HIDE_FROM_ABI unsigned long long
 strtoull_l(const char *__nptr, char **__endptr, int __base, locale_t locale) {
   __setAndRestore __newloc(locale);
   return ::strtoull(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI unsigned long
+inline _LIBCUDACXX_HIDE_FROM_ABI unsigned long
 strtoul_l(const char *__nptr, char **__endptr, int __base, locale_t locale) {
   __setAndRestore __newloc(locale);
   return ::strtoul(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI int
+inline _LIBCUDACXX_HIDE_FROM_ABI int
 vasprintf(char **strp, const char *fmt, va_list ap) {
   const size_t buff_size = 256;
   if ((*strp = (char *)malloc(buff_size)) == NULL) {
@@ -106,7 +106,7 @@ vasprintf(char **strp, const char *fmt, va_list ap) {
 
   va_list ap_copy;
   // va_copy may not be provided by the C library in C++ 03 mode.
-#if defined(_LIBCPP_CXX03_LANG) && __has_builtin(__builtin_va_copy)
+#if defined(_LIBCUDACXX_CXX03_LANG) && __has_builtin(__builtin_va_copy)
   __builtin_va_copy(ap_copy, ap);
 #else
   va_copy(ap_copy, ap);
@@ -126,4 +126,4 @@ vasprintf(char **strp, const char *fmt, va_list ap) {
 #ifdef __cplusplus
 }
 #endif
-#endif // _LIBCPP_SUPPORT_IBM_XLOCALE_H
+#endif // _LIBCUDACXX_SUPPORT_IBM_XLOCALE_H

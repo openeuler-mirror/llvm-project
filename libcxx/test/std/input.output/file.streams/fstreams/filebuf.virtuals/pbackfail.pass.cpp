@@ -43,7 +43,7 @@ int main(int, char**)
         assert(f.sbumpc() == '1');
         assert(f.sgetc() == '2');
         typename test_buf<char>::int_type pbackResult = f.pbackfail('a');
-        LIBCPP_ASSERT(pbackResult == -1);
+        LIBCUDACXX_ASSERT(pbackResult == -1);
         if (pbackResult != -1) {
             assert(f.sbumpc() == 'a');
             assert(f.sgetc() == '2');
@@ -56,7 +56,7 @@ int main(int, char**)
         assert(f.sbumpc() == '1');
         assert(f.sgetc() == '2');
         typename test_buf<char>::int_type pbackResult = f.pbackfail('a');
-        LIBCPP_ASSERT(pbackResult == 'a');
+        LIBCUDACXX_ASSERT(pbackResult == 'a');
         if (pbackResult != -1) {
             assert(f.sbumpc() == 'a');
             assert(f.sgetc() == '2');

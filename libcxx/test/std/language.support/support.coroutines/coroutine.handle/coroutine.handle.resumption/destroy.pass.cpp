@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-no-coroutines
+// UNSUPPORTED: LIBCUDACXX-no-coroutines
 
 // <coroutine>
 
@@ -41,7 +41,7 @@ void do_test(std::coroutine_handle<Promise>&& H) {
   // FIXME Add a runtime test
   {
     ASSERT_SAME_TYPE(decltype(H.destroy()), void);
-    LIBCPP_ASSERT_NOT_NOEXCEPT(H.destroy());
+    LIBCUDACXX_ASSERT_NOT_NOEXCEPT(H.destroy());
     static_assert(has_destroy<HType&>(), "");
     static_assert(has_destroy<HType&&>(), "");
   }

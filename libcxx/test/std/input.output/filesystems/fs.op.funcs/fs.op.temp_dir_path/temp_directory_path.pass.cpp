@@ -57,7 +57,7 @@ TEST_CASE(basic_tests)
     const path inaccessible_dir = env.create_dir("bad_perms_dir/nested");
     permissions(dir_perms, perms::none);
 #endif
-    LIBCPP_ONLY(const std::errc expect_errc = std::errc::not_a_directory);
+    LIBCUDACXX_ONLY(const std::errc expect_errc = std::errc::not_a_directory);
     struct TestCase {
       std::string name;
       path p;
@@ -96,7 +96,7 @@ TEST_CASE(basic_tests)
         PutEnv(TC.name, dne);
         ec = GetTestEC();
         ret = temp_directory_path(ec);
-        LIBCPP_ONLY(TEST_CHECK(ErrorIs(ec, expect_errc)));
+        LIBCUDACXX_ONLY(TEST_CHECK(ErrorIs(ec, expect_errc)));
         TEST_CHECK(ec != GetTestEC());
         TEST_CHECK(ec);
         TEST_CHECK(ret == "");
@@ -105,7 +105,7 @@ TEST_CASE(basic_tests)
         PutEnv(TC.name, file);
         ec = GetTestEC();
         ret = temp_directory_path(ec);
-        LIBCPP_ONLY(TEST_CHECK(ErrorIs(ec, expect_errc)));
+        LIBCUDACXX_ONLY(TEST_CHECK(ErrorIs(ec, expect_errc)));
         TEST_CHECK(ec != GetTestEC());
         TEST_CHECK(ec);
         TEST_CHECK(ret == "");

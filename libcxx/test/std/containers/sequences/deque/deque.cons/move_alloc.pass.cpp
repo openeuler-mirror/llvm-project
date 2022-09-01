@@ -35,7 +35,7 @@ int main(int, char**)
         std::deque<MoveOnly, A> c3(std::move(c1), A(3)); // unequal allocator
         assert(c2 == c3);
         assert(c3.get_allocator() == A(3));
-        LIBCPP_ASSERT(c1.size() != 0);
+        LIBCUDACXX_ASSERT(c1.size() != 0);
     }
     {
         int ab[] = {3, 4, 2, 8, 0, 1, 44, 34, 45, 96, 80, 1, 13, 31, 45};
@@ -50,7 +50,7 @@ int main(int, char**)
         std::deque<MoveOnly, A> c3(std::move(c1), A(1)); // equal allocator
         assert(c2 == c3);
         assert(c3.get_allocator() == A(1));
-        LIBCPP_ASSERT(c1.size() == 0);
+        LIBCUDACXX_ASSERT(c1.size() == 0);
     }
     {
         int ab[] = {3, 4, 2, 8, 0, 1, 44, 34, 45, 96, 80, 1, 13, 31, 45};
@@ -65,7 +65,7 @@ int main(int, char**)
         std::deque<MoveOnly, A> c3(std::move(c1), A(3)); // unequal allocator
         assert(c2 == c3);
         assert(c3.get_allocator() == A(3));
-        LIBCPP_ASSERT(c1.size() != 0);
+        LIBCUDACXX_ASSERT(c1.size() != 0);
     }
     {
         int ab[] = {3, 4, 2, 8, 0, 1, 44, 34, 45, 96, 80, 1, 13, 31, 45};
@@ -80,7 +80,7 @@ int main(int, char**)
         std::deque<MoveOnly, A> c3(std::move(c1), A());  // equal allocator
         assert(c2 == c3);
         assert(c3.get_allocator() == A());
-        LIBCPP_ASSERT(c1.size() == 0);
+        LIBCUDACXX_ASSERT(c1.size() == 0);
     }
 
   return 0;

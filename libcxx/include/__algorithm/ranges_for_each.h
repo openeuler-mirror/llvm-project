@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_FOR_EACH_H
-#define _LIBCPP___ALGORITHM_RANGES_FOR_EACH_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_FOR_EACH_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_FOR_EACH_H
 
 #include <__algorithm/in_fun_result.h>
 #include <__config>
@@ -20,13 +20,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 
@@ -37,7 +37,7 @@ namespace __for_each {
 struct __fn {
 private:
   template <class _Iter, class _Sent, class _Proj, class _Func>
-  _LIBCPP_HIDE_FROM_ABI constexpr static
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr static
   for_each_result<_Iter, _Func> __for_each_impl(_Iter __first, _Sent __last, _Func& __func, _Proj& __proj) {
     for (; __first != __last; ++__first)
       std::invoke(__func, std::invoke(__proj, *__first));
@@ -48,7 +48,7 @@ public:
   template <input_iterator _Iter, sentinel_for<_Iter> _Sent,
             class _Proj = identity,
             indirectly_unary_invocable<projected<_Iter, _Proj>> _Func>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   for_each_result<_Iter, _Func> operator()(_Iter __first, _Sent __last, _Func __func, _Proj __proj = {}) const {
     return __for_each_impl(std::move(__first), std::move(__last), __func, __proj);
   }
@@ -56,7 +56,7 @@ public:
   template <input_range _Range,
             class _Proj = identity,
             indirectly_unary_invocable<projected<iterator_t<_Range>, _Proj>> _Func>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   for_each_result<borrowed_iterator_t<_Range>, _Func> operator()(_Range&& __range,
                                                                  _Func __func,
                                                                  _Proj __proj = {}) const {
@@ -71,8 +71,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_FOR_EACH_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_FOR_EACH_H

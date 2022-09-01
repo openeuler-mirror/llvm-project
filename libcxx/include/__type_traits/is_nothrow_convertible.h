@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_NOTHROW_CONVERTIBLE_H
-#define _LIBCPP___TYPE_TRAITS_IS_NOTHROW_CONVERTIBLE_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_NOTHROW_CONVERTIBLE_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_NOTHROW_CONVERTIBLE_H
 
 #include <__config>
 #include <__type_traits/conjunction.h>
@@ -18,19 +18,19 @@
 #include <__type_traits/lazy.h>
 #include <__utility/declval.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <typename _Tp>
 static void __test_noexcept(_Tp) noexcept;
 
 template<typename _Fm, typename _To>
-static bool_constant<noexcept(_VSTD::__test_noexcept<_To>(declval<_Fm>()))>
+static bool_constant<noexcept(_CUDA_VSTD::__test_noexcept<_To>(declval<_Fm>()))>
 __is_nothrow_convertible_test();
 
 template <typename _Fm, typename _To>
@@ -46,8 +46,8 @@ struct is_nothrow_convertible : _Or<
 template <typename _Fm, typename _To>
 inline constexpr bool is_nothrow_convertible_v = is_nothrow_convertible<_Fm, _To>::value;
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_NOTHROW_CONVERTIBLE_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_NOTHROW_CONVERTIBLE_H

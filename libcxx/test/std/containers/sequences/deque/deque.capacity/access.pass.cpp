@@ -55,10 +55,10 @@ int main(int, char**)
         typedef std::deque<int> C;
         C c = make<std::deque<int> >(10);
         ASSERT_SAME_TYPE(decltype(c[0]), C::reference);
-        LIBCPP_ASSERT_NOEXCEPT(   c[0]);
-        LIBCPP_ASSERT_NOEXCEPT(   c.front());
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c[0]);
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c.front());
         ASSERT_SAME_TYPE(decltype(c.front()), C::reference);
-        LIBCPP_ASSERT_NOEXCEPT(   c.back());
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c.back());
         ASSERT_SAME_TYPE(decltype(c.back()), C::reference);
         for (int i = 0; i < 10; ++i)
             assert(c[i] == i);
@@ -71,10 +71,10 @@ int main(int, char**)
         typedef std::deque<int> C;
         const C c = make<std::deque<int> >(10);
         ASSERT_SAME_TYPE(decltype(c[0]), C::const_reference);
-        LIBCPP_ASSERT_NOEXCEPT(   c[0]);
-        LIBCPP_ASSERT_NOEXCEPT(   c.front());
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c[0]);
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c.front());
         ASSERT_SAME_TYPE(decltype(c.front()), C::const_reference);
-        LIBCPP_ASSERT_NOEXCEPT(   c.back());
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c.back());
         ASSERT_SAME_TYPE(decltype(c.back()), C::const_reference);
         for (int i = 0; i < 10; ++i)
             assert(c[i] == i);
@@ -88,10 +88,10 @@ int main(int, char**)
         typedef std::deque<int, min_allocator<int>> C;
         C c = make<std::deque<int, min_allocator<int>> >(10);
         ASSERT_SAME_TYPE(decltype(c[0]), C::reference);
-        LIBCPP_ASSERT_NOEXCEPT(   c[0]);
-        LIBCPP_ASSERT_NOEXCEPT(   c.front());
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c[0]);
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c.front());
         ASSERT_SAME_TYPE(decltype(c.front()), C::reference);
-        LIBCPP_ASSERT_NOEXCEPT(   c.back());
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c.back());
         ASSERT_SAME_TYPE(decltype(c.back()), C::reference);
         for (int i = 0; i < 10; ++i)
             assert(c[i] == i);
@@ -104,10 +104,10 @@ int main(int, char**)
         typedef std::deque<int, min_allocator<int>> C;
         const C c = make<std::deque<int, min_allocator<int>> >(10);
         ASSERT_SAME_TYPE(decltype(c[0]), C::const_reference);
-        LIBCPP_ASSERT_NOEXCEPT(   c[0]);
-        LIBCPP_ASSERT_NOEXCEPT(   c.front());
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c[0]);
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c.front());
         ASSERT_SAME_TYPE(decltype(c.front()), C::const_reference);
-        LIBCPP_ASSERT_NOEXCEPT(   c.back());
+        LIBCUDACXX_ASSERT_NOEXCEPT(   c.back());
         ASSERT_SAME_TYPE(decltype(c.back()), C::const_reference);
         for (int i = 0; i < 10; ++i)
             assert(c[i] == i);

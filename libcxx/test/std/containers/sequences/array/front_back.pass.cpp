@@ -38,9 +38,9 @@ TEST_CONSTEXPR_CXX17 bool tests()
         typedef std::array<T, 0> C;
         C c = {};
         ASSERT_SAME_TYPE(decltype(c.back()), C::reference);
-        LIBCPP_ASSERT_NOEXCEPT(c.back());
+        LIBCUDACXX_ASSERT_NOEXCEPT(c.back());
         ASSERT_SAME_TYPE(decltype(c.front()), C::reference);
-        LIBCPP_ASSERT_NOEXCEPT(c.front());
+        LIBCUDACXX_ASSERT_NOEXCEPT(c.front());
         if (c.size() > (0)) { // always false
             TEST_IGNORE_NODISCARD c.front();
             TEST_IGNORE_NODISCARD c.back();
@@ -51,9 +51,9 @@ TEST_CONSTEXPR_CXX17 bool tests()
         typedef std::array<const T, 0> C;
         C c = {};
         ASSERT_SAME_TYPE(decltype( c.back()), C::reference);
-        LIBCPP_ASSERT_NOEXCEPT(    c.back());
+        LIBCUDACXX_ASSERT_NOEXCEPT(    c.back());
         ASSERT_SAME_TYPE(decltype( c.front()), C::reference);
-        LIBCPP_ASSERT_NOEXCEPT(    c.front());
+        LIBCUDACXX_ASSERT_NOEXCEPT(    c.front());
         if (c.size() > (0)) {
             TEST_IGNORE_NODISCARD c.front();
             TEST_IGNORE_NODISCARD c.back();

@@ -18,12 +18,12 @@
 #include <stack>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_STACK)
- #   error "<stack> was expected to define _LIBCPP_STACK"
+#if !defined(_LIBCUDACXX_STACK)
+ #   error "<stack> was expected to define _LIBCUDACXX_STACK"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<stack> should include <compare> in C++20 and later"
 #endif
-#if TEST_STD_VER > 03 && !defined(_LIBCPP_INITIALIZER_LIST)
+#if TEST_STD_VER > 03 && !defined(_LIBCUDACXX_INITIALIZER_LIST)
  #   error "<stack> should include <initializer_list> in C++11 and later"
 #endif

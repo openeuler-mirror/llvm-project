@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_SORT_H
-#define _LIBCPP___ALGORITHM_SORT_H
+#ifndef _LIBCUDACXX___ALGORITHM_SORT_H
+#define _LIBCUDACXX___ALGORITHM_SORT_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -25,11 +25,11 @@
 #include <climits>
 #include <memory>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // Wraps an algorithm policy tag and a comparator in a single struct, used to pass the policy tag around without
 // changing the number of template arguments (to keep the ABI stable). This is only used for the "range" policy tag.
@@ -43,7 +43,7 @@ struct _WrapAlgPolicy {
   using _Comp = _CompT;
   _Comp& __comp;
 
-  _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+  _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
   _WrapAlgPolicy(_Comp& __c) : __comp(__c) {}
 };
 
@@ -62,7 +62,7 @@ struct _UnwrapAlgPolicy {
   using _AlgPolicy = _ClassicAlgPolicy;
   using _Comp = _CompT;
 
-  _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11 static
+  _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 static
   _Comp __get_comp(_Comp __comp) { return __comp; }
 };
 
@@ -73,14 +73,14 @@ struct _UnwrapAlgPolicy<_WrapAlgPolicy<_Ts...> > {
   using _AlgPolicy = typename _Wrapped::_AlgPolicy;
   using _Comp = typename _Wrapped::_Comp;
 
-  _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11 static
+  _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 static
   _Comp __get_comp(_Wrapped& __w) { return __w.__comp; }
 };
 
 // stable, 2-3 compares, 0-2 swaps
 
 template <class _AlgPolicy, class _Compare, class _ForwardIterator>
-_LIBCPP_CONSTEXPR_AFTER_CXX11 unsigned __sort3(_ForwardIterator __x, _ForwardIterator __y, _ForwardIterator __z,
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX11 unsigned __sort3(_ForwardIterator __x, _ForwardIterator __y, _ForwardIterator __z,
                                                _Compare __c) {
   using _Ops = _IterOps<_AlgPolicy>;
 
@@ -141,7 +141,7 @@ unsigned __sort4(_ForwardIterator __x1, _ForwardIterator __x2, _ForwardIterator 
 // stable, 4-10 compares, 0-9 swaps
 
 template <class _WrappedComp, class _ForwardIterator>
-_LIBCPP_HIDDEN unsigned __sort5(_ForwardIterator __x1, _ForwardIterator __x2, _ForwardIterator __x3,
+_LIBCUDACXX_HIDDEN unsigned __sort5(_ForwardIterator __x1, _ForwardIterator __x2, _ForwardIterator __x3,
                                 _ForwardIterator __x4, _ForwardIterator __x5, _WrappedComp __wrapped_comp) {
   using _Unwrap = _UnwrapAlgPolicy<_WrappedComp>;
   using _AlgPolicy = typename _Unwrap::_AlgPolicy;
@@ -171,7 +171,7 @@ _LIBCPP_HIDDEN unsigned __sort5(_ForwardIterator __x1, _ForwardIterator __x2, _F
 }
 
 template <class _AlgPolicy, class _Compare, class _ForwardIterator>
-_LIBCPP_HIDDEN unsigned __sort5_wrap_policy(
+_LIBCUDACXX_HIDDEN unsigned __sort5_wrap_policy(
     _ForwardIterator __x1, _ForwardIterator __x2, _ForwardIterator __x3, _ForwardIterator __x4, _ForwardIterator __x5,
     _Compare __c) {
   using _WrappedComp = typename _WrapAlgPolicy<_AlgPolicy, _Compare>::type;
@@ -189,7 +189,7 @@ template <class _Tp>
 struct __is_simple_comparator<less<_Tp>&> : true_type {};
 template <class _Tp>
 struct __is_simple_comparator<greater<_Tp>&> : true_type {};
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 template <>
 struct __is_simple_comparator<ranges::less&> : true_type {};
 template <>
@@ -203,7 +203,7 @@ using __use_branchless_sort =
 
 // Ensures that __c(*__x, *__y) is true by swapping *__x and *__y if necessary.
 template <class _Compare, class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI void __cond_swap(_RandomAccessIterator __x, _RandomAccessIterator __y, _Compare __c) {
+inline _LIBCUDACXX_HIDE_FROM_ABI void __cond_swap(_RandomAccessIterator __x, _RandomAccessIterator __y, _Compare __c) {
   // Note: this function behaves correctly even with proxy iterators (because it relies on `value_type`).
   using value_type = typename iterator_traits<_RandomAccessIterator>::value_type;
   bool __r = __c(*__x, *__y);
@@ -215,7 +215,7 @@ inline _LIBCPP_HIDE_FROM_ABI void __cond_swap(_RandomAccessIterator __x, _Random
 // Ensures that *__x, *__y and *__z are ordered according to the comparator __c,
 // under the assumption that *__y and *__z are already ordered.
 template <class _Compare, class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI void __partially_sorted_swap(_RandomAccessIterator __x, _RandomAccessIterator __y,
+inline _LIBCUDACXX_HIDE_FROM_ABI void __partially_sorted_swap(_RandomAccessIterator __x, _RandomAccessIterator __y,
                                                           _RandomAccessIterator __z, _Compare __c) {
   // Note: this function behaves correctly even with proxy iterators (because it relies on `value_type`).
   using value_type = typename iterator_traits<_RandomAccessIterator>::value_type;
@@ -228,52 +228,52 @@ inline _LIBCPP_HIDE_FROM_ABI void __partially_sorted_swap(_RandomAccessIterator 
 }
 
 template <class, class _Compare, class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI __enable_if_t<__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
+inline _LIBCUDACXX_HIDE_FROM_ABI __enable_if_t<__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
 __sort3_maybe_branchless(_RandomAccessIterator __x1, _RandomAccessIterator __x2, _RandomAccessIterator __x3,
                          _Compare __c) {
-  _VSTD::__cond_swap<_Compare>(__x2, __x3, __c);
-  _VSTD::__partially_sorted_swap<_Compare>(__x1, __x2, __x3, __c);
+  _CUDA_VSTD::__cond_swap<_Compare>(__x2, __x3, __c);
+  _CUDA_VSTD::__partially_sorted_swap<_Compare>(__x1, __x2, __x3, __c);
 }
 
 template <class _AlgPolicy, class _Compare, class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI __enable_if_t<!__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
+inline _LIBCUDACXX_HIDE_FROM_ABI __enable_if_t<!__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
 __sort3_maybe_branchless(_RandomAccessIterator __x1, _RandomAccessIterator __x2, _RandomAccessIterator __x3,
                          _Compare __c) {
   std::__sort3<_AlgPolicy, _Compare>(__x1, __x2, __x3, __c);
 }
 
 template <class, class _Compare, class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI __enable_if_t<__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
+inline _LIBCUDACXX_HIDE_FROM_ABI __enable_if_t<__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
 __sort4_maybe_branchless(_RandomAccessIterator __x1, _RandomAccessIterator __x2, _RandomAccessIterator __x3,
                          _RandomAccessIterator __x4, _Compare __c) {
-  _VSTD::__cond_swap<_Compare>(__x1, __x3, __c);
-  _VSTD::__cond_swap<_Compare>(__x2, __x4, __c);
-  _VSTD::__cond_swap<_Compare>(__x1, __x2, __c);
-  _VSTD::__cond_swap<_Compare>(__x3, __x4, __c);
-  _VSTD::__cond_swap<_Compare>(__x2, __x3, __c);
+  _CUDA_VSTD::__cond_swap<_Compare>(__x1, __x3, __c);
+  _CUDA_VSTD::__cond_swap<_Compare>(__x2, __x4, __c);
+  _CUDA_VSTD::__cond_swap<_Compare>(__x1, __x2, __c);
+  _CUDA_VSTD::__cond_swap<_Compare>(__x3, __x4, __c);
+  _CUDA_VSTD::__cond_swap<_Compare>(__x2, __x3, __c);
 }
 
 template <class _AlgPolicy, class _Compare, class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI __enable_if_t<!__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
+inline _LIBCUDACXX_HIDE_FROM_ABI __enable_if_t<!__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
 __sort4_maybe_branchless(_RandomAccessIterator __x1, _RandomAccessIterator __x2, _RandomAccessIterator __x3,
                          _RandomAccessIterator __x4, _Compare __c) {
   std::__sort4<_AlgPolicy, _Compare>(__x1, __x2, __x3, __x4, __c);
 }
 
 template <class, class _Compare, class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI __enable_if_t<__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
+inline _LIBCUDACXX_HIDE_FROM_ABI __enable_if_t<__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
 __sort5_maybe_branchless(_RandomAccessIterator __x1, _RandomAccessIterator __x2, _RandomAccessIterator __x3,
                          _RandomAccessIterator __x4, _RandomAccessIterator __x5, _Compare __c) {
-  _VSTD::__cond_swap<_Compare>(__x1, __x2, __c);
-  _VSTD::__cond_swap<_Compare>(__x4, __x5, __c);
-  _VSTD::__partially_sorted_swap<_Compare>(__x3, __x4, __x5, __c);
-  _VSTD::__cond_swap<_Compare>(__x2, __x5, __c);
-  _VSTD::__partially_sorted_swap<_Compare>(__x1, __x3, __x4, __c);
-  _VSTD::__partially_sorted_swap<_Compare>(__x2, __x3, __x4, __c);
+  _CUDA_VSTD::__cond_swap<_Compare>(__x1, __x2, __c);
+  _CUDA_VSTD::__cond_swap<_Compare>(__x4, __x5, __c);
+  _CUDA_VSTD::__partially_sorted_swap<_Compare>(__x3, __x4, __x5, __c);
+  _CUDA_VSTD::__cond_swap<_Compare>(__x2, __x5, __c);
+  _CUDA_VSTD::__partially_sorted_swap<_Compare>(__x1, __x3, __x4, __c);
+  _CUDA_VSTD::__partially_sorted_swap<_Compare>(__x2, __x3, __x4, __c);
 }
 
 template <class _AlgPolicy, class _Compare, class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI __enable_if_t<!__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
+inline _LIBCUDACXX_HIDE_FROM_ABI __enable_if_t<!__use_branchless_sort<_Compare, _RandomAccessIterator>::value, void>
 __sort5_maybe_branchless(_RandomAccessIterator __x1, _RandomAccessIterator __x2, _RandomAccessIterator __x3,
                          _RandomAccessIterator __x4, _RandomAccessIterator __x5, _Compare __c) {
   std::__sort5_wrap_policy<_AlgPolicy, _Compare>(__x1, __x2, __x3, __x4, __x5, __c);
@@ -281,7 +281,7 @@ __sort5_maybe_branchless(_RandomAccessIterator __x1, _RandomAccessIterator __x2,
 
 // Assumes size > 0
 template <class _AlgPolicy, class _Compare, class _BidirectionalIterator>
-_LIBCPP_CONSTEXPR_AFTER_CXX11 void __selection_sort(_BidirectionalIterator __first, _BidirectionalIterator __last,
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX11 void __selection_sort(_BidirectionalIterator __first, _BidirectionalIterator __last,
                                                     _Compare __comp) {
   _BidirectionalIterator __lm1 = __last;
   for (--__lm1; __first != __lm1; ++__first) {
@@ -303,7 +303,7 @@ void __insertion_sort(_BidirectionalIterator __first, _BidirectionalIterator __l
       value_type __t(_Ops::__iter_move(__j));
       for (_BidirectionalIterator __k = __i; __k != __first && __comp(__t, *--__k); --__j)
         *__j = _Ops::__iter_move(__k);
-      *__j = _VSTD::move(__t);
+      *__j = _CUDA_VSTD::move(__t);
     }
   }
 }
@@ -325,7 +325,7 @@ void __insertion_sort_3(_RandomAccessIterator __first, _RandomAccessIterator __l
         *__j = _Ops::__iter_move(__k);
         __j = __k;
       } while (__j != __first && __comp(__t, *--__k));
-      *__j = _VSTD::move(__t);
+      *__j = _CUDA_VSTD::move(__t);
     }
     __j = __i;
   }
@@ -377,7 +377,7 @@ bool __insertion_sort_incomplete(
         *__j = _Ops::__iter_move(__k);
         __j = __k;
       } while (__j != __first && __comp(__t, *--__k));
-      *__j = _VSTD::move(__t);
+      *__j = _CUDA_VSTD::move(__t);
       if (++__count == __limit)
         return ++__i == __last;
     }
@@ -526,7 +526,7 @@ void __introsort(_RandomAccessIterator __first, _RandomAccessIterator __last, _C
           }
           // [__first, __i) == *__first and *__first < [__i, __last)
           // The first part is sorted, sort the second part
-          // _VSTD::__sort<_Compare>(__i, __last, __comp);
+          // _CUDA_VSTD::__sort<_Compare>(__i, __last, __comp);
           __first = __i;
           goto __restart;
         }
@@ -597,15 +597,15 @@ void __introsort(_RandomAccessIterator __first, _RandomAccessIterator __last, _C
 }
 
 template <typename _Number>
-inline _LIBCPP_HIDE_FROM_ABI _Number __log2i(_Number __n) {
+inline _LIBCUDACXX_HIDE_FROM_ABI _Number __log2i(_Number __n) {
   if (__n == 0)
     return 0;
   if (sizeof(__n) <= sizeof(unsigned))
-    return sizeof(unsigned) * CHAR_BIT - 1 - __libcpp_clz(static_cast<unsigned>(__n));
+    return sizeof(unsigned) * CHAR_BIT - 1 - __LIBCUDACXX_clz(static_cast<unsigned>(__n));
   if (sizeof(__n) <= sizeof(unsigned long))
-    return sizeof(unsigned long) * CHAR_BIT - 1 - __libcpp_clz(static_cast<unsigned long>(__n));
+    return sizeof(unsigned long) * CHAR_BIT - 1 - __LIBCUDACXX_clz(static_cast<unsigned long>(__n));
   if (sizeof(__n) <= sizeof(unsigned long long))
-    return sizeof(unsigned long long) * CHAR_BIT - 1 - __libcpp_clz(static_cast<unsigned long long>(__n));
+    return sizeof(unsigned long long) * CHAR_BIT - 1 - __LIBCUDACXX_clz(static_cast<unsigned long long>(__n));
 
   _Number __log2 = 0;
   while (__n > 1) {
@@ -628,56 +628,56 @@ void __sort(_RandomAccessIterator __first, _RandomAccessIterator __last, _Wrappe
 }
 
 template <class _Compare, class _Tp>
-inline _LIBCPP_INLINE_VISIBILITY void __sort(_Tp** __first, _Tp** __last, __less<_Tp*>&) {
+inline _LIBCUDACXX_INLINE_VISIBILITY void __sort(_Tp** __first, _Tp** __last, __less<_Tp*>&) {
   __less<uintptr_t> __comp;
   std::__sort<__less<uintptr_t>&, uintptr_t*>((uintptr_t*)__first, (uintptr_t*)__last, __comp);
 }
 
-extern template _LIBCPP_FUNC_VIS void __sort<__less<char>&, char*>(char*, char*, __less<char>&);
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
-extern template _LIBCPP_FUNC_VIS void __sort<__less<wchar_t>&, wchar_t*>(wchar_t*, wchar_t*, __less<wchar_t>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<char>&, char*>(char*, char*, __less<char>&);
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<wchar_t>&, wchar_t*>(wchar_t*, wchar_t*, __less<wchar_t>&);
 #endif
-extern template _LIBCPP_FUNC_VIS void __sort<__less<signed char>&, signed char*>(signed char*, signed char*, __less<signed char>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<unsigned char>&, unsigned char*>(unsigned char*, unsigned char*, __less<unsigned char>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<short>&, short*>(short*, short*, __less<short>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<unsigned short>&, unsigned short*>(unsigned short*, unsigned short*, __less<unsigned short>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<int>&, int*>(int*, int*, __less<int>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<unsigned>&, unsigned*>(unsigned*, unsigned*, __less<unsigned>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<long>&, long*>(long*, long*, __less<long>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<unsigned long>&, unsigned long*>(unsigned long*, unsigned long*, __less<unsigned long>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<long long>&, long long*>(long long*, long long*, __less<long long>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<unsigned long long>&, unsigned long long*>(unsigned long long*, unsigned long long*, __less<unsigned long long>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<float>&, float*>(float*, float*, __less<float>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<double>&, double*>(double*, double*, __less<double>&);
-extern template _LIBCPP_FUNC_VIS void __sort<__less<long double>&, long double*>(long double*, long double*, __less<long double>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<signed char>&, signed char*>(signed char*, signed char*, __less<signed char>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<unsigned char>&, unsigned char*>(unsigned char*, unsigned char*, __less<unsigned char>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<short>&, short*>(short*, short*, __less<short>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<unsigned short>&, unsigned short*>(unsigned short*, unsigned short*, __less<unsigned short>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<int>&, int*>(int*, int*, __less<int>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<unsigned>&, unsigned*>(unsigned*, unsigned*, __less<unsigned>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<long>&, long*>(long*, long*, __less<long>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<unsigned long>&, unsigned long*>(unsigned long*, unsigned long*, __less<unsigned long>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<long long>&, long long*>(long long*, long long*, __less<long long>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<unsigned long long>&, unsigned long long*>(unsigned long long*, unsigned long long*, __less<unsigned long long>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<float>&, float*>(float*, float*, __less<float>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<double>&, double*>(double*, double*, __less<double>&);
+extern template _LIBCUDACXX_FUNC_VIS void __sort<__less<long double>&, long double*>(long double*, long double*, __less<long double>&);
 
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<char>&, char*>(char*, char*, __less<char>&);
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<wchar_t>&, wchar_t*>(wchar_t*, wchar_t*, __less<wchar_t>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<char>&, char*>(char*, char*, __less<char>&);
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<wchar_t>&, wchar_t*>(wchar_t*, wchar_t*, __less<wchar_t>&);
 #endif
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<signed char>&, signed char*>(signed char*, signed char*, __less<signed char>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<unsigned char>&, unsigned char*>(unsigned char*, unsigned char*, __less<unsigned char>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<short>&, short*>(short*, short*, __less<short>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<unsigned short>&, unsigned short*>(unsigned short*, unsigned short*, __less<unsigned short>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<int>&, int*>(int*, int*, __less<int>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<unsigned>&, unsigned*>(unsigned*, unsigned*, __less<unsigned>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<long>&, long*>(long*, long*, __less<long>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<unsigned long>&, unsigned long*>(unsigned long*, unsigned long*, __less<unsigned long>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<long long>&, long long*>(long long*, long long*, __less<long long>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<unsigned long long>&, unsigned long long*>(unsigned long long*, unsigned long long*, __less<unsigned long long>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<float>&, float*>(float*, float*, __less<float>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<double>&, double*>(double*, double*, __less<double>&);
-extern template _LIBCPP_FUNC_VIS bool __insertion_sort_incomplete<__less<long double>&, long double*>(long double*, long double*, __less<long double>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<signed char>&, signed char*>(signed char*, signed char*, __less<signed char>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<unsigned char>&, unsigned char*>(unsigned char*, unsigned char*, __less<unsigned char>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<short>&, short*>(short*, short*, __less<short>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<unsigned short>&, unsigned short*>(unsigned short*, unsigned short*, __less<unsigned short>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<int>&, int*>(int*, int*, __less<int>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<unsigned>&, unsigned*>(unsigned*, unsigned*, __less<unsigned>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<long>&, long*>(long*, long*, __less<long>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<unsigned long>&, unsigned long*>(unsigned long*, unsigned long*, __less<unsigned long>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<long long>&, long long*>(long long*, long long*, __less<long long>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<unsigned long long>&, unsigned long long*>(unsigned long long*, unsigned long long*, __less<unsigned long long>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<float>&, float*>(float*, float*, __less<float>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<double>&, double*>(double*, double*, __less<double>&);
+extern template _LIBCUDACXX_FUNC_VIS bool __insertion_sort_incomplete<__less<long double>&, long double*>(long double*, long double*, __less<long double>&);
 
-extern template _LIBCPP_FUNC_VIS unsigned __sort5<__less<long double>&, long double*>(long double*, long double*, long double*, long double*, long double*, __less<long double>&);
+extern template _LIBCUDACXX_FUNC_VIS unsigned __sort5<__less<long double>&, long double*>(long double*, long double*, long double*, long double*, long double*, __less<long double>&);
 
 template <class _AlgPolicy, class _RandomAccessIterator, class _Comp>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 void __sort_impl(_RandomAccessIterator __first, _RandomAccessIterator __last, _Comp& __comp) {
   std::__debug_randomize_range<_AlgPolicy>(__first, __last);
 
   using _Comp_ref = typename __comp_ref_type<_Comp>::type;
-  if (__libcpp_is_constant_evaluated()) {
+  if (__LIBCUDACXX_is_constant_evaluated()) {
     std::__partial_sort<_AlgPolicy>(__first, __last, __last, __comp);
 
   } else {
@@ -689,17 +689,17 @@ void __sort_impl(_RandomAccessIterator __first, _RandomAccessIterator __last, _C
 }
 
 template <class _RandomAccessIterator, class _Comp>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 void sort(_RandomAccessIterator __first, _RandomAccessIterator __last, _Comp __comp) {
   std::__sort_impl<_ClassicAlgPolicy>(std::move(__first), std::move(__last), __comp);
 }
 
 template <class _RandomAccessIterator>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 void sort(_RandomAccessIterator __first, _RandomAccessIterator __last) {
   std::sort(__first, __last, __less<typename iterator_traits<_RandomAccessIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_SORT_H
+#endif // _LIBCUDACXX___ALGORITHM_SORT_H

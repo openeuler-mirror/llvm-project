@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_PREV_PERMUTATION_H
-#define _LIBCPP___ALGORITHM_PREV_PERMUTATION_H
+#ifndef _LIBCUDACXX___ALGORITHM_PREV_PERMUTATION_H
+#define _LIBCUDACXX___ALGORITHM_PREV_PERMUTATION_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -18,14 +18,14 @@
 #include <__utility/move.h>
 #include <__utility/pair.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy, class _Compare, class _BidirectionalIterator, class _Sentinel>
-_LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 pair<_BidirectionalIterator, bool>
 __prev_permutation(_BidirectionalIterator __first, _Sentinel __last, _Compare&& __comp)
 {
@@ -57,7 +57,7 @@ __prev_permutation(_BidirectionalIterator __first, _Sentinel __last, _Compare&& 
 }
 
 template <class _BidirectionalIterator, class _Compare>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 bool
 prev_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last, _Compare __comp)
 {
@@ -67,14 +67,14 @@ prev_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last, 
 }
 
 template <class _BidirectionalIterator>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 bool
 prev_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last)
 {
-    return _VSTD::prev_permutation(__first, __last,
+    return _CUDA_VSTD::prev_permutation(__first, __last,
                                   __less<typename iterator_traits<_BidirectionalIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_PREV_PERMUTATION_H
+#endif // _LIBCUDACXX___ALGORITHM_PREV_PERMUTATION_H

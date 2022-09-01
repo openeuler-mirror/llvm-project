@@ -27,7 +27,7 @@ int main(int, char**)
       typedef std::unordered_set<int, std::hash<int>, std::equal_to<int>, A> C;
       C c;
       assert(c.max_size() <= 10);
-      LIBCPP_ASSERT(c.max_size() == 10);
+      LIBCUDACXX_ASSERT(c.max_size() == 10);
     }
     {
       typedef limited_allocator<int, (size_t)-1> A;
@@ -36,7 +36,7 @@ int main(int, char**)
           static_cast<C::size_type>(std::numeric_limits<C::difference_type>::max());
       C c;
       assert(c.max_size() <= max_dist);
-      LIBCPP_ASSERT(c.max_size() == max_dist);
+      LIBCUDACXX_ASSERT(c.max_size() == max_dist);
     }
     {
       typedef std::unordered_set<char> C;

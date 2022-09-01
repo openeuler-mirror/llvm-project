@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP_FILESYSTEM
-#define _LIBCPP_FILESYSTEM
+#ifndef _LIBCUDACXX_FILESYSTEM
+#define _LIBCUDACXX_FILESYSTEM
 
 /*
     filesystem synopsis
@@ -262,12 +262,12 @@ inline constexpr bool std::ranges::enable_view<std::filesystem::recursive_direct
 // standard-mandated includes
 #include <compare>
 
-#if defined(_LIBCPP_HAS_NO_FILESYSTEM_LIBRARY)
+#if defined(_LIBCUDACXX_HAS_NO_FILESYSTEM_LIBRARY)
 # error "The <filesystem> library is not supported since libc++ has been configured without support for a filesystem."
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#endif // _LIBCPP_FILESYSTEM
+#endif // _LIBCUDACXX_FILESYSTEM

@@ -14,13 +14,13 @@ static constinit std::new_handler __new_handler = nullptr;
 new_handler
 set_new_handler(new_handler handler) noexcept
 {
-    return __libcpp_atomic_exchange(&__new_handler, handler);
+    return __LIBCUDACXX_atomic_exchange(&__new_handler, handler);
 }
 
 new_handler
 get_new_handler() noexcept
 {
-    return __libcpp_atomic_load(&__new_handler);
+    return __LIBCUDACXX_atomic_load(&__new_handler);
 }
 
 } // namespace std

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_MAKE_HEAP_H
-#define _LIBCPP___ALGORITHM_RANGES_MAKE_HEAP_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_MAKE_HEAP_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_MAKE_HEAP_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__algorithm/make_heap.h>
@@ -28,20 +28,20 @@
 #include <__utility/forward.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __make_heap {
 
 struct __fn {
   template <class _Iter, class _Sent, class _Comp, class _Proj>
-  _LIBCPP_HIDE_FROM_ABI constexpr static
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr static
   _Iter __make_heap_fn_impl(_Iter __first, _Sent __last, _Comp& __comp, _Proj& __proj) {
     auto __last_iter = ranges::next(__first, __last);
 
@@ -53,14 +53,14 @@ struct __fn {
 
   template <random_access_iterator _Iter, sentinel_for<_Iter> _Sent, class _Comp = ranges::less, class _Proj = identity>
     requires sortable<_Iter, _Comp, _Proj>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   _Iter operator()(_Iter __first, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const {
     return __make_heap_fn_impl(std::move(__first), std::move(__last), __comp, __proj);
   }
 
   template <random_access_range _Range, class _Comp = ranges::less, class _Proj = identity>
     requires sortable<iterator_t<_Range>, _Comp, _Proj>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   borrowed_iterator_t<_Range> operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const {
     return __make_heap_fn_impl(ranges::begin(__r), ranges::end(__r), __comp, __proj);
   }
@@ -73,8 +73,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_MAKE_HEAP_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_MAKE_HEAP_H

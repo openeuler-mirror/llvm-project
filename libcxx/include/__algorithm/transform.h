@@ -6,19 +6,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_TRANSFORM_H
-#define _LIBCPP___ALGORITHM_TRANSFORM_H
+#ifndef _LIBCUDACXX___ALGORITHM_TRANSFORM_H
+#define _LIBCUDACXX___ALGORITHM_TRANSFORM_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _InputIterator, class _OutputIterator, class _UnaryOperation>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _OutputIterator
 transform(_InputIterator __first, _InputIterator __last, _OutputIterator __result, _UnaryOperation __op)
 {
@@ -28,7 +28,7 @@ transform(_InputIterator __first, _InputIterator __last, _OutputIterator __resul
 }
 
 template <class _InputIterator1, class _InputIterator2, class _OutputIterator, class _BinaryOperation>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _OutputIterator
 transform(_InputIterator1 __first1, _InputIterator1 __last1, _InputIterator2 __first2,
           _OutputIterator __result, _BinaryOperation __binary_op)
@@ -38,6 +38,6 @@ transform(_InputIterator1 __first1, _InputIterator1 __last1, _InputIterator2 __f
     return __result;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_TRANSFORM_H
+#endif // _LIBCUDACXX___ALGORITHM_TRANSFORM_H

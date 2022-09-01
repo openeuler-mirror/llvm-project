@@ -46,7 +46,7 @@ int main(int, char**)
     static_assert((std::is_same<I1::iterator_category, std::input_iterator_tag>::value), "");
     static_assert((std::is_same<I1::value_type, char>::value), "");
     static_assert((std::is_same<I1::difference_type, std::char_traits<char>::off_type>::value), "");
-    LIBCPP_STATIC_ASSERT((std::is_same<I1::pointer, char*>::value), "");
+    LIBCUDACXX_STATIC_ASSERT((std::is_same<I1::pointer, char*>::value), "");
     static_assert((std::is_same<I1::reference, char>::value), "");
     static_assert((std::is_same<I1::char_type, char>::value), "");
     static_assert((std::is_same<I1::traits_type, std::char_traits<char> >::value), "");
@@ -68,7 +68,7 @@ int main(int, char**)
     static_assert((std::is_same<I2::iterator_category, std::input_iterator_tag>::value), "");
     static_assert((std::is_same<I2::value_type, wchar_t>::value), "");
     static_assert((std::is_same<I2::difference_type, std::char_traits<wchar_t>::off_type>::value), "");
-    LIBCPP_STATIC_ASSERT((std::is_same<I2::pointer, wchar_t*>::value), "");
+    LIBCUDACXX_STATIC_ASSERT((std::is_same<I2::pointer, wchar_t*>::value), "");
     static_assert((std::is_same<I2::reference, wchar_t>::value), "");
     static_assert((std::is_same<I2::char_type, wchar_t>::value), "");
     static_assert((std::is_same<I2::traits_type, std::char_traits<wchar_t> >::value), "");

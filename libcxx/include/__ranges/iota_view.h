@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_IOTA_VIEW_H
-#define _LIBCPP___RANGES_IOTA_VIEW_H
+#ifndef _LIBCUDACXX___RANGES_IOTA_VIEW_H
+#define _LIBCUDACXX___RANGES_IOTA_VIEW_H
 
 #include <__assert>
 #include <__compare/three_way_comparable.h>
@@ -33,13 +33,13 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
   template<class _Int>
@@ -107,47 +107,47 @@ namespace ranges {
 
       _Start __value_ = _Start();
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       __iterator() requires default_initializable<_Start> = default;
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       constexpr explicit __iterator(_Start __value) : __value_(std::move(__value)) {}
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       constexpr _Start operator*() const noexcept(is_nothrow_copy_constructible_v<_Start>) {
         return __value_;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       constexpr __iterator& operator++() {
         ++__value_;
         return *this;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       constexpr void operator++(int) { ++*this; }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       constexpr __iterator operator++(int) requires incrementable<_Start> {
         auto __tmp = *this;
         ++*this;
         return __tmp;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       constexpr __iterator& operator--() requires __decrementable<_Start> {
         --__value_;
         return *this;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       constexpr __iterator  operator--(int) requires __decrementable<_Start> {
         auto __tmp = *this;
         --*this;
         return __tmp;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       constexpr __iterator& operator+=(difference_type __n)
         requires __advanceable<_Start>
       {
@@ -163,7 +163,7 @@ namespace ranges {
         return *this;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       constexpr __iterator& operator-=(difference_type __n)
         requires __advanceable<_Start>
       {
@@ -179,42 +179,42 @@ namespace ranges {
         return *this;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       constexpr _Start operator[](difference_type __n) const
         requires __advanceable<_Start>
       {
         return _Start(__value_ + __n);
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr bool operator==(const __iterator& __x, const __iterator& __y)
         requires equality_comparable<_Start>
       {
         return __x.__value_ == __y.__value_;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr bool operator<(const __iterator& __x, const __iterator& __y)
         requires totally_ordered<_Start>
       {
         return __x.__value_ < __y.__value_;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr bool operator>(const __iterator& __x, const __iterator& __y)
         requires totally_ordered<_Start>
       {
         return __y < __x;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr bool operator<=(const __iterator& __x, const __iterator& __y)
         requires totally_ordered<_Start>
       {
         return !(__y < __x);
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr bool operator>=(const __iterator& __x, const __iterator& __y)
         requires totally_ordered<_Start>
       {
@@ -227,7 +227,7 @@ namespace ranges {
         return __x.__value_ <=> __y.__value_;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr __iterator operator+(__iterator __i, difference_type __n)
         requires __advanceable<_Start>
       {
@@ -235,14 +235,14 @@ namespace ranges {
         return __i;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr __iterator operator+(difference_type __n, __iterator __i)
         requires __advanceable<_Start>
       {
         return __i + __n;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr __iterator operator-(__iterator __i, difference_type __n)
         requires __advanceable<_Start>
       {
@@ -250,7 +250,7 @@ namespace ranges {
         return __i;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr difference_type operator-(const __iterator& __x, const __iterator& __y)
         requires __advanceable<_Start>
       {
@@ -274,23 +274,23 @@ namespace ranges {
       _BoundSentinel __bound_sentinel_ = _BoundSentinel();
 
     public:
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       __sentinel() = default;
       constexpr explicit __sentinel(_BoundSentinel __bound_sentinel) : __bound_sentinel_(std::move(__bound_sentinel)) {}
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr bool operator==(const __iterator& __x, const __sentinel& __y) {
         return __x.__value_ == __y.__bound_sentinel_;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr iter_difference_t<_Start> operator-(const __iterator& __x, const __sentinel& __y)
         requires sized_sentinel_for<_BoundSentinel, _Start>
       {
         return __x.__value_ - __y.__bound_sentinel_;
       }
 
-      _LIBCPP_HIDE_FROM_ABI
+      _LIBCUDACXX_HIDE_FROM_ABI
       friend constexpr iter_difference_t<_Start> operator-(const __sentinel& __x, const __iterator& __y)
         requires sized_sentinel_for<_BoundSentinel, _Start>
       {
@@ -302,41 +302,41 @@ namespace ranges {
     _BoundSentinel __bound_sentinel_ = _BoundSentinel();
 
   public:
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     iota_view() requires default_initializable<_Start> = default;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr explicit iota_view(_Start __value) : __value_(std::move(__value)) { }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr iota_view(type_identity_t<_Start> __value, type_identity_t<_BoundSentinel> __bound_sentinel)
         : __value_(std::move(__value)), __bound_sentinel_(std::move(__bound_sentinel)) {
       // Validate the precondition if possible.
       if constexpr (totally_ordered_with<_Start, _BoundSentinel>) {
-        _LIBCPP_ASSERT(ranges::less_equal()(__value_, __bound_sentinel_),
+        _LIBCUDACXX_ASSERT(ranges::less_equal()(__value_, __bound_sentinel_),
                        "Precondition violated: value is greater than bound.");
       }
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr iota_view(__iterator __first, __iterator __last)
       requires same_as<_Start, _BoundSentinel>
     : iota_view(std::move(__first.__value_), std::move(__last.__value_)) {}
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr iota_view(__iterator __first, _BoundSentinel __last)
       requires same_as<_BoundSentinel, unreachable_sentinel_t>
     : iota_view(std::move(__first.__value_), std::move(__last)) {}
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr iota_view(__iterator __first, __sentinel __last)
       requires(!same_as<_Start, _BoundSentinel> && !same_as<_Start, unreachable_sentinel_t>)
     : iota_view(std::move(__first.__value_), std::move(__last.__bound_sentinel_)) {}
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __iterator begin() const { return __iterator{__value_}; }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto end() const {
       if constexpr (same_as<_BoundSentinel, unreachable_sentinel_t>)
         return unreachable_sentinel;
@@ -344,14 +344,14 @@ namespace ranges {
         return __sentinel{__bound_sentinel_};
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __iterator end() const
       requires same_as<_Start, _BoundSentinel>
     {
       return __iterator{__bound_sentinel_};
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto size() const
       requires(same_as<_Start, _BoundSentinel> && __advanceable<_Start>) ||
               (integral<_Start> && integral<_BoundSentinel>) || sized_sentinel_for<_BoundSentinel, _Start>
@@ -381,14 +381,14 @@ namespace ranges {
  namespace __iota {
   struct __fn {
     template<class _Start>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto operator()(_Start&& __start) const
       noexcept(noexcept(ranges::iota_view(std::forward<_Start>(__start))))
       -> decltype(      ranges::iota_view(std::forward<_Start>(__start)))
       { return          ranges::iota_view(std::forward<_Start>(__start)); }
 
     template <class _Start, class _BoundSentinel>
-    _LIBCPP_HIDE_FROM_ABI constexpr auto operator()(_Start&& __start, _BoundSentinel&& __bound_sentinel) const
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr auto operator()(_Start&& __start, _BoundSentinel&& __bound_sentinel) const
       noexcept(noexcept(ranges::iota_view(std::forward<_Start>(__start), std::forward<_BoundSentinel>(__bound_sentinel))))
       -> decltype(      ranges::iota_view(std::forward<_Start>(__start), std::forward<_BoundSentinel>(__bound_sentinel)))
       { return          ranges::iota_view(std::forward<_Start>(__start), std::forward<_BoundSentinel>(__bound_sentinel)); }
@@ -401,8 +401,8 @@ inline namespace __cpo {
 } // namespace views
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_IOTA_VIEW_H
+#endif // _LIBCUDACXX___RANGES_IOTA_VIEW_H

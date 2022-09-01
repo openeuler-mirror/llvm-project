@@ -5,8 +5,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_TEST_STD_UTILITIES_FORMAT_FORMAT_STRING_FORMAT_STRING_STD_TEST_EXCEPTION_H
-#define _LIBCPP_TEST_STD_UTILITIES_FORMAT_FORMAT_STRING_FORMAT_STRING_STD_TEST_EXCEPTION_H
+#ifndef _LIBCUDACXX_TEST_STD_UTILITIES_FORMAT_FORMAT_STRING_FORMAT_STRING_STD_TEST_EXCEPTION_H
+#define _LIBCUDACXX_TEST_STD_UTILITIES_FORMAT_FORMAT_STRING_FORMAT_STRING_STD_TEST_EXCEPTION_H
 
 #include <format>
 #include <string_view>
@@ -20,7 +20,7 @@ void test_exception(std::string_view what, const CharT* fmt) {
     (void)Parser{}.parse(parse_ctx);
     assert(false);
   } catch (std::format_error& e) {
-    LIBCPP_ASSERT(e.what() == what);
+    LIBCUDACXX_ASSERT(e.what() == what);
     return;
   }
 
@@ -48,4 +48,4 @@ constexpr void test_exception(std::string_view what, const CharT* fmt) {
 #endif
 }
 
-#endif // _LIBCPP_TEST_STD_UTILITIES_FORMAT_FORMAT_STRING_FORMAT_STRING_STD_TEST_EXCEPTION_H
+#endif // _LIBCUDACXX_TEST_STD_UTILITIES_FORMAT_FORMAT_STRING_FORMAT_STRING_STD_TEST_EXCEPTION_H

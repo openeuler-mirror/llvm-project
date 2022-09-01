@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Check that the overloads of std::__libcpp_{isnan,isinf,isfinite} that take
+// Check that the overloads of std::__LIBCUDACXX_{isnan,isinf,isfinite} that take
 // floating-point values are evaluatable from constexpr contexts.
 //
 // These functions need to be constexpr in order to be called from CUDA, see
@@ -20,9 +20,9 @@
 
 #include "test_macros.h"
 
-static_assert(std::__libcpp_isnan_or_builtin(0.) == false, "");
-static_assert(std::__libcpp_isinf_or_builtin(0.0) == false, "");
-static_assert(std::__libcpp_isfinite_or_builtin(0.0) == true, "");
+static_assert(std::__LIBCUDACXX_isnan_or_builtin(0.) == false, "");
+static_assert(std::__LIBCUDACXX_isinf_or_builtin(0.0) == false, "");
+static_assert(std::__LIBCUDACXX_isfinite_or_builtin(0.0) == true, "");
 
 int main(int, char**)
 {

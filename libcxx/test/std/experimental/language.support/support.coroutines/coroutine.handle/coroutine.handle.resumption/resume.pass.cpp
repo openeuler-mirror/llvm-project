@@ -56,8 +56,8 @@ void do_test(coro::coroutine_handle<Promise>&& H) {
   {
     ASSERT_SAME_TYPE(decltype(H.resume()), void);
     ASSERT_SAME_TYPE(decltype(H()), void);
-    LIBCPP_ASSERT_NOT_NOEXCEPT(H.resume());
-    LIBCPP_ASSERT_NOT_NOEXCEPT(H());
+    LIBCUDACXX_ASSERT_NOT_NOEXCEPT(H.resume());
+    LIBCUDACXX_ASSERT_NOT_NOEXCEPT(H());
     static_assert(has_resume<HType&>(), "");
     static_assert(has_resume<HType&&>(), "");
     static_assert(has_call_operator<HType&>(), "");

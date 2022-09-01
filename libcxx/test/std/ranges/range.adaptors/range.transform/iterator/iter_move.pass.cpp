@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // friend constexpr decltype(auto) iter_move(const iterator& i)
 //    noexcept(noexcept(invoke(i.parent_->fun_, *i.current_)))
@@ -33,7 +33,7 @@ constexpr bool test() {
   }
 
   {
-    LIBCPP_ASSERT_NOEXCEPT(std::ranges::iter_move(
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::ranges::iter_move(
       std::declval<std::ranges::iterator_t<std::ranges::transform_view<MoveOnlyView, PlusOneNoexcept>>&>()));
     ASSERT_NOT_NOEXCEPT(std::ranges::iter_move(
       std::declval<std::ranges::iterator_t<std::ranges::transform_view<MoveOnlyView, PlusOneMutable>>&>()));

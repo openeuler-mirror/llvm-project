@@ -6,32 +6,32 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_EMPTY_VIEW_H
-#define _LIBCPP___RANGES_EMPTY_VIEW_H
+#ifndef _LIBCUDACXX___RANGES_EMPTY_VIEW_H
+#define _LIBCUDACXX___RANGES_EMPTY_VIEW_H
 
 #include <__config>
 #include <__ranges/enable_borrowed_range.h>
 #include <__ranges/view_interface.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
   template<class _Tp>
     requires is_object_v<_Tp>
   class empty_view : public view_interface<empty_view<_Tp>> {
   public:
-    _LIBCPP_HIDE_FROM_ABI static constexpr _Tp* begin() noexcept { return nullptr; }
-    _LIBCPP_HIDE_FROM_ABI static constexpr _Tp* end() noexcept { return nullptr; }
-    _LIBCPP_HIDE_FROM_ABI static constexpr _Tp* data() noexcept { return nullptr; }
-    _LIBCPP_HIDE_FROM_ABI static constexpr size_t size() noexcept { return 0; }
-    _LIBCPP_HIDE_FROM_ABI static constexpr bool empty() noexcept { return true; }
+    _LIBCUDACXX_HIDE_FROM_ABI static constexpr _Tp* begin() noexcept { return nullptr; }
+    _LIBCUDACXX_HIDE_FROM_ABI static constexpr _Tp* end() noexcept { return nullptr; }
+    _LIBCUDACXX_HIDE_FROM_ABI static constexpr _Tp* data() noexcept { return nullptr; }
+    _LIBCUDACXX_HIDE_FROM_ABI static constexpr size_t size() noexcept { return 0; }
+    _LIBCUDACXX_HIDE_FROM_ABI static constexpr bool empty() noexcept { return true; }
   };
 
   template<class _Tp>
@@ -45,8 +45,8 @@ namespace ranges {
   } // namespace views
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_EMPTY_VIEW_H
+#endif // _LIBCUDACXX___RANGES_EMPTY_VIEW_H

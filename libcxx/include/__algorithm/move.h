@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_MOVE_H
-#define _LIBCPP___ALGORITHM_MOVE_H
+#ifndef _LIBCUDACXX___ALGORITHM_MOVE_H
+#define _LIBCUDACXX___ALGORITHM_MOVE_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__algorithm/unwrap_iter.h>
@@ -19,16 +19,16 @@
 #include <cstring>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // move
 
 template <class _AlgPolicy, class _InIter, class _Sent, class _OutIter>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX14
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 pair<_InIter, _OutIter> __move_impl(_InIter __first, _Sent __last, _OutIter __result) {
   while (__first != __last) {
     *__result = _IterOps<_AlgPolicy>::__iter_move(__first);
@@ -43,11 +43,11 @@ template <class _AlgPolicy,
           class _OutType,
           class = __enable_if_t<is_same<typename remove_const<_InType>::type, _OutType>::value
                              && is_trivially_move_assignable<_OutType>::value> >
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 pair<_InType*, _OutType*> __move_impl(_InType* __first, _InType* __last, _OutType* __result) {
-  if (__libcpp_is_constant_evaluated()
+  if (__LIBCUDACXX_is_constant_evaluated()
 // TODO: Remove this once GCC supports __builtin_memmove during constant evaluation
-#ifndef _LIBCPP_COMPILER_GCC
+#ifndef _LIBCUDACXX_COMPILER_GCC
    && !is_trivially_copyable<_InType>::value
 #endif
      )
@@ -75,7 +75,7 @@ template <class _AlgPolicy,
                      && __is_cpp17_contiguous_iterator<_InIter>::value
                      && __is_cpp17_contiguous_iterator<_OutIter>::value
                      && is_trivially_move_assignable<__iter_value_type<_OutIter> >::value, int> = 0>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX14
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 pair<reverse_iterator<_InIter>, reverse_iterator<_OutIter> >
 __move_impl(reverse_iterator<_InIter> __first,
             reverse_iterator<_InIter> __last,
@@ -89,7 +89,7 @@ __move_impl(reverse_iterator<_InIter> __first,
 }
 
 template <class _AlgPolicy, class _InIter, class _Sent, class _OutIter>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 __enable_if_t<is_copy_constructible<_InIter>::value
            && is_copy_constructible<_Sent>::value
            && is_copy_constructible<_OutIter>::value, pair<_InIter, _OutIter> >
@@ -100,7 +100,7 @@ __move(_InIter __first, _Sent __last, _OutIter __result) {
 }
 
 template <class _AlgPolicy, class _InIter, class _Sent, class _OutIter>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 __enable_if_t<!is_copy_constructible<_InIter>::value
            || !is_copy_constructible<_Sent>::value
            || !is_copy_constructible<_OutIter>::value, pair<_InIter, _OutIter> >
@@ -109,11 +109,11 @@ __move(_InIter __first, _Sent __last, _OutIter __result) {
 }
 
 template <class _InputIterator, class _OutputIterator>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _OutputIterator move(_InputIterator __first, _InputIterator __last, _OutputIterator __result) {
   return std::__move<_ClassicAlgPolicy>(__first, __last, __result).second;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_MOVE_H
+#endif // _LIBCUDACXX___ALGORITHM_MOVE_H

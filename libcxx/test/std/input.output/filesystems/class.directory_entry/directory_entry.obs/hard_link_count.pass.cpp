@@ -56,7 +56,7 @@ TEST_CASE(basic) {
     uintmax_t expect = hard_link_count(ent);
 
     // Remove the file to show that the results were already in the cache.
-    LIBCPP_ONLY(remove(file));
+    LIBCUDACXX_ONLY(remove(file));
 
     std::error_code ec = GetTestEC();
     TEST_CHECK(ent.hard_link_count(ec) == expect);
@@ -66,7 +66,7 @@ TEST_CASE(basic) {
     directory_entry ent(dir);
     uintmax_t expect = hard_link_count(ent);
 
-    LIBCPP_ONLY(remove(dir));
+    LIBCUDACXX_ONLY(remove(dir));
 
     std::error_code ec = GetTestEC();
     TEST_CHECK(ent.hard_link_count(ec) == expect);
@@ -98,7 +98,7 @@ TEST_CASE(not_regular_file) {
 
     uintmax_t expect = hard_link_count(p);
 
-    LIBCPP_ONLY(permissions(dir, perms::none));
+    LIBCUDACXX_ONLY(permissions(dir, perms::none));
 
     std::error_code ec = GetTestEC();
     TEST_CHECK(ent.hard_link_count(ec) == expect);

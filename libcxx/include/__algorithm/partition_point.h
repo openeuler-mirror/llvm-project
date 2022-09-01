@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_PARTITION_POINT_H
-#define _LIBCPP___ALGORITHM_PARTITION_POINT_H
+#ifndef _LIBCUDACXX___ALGORITHM_PARTITION_POINT_H
+#define _LIBCUDACXX___ALGORITHM_PARTITION_POINT_H
 
 #include <__algorithm/half_positive.h>
 #include <__config>
@@ -15,23 +15,23 @@
 #include <__iterator/distance.h>
 #include <__iterator/iterator_traits.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _ForwardIterator, class _Predicate>
-_LIBCPP_CONSTEXPR_AFTER_CXX17 _ForwardIterator
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _ForwardIterator
 partition_point(_ForwardIterator __first, _ForwardIterator __last, _Predicate __pred)
 {
     typedef typename iterator_traits<_ForwardIterator>::difference_type difference_type;
-    difference_type __len = _VSTD::distance(__first, __last);
+    difference_type __len = _CUDA_VSTD::distance(__first, __last);
     while (__len != 0)
     {
-        difference_type __l2 = _VSTD::__half_positive(__len);
+        difference_type __l2 = _CUDA_VSTD::__half_positive(__len);
         _ForwardIterator __m = __first;
-        _VSTD::advance(__m, __l2);
+        _CUDA_VSTD::advance(__m, __l2);
         if (__pred(*__m))
         {
             __first = ++__m;
@@ -43,6 +43,6 @@ partition_point(_ForwardIterator __first, _ForwardIterator __last, _Predicate __
     return __first;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_PARTITION_POINT_H
+#endif // _LIBCUDACXX___ALGORITHM_PARTITION_POINT_H

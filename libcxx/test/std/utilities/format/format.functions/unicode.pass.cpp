@@ -6,10 +6,10 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-format
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-format
 
 // This version runs the test when the platform has Unicode support.
-// UNSUPPORTED: libcpp-has-no-unicode
+// UNSUPPORTED: LIBCUDACXX-has-no-unicode
 
 // <format>
 
@@ -233,7 +233,7 @@ static void test_P1868() {
       SV("\U0001f468\u200d\U0001F469\u200d\U0001F467\u200d\U0001F466")); // { Family: Man, Woman, Girl, Boy }
 }
 
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
 // Tests the libc++ specific behaviour for malformed UTF-sequences. The
 // Standard doesn't specify how to handle this.
 template <class CharT>
@@ -285,7 +285,7 @@ static void test() {
   test_single_code_point_truncate<CharT>();
   test_P1868<CharT>();
 
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
   test_malformed_code_point<CharT>();
 #endif
 }

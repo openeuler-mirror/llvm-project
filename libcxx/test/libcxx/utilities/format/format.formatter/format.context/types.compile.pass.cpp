@@ -6,7 +6,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-format
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-format
 
 // <format>
 
@@ -118,7 +118,7 @@ static_assert(
 
 #ifndef TEST_HAS_NO_WIDE_CHARACTERS
 static_assert(is_basic_format_context_specialization<std::wformat_context, wchar_t>);
-LIBCPP_STATIC_ASSERT(
+LIBCUDACXX_STATIC_ASSERT(
     std::is_same_v<
         std::wformat_context,
         std::basic_format_context<

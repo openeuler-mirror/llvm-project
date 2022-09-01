@@ -327,7 +327,7 @@ void test_swap_different_alternatives() {
     assert(T::swap_called == 0);
     // The libc++ implementation double copies the argument, and not
     // the variant swap is called on.
-    LIBCPP_ASSERT(T::move_called == 1);
+    LIBCUDACXX_ASSERT(T::move_called == 1);
     assert(T::move_called <= 2);
     assert(T::move_assign_called == 0);
     assert(std::get<1>(v1) == 100);
@@ -335,7 +335,7 @@ void test_swap_different_alternatives() {
     T::reset();
     swap(v1, v2);
     assert(T::swap_called == 0);
-    LIBCPP_ASSERT(T::move_called == 2);
+    LIBCUDACXX_ASSERT(T::move_called == 2);
     assert(T::move_called <= 2);
     assert(T::move_assign_called == 0);
     assert(std::get<0>(v1).value == 42);
@@ -359,7 +359,7 @@ void test_swap_different_alternatives() {
     assert(T1::move_called == 1); // throws
     assert(T1::move_assign_called == 0);
     // FIXME: libc++ shouldn't move from T2 here.
-    LIBCPP_ASSERT(T2::move_called == 1);
+    LIBCUDACXX_ASSERT(T2::move_called == 1);
     assert(T2::move_called <= 1);
     assert(std::get<0>(v1).value == 42);
     if (T2::move_called != 0)
@@ -380,7 +380,7 @@ void test_swap_different_alternatives() {
       assert(false);
     } catch (int) {
     }
-    LIBCPP_ASSERT(T1::move_called == 0);
+    LIBCUDACXX_ASSERT(T1::move_called == 0);
     assert(T1::move_called <= 1);
     assert(T2::swap_called == 0);
     assert(T2::move_called == 1); // throws
@@ -392,7 +392,7 @@ void test_swap_different_alternatives() {
     assert(std::get<1>(v2).value == 100);
   }
 // FIXME: The tests below are just very libc++ specific
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
   {
     using T1 = ThrowsOnSecondMove;
     using T2 = NonThrowingNonNoexceptType;
@@ -426,7 +426,7 @@ void test_swap_different_alternatives() {
 // testing libc++ extension. If either variant stores a nothrow move
 // constructible type v1.swap(v2) provides the strong exception safety
 // guarantee.
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
   {
 
     using T1 = ThrowingTypeWithNothrowSwap;
@@ -466,7 +466,7 @@ void test_swap_different_alternatives() {
     assert(std::get<0>(v1).value == 42);
     assert(std::get<1>(v2).value == 100);
   }
-#endif // _LIBCPP_VERSION
+#endif // _LIBCUDACXX_VERSION
 #endif
 }
 
@@ -490,22 +490,22 @@ void test_swap_sfinae() {
     // but is still swappable via the generic swap algorithm, since the
     // variant is move constructible and move assignable.
     using V = std::variant<int, NotSwappable>;
-    LIBCPP_STATIC_ASSERT(!has_swap_member<V>(), "");
+    LIBCUDACXX_STATIC_ASSERT(!has_swap_member<V>(), "");
     static_assert(std::is_swappable_v<V>, "");
   }
   {
     using V = std::variant<int, NotCopyable>;
-    LIBCPP_STATIC_ASSERT(!has_swap_member<V>(), "");
+    LIBCUDACXX_STATIC_ASSERT(!has_swap_member<V>(), "");
     static_assert(!std::is_swappable_v<V>, "");
   }
   {
     using V = std::variant<int, NotCopyableWithSwap>;
-    LIBCPP_STATIC_ASSERT(!has_swap_member<V>(), "");
+    LIBCUDACXX_STATIC_ASSERT(!has_swap_member<V>(), "");
     static_assert(!std::is_swappable_v<V>, "");
   }
   {
     using V = std::variant<int, NotMoveAssignable>;
-    LIBCPP_STATIC_ASSERT(!has_swap_member<V>(), "");
+    LIBCUDACXX_STATIC_ASSERT(!has_swap_member<V>(), "");
     static_assert(!std::is_swappable_v<V>, "");
   }
 }
@@ -570,7 +570,7 @@ void test_swap_noexcept() {
     // but is still swappable via the generic swap algorithm, since the
     // variant is move constructible and move assignable.
     using V = std::variant<int, NotSwappable>;
-    LIBCPP_STATIC_ASSERT(!has_swap_member<V>(), "");
+    LIBCUDACXX_STATIC_ASSERT(!has_swap_member<V>(), "");
     static_assert(std::is_swappable_v<V>, "");
     static_assert(std::is_nothrow_swappable_v<V>, "");
     V v1, v2;
@@ -578,7 +578,7 @@ void test_swap_noexcept() {
   }
 }
 
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
 // This is why variant should SFINAE member swap. :-)
 template class std::variant<int, NotSwappable>;
 #endif

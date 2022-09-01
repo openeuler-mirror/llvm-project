@@ -25,8 +25,8 @@ test(S s1, S s2)
     S s1_ = s1;
     S s2_ = s2;
     s1.swap(s2);
-    LIBCPP_ASSERT(s1.__invariants());
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s1.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s1 == s2_);
     assert(s2 == s1_);
 }

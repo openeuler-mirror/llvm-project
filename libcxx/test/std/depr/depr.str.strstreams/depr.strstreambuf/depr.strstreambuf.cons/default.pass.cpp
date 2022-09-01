@@ -31,7 +31,7 @@ int main(int, char**)
     }
     {
         std::strstreambuf s(1024);
-        LIBCPP_ASSERT(s.str() == nullptr);
+        LIBCUDACXX_ASSERT(s.str() == nullptr);
         assert(s.pcount() == 0);
     }
 

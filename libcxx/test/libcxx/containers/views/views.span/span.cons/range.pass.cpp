@@ -18,7 +18,7 @@
 // to support construction from containers that look like contiguous ranges.
 //
 // This extension is only supported when we don't ship <ranges>, and we can
-// remove it once we get rid of _LIBCPP_HAS_NO_INCOMPLETE_RANGES.
+// remove it once we get rid of _LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES.
 
 #include <span>
 #include <cassert>

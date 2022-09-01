@@ -6,41 +6,41 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_CLAMP_H
-#define _LIBCPP___ALGORITHM_CLAMP_H
+#ifndef _LIBCUDACXX___ALGORITHM_CLAMP_H
+#define _LIBCUDACXX___ALGORITHM_CLAMP_H
 
 #include <__algorithm/comp.h>
 #include <__assert>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template<class _Tp, class _Compare>
-_LIBCPP_NODISCARD_EXT inline
-_LIBCPP_INLINE_VISIBILITY constexpr
+_LIBCUDACXX_NODISCARD_EXT inline
+_LIBCUDACXX_INLINE_VISIBILITY constexpr
 const _Tp&
 clamp(const _Tp& __v, const _Tp& __lo, const _Tp& __hi, _Compare __comp)
 {
-    _LIBCPP_ASSERT(!__comp(__hi, __lo), "Bad bounds passed to std::clamp");
+    _LIBCUDACXX_ASSERT(!__comp(__hi, __lo), "Bad bounds passed to std::clamp");
     return __comp(__v, __lo) ? __lo : __comp(__hi, __v) ? __hi : __v;
 
 }
 
 template<class _Tp>
-_LIBCPP_NODISCARD_EXT inline
-_LIBCPP_INLINE_VISIBILITY constexpr
+_LIBCUDACXX_NODISCARD_EXT inline
+_LIBCUDACXX_INLINE_VISIBILITY constexpr
 const _Tp&
 clamp(const _Tp& __v, const _Tp& __lo, const _Tp& __hi)
 {
-    return _VSTD::clamp(__v, __lo, __hi, __less<_Tp>());
+    return _CUDA_VSTD::clamp(__v, __lo, __hi, __less<_Tp>());
 }
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_CLAMP_H
+#endif // _LIBCUDACXX___ALGORITHM_CLAMP_H

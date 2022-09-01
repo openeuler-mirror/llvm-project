@@ -26,7 +26,7 @@ int main(int, char**) {
       assert(false);
     } catch (const std::regex_error &e) {
       assert(e.code() == std::regex_constants::error_badbrace);
-      LIBCPP_ASSERT(e.code() == std::regex_constants::error_badbrace);
+      LIBCUDACXX_ASSERT(e.code() == std::regex_constants::error_badbrace);
     }
   }
   for (std::regex_constants::syntax_option_type op :
@@ -37,7 +37,7 @@ int main(int, char**) {
       assert(false);
     } catch (const std::regex_error &e) {
       assert(e.code() == std::regex_constants::error_badbrace);
-      LIBCPP_ASSERT(e.code() == std::regex_constants::error_badbrace);
+      LIBCUDACXX_ASSERT(e.code() == std::regex_constants::error_badbrace);
     }
   }
 
@@ -49,7 +49,7 @@ int main(int, char**) {
       assert(false);
     } catch (const std::regex_error &e) {
       assert(e.code() == std::regex_constants::error_badbrace);
-      LIBCPP_ASSERT(e.code() == std::regex_constants::error_badbrace);
+      LIBCUDACXX_ASSERT(e.code() == std::regex_constants::error_badbrace);
     }
   }
   for (std::regex_constants::syntax_option_type op :
@@ -60,7 +60,7 @@ int main(int, char**) {
       assert(false);
     } catch (const std::regex_error &e) {
       assert(e.code() == std::regex_constants::error_badbrace);
-      LIBCPP_ASSERT(e.code() == std::regex_constants::error_badbrace);
+      LIBCUDACXX_ASSERT(e.code() == std::regex_constants::error_badbrace);
     }
   }
   return 0;

@@ -7,23 +7,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CHRONO_HIGH_RESOLUTION_CLOCK_H
-#define _LIBCPP___CHRONO_HIGH_RESOLUTION_CLOCK_H
+#ifndef _LIBCUDACXX___CHRONO_HIGH_RESOLUTION_CLOCK_H
+#define _LIBCUDACXX___CHRONO_HIGH_RESOLUTION_CLOCK_H
 
 #include <__chrono/steady_clock.h>
 #include <__chrono/system_clock.h>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace chrono
 {
 
-#ifndef _LIBCPP_HAS_NO_MONOTONIC_CLOCK
+#ifndef _LIBCUDACXX_HAS_NO_MONOTONIC_CLOCK
 typedef steady_clock high_resolution_clock;
 #else
 typedef system_clock high_resolution_clock;
@@ -31,6 +31,6 @@ typedef system_clock high_resolution_clock;
 
 } // namespace chrono
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___CHRONO_HIGH_RESOLUTION_CLOCK_H
+#endif // _LIBCUDACXX___CHRONO_HIGH_RESOLUTION_CLOCK_H

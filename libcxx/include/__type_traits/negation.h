@@ -6,28 +6,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_NEGATION_H
-#define _LIBCPP___TYPE_TRAITS_NEGATION_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_NEGATION_H
+#define _LIBCUDACXX___TYPE_TRAITS_NEGATION_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Pred>
 struct _Not : _BoolConstant<!_Pred::value> {};
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 struct negation : _Not<_Tp> {};
 template<class _Tp>
 inline constexpr bool negation_v = negation<_Tp>::value;
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_NEGATION_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_NEGATION_H

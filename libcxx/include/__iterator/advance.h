@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_ADVANCE_H
-#define _LIBCPP___ITERATOR_ADVANCE_H
+#ifndef _LIBCUDACXX___ITERATOR_ADVANCE_H
+#define _LIBCUDACXX___ITERATOR_ADVANCE_H
 
 #include <__assert>
 #include <__config>
@@ -22,21 +22,21 @@
 #include <limits>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _InputIter>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX14
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 void __advance(_InputIter& __i, typename iterator_traits<_InputIter>::difference_type __n, input_iterator_tag) {
   for (; __n > 0; --__n)
     ++__i;
 }
 
 template <class _BiDirIter>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX14
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 void __advance(_BiDirIter& __i, typename iterator_traits<_BiDirIter>::difference_type __n, bidirectional_iterator_tag) {
   if (__n >= 0)
     for (; __n > 0; --__n)
@@ -47,25 +47,25 @@ void __advance(_BiDirIter& __i, typename iterator_traits<_BiDirIter>::difference
 }
 
 template <class _RandIter>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX14
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 void __advance(_RandIter& __i, typename iterator_traits<_RandIter>::difference_type __n, random_access_iterator_tag) {
   __i += __n;
 }
 
 template <
     class _InputIter, class _Distance,
-    class _IntegralDistance = decltype(_VSTD::__convert_to_integral(declval<_Distance>())),
+    class _IntegralDistance = decltype(_CUDA_VSTD::__convert_to_integral(declval<_Distance>())),
     class = __enable_if_t<is_integral<_IntegralDistance>::value> >
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX14
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 void advance(_InputIter& __i, _Distance __orig_n) {
   typedef typename iterator_traits<_InputIter>::difference_type _Difference;
-  _Difference __n = static_cast<_Difference>(_VSTD::__convert_to_integral(__orig_n));
-  _LIBCPP_ASSERT(__n >= 0 || __is_cpp17_bidirectional_iterator<_InputIter>::value,
+  _Difference __n = static_cast<_Difference>(_CUDA_VSTD::__convert_to_integral(__orig_n));
+  _LIBCUDACXX_ASSERT(__n >= 0 || __is_cpp17_bidirectional_iterator<_InputIter>::value,
                  "Attempt to advance(it, n) with negative n on a non-bidirectional iterator");
-  _VSTD::__advance(__i, __n, typename iterator_traits<_InputIter>::iterator_category());
+  _CUDA_VSTD::__advance(__i, __n, typename iterator_traits<_InputIter>::iterator_category());
 }
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 // [range.iter.op.advance]
 
@@ -75,7 +75,7 @@ namespace __advance {
 struct __fn {
 private:
   template <class _Ip>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   static constexpr void __advance_forward(_Ip& __i, iter_difference_t<_Ip> __n) {
     while (__n > 0) {
       --__n;
@@ -84,7 +84,7 @@ private:
   }
 
   template <class _Ip>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   static constexpr void __advance_backward(_Ip& __i, iter_difference_t<_Ip> __n) {
     while (__n < 0) {
       ++__n;
@@ -95,9 +95,9 @@ private:
 public:
   // Preconditions: If `I` does not model `bidirectional_iterator`, `n` is not negative.
   template <input_or_output_iterator _Ip>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   constexpr void operator()(_Ip& __i, iter_difference_t<_Ip> __n) const {
-    _LIBCPP_ASSERT(__n >= 0 || bidirectional_iterator<_Ip>,
+    _LIBCUDACXX_ASSERT(__n >= 0 || bidirectional_iterator<_Ip>,
                    "If `n < 0`, then `bidirectional_iterator<I>` must be true.");
 
     // If `I` models `random_access_iterator`, equivalent to `i += n`.
@@ -119,10 +119,10 @@ public:
 
   // Preconditions: Either `assignable_from<I&, S> || sized_sentinel_for<S, I>` is modeled, or [i, bound_sentinel) denotes a range.
   template <input_or_output_iterator _Ip, sentinel_for<_Ip> _Sp>
-  _LIBCPP_HIDE_FROM_ABI constexpr void operator()(_Ip& __i, _Sp __bound_sentinel) const {
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr void operator()(_Ip& __i, _Sp __bound_sentinel) const {
     // If `I` and `S` model `assignable_from<I&, S>`, equivalent to `i = std::move(bound_sentinel)`.
     if constexpr (assignable_from<_Ip&, _Sp>) {
-      __i = _VSTD::move(__bound_sentinel);
+      __i = _CUDA_VSTD::move(__bound_sentinel);
     }
     // Otherwise, if `S` and `I` model `sized_sentinel_for<S, I>`, equivalent to `ranges::advance(i, bound_sentinel - i)`.
     else if constexpr (sized_sentinel_for<_Sp, _Ip>) {
@@ -142,9 +142,9 @@ public:
   //   * If `n < 0`, [bound_sentinel, i) denotes a range, `I` models `bidirectional_iterator`, and `I` and `S` model `same_as<I, S>`.
   // Returns: `n - M`, where `M` is the difference between the ending and starting position.
   template <input_or_output_iterator _Ip, sentinel_for<_Ip> _Sp>
-  _LIBCPP_HIDE_FROM_ABI constexpr iter_difference_t<_Ip> operator()(_Ip& __i, iter_difference_t<_Ip> __n,
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr iter_difference_t<_Ip> operator()(_Ip& __i, iter_difference_t<_Ip> __n,
                                                                     _Sp __bound_sentinel) const {
-    _LIBCPP_ASSERT((__n >= 0) || (bidirectional_iterator<_Ip> && same_as<_Ip, _Sp>),
+    _LIBCUDACXX_ASSERT((__n >= 0) || (bidirectional_iterator<_Ip> && same_as<_Ip, _Sp>),
                    "If `n < 0`, then `bidirectional_iterator<I> && same_as<I, S>` must be true.");
     // If `S` and `I` model `sized_sentinel_for<S, I>`:
     if constexpr (sized_sentinel_for<_Sp, _Ip>) {
@@ -181,7 +181,7 @@ public:
       return __n;
     }
 
-    __libcpp_unreachable();
+    __LIBCUDACXX_unreachable();
   }
 };
 
@@ -192,8 +192,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_ADVANCE_H
+#endif // _LIBCUDACXX___ITERATOR_ADVANCE_H

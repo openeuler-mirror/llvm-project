@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef LIBCPP_TEST_BITSET_TEST_CASES_H
-#define LIBCPP_TEST_BITSET_TEST_CASES_H
+#ifndef LIBCUDACXX_TEST_BITSET_TEST_CASES_H
+#define LIBCUDACXX_TEST_BITSET_TEST_CASES_H
 
 #include <bitset>
 #include <string>
@@ -174,4 +174,4 @@ inline std::vector<std::bitset<1000> > get_test_cases<1000>() {
     return cases;
 }
 
-#endif // !LIBCPP_TEST_BITSET_TEST_CASES_H
+#endif // !LIBCUDACXX_TEST_BITSET_TEST_CASES_H

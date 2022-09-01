@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// UNSUPPORTED: no-threads, libcpp-has-thread-api-external
+// UNSUPPORTED: no-threads, LIBCUDACXX-has-thread-api-external
 
 // XFAIL: windows
 

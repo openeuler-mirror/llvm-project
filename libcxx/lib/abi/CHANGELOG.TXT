@@ -27,32 +27,32 @@ Version 15.0
 
   All platforms
   -------------
-  Symbol removed: _ZNKSt3__111__libcpp_db15__decrementableEPKv
-  Symbol removed: _ZNKSt3__111__libcpp_db15__find_c_from_iEPv
-  Symbol removed: _ZNKSt3__111__libcpp_db15__subscriptableEPKvl
-  Symbol removed: _ZNKSt3__111__libcpp_db17__dereferenceableEPKv
-  Symbol removed: _ZNKSt3__111__libcpp_db17__find_c_and_lockEPv
-  Symbol removed: _ZNKSt3__111__libcpp_db22__less_than_comparableEPKvS2_
-  Symbol removed: _ZNKSt3__111__libcpp_db6unlockEv
-  Symbol removed: _ZNKSt3__111__libcpp_db8__find_cEPv
-  Symbol removed: _ZNKSt3__111__libcpp_db9__addableEPKvl
-  Symbol removed: _ZNKSt3__119__libcpp_debug_info4whatEv
-  Symbol removed: _ZNSt3__111__libcpp_db10__insert_cEPvPFPNS_8__c_nodeES1_S1_S3_E
-  Symbol removed: _ZNSt3__111__libcpp_db10__insert_iEPv
-  Symbol removed: _ZNSt3__111__libcpp_db11__insert_icEPvPKv
-  Symbol removed: _ZNSt3__111__libcpp_db15__iterator_copyEPvPKv
-  Symbol removed: _ZNSt3__111__libcpp_db16__invalidate_allEPv
-  Symbol removed: _ZNSt3__111__libcpp_db4swapEPvS1_
-  Symbol removed: _ZNSt3__111__libcpp_db9__erase_cEPv
-  Symbol removed: _ZNSt3__111__libcpp_db9__erase_iEPv
-  Symbol removed: _ZNSt3__111__libcpp_dbC1Ev
-  Symbol removed: _ZNSt3__111__libcpp_dbC2Ev
-  Symbol removed: _ZNSt3__111__libcpp_dbD1Ev
-  Symbol removed: _ZNSt3__111__libcpp_dbD2Ev
+  Symbol removed: _ZNKSt3__111__LIBCUDACXX_db15__decrementableEPKv
+  Symbol removed: _ZNKSt3__111__LIBCUDACXX_db15__find_c_from_iEPv
+  Symbol removed: _ZNKSt3__111__LIBCUDACXX_db15__subscriptableEPKvl
+  Symbol removed: _ZNKSt3__111__LIBCUDACXX_db17__dereferenceableEPKv
+  Symbol removed: _ZNKSt3__111__LIBCUDACXX_db17__find_c_and_lockEPv
+  Symbol removed: _ZNKSt3__111__LIBCUDACXX_db22__less_than_comparableEPKvS2_
+  Symbol removed: _ZNKSt3__111__LIBCUDACXX_db6unlockEv
+  Symbol removed: _ZNKSt3__111__LIBCUDACXX_db8__find_cEPv
+  Symbol removed: _ZNKSt3__111__LIBCUDACXX_db9__addableEPKvl
+  Symbol removed: _ZNKSt3__119__LIBCUDACXX_debug_info4whatEv
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_db10__insert_cEPvPFPNS_8__c_nodeES1_S1_S3_E
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_db10__insert_iEPv
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_db11__insert_icEPvPKv
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_db15__iterator_copyEPvPKv
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_db16__invalidate_allEPv
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_db4swapEPvS1_
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_db9__erase_cEPv
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_db9__erase_iEPv
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_dbC1Ev
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_dbC2Ev
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_dbD1Ev
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_dbD2Ev
   Symbol removed: _ZNSt3__114__get_const_dbEv
-  Symbol removed: _ZNSt3__123__libcpp_debug_functionE
-  Symbol removed: _ZNSt3__127__libcpp_set_debug_functionEPFvRKNS_19__libcpp_debug_infoEE
-  Symbol removed: _ZNSt3__129__libcpp_abort_debug_functionERKNS_19__libcpp_debug_infoE
+  Symbol removed: _ZNSt3__123__LIBCUDACXX_debug_functionE
+  Symbol removed: _ZNSt3__127__LIBCUDACXX_set_debug_functionEPFvRKNS_19__LIBCUDACXX_debug_infoEE
+  Symbol removed: _ZNSt3__129__LIBCUDACXX_abort_debug_functionERKNS_19__LIBCUDACXX_debug_infoE
   Symbol removed: _ZNSt3__18__c_node5__addEPNS_8__i_nodeE
   Symbol removed: _ZNSt3__18__c_nodeD0Ev
   Symbol removed: _ZNSt3__18__c_nodeD1Ev
@@ -73,7 +73,7 @@ Version 15.0
 
   All platforms
   -------------
-  Symbol added: _ZNSt3__122__libcpp_verbose_abortEPKcz
+  Symbol added: _ZNSt3__122__LIBCUDACXX_verbose_abortEPKcz
 
 ------------
 Version 14.0
@@ -119,7 +119,7 @@ Version 14.0
   adds symbols to the library. Programs compiled against the library will not
   rely on the vtable being defined in it by default. Reliance on the vtable
   being in the shared library can be enabled by defining the
-  _LIBCPP_ABI_BAD_FUNCTION_CALL_KEY_FUNCTION macro.
+  _LIBCUDACXX_ABI_BAD_FUNCTION_CALL_KEY_FUNCTION macro.
 
   Note that this commit also causes the libc++ shared library to start relying
   on std::exception::what() being provided. This is due to the fact that the
@@ -362,14 +362,14 @@ Version 10.0
 
   <arch>-apple-apple-darwin
   -------------------------
-  Symbol added: __ZNSt3__120__libcpp_atomic_waitEPVKNS_17__cxx_atomic_implIxNS_22__cxx_atomic_base_implIxEEEEx
-  Symbol added: __ZNSt3__120__libcpp_atomic_waitEPVKvx
+  Symbol added: __ZNSt3__120__LIBCUDACXX_atomic_waitEPVKNS_17__cxx_atomic_implIxNS_22__cxx_atomic_base_implIxEEEEx
+  Symbol added: __ZNSt3__120__LIBCUDACXX_atomic_waitEPVKvx
   Symbol added: __ZNSt3__123__cxx_atomic_notify_allEPVKNS_17__cxx_atomic_implIxNS_22__cxx_atomic_base_implIxEEEE
   Symbol added: __ZNSt3__123__cxx_atomic_notify_allEPVKv
   Symbol added: __ZNSt3__123__cxx_atomic_notify_oneEPVKNS_17__cxx_atomic_implIxNS_22__cxx_atomic_base_implIxEEEE
   Symbol added: __ZNSt3__123__cxx_atomic_notify_oneEPVKv
-  Symbol added: __ZNSt3__123__libcpp_atomic_monitorEPVKNS_17__cxx_atomic_implIxNS_22__cxx_atomic_base_implIxEEEE
-  Symbol added: __ZNSt3__123__libcpp_atomic_monitorEPVKv
+  Symbol added: __ZNSt3__123__LIBCUDACXX_atomic_monitorEPVKNS_17__cxx_atomic_implIxNS_22__cxx_atomic_base_implIxEEEE
+  Symbol added: __ZNSt3__123__LIBCUDACXX_atomic_monitorEPVKv
   Symbol added: __ZNSt3__131__arrive_barrier_algorithm_baseEPNS_24__barrier_algorithm_baseEh
   Symbol added: __ZNSt3__132__destroy_barrier_algorithm_baseEPNS_24__barrier_algorithm_baseE
   Symbol added: __ZNSt3__134__construct_barrier_algorithm_baseERl
@@ -495,27 +495,27 @@ Version 9.0
 
   All Platforms (ignoring versioning namespaces)
   ----------------------------------------------
-  Symbol added: _ZNKSt3__119__libcpp_debug_info4whatEv
-  Symbol removed: _ZNKSt3__124__libcpp_debug_exception4whatEv
-  Symbol removed: _ZNSt3__124__libcpp_debug_exceptionC1ERKNS_19__libcpp_debug_infoE
-  Symbol removed: _ZNSt3__124__libcpp_debug_exceptionC1ERKS0_
-  Symbol removed: _ZNSt3__124__libcpp_debug_exceptionC1Ev
-  Symbol removed: _ZNSt3__124__libcpp_debug_exceptionC2ERKNS_19__libcpp_debug_infoE
-  Symbol removed: _ZNSt3__124__libcpp_debug_exceptionC2ERKS0_
-  Symbol removed: _ZNSt3__124__libcpp_debug_exceptionC2Ev
-  Symbol removed: _ZNSt3__124__libcpp_debug_exceptionD0Ev
-  Symbol removed: _ZNSt3__124__libcpp_debug_exceptionD1Ev
-  Symbol removed: _ZNSt3__124__libcpp_debug_exceptionD2Ev
-  Symbol removed: _ZNSt3__129__libcpp_throw_debug_functionERKNS_19__libcpp_debug_infoE
-  Symbol removed: _ZTINSt3__124__libcpp_debug_exceptionE
-  Symbol removed: _ZTSNSt3__124__libcpp_debug_exceptionE
-  Symbol removed: _ZTVNSt3__124__libcpp_debug_exceptionE
+  Symbol added: _ZNKSt3__119__LIBCUDACXX_debug_info4whatEv
+  Symbol removed: _ZNKSt3__124__LIBCUDACXX_debug_exception4whatEv
+  Symbol removed: _ZNSt3__124__LIBCUDACXX_debug_exceptionC1ERKNS_19__LIBCUDACXX_debug_infoE
+  Symbol removed: _ZNSt3__124__LIBCUDACXX_debug_exceptionC1ERKS0_
+  Symbol removed: _ZNSt3__124__LIBCUDACXX_debug_exceptionC1Ev
+  Symbol removed: _ZNSt3__124__LIBCUDACXX_debug_exceptionC2ERKNS_19__LIBCUDACXX_debug_infoE
+  Symbol removed: _ZNSt3__124__LIBCUDACXX_debug_exceptionC2ERKS0_
+  Symbol removed: _ZNSt3__124__LIBCUDACXX_debug_exceptionC2Ev
+  Symbol removed: _ZNSt3__124__LIBCUDACXX_debug_exceptionD0Ev
+  Symbol removed: _ZNSt3__124__LIBCUDACXX_debug_exceptionD1Ev
+  Symbol removed: _ZNSt3__124__LIBCUDACXX_debug_exceptionD2Ev
+  Symbol removed: _ZNSt3__129__LIBCUDACXX_throw_debug_functionERKNS_19__LIBCUDACXX_debug_infoE
+  Symbol removed: _ZTINSt3__124__LIBCUDACXX_debug_exceptionE
+  Symbol removed: _ZTSNSt3__124__LIBCUDACXX_debug_exceptionE
+  Symbol removed: _ZTVNSt3__124__LIBCUDACXX_debug_exceptionE
 
 
     x86_64-apple-apple-darwin
     -------------------------
-    Symbol added: __ZNSt3__111__libcpp_db10__insert_cEPvPFPNS_8__c_nodeES1_S1_S3_E
-    Symbol removed: __ZNSt3__111__libcpp_db10__insert_cEPv
+    Symbol added: __ZNSt3__111__LIBCUDACXX_db10__insert_cEPvPFPNS_8__c_nodeES1_S1_S3_E
+    Symbol removed: __ZNSt3__111__LIBCUDACXX_db10__insert_cEPv
 
 * r355367 - Fix -fsanitize=vptr badness in <__debug>
 
@@ -528,8 +528,8 @@ Version 9.0
 
   All platforms
   -------------
-  Symbol added: _ZNSt3__111__libcpp_db10__insert_cEPvPFPNS_8__c_nodeES1_S1_S3_E
-  Symbol removed: _ZNSt3__111__libcpp_db10__insert_cEPv
+  Symbol added: _ZNSt3__111__LIBCUDACXX_db10__insert_cEPvPFPNS_8__c_nodeES1_S1_S3_E
+  Symbol removed: _ZNSt3__111__LIBCUDACXX_db10__insert_cEPv
 
 -----------
 Version 8.0
@@ -710,27 +710,27 @@ Version 5.0
 Version 4.0
 -----------
 
-* r290651 - Add _LIBCPP_ASSERT debug handling functions
+* r290651 - Add _LIBCUDACXX_ASSERT debug handling functions
 
   All Platforms
   -------------
-  Symbol added: _ZNSt3__124__libcpp_debug_exceptionC2ERKNS_19__libcpp_debug_infoE
-  Symbol added: _ZNSt3__124__libcpp_debug_exceptionD1Ev
-  Symbol added: _ZTINSt3__124__libcpp_debug_exceptionE
-  Symbol added: _ZNSt3__129__libcpp_throw_debug_functionERKNS_19__libcpp_debug_infoE
-  Symbol added: _ZNSt3__124__libcpp_debug_exceptionD2Ev
-  Symbol added: _ZNSt3__129__libcpp_abort_debug_functionERKNS_19__libcpp_debug_infoE
-  Symbol added: _ZNSt3__124__libcpp_debug_exceptionC2ERKS0_
-  Symbol added: _ZNSt3__124__libcpp_debug_exceptionC1Ev
-  Symbol added: _ZNSt3__124__libcpp_debug_exceptionC1ERKNS_19__libcpp_debug_infoE
-  Symbol added: _ZNSt3__124__libcpp_debug_exceptionC2Ev
-  Symbol added: _ZTSNSt3__124__libcpp_debug_exceptionE
-  Symbol added: _ZNSt3__123__libcpp_debug_functionE
-  Symbol added: _ZNKSt3__124__libcpp_debug_exception4whatEv
-  Symbol added: _ZNSt3__124__libcpp_debug_exceptionC1ERKS0_
-  Symbol added: _ZNSt3__124__libcpp_debug_exceptionD0Ev
-  Symbol added: _ZTVNSt3__124__libcpp_debug_exceptionE
-  Symbol added: _ZNSt3__127__libcpp_set_debug_functionEPFvRKNS_19__libcpp_debug_infoEE
+  Symbol added: _ZNSt3__124__LIBCUDACXX_debug_exceptionC2ERKNS_19__LIBCUDACXX_debug_infoE
+  Symbol added: _ZNSt3__124__LIBCUDACXX_debug_exceptionD1Ev
+  Symbol added: _ZTINSt3__124__LIBCUDACXX_debug_exceptionE
+  Symbol added: _ZNSt3__129__LIBCUDACXX_throw_debug_functionERKNS_19__LIBCUDACXX_debug_infoE
+  Symbol added: _ZNSt3__124__LIBCUDACXX_debug_exceptionD2Ev
+  Symbol added: _ZNSt3__129__LIBCUDACXX_abort_debug_functionERKNS_19__LIBCUDACXX_debug_infoE
+  Symbol added: _ZNSt3__124__LIBCUDACXX_debug_exceptionC2ERKS0_
+  Symbol added: _ZNSt3__124__LIBCUDACXX_debug_exceptionC1Ev
+  Symbol added: _ZNSt3__124__LIBCUDACXX_debug_exceptionC1ERKNS_19__LIBCUDACXX_debug_infoE
+  Symbol added: _ZNSt3__124__LIBCUDACXX_debug_exceptionC2Ev
+  Symbol added: _ZTSNSt3__124__LIBCUDACXX_debug_exceptionE
+  Symbol added: _ZNSt3__123__LIBCUDACXX_debug_functionE
+  Symbol added: _ZNKSt3__124__LIBCUDACXX_debug_exception4whatEv
+  Symbol added: _ZNSt3__124__LIBCUDACXX_debug_exceptionC1ERKS0_
+  Symbol added: _ZNSt3__124__LIBCUDACXX_debug_exceptionD0Ev
+  Symbol added: _ZTVNSt3__124__LIBCUDACXX_debug_exceptionE
+  Symbol added: _ZNSt3__127__LIBCUDACXX_set_debug_functionEPFvRKNS_19__LIBCUDACXX_debug_infoEE
 
 * r288547 - Implement C++17 <variant>
 
@@ -750,8 +750,8 @@ Version 4.0
 
   x86_64-linux-gnu
   ----------------
-  Symbol removed: _ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6appendIPcEENS_9enable_ifIXaasr21__is_forward_iteratorIT_EE5valuesr38__libcpp_string_gets_noexcept_iteratorIS9_EE5valueERS5_E4typeES9_S9_
-  Symbol removed: _ZNSt3__112basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEE6appendIPwEENS_9enable_ifIXaasr21__is_forward_iteratorIT_EE5valuesr38__libcpp_string_gets_noexcept_iteratorIS9_EE5valueERS5_E4typeES9_S9_
+  Symbol removed: _ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6appendIPcEENS_9enable_ifIXaasr21__is_forward_iteratorIT_EE5valuesr38__LIBCUDACXX_string_gets_noexcept_iteratorIS9_EE5valueERS5_E4typeES9_S9_
+  Symbol removed: _ZNSt3__112basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEE6appendIPwEENS_9enable_ifIXaasr21__is_forward_iteratorIT_EE5valuesr38__LIBCUDACXX_string_gets_noexcept_iteratorIS9_EE5valueERS5_E4typeES9_S9_
 
   x86_64-apple-darwin16.0
   -----------------------
@@ -779,9 +779,9 @@ Version 4.0
   Symbol removed: _ZNSt3__115__codecvt_utf16IwLb1EED0Ev
   Symbol removed: _ZNSt3__117__assoc_sub_stateD0Ev
   Symbol removed: _ZNSt3__117__assoc_sub_stateD2Ev
-  Symbol removed: _ZNSt3__117__libcpp_sscanf_lEPKcP15__locale_structS1_z
-  Symbol removed: _ZNSt3__119__libcpp_asprintf_lEPPcP15__locale_structPKcz
-  Symbol removed: _ZNSt3__119__libcpp_snprintf_lEPcmP15__locale_structPKcz
+  Symbol removed: _ZNSt3__117__LIBCUDACXX_sscanf_lEPKcP15__locale_structS1_z
+  Symbol removed: _ZNSt3__119__LIBCUDACXX_asprintf_lEPPcP15__locale_structPKcz
+  Symbol removed: _ZNSt3__119__LIBCUDACXX_snprintf_lEPcmP15__locale_structPKcz
   Symbol removed: _ZNSt3__120__codecvt_utf8_utf16IDiED0Ev
   Symbol removed: _ZNSt3__120__codecvt_utf8_utf16IDsED0Ev
   Symbol removed: _ZNSt3__120__codecvt_utf8_utf16IwED0Ev
@@ -836,7 +836,7 @@ Version 4.0
 
   x86_64-linux-gnu
   ----------------
-  Symbol removed: _ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6insertIPKcEENS_9enable_ifIXaasr21__is_forward_iteratorIT_EE5valuesr38__libcpp_string_gets_noexcept_iteratorISA_EE5valueENS_11__wrap_iterIPcEEE4typeENSB_IS8_EESA_SA_
+  Symbol removed: _ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6insertIPKcEENS_9enable_ifIXaasr21__is_forward_iteratorIT_EE5valuesr38__LIBCUDACXX_string_gets_noexcept_iteratorISA_EE5valueENS_11__wrap_iterIPcEEE4typeENSB_IS8_EESA_SA_
   Symbol removed: _ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE7replaceIPKcEENS_9enable_ifIXsr19__is_input_iteratorIT_EE5valueERS5_E4typeENS_11__wrap_iterIS8_EESF_SA_SA_
-  Symbol removed: _ZNSt3__112basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEE6insertIPKwEENS_9enable_ifIXaasr21__is_forward_iteratorIT_EE5valuesr38__libcpp_string_gets_noexcept_iteratorISA_EE5valueENS_11__wrap_iterIPwEEE4typeENSB_IS8_EESA_SA_
+  Symbol removed: _ZNSt3__112basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEE6insertIPKwEENS_9enable_ifIXaasr21__is_forward_iteratorIT_EE5valuesr38__LIBCUDACXX_string_gets_noexcept_iteratorISA_EE5valueENS_11__wrap_iterIPwEEE4typeENSB_IS8_EESA_SA_
   Symbol removed: _ZNSt3__112basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEE7replaceIPKwEENS_9enable_ifIXsr19__is_input_iteratorIT_EE5valueERS5_E4typeENS_11__wrap_iterIS8_EESF_SA_SA_

@@ -36,15 +36,15 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef _LIBCPP_SRC_INCLUDE_RYU_DS2_H
-#define _LIBCPP_SRC_INCLUDE_RYU_DS2_H
+#ifndef _LIBCUDACXX_SRC_INCLUDE_RYU_DS2_H
+#define _LIBCUDACXX_SRC_INCLUDE_RYU_DS2_H
 
 // Avoid formatting to keep the changes with the original code minimal.
 // clang-format off
 
 #include <__config>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 inline constexpr int __DOUBLE_MANTISSA_BITS = 52;
 inline constexpr int __DOUBLE_EXPONENT_BITS = 11;
@@ -55,8 +55,8 @@ inline constexpr int __DOUBLE_POW5_BITCOUNT = 121;
 
 [[nodiscard]] to_chars_result __d2s_buffered_n(char* const _First, char* const _Last, const double __f, const chars_format _Fmt);
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
 // clang-format on
 
-#endif // _LIBCPP_SRC_INCLUDE_RYU_DS2_H
+#endif // _LIBCUDACXX_SRC_INCLUDE_RYU_DS2_H

@@ -29,7 +29,7 @@ template <class S>
 TEST_CONSTEXPR_CXX20 void
 test(const S& s, const typename S::value_type* str, int x)
 {
-    LIBCPP_ASSERT_NOEXCEPT(s.compare(str));
+    LIBCUDACXX_ASSERT_NOEXCEPT(s.compare(str));
     assert(sign(s.compare(str)) == sign(x));
 }
 

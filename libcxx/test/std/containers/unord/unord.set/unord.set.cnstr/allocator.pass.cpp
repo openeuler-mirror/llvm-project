@@ -33,7 +33,7 @@ int main(int, char**)
                                    test_allocator<NotConstructible>
                                    > C;
         C c(test_allocator<NotConstructible>(10));
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
         assert(c.hash_function() == test_hash<NotConstructible>());
         assert(c.key_eq() == test_equal_to<NotConstructible>());
         assert(c.get_allocator() == test_allocator<NotConstructible>(10));
@@ -51,7 +51,7 @@ int main(int, char**)
                                    min_allocator<NotConstructible>
                                    > C;
         C c(min_allocator<NotConstructible>{});
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
         assert(c.hash_function() == test_hash<NotConstructible>());
         assert(c.key_eq() == test_equal_to<NotConstructible>());
         assert(c.get_allocator() == min_allocator<NotConstructible>());
@@ -71,7 +71,7 @@ int main(int, char**)
 
         A a(43);
         C c(3, a);
-        LIBCPP_ASSERT(c.bucket_count() == 3);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 3);
         assert(c.hash_function() == HF());
         assert(c.key_eq() == Comp ());
         assert(c.get_allocator() == a);
@@ -92,7 +92,7 @@ int main(int, char**)
         HF hf(42);
         A a(43);
         C c(4, hf, a);
-        LIBCPP_ASSERT(c.bucket_count() == 4);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 4);
         assert(c.hash_function() == hf);
         assert(!(c.hash_function() == HF()));
         assert(c.key_eq() == Comp ());

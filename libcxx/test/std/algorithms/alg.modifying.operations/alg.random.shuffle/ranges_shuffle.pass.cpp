@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // <algorithm>
 
@@ -48,9 +48,9 @@ private:
 };
 
 static_assert(std::uniform_random_bit_generator<RandGen>);
-// `std::uniform_random_bit_generator` is a subset of requirements of `__libcpp_random_is_valid_urng`. Make sure that
+// `std::uniform_random_bit_generator` is a subset of requirements of `__LIBCUDACXX_random_is_valid_urng`. Make sure that
 // a type satisfying the required minimum is still accepted by `ranges::shuffle`.
-LIBCPP_STATIC_ASSERT(!std::__libcpp_random_is_valid_urng<RandGen>::value);
+LIBCUDACXX_STATIC_ASSERT(!std::__LIBCUDACXX_random_is_valid_urng<RandGen>::value);
 
 struct BadGen {
   constexpr static size_t min() { return 255; }

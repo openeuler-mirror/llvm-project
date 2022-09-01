@@ -7,7 +7,7 @@
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
 // UNSUPPORTED: no-localization
-// UNSUPPORTED: libcpp-has-no-incomplete-format
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-format
 
 // REQUIRES: locale.en_US.UTF-8
 // REQUIRES: locale.fr_FR.UTF-8
@@ -18,7 +18,7 @@
 // basic_format_context(Out out,
 //                      basic_format_args<basic_format_context> args,
 //                      std::optional<std::::locale>&& loc = std::nullopt);
-// If compliled with -D_LIBCPP_HAS_NO_LOCALIZATION
+// If compliled with -D_LIBCUDACXX_HAS_NO_LOCALIZATION
 // basic_format_context(Out out,
 //                      basic_format_args<basic_format_context> args);
 
@@ -57,7 +57,7 @@ void test() {
     OutIt out_it{output};
     std::basic_format_context context =
         test_format_context_create(out_it, args);
-    LIBCPP_ASSERT(args.__size() == 4);
+    LIBCUDACXX_ASSERT(args.__size() == 4);
 
     assert(test_basic_format_arg(context.arg(0), true));
     assert(test_basic_format_arg(context.arg(1), CharT('a')));
@@ -83,7 +83,7 @@ void test() {
     std::basic_format_context context =
         test_format_context_create(out_it, args, en_US);
 
-    LIBCPP_ASSERT(args.__size() == 4);
+    LIBCUDACXX_ASSERT(args.__size() == 4);
     assert(test_basic_format_arg(context.arg(0), true));
     assert(test_basic_format_arg(context.arg(1), CharT('a')));
     assert(test_basic_format_arg(context.arg(2), 42));
@@ -104,7 +104,7 @@ void test() {
     std::basic_format_context context =
         test_format_context_create(out_it, args, fr_FR);
 
-    LIBCPP_ASSERT(args.__size() == 4);
+    LIBCUDACXX_ASSERT(args.__size() == 4);
     assert(test_basic_format_arg(context.arg(0), true));
     assert(test_basic_format_arg(context.arg(1), CharT('a')));
     assert(test_basic_format_arg(context.arg(2), 42));

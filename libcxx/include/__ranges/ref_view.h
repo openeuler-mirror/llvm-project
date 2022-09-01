@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_REF_VIEW_H
-#define _LIBCPP___RANGES_REF_VIEW_H
+#ifndef _LIBCUDACXX___RANGES_REF_VIEW_H
+#define _LIBCUDACXX___RANGES_REF_VIEW_H
 
 #include <__config>
 #include <__iterator/concepts.h>
@@ -25,13 +25,13 @@
 #include <concepts>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
   template<range _Range>
@@ -46,27 +46,27 @@ public:
     template<class _Tp>
       requires __different_from<_Tp, ref_view> &&
         convertible_to<_Tp, _Range&> && requires { __fun(declval<_Tp>()); }
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr ref_view(_Tp&& __t)
       : __range_(std::addressof(static_cast<_Range&>(std::forward<_Tp>(__t))))
     {}
 
-    _LIBCPP_HIDE_FROM_ABI constexpr _Range& base() const { return *__range_; }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr _Range& base() const { return *__range_; }
 
-    _LIBCPP_HIDE_FROM_ABI constexpr iterator_t<_Range> begin() const { return ranges::begin(*__range_); }
-    _LIBCPP_HIDE_FROM_ABI constexpr sentinel_t<_Range> end() const { return ranges::end(*__range_); }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr iterator_t<_Range> begin() const { return ranges::begin(*__range_); }
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr sentinel_t<_Range> end() const { return ranges::end(*__range_); }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr bool empty() const
       requires requires { ranges::empty(*__range_); }
     { return ranges::empty(*__range_); }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto size() const
       requires sized_range<_Range>
     { return ranges::size(*__range_); }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto data() const
       requires contiguous_range<_Range>
     { return ranges::data(*__range_); }
@@ -79,8 +79,8 @@ public:
   inline constexpr bool enable_borrowed_range<ref_view<_Tp>> = true;
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_REF_VIEW_H
+#endif // _LIBCUDACXX___RANGES_REF_VIEW_H

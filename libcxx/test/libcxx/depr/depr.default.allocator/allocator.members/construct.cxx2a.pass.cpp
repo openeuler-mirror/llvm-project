@@ -12,11 +12,11 @@
 // template <class... Args> void construct(pointer p, Args&&... args);
 
 //  In C++20, parts of std::allocator<T> have been removed.
-//  However, for backwards compatibility, if _LIBCPP_ENABLE_CXX20_REMOVED_ALLOCATOR_MEMBERS
+//  However, for backwards compatibility, if _LIBCUDACXX_ENABLE_CXX20_REMOVED_ALLOCATOR_MEMBERS
 //  is defined before including <memory>, then removed members will be restored.
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_CXX20_REMOVED_ALLOCATOR_MEMBERS
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_CXX20_REMOVED_ALLOCATOR_MEMBERS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS
 
 #include <memory>
 #include <cassert>

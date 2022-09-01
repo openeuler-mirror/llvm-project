@@ -11,7 +11,7 @@
 // Increment local_iterator past end.
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <unordered_set>
 #include <cassert>
@@ -30,7 +30,7 @@ int main(int, char**) {
         assert(i != c.end(b));
         ++i;
         assert(i == c.end(b));
-        TEST_LIBCPP_ASSERT_FAILURE(++i,
+        TEST_LIBCUDACXX_ASSERT_FAILURE(++i,
                                 "Attempted to increment a non-incrementable unordered container const_local_iterator");
     }
 
@@ -43,7 +43,7 @@ int main(int, char**) {
         assert(i != c.end(b));
         ++i;
         assert(i == c.end(b));
-        TEST_LIBCPP_ASSERT_FAILURE(++i,
+        TEST_LIBCUDACXX_ASSERT_FAILURE(++i,
                                 "Attempted to increment a non-incrementable unordered container const_local_iterator");
     }
 

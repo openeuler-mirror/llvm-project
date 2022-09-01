@@ -394,9 +394,9 @@ int main(int, char**)
   }
   for (auto const & TC : LongLHSCases) {
     (void)TC;
-    LIBCPP_ONLY(doAppendSourceAllocTest<char>(TC));
+    LIBCUDACXX_ONLY(doAppendSourceAllocTest<char>(TC));
 #ifndef TEST_HAS_NO_WIDE_CHARACTERS
-    LIBCPP_ONLY(doAppendSourceAllocTest<wchar_t>(TC));
+    LIBCUDACXX_ONLY(doAppendSourceAllocTest<wchar_t>(TC));
 #endif
   }
   test_sfinae();

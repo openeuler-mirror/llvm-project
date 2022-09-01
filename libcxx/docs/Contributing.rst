@@ -39,7 +39,7 @@ sure you don't forget anything:
 
   - Did you add it to ``include/module.modulemap.in``?
   - Did you add it to ``include/CMakeLists.txt``?
-  - If it's a public header, did you add a test under ``test/libcxx`` that the new header defines ``_LIBCPP_VERSION``? See ``test/libcxx/algorithms/version.pass.cpp`` for an example. NOTE: This should be automated.
+  - If it's a public header, did you add a test under ``test/libcxx`` that the new header defines ``_LIBCUDACXX_VERSION``? See ``test/libcxx/algorithms/version.pass.cpp`` for an example. NOTE: This should be automated.
   - If it's a public header, did you update ``utils/generate_header_inclusion_tests.py``?
 
 - Did you add the relevant feature test macro(s) for your feature? Did you update the ``generate_feature_test_macro_components.py`` script with it?
@@ -66,9 +66,9 @@ Post-release check list
 
 After branching for an LLVM release:
 
-1. Update ``_LIBCPP_VERSION`` in ``libcxx/include/__config``
+1. Update ``_LIBCUDACXX_VERSION`` in ``libcxx/include/__config``
 2. Update the version number in ``libcxx/docs/conf.py``
-3. Update ``_LIBCPPABI_VERSION`` in ``libcxxabi/include/cxxabi.h``
+3. Update ``_LIBCUDACXXABI_VERSION`` in ``libcxxabi/include/cxxabi.h``
 4. Update ``_LIBUNWIND_VERSION`` in ``libunwind/include/__libunwind_config.h``
 
 Exporting new symbols from the library

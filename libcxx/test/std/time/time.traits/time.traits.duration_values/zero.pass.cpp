@@ -25,8 +25,8 @@ int main(int, char**)
     static_assert(std::chrono::duration_values<Rep>::zero() == 0, "");
 #endif
 
-    LIBCPP_ASSERT_NOEXCEPT(std::chrono::duration_values<int>::zero());
-    LIBCPP_ASSERT_NOEXCEPT(std::chrono::duration_values<Rep>::zero());
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::chrono::duration_values<int>::zero());
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::chrono::duration_values<Rep>::zero());
 #if TEST_STD_VER > 17
     ASSERT_NOEXCEPT(std::chrono::duration_values<int>::zero());
     ASSERT_NOEXCEPT(std::chrono::duration_values<Rep>::zero());

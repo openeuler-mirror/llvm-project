@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___UTILITY_SWAP_H
-#define _LIBCPP___UTILITY_SWAP_H
+#ifndef _LIBCUDACXX___UTILITY_SWAP_H
+#define _LIBCUDACXX___UTILITY_SWAP_H
 
 #include <__config>
 #include <__utility/declval.h>
@@ -15,13 +15,13 @@
 #include <cstddef>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 template <class _Tp>
 using __swap_result_t = typename enable_if<is_move_constructible<_Tp>::value && is_move_assignable<_Tp>::value>::type;
 #else
@@ -30,21 +30,21 @@ using __swap_result_t = void;
 #endif
 
 template <class _Tp>
-inline _LIBCPP_INLINE_VISIBILITY __swap_result_t<_Tp> _LIBCPP_CONSTEXPR_AFTER_CXX17 swap(_Tp& __x, _Tp& __y)
+inline _LIBCUDACXX_INLINE_VISIBILITY __swap_result_t<_Tp> _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 swap(_Tp& __x, _Tp& __y)
     _NOEXCEPT_(is_nothrow_move_constructible<_Tp>::value&& is_nothrow_move_assignable<_Tp>::value) {
-  _Tp __t(_VSTD::move(__x));
-  __x = _VSTD::move(__y);
-  __y = _VSTD::move(__t);
+  _Tp __t(_CUDA_VSTD::move(__x));
+  __x = _CUDA_VSTD::move(__y);
+  __y = _CUDA_VSTD::move(__t);
 }
 
 template <class _Tp, size_t _Np>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17 typename enable_if<__is_swappable<_Tp>::value>::type
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 typename enable_if<__is_swappable<_Tp>::value>::type
 swap(_Tp (&__a)[_Np], _Tp (&__b)[_Np]) _NOEXCEPT_(__is_nothrow_swappable<_Tp>::value) {
   for (size_t __i = 0; __i != _Np; ++__i) {
     swap(__a[__i], __b[__i]);
   }
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___UTILITY_SWAP_H
+#endif // _LIBCUDACXX___UTILITY_SWAP_H

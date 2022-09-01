@@ -15,7 +15,7 @@
 // REQUIRES: has-unix-headers
 // UNSUPPORTED: c++03
 // XFAIL: use_system_cxx_lib && target={{.+}}-apple-macosx{{10.9|10.10|10.11|10.12|10.13|10.14|10.15|11.0|12.0}}
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_ASSERTIONS=1
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_ASSERTIONS=1
 
 #include <experimental/memory_resource>
 #include <type_traits>
@@ -34,7 +34,7 @@ int main(int, char**) {
     const std::size_t maxSize = Traits::max_size(a);
 
     a.deallocate(nullptr, maxSize); // no assertion
-    TEST_LIBCPP_ASSERT_FAILURE(a.deallocate(nullptr, maxSize + 1), "deallocate called for size which exceeds max_size()");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(a.deallocate(nullptr, maxSize + 1), "deallocate called for size which exceeds max_size()");
 
     return 0;
 }

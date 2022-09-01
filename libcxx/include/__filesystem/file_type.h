@@ -7,23 +7,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FILESYSTEM_FILE_TYPE_H
-#define _LIBCPP___FILESYSTEM_FILE_TYPE_H
+#ifndef _LIBCUDACXX___FILESYSTEM_FILE_TYPE_H
+#define _LIBCUDACXX___FILESYSTEM_FILE_TYPE_H
 
 #include <__availability>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
-_LIBCPP_BEGIN_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_BEGIN_NAMESPACE_FILESYSTEM
 
 // On Windows, the library never identifies files as block, character, fifo
 // or socket.
-enum class _LIBCPP_ENUM_VIS file_type : signed char {
+enum class _LIBCUDACXX_ENUM_VIS file_type : signed char {
   none = 0,
   not_found = -1,
   regular = 1,
@@ -36,8 +36,8 @@ enum class _LIBCPP_ENUM_VIS file_type : signed char {
   unknown = 8
 };
 
-_LIBCPP_END_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_END_NAMESPACE_FILESYSTEM
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
-#endif // _LIBCPP___FILESYSTEM_FILE_TYPE_H
+#endif // _LIBCUDACXX___FILESYSTEM_FILE_TYPE_H

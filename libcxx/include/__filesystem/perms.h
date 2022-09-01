@@ -7,27 +7,27 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FILESYSTEM_PERMS_H
-#define _LIBCPP___FILESYSTEM_PERMS_H
+#ifndef _LIBCUDACXX___FILESYSTEM_PERMS_H
+#define _LIBCUDACXX___FILESYSTEM_PERMS_H
 
 #include <__availability>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
-_LIBCPP_BEGIN_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_BEGIN_NAMESPACE_FILESYSTEM
 
-_LIBCPP_AVAILABILITY_FILESYSTEM_PUSH
+_LIBCUDACXX_AVAILABILITY_FILESYSTEM_PUSH
 
 // On Windows, these permission bits map to one single readonly flag per
 // file, and the executable bit is always returned as set. When setting
 // permissions, as long as the write bit is set for either owner, group or
 // others, the readonly flag is cleared.
-enum class _LIBCPP_ENUM_VIS perms : unsigned {
+enum class _LIBCUDACXX_ENUM_VIS perms : unsigned {
   none = 0,
 
   owner_read = 0400,
@@ -54,42 +54,42 @@ enum class _LIBCPP_ENUM_VIS perms : unsigned {
   unknown = 0xFFFF,
 };
 
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 inline constexpr perms operator&(perms __lhs, perms __rhs) {
   return static_cast<perms>(static_cast<unsigned>(__lhs) &
                             static_cast<unsigned>(__rhs));
 }
 
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 inline constexpr perms operator|(perms __lhs, perms __rhs) {
   return static_cast<perms>(static_cast<unsigned>(__lhs) |
                             static_cast<unsigned>(__rhs));
 }
 
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 inline constexpr perms operator^(perms __lhs, perms __rhs) {
   return static_cast<perms>(static_cast<unsigned>(__lhs) ^
                             static_cast<unsigned>(__rhs));
 }
 
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 inline constexpr perms operator~(perms __lhs) {
   return static_cast<perms>(~static_cast<unsigned>(__lhs));
 }
 
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 inline perms& operator&=(perms& __lhs, perms __rhs) { return __lhs = __lhs & __rhs; }
 
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 inline perms& operator|=(perms& __lhs, perms __rhs) { return __lhs = __lhs | __rhs; }
 
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 inline perms& operator^=(perms& __lhs, perms __rhs) { return __lhs = __lhs ^ __rhs; }
 
-_LIBCPP_AVAILABILITY_FILESYSTEM_POP
+_LIBCUDACXX_AVAILABILITY_FILESYSTEM_POP
 
-_LIBCPP_END_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_END_NAMESPACE_FILESYSTEM
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
-#endif // _LIBCPP___FILESYSTEM_PERMS_H
+#endif // _LIBCUDACXX___FILESYSTEM_PERMS_H

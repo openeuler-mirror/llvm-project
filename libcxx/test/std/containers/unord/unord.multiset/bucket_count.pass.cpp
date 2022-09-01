@@ -25,7 +25,7 @@ int main(int, char**)
     {
         typedef std::unordered_multiset<int> C;
         const C c;
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
     }
     {
         typedef std::unordered_multiset<int> C;
@@ -49,7 +49,7 @@ int main(int, char**)
         typedef std::unordered_multiset<int, std::hash<int>,
                                       std::equal_to<int>, min_allocator<int>> C;
         const C c;
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
     }
     {
         typedef std::unordered_multiset<int, std::hash<int>,

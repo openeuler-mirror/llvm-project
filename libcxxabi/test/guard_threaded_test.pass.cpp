@@ -88,7 +88,7 @@ constexpr InitResult ABORTED = InitResult::ABORTED;
 template <class Impl, class GuardType, class Init>
 InitResult check_guard(GuardType *g, Init init) {
   uint8_t *first_byte = reinterpret_cast<uint8_t*>(g);
-  if (std::__libcpp_atomic_load(first_byte, std::_AO_Acquire) == 0) {
+  if (std::__LIBCUDACXX_atomic_load(first_byte, std::_AO_Acquire) == 0) {
     Impl impl(g);
     if (impl.cxa_guard_acquire() == INIT_IS_PENDING) {
 #ifndef TEST_HAS_NO_EXCEPTIONS

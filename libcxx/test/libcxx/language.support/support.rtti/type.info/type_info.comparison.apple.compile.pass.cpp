@@ -13,17 +13,17 @@
 
 #include <typeinfo>
 
-#if !defined(_LIBCPP_TYPEINFO_COMPARISON_IMPLEMENTATION)
-#   error "_LIBCPP_TYPEINFO_COMPARISON_IMPLEMENTATION should be defined on Apple platforms"
+#if !defined(_LIBCUDACXX_TYPEINFO_COMPARISON_IMPLEMENTATION)
+#   error "_LIBCUDACXX_TYPEINFO_COMPARISON_IMPLEMENTATION should be defined on Apple platforms"
 #endif
 
 #if defined(__x86_64__) || defined(__ARM_ARCH_7M__)
-#   if _LIBCPP_TYPEINFO_COMPARISON_IMPLEMENTATION != 1
-#       error "_LIBCPP_TYPEINFO_COMPARISON_IMPLEMENTATION should be 1 (assume RTTI is merged) on Apple platforms"
+#   if _LIBCUDACXX_TYPEINFO_COMPARISON_IMPLEMENTATION != 1
+#       error "_LIBCUDACXX_TYPEINFO_COMPARISON_IMPLEMENTATION should be 1 (assume RTTI is merged) on Apple platforms"
 #   endif
 #elif defined(__aarch64__)
-#   if _LIBCPP_TYPEINFO_COMPARISON_IMPLEMENTATION != 3
-#       error "_LIBCPP_TYPEINFO_COMPARISON_IMPLEMENTATION should be 3 (use the special ARM RTTI) on Apple platforms"
+#   if _LIBCUDACXX_TYPEINFO_COMPARISON_IMPLEMENTATION != 3
+#       error "_LIBCUDACXX_TYPEINFO_COMPARISON_IMPLEMENTATION should be 3 (use the special ARM RTTI) on Apple platforms"
 #   endif
 #else
 #   error "This test should be updated to pin down the RTTI behavior on this ABI."

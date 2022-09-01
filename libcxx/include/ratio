@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_RATIO
-#define _LIBCPP_RATIO
+#ifndef _LIBCUDACXX_RATIO
+#define _LIBCUDACXX_RATIO
 
 /*
     ratio synopsis
@@ -84,15 +84,15 @@ typedef ratio<1000000000000000000000000, 1> yotta;  // not supported
 #include <type_traits>
 #include <version>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // __static_gcd
 
@@ -247,27 +247,27 @@ public:
 };
 
 template <intmax_t _Num, intmax_t _Den = 1>
-class _LIBCPP_TEMPLATE_VIS ratio
+class _LIBCUDACXX_TEMPLATE_VIS ratio
 {
     static_assert(__static_abs<_Num>::value >= 0, "ratio numerator is out of range");
     static_assert(_Den != 0, "ratio divide by 0");
     static_assert(__static_abs<_Den>::value >  0, "ratio denominator is out of range");
-    static _LIBCPP_CONSTEXPR const intmax_t __na = __static_abs<_Num>::value;
-    static _LIBCPP_CONSTEXPR const intmax_t __da = __static_abs<_Den>::value;
-    static _LIBCPP_CONSTEXPR const intmax_t __s = __static_sign<_Num>::value * __static_sign<_Den>::value;
-    static _LIBCPP_CONSTEXPR const intmax_t __gcd = __static_gcd<__na, __da>::value;
+    static _LIBCUDACXX_CONSTEXPR const intmax_t __na = __static_abs<_Num>::value;
+    static _LIBCUDACXX_CONSTEXPR const intmax_t __da = __static_abs<_Den>::value;
+    static _LIBCUDACXX_CONSTEXPR const intmax_t __s = __static_sign<_Num>::value * __static_sign<_Den>::value;
+    static _LIBCUDACXX_CONSTEXPR const intmax_t __gcd = __static_gcd<__na, __da>::value;
 public:
-    static _LIBCPP_CONSTEXPR const intmax_t num = __s * __na / __gcd;
-    static _LIBCPP_CONSTEXPR const intmax_t den = __da / __gcd;
+    static _LIBCUDACXX_CONSTEXPR const intmax_t num = __s * __na / __gcd;
+    static _LIBCUDACXX_CONSTEXPR const intmax_t den = __da / __gcd;
 
     typedef ratio<num, den> type;
 };
 
 template <intmax_t _Num, intmax_t _Den>
-_LIBCPP_CONSTEXPR const intmax_t ratio<_Num, _Den>::num;
+_LIBCUDACXX_CONSTEXPR const intmax_t ratio<_Num, _Den>::num;
 
 template <intmax_t _Num, intmax_t _Den>
-_LIBCPP_CONSTEXPR const intmax_t ratio<_Num, _Den>::den;
+_LIBCUDACXX_CONSTEXPR const intmax_t ratio<_Num, _Den>::den;
 
 template <class _Tp>                    struct __is_ratio                     : false_type {};
 template <intmax_t _Num, intmax_t _Den> struct __is_ratio<ratio<_Num, _Den> > : true_type  {};
@@ -303,18 +303,18 @@ public:
         >::type type;
 };
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2> using ratio_multiply
                                     = typename __ratio_multiply<_R1, _R2>::type;
 
-#else  // _LIBCPP_CXX03_LANG
+#else  // _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2>
-struct _LIBCPP_TEMPLATE_VIS ratio_multiply
+struct _LIBCUDACXX_TEMPLATE_VIS ratio_multiply
     : public __ratio_multiply<_R1, _R2>::type {};
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2>
 struct __ratio_divide
@@ -330,18 +330,18 @@ public:
         >::type type;
 };
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2> using ratio_divide
                                       = typename __ratio_divide<_R1, _R2>::type;
 
-#else  // _LIBCPP_CXX03_LANG
+#else  // _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2>
-struct _LIBCPP_TEMPLATE_VIS ratio_divide
+struct _LIBCUDACXX_TEMPLATE_VIS ratio_divide
     : public __ratio_divide<_R1, _R2>::type {};
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2>
 struct __ratio_add
@@ -365,18 +365,18 @@ public:
         >::type type;
 };
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2> using ratio_add
                                          = typename __ratio_add<_R1, _R2>::type;
 
-#else  // _LIBCPP_CXX03_LANG
+#else  // _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2>
-struct _LIBCPP_TEMPLATE_VIS ratio_add
+struct _LIBCUDACXX_TEMPLATE_VIS ratio_add
     : public __ratio_add<_R1, _R2>::type {};
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2>
 struct __ratio_subtract
@@ -400,27 +400,27 @@ public:
         >::type type;
 };
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2> using ratio_subtract
                                     = typename __ratio_subtract<_R1, _R2>::type;
 
-#else  // _LIBCPP_CXX03_LANG
+#else  // _LIBCUDACXX_CXX03_LANG
 
 template <class _R1, class _R2>
-struct _LIBCPP_TEMPLATE_VIS ratio_subtract
+struct _LIBCUDACXX_TEMPLATE_VIS ratio_subtract
     : public __ratio_subtract<_R1, _R2>::type {};
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
 // ratio_equal
 
 template <class _R1, class _R2>
-struct _LIBCPP_TEMPLATE_VIS ratio_equal
+struct _LIBCUDACXX_TEMPLATE_VIS ratio_equal
     : _BoolConstant<(_R1::num == _R2::num && _R1::den == _R2::den)> {};
 
 template <class _R1, class _R2>
-struct _LIBCPP_TEMPLATE_VIS ratio_not_equal
+struct _LIBCUDACXX_TEMPLATE_VIS ratio_not_equal
     : _BoolConstant<!ratio_equal<_R1, _R2>::value> {};
 
 // ratio_less
@@ -479,19 +479,19 @@ struct __ratio_less<_R1, _R2, -1LL, -1LL>
 };
 
 template <class _R1, class _R2>
-struct _LIBCPP_TEMPLATE_VIS ratio_less
+struct _LIBCUDACXX_TEMPLATE_VIS ratio_less
     : _BoolConstant<__ratio_less<_R1, _R2>::value> {};
 
 template <class _R1, class _R2>
-struct _LIBCPP_TEMPLATE_VIS ratio_less_equal
+struct _LIBCUDACXX_TEMPLATE_VIS ratio_less_equal
     : _BoolConstant<!ratio_less<_R2, _R1>::value> {};
 
 template <class _R1, class _R2>
-struct _LIBCPP_TEMPLATE_VIS ratio_greater
+struct _LIBCUDACXX_TEMPLATE_VIS ratio_greater
     : _BoolConstant<ratio_less<_R2, _R1>::value> {};
 
 template <class _R1, class _R2>
-struct _LIBCPP_TEMPLATE_VIS ratio_greater_equal
+struct _LIBCUDACXX_TEMPLATE_VIS ratio_greater_equal
     : _BoolConstant<!ratio_less<_R1, _R2>::value> {};
 
 template <class _R1, class _R2>
@@ -501,7 +501,7 @@ struct __ratio_gcd
                   __static_lcm<_R1::den, _R2::den>::value> type;
 };
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _R1, class _R2>
 inline constexpr bool ratio_equal_v = ratio_equal<_R1, _R2>::value;
 
@@ -521,8 +521,8 @@ template <class _R1, class _R2>
 inline constexpr bool ratio_greater_equal_v = ratio_greater_equal<_R1, _R2>::value;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP_RATIO
+#endif // _LIBCUDACXX_RATIO

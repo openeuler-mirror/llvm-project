@@ -18,10 +18,10 @@
 
 #if TEST_STD_VER >= 11
 // Test the noexcept specification, which is a conforming extension
-LIBCPP_STATIC_ASSERT(std::is_nothrow_default_constructible<std::string>::value, "");
-LIBCPP_STATIC_ASSERT(std::is_nothrow_default_constructible<
+LIBCUDACXX_STATIC_ASSERT(std::is_nothrow_default_constructible<std::string>::value, "");
+LIBCUDACXX_STATIC_ASSERT(std::is_nothrow_default_constructible<
                      std::basic_string<char, std::char_traits<char>, test_allocator<char>>>::value, "");
-LIBCPP_STATIC_ASSERT(!std::is_nothrow_default_constructible<
+LIBCUDACXX_STATIC_ASSERT(!std::is_nothrow_default_constructible<
                      std::basic_string<char, std::char_traits<char>, limited_allocator<char, 10>>>::value, "");
 #endif
 

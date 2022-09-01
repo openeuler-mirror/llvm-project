@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_CCTYPE
-#define _LIBCPP_CCTYPE
+#ifndef _LIBCUDACXX_CCTYPE
+#define _LIBCUDACXX_CCTYPE
 
 /*
     cctype synopsis
@@ -38,11 +38,11 @@ int toupper(int c);
 #include <__config>
 #include <ctype.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 #ifdef isalnum
 #undef isalnum
@@ -101,21 +101,21 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 #endif
 
 
-using ::isalnum _LIBCPP_USING_IF_EXISTS;
-using ::isalpha _LIBCPP_USING_IF_EXISTS;
-using ::isblank _LIBCPP_USING_IF_EXISTS;
-using ::iscntrl _LIBCPP_USING_IF_EXISTS;
-using ::isdigit _LIBCPP_USING_IF_EXISTS;
-using ::isgraph _LIBCPP_USING_IF_EXISTS;
-using ::islower _LIBCPP_USING_IF_EXISTS;
-using ::isprint _LIBCPP_USING_IF_EXISTS;
-using ::ispunct _LIBCPP_USING_IF_EXISTS;
-using ::isspace _LIBCPP_USING_IF_EXISTS;
-using ::isupper _LIBCPP_USING_IF_EXISTS;
-using ::isxdigit _LIBCPP_USING_IF_EXISTS;
-using ::tolower _LIBCPP_USING_IF_EXISTS;
-using ::toupper _LIBCPP_USING_IF_EXISTS;
+using ::isalnum _LIBCUDACXX_USING_IF_EXISTS;
+using ::isalpha _LIBCUDACXX_USING_IF_EXISTS;
+using ::isblank _LIBCUDACXX_USING_IF_EXISTS;
+using ::iscntrl _LIBCUDACXX_USING_IF_EXISTS;
+using ::isdigit _LIBCUDACXX_USING_IF_EXISTS;
+using ::isgraph _LIBCUDACXX_USING_IF_EXISTS;
+using ::islower _LIBCUDACXX_USING_IF_EXISTS;
+using ::isprint _LIBCUDACXX_USING_IF_EXISTS;
+using ::ispunct _LIBCUDACXX_USING_IF_EXISTS;
+using ::isspace _LIBCUDACXX_USING_IF_EXISTS;
+using ::isupper _LIBCUDACXX_USING_IF_EXISTS;
+using ::isxdigit _LIBCUDACXX_USING_IF_EXISTS;
+using ::tolower _LIBCUDACXX_USING_IF_EXISTS;
+using ::toupper _LIBCUDACXX_USING_IF_EXISTS;
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_CCTYPE
+#endif // _LIBCUDACXX_CCTYPE

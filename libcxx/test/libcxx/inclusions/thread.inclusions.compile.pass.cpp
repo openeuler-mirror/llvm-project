@@ -21,9 +21,9 @@
 #include <thread>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_THREAD)
- #   error "<thread> was expected to define _LIBCPP_THREAD"
+#if !defined(_LIBCUDACXX_THREAD)
+ #   error "<thread> was expected to define _LIBCUDACXX_THREAD"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<thread> should include <compare> in C++20 and later"
 #endif

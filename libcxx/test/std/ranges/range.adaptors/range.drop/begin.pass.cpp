@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // constexpr auto begin()
 //   requires (!(simple-view<V> &&
@@ -85,7 +85,7 @@ constexpr bool test() {
   {
     static_assert(std::ranges::random_access_range<const SimpleView>);
     static_assert(std::ranges::sized_range<const SimpleView>);
-    LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<SimpleView>);
+    LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<SimpleView>);
     int non_const_calls = 0;
     int const_calls = 0;
     std::ranges::drop_view dropView(SimpleView{{}, &non_const_calls, &const_calls}, 4);
@@ -100,7 +100,7 @@ constexpr bool test() {
   {
     static_assert(std::ranges::random_access_range<const NonSimpleView>);
     static_assert(std::ranges::sized_range<const NonSimpleView>);
-    LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleView>);
+    LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<NonSimpleView>);
     int non_const_calls = 0;
     int const_calls = 0;
     std::ranges::drop_view dropView(NonSimpleView{{}, &non_const_calls, &const_calls}, 4);

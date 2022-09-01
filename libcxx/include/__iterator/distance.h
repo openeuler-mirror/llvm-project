@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_DISTANCE_H
-#define _LIBCPP___ITERATOR_DISTANCE_H
+#ifndef _LIBCUDACXX___ITERATOR_DISTANCE_H
+#define _LIBCUDACXX___ITERATOR_DISTANCE_H
 
 #include <__config>
 #include <__iterator/concepts.h>
@@ -19,14 +19,14 @@
 #include <__ranges/size.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _InputIter>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX14
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 typename iterator_traits<_InputIter>::difference_type
 __distance(_InputIter __first, _InputIter __last, input_iterator_tag)
 {
@@ -37,7 +37,7 @@ __distance(_InputIter __first, _InputIter __last, input_iterator_tag)
 }
 
 template <class _RandIter>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX14
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 typename iterator_traits<_RandIter>::difference_type
 __distance(_RandIter __first, _RandIter __last, random_access_iterator_tag)
 {
@@ -45,14 +45,14 @@ __distance(_RandIter __first, _RandIter __last, random_access_iterator_tag)
 }
 
 template <class _InputIter>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX14
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 typename iterator_traits<_InputIter>::difference_type
 distance(_InputIter __first, _InputIter __last)
 {
-    return _VSTD::__distance(__first, __last, typename iterator_traits<_InputIter>::iterator_category());
+    return _CUDA_VSTD::__distance(__first, __last, typename iterator_traits<_InputIter>::iterator_category());
 }
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 // [range.iter.op.distance]
 
@@ -62,7 +62,7 @@ namespace __distance {
 struct __fn {
   template<class _Ip, sentinel_for<_Ip> _Sp>
     requires (!sized_sentinel_for<_Sp, _Ip>)
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   constexpr iter_difference_t<_Ip> operator()(_Ip __first, _Sp __last) const {
     iter_difference_t<_Ip> __n = 0;
     while (__first != __last) {
@@ -73,7 +73,7 @@ struct __fn {
   }
 
   template<class _Ip, sized_sentinel_for<decay_t<_Ip>> _Sp>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   constexpr iter_difference_t<_Ip> operator()(_Ip&& __first, _Sp __last) const {
     if constexpr (sized_sentinel_for<_Sp, __uncvref_t<_Ip>>) {
       return __last - __first;
@@ -83,7 +83,7 @@ struct __fn {
   }
 
   template<range _Rp>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   constexpr range_difference_t<_Rp> operator()(_Rp&& __r) const {
     if constexpr (sized_range<_Rp>) {
       return static_cast<range_difference_t<_Rp>>(ranges::size(__r));
@@ -100,8 +100,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_DISTANCE_H
+#endif // _LIBCUDACXX___ITERATOR_DISTANCE_H

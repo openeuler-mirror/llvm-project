@@ -6,26 +6,26 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___CHRONO_CONVERT_TO_TIMESPEC_H
-#define _LIBCPP___CHRONO_CONVERT_TO_TIMESPEC_H
+#ifndef _LIBCUDACXX___CHRONO_CONVERT_TO_TIMESPEC_H
+#define _LIBCUDACXX___CHRONO_CONVERT_TO_TIMESPEC_H
 
 #include <__chrono/duration.h>
 #include <__config>
 #include <limits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // Convert a nanoseconds duration to the given TimeSpec type, which must have
 // the same properties as std::timespec.
 template <class _TimeSpec>
-_LIBCPP_HIDE_FROM_ABI inline
+_LIBCUDACXX_HIDE_FROM_ABI inline
 _TimeSpec __convert_to_timespec(const chrono::nanoseconds& __ns)
 {
   using namespace chrono;
@@ -48,8 +48,8 @@ _TimeSpec __convert_to_timespec(const chrono::nanoseconds& __ns)
   return __ts;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___CHRONO_CONVERT_TO_TIMESPEC_H
+#endif // _LIBCUDACXX___CHRONO_CONVERT_TO_TIMESPEC_H

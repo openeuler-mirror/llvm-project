@@ -6,22 +6,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_SAME_H
-#define _LIBCPP___TYPE_TRAITS_IS_SAME_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_SAME_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_SAME_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp, class _Up>
-struct _LIBCPP_TEMPLATE_VIS is_same : _BoolConstant<__is_same(_Tp, _Up)> { };
+struct _LIBCUDACXX_TEMPLATE_VIS is_same : _BoolConstant<__is_same(_Tp, _Up)> { };
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp, class _Up>
 inline constexpr bool is_same_v = __is_same(_Tp, _Up);
 #endif
@@ -39,6 +39,6 @@ using _IsSame = _BoolConstant<__is_same(_Tp, _Up)>;
 template <class _Tp, class _Up>
 using _IsNotSame = _BoolConstant<!__is_same(_Tp, _Up)>;
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_SAME_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_SAME_H

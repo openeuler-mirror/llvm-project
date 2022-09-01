@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMAT_STRING_H
-#define _LIBCPP___FORMAT_FORMAT_STRING_H
+#ifndef _LIBCUDACXX___FORMAT_FORMAT_STRING_H
+#define _LIBCUDACXX___FORMAT_FORMAT_STRING_H
 
 #include <__assert>
 #include <__config>
@@ -16,24 +16,24 @@
 #include <cstddef>
 #include <cstdint>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace __format {
 
 template <class _CharT>
-struct _LIBCPP_TEMPLATE_VIS __parse_number_result {
+struct _LIBCUDACXX_TEMPLATE_VIS __parse_number_result {
   const _CharT* __ptr;
   uint32_t __value;
 };
 
 template <class _CharT>
-_LIBCPP_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
+_LIBCUDACXX_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
 __parse_number(const _CharT* __begin, const _CharT* __end);
 
 /**
@@ -51,24 +51,24 @@ inline constexpr uint32_t __number_max = INT32_MAX;
 
 namespace __detail {
 template <class _CharT>
-_LIBCPP_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
+_LIBCUDACXX_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
 __parse_zero(const _CharT* __begin, const _CharT*, auto& __parse_ctx) {
   __parse_ctx.check_arg_id(0);
   return {++__begin, 0}; // can never be larger than the maximum.
 }
 
 template <class _CharT>
-_LIBCPP_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
+_LIBCUDACXX_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
 __parse_automatic(const _CharT* __begin, const _CharT*, auto& __parse_ctx) {
   size_t __value = __parse_ctx.next_arg_id();
-  _LIBCPP_ASSERT(__value <= __number_max,
+  _LIBCUDACXX_ASSERT(__value <= __number_max,
                  "Compilers don't support this number of arguments");
 
   return {__begin, uint32_t(__value)};
 }
 
 template <class _CharT>
-_LIBCPP_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
+_LIBCUDACXX_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
 __parse_manual(const _CharT* __begin, const _CharT* __end, auto& __parse_ctx) {
   __parse_number_result<_CharT> __r = __parse_number(__begin, __end);
   __parse_ctx.check_arg_id(__r.__value);
@@ -84,7 +84,7 @@ __parse_manual(const _CharT* __begin, const _CharT* __end, auto& __parse_ctx) {
  * allows a maximum value of 2147483647.
  */
 template <class _CharT>
-_LIBCPP_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
+_LIBCUDACXX_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
 __parse_number(const _CharT* __begin, const _CharT* __end_input) {
   static_assert(__format::__number_max == INT32_MAX,
                 "The algorithm is implemented based on this value.");
@@ -132,7 +132,7 @@ __parse_number(const _CharT* __begin, const _CharT* __end_input) {
  * should be the closing '}' of the arg-id.
  */
 template <class _CharT>
-_LIBCPP_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
+_LIBCUDACXX_HIDE_FROM_ABI constexpr __parse_number_result<_CharT>
 __parse_arg_id(const _CharT* __begin, const _CharT* __end, auto& __parse_ctx) {
   switch (*__begin) {
   case _CharT('0'):
@@ -154,8 +154,8 @@ __parse_arg_id(const _CharT* __begin, const _CharT* __end, auto& __parse_ctx) {
 
 } // namespace __format
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_FORMAT_STRING_H
+#endif // _LIBCUDACXX___FORMAT_FORMAT_STRING_H

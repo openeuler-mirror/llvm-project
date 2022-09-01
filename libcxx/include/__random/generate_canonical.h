@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANDOM_GENERATE_CANONICAL_H
-#define _LIBCPP___RANDOM_GENERATE_CANONICAL_H
+#ifndef _LIBCUDACXX___RANDOM_GENERATE_CANONICAL_H
+#define _LIBCUDACXX___RANDOM_GENERATE_CANONICAL_H
 
 #include <__config>
 #include <__random/log2.h>
@@ -15,14 +15,14 @@
 #include <initializer_list>
 #include <limits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // generate_canonical
 
@@ -32,7 +32,7 @@ generate_canonical(_URNG& __g)
 {
     const size_t _Dt = numeric_limits<_RealType>::digits;
     const size_t __b = _Dt < __bits ? _Dt : __bits;
-#ifdef _LIBCPP_CXX03_LANG
+#ifdef _LIBCUDACXX_CXX03_LANG
     const size_t __logR = __log2<uint64_t, _URNG::_Max - _URNG::_Min + uint64_t(1)>::value;
 #else
     const size_t __logR = __log2<uint64_t, _URNG::max() - _URNG::min() + uint64_t(1)>::value;
@@ -46,8 +46,8 @@ generate_canonical(_URNG& __g)
     return _Sp / __base;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___RANDOM_GENERATE_CANONICAL_H
+#endif // _LIBCUDACXX___RANDOM_GENERATE_CANONICAL_H

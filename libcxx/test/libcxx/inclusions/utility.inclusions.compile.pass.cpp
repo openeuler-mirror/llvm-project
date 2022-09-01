@@ -18,12 +18,12 @@
 #include <utility>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_UTILITY)
- #   error "<utility> was expected to define _LIBCPP_UTILITY"
+#if !defined(_LIBCUDACXX_UTILITY)
+ #   error "<utility> was expected to define _LIBCUDACXX_UTILITY"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<utility> should include <compare> in C++20 and later"
 #endif
-#if TEST_STD_VER > 03 && !defined(_LIBCPP_INITIALIZER_LIST)
+#if TEST_STD_VER > 03 && !defined(_LIBCUDACXX_INITIALIZER_LIST)
  #   error "<utility> should include <initializer_list> in C++11 and later"
 #endif

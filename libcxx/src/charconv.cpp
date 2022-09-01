@@ -11,20 +11,20 @@
 
 #include "include/to_chars_floating_point.h"
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#ifndef _LIBCPP_ABI_DO_NOT_EXPORT_TO_CHARS_BASE_10
+#ifndef _LIBCUDACXX_ABI_DO_NOT_EXPORT_TO_CHARS_BASE_10
 
 namespace __itoa
 {
 
-_LIBCPP_FUNC_VIS char*
+_LIBCUDACXX_FUNC_VIS char*
 __u32toa(uint32_t value, char* buffer) noexcept
 {
 	return __base_10_u32(buffer, value);
 }
 
-_LIBCPP_FUNC_VIS char*
+_LIBCUDACXX_FUNC_VIS char*
 __u64toa(uint64_t value, char* buffer) noexcept
 {
 	return __base_10_u64(buffer, value);
@@ -32,7 +32,7 @@ __u64toa(uint64_t value, char* buffer) noexcept
 
 }  // namespace __itoa
 
-#endif // _LIBCPP_ABI_DO_NOT_EXPORT_TO_CHARS_BASE_10
+#endif // _LIBCUDACXX_ABI_DO_NOT_EXPORT_TO_CHARS_BASE_10
 
 // The original version of floating-point to_chars was written by Microsoft and
 // contributed with the following license.
@@ -83,4 +83,4 @@ to_chars_result to_chars(char* __first, char* __last, long double __value, chars
       __first, __last, static_cast<double>(__value), __fmt, __precision);
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

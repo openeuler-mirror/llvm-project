@@ -34,7 +34,7 @@ test(SV sv, std::size_t pos, std::size_t n)
     if (pos <= sv.size())
     {
         S s2(sv, static_cast<Size>(pos), static_cast<Size>(n));
-        LIBCPP_ASSERT(s2.__invariants());
+        LIBCUDACXX_ASSERT(s2.__invariants());
         assert(pos <= sv.size());
         std::size_t rlen = std::min(sv.size() - pos, n);
         assert(s2.size() == rlen);
@@ -67,7 +67,7 @@ test(SV sv, std::size_t pos, std::size_t n, const typename S::allocator_type& a)
     if (pos <= sv.size())
     {
         S s2(sv, static_cast<Size>(pos), static_cast<Size>(n), a);
-        LIBCPP_ASSERT(s2.__invariants());
+        LIBCUDACXX_ASSERT(s2.__invariants());
         assert(pos <= sv.size());
         std::size_t rlen = std::min(sv.size() - pos, n);
         assert(s2.size() == rlen);

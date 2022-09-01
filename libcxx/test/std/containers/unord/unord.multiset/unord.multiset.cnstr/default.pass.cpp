@@ -33,7 +33,7 @@ int main(int, char**)
                                    test_allocator<NotConstructible>
                                    > C;
         C c;
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
         assert(c.hash_function() == test_hash<NotConstructible>());
         assert(c.key_eq() == test_equal_to<NotConstructible>());
         assert(c.get_allocator() == (test_allocator<NotConstructible>()));
@@ -51,7 +51,7 @@ int main(int, char**)
                                    min_allocator<NotConstructible>
                                    > C;
         C c;
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
         assert(c.hash_function() == test_hash<NotConstructible>());
         assert(c.key_eq() == test_equal_to<NotConstructible>());
         assert(c.get_allocator() == (min_allocator<NotConstructible>()));
@@ -70,7 +70,7 @@ int main(int, char**)
                                    > C;
         {
         C c;
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
         assert(c.hash_function() == test_hash<NotConstructible>());
         assert(c.key_eq() == test_equal_to<NotConstructible>());
         assert(c.get_allocator() == A());
@@ -83,7 +83,7 @@ int main(int, char**)
         {
         A a;
         C c(a);
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
         assert(c.hash_function() == test_hash<NotConstructible>());
         assert(c.key_eq() == test_equal_to<NotConstructible>());
         assert(c.get_allocator() == a);
@@ -96,7 +96,7 @@ int main(int, char**)
     }
     {
         std::unordered_multiset<int> c = {};
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
         assert(c.size() == 0);
         assert(c.empty());
         assert(std::distance(c.begin(), c.end()) == 0);

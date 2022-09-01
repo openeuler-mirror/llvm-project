@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_SEARCH_H
-#define _LIBCPP___ALGORITHM_SEARCH_H
+#ifndef _LIBCUDACXX___ALGORITHM_SEARCH_H
+#define _LIBCUDACXX___ALGORITHM_SEARCH_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/iterator_operations.h>
@@ -21,11 +21,11 @@
 #include <__utility/pair.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy,
           class _Iter1, class _Sent1,
@@ -33,7 +33,7 @@ template <class _AlgPolicy,
           class _Pred,
           class _Proj1,
           class _Proj2>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 pair<_Iter1, _Iter1> __search_forward_impl(_Iter1 __first1, _Sent1 __last1,
                                            _Iter2 __first2, _Sent2 __last2,
                                            _Pred& __pred,
@@ -80,7 +80,7 @@ template <class _AlgPolicy,
           class _Proj2,
           class _DiffT1,
           class _DiffT2>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 pair<_Iter1, _Iter1> __search_random_access_impl(_Iter1 __first1, _Sent1 __last1,
                                                  _Iter2 __first2, _Sent2 __last2,
                                                  _Pred& __pred,
@@ -120,7 +120,7 @@ template <class _Iter1, class _Sent1,
           class _Pred,
           class _Proj1,
           class _Proj2>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 pair<_Iter1, _Iter1> __search_impl(_Iter1 __first1, _Sent1 __last1,
                                    _Iter2 __first2, _Sent2 __last2,
                                    _Pred& __pred,
@@ -152,7 +152,7 @@ template <class _Iter1, class _Sent1,
           class _Pred,
           class _Proj1,
           class _Proj2>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 pair<_Iter1, _Iter1> __search_impl(_Iter1 __first1, _Sent1 __last1,
                                    _Iter2 __first2, _Sent2 __last2,
                                    _Pred& __pred,
@@ -170,7 +170,7 @@ pair<_Iter1, _Iter1> __search_impl(_Iter1 __first1, _Sent1 __last1,
 }
 
 template <class _ForwardIterator1, class _ForwardIterator2, class _BinaryPredicate>
-_LIBCPP_NODISCARD_EXT inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_NODISCARD_EXT inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _ForwardIterator1 search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
                          _ForwardIterator2 __first2, _ForwardIterator2 __last2,
                          _BinaryPredicate __pred) {
@@ -181,7 +181,7 @@ _ForwardIterator1 search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
 }
 
 template <class _ForwardIterator1, class _ForwardIterator2>
-_LIBCPP_NODISCARD_EXT inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_NODISCARD_EXT inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _ForwardIterator1 search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
                          _ForwardIterator2 __first2, _ForwardIterator2 __last2) {
   using __v1 = typename iterator_traits<_ForwardIterator1>::value_type;
@@ -189,15 +189,15 @@ _ForwardIterator1 search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
   return std::search(__first1, __last1, __first2, __last2, __equal_to<__v1, __v2>());
 }
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _ForwardIterator, class _Searcher>
-_LIBCPP_NODISCARD_EXT _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17 _ForwardIterator
+_LIBCUDACXX_NODISCARD_EXT _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _ForwardIterator
 search(_ForwardIterator __f, _ForwardIterator __l, const _Searcher& __s) {
   return __s(__f, __l).first;
 }
 
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_SEARCH_H
+#endif // _LIBCUDACXX___ALGORITHM_SEARCH_H

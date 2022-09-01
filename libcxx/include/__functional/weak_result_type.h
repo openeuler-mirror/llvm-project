@@ -7,19 +7,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FUNCTIONAL_WEAK_RESULT_TYPE_H
-#define _LIBCPP___FUNCTIONAL_WEAK_RESULT_TYPE_H
+#ifndef _LIBCUDACXX___FUNCTIONAL_WEAK_RESULT_TYPE_H
+#define _LIBCUDACXX___FUNCTIONAL_WEAK_RESULT_TYPE_H
 
 #include <__config>
 #include <__functional/binary_function.h>
 #include <__functional/unary_function.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp>
 struct __has_result_type
@@ -90,8 +90,8 @@ struct __weak_result_type_imp // bool is true
     : public __maybe_derive_from_unary_function<_Tp>,
       public __maybe_derive_from_binary_function<_Tp>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = typename _Tp::result_type;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = typename _Tp::result_type;
 #endif
 };
 
@@ -113,24 +113,24 @@ struct __weak_result_type
 template <class _Rp>
 struct __weak_result_type<_Rp ()>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = _Rp;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = _Rp;
 #endif
 };
 
 template <class _Rp>
 struct __weak_result_type<_Rp (&)()>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = _Rp;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = _Rp;
 #endif
 };
 
 template <class _Rp>
 struct __weak_result_type<_Rp (*)()>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = _Rp;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = _Rp;
 #endif
 };
 
@@ -227,65 +227,65 @@ struct __weak_result_type<_Rp (_Cp::*)(_A1) const volatile>
 template <class _Rp, class _A1, class _A2, class _A3, class ..._A4>
 struct __weak_result_type<_Rp (_A1, _A2, _A3, _A4...)>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = _Rp;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = _Rp;
 #endif
 };
 
 template <class _Rp, class _A1, class _A2, class _A3, class ..._A4>
 struct __weak_result_type<_Rp (&)(_A1, _A2, _A3, _A4...)>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = _Rp;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = _Rp;
 #endif
 };
 
 template <class _Rp, class _A1, class _A2, class _A3, class ..._A4>
 struct __weak_result_type<_Rp (*)(_A1, _A2, _A3, _A4...)>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = _Rp;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = _Rp;
 #endif
 };
 
 template <class _Rp, class _Cp, class _A1, class _A2, class ..._A3>
 struct __weak_result_type<_Rp (_Cp::*)(_A1, _A2, _A3...)>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = _Rp;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = _Rp;
 #endif
 };
 
 template <class _Rp, class _Cp, class _A1, class _A2, class ..._A3>
 struct __weak_result_type<_Rp (_Cp::*)(_A1, _A2, _A3...) const>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = _Rp;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = _Rp;
 #endif
 };
 
 template <class _Rp, class _Cp, class _A1, class _A2, class ..._A3>
 struct __weak_result_type<_Rp (_Cp::*)(_A1, _A2, _A3...) volatile>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = _Rp;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = _Rp;
 #endif
 };
 
 template <class _Rp, class _Cp, class _A1, class _A2, class ..._A3>
 struct __weak_result_type<_Rp (_Cp::*)(_A1, _A2, _A3...) const volatile>
 {
-#if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
-    using result_type _LIBCPP_NODEBUG _LIBCPP_DEPRECATED_IN_CXX17 = _Rp;
+#if _LIBCUDACXX_STD_VER <= 17 || defined(_LIBCUDACXX_ENABLE_CXX20_REMOVED_BINDER_TYPEDEFS)
+    using result_type _LIBCUDACXX_NODEBUG _LIBCUDACXX_DEPRECATED_IN_CXX17 = _Rp;
 #endif
 };
 
 template <class _Tp, class ..._Args>
 struct __invoke_return
 {
-    typedef decltype(_VSTD::__invoke(declval<_Tp>(), declval<_Args>()...)) type;
+    typedef decltype(_CUDA_VSTD::__invoke(declval<_Tp>(), declval<_Args>()...)) type;
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FUNCTIONAL_WEAK_RESULT_TYPE_H
+#endif // _LIBCUDACXX___FUNCTIONAL_WEAK_RESULT_TYPE_H

@@ -7,21 +7,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___NUMERIC_PARTIAL_SUM_H
-#define _LIBCPP___NUMERIC_PARTIAL_SUM_H
+#ifndef _LIBCUDACXX___NUMERIC_PARTIAL_SUM_H
+#define _LIBCUDACXX___NUMERIC_PARTIAL_SUM_H
 
 #include <__config>
 #include <__iterator/iterator_traits.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _InputIterator, class _OutputIterator>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _OutputIterator
 partial_sum(_InputIterator __first, _InputIterator __last, _OutputIterator __result)
 {
@@ -31,8 +31,8 @@ partial_sum(_InputIterator __first, _InputIterator __last, _OutputIterator __res
         *__result = __t;
         for (++__first, (void) ++__result; __first != __last; ++__first, (void) ++__result)
         {
-#if _LIBCPP_STD_VER > 17
-            __t = _VSTD::move(__t) + *__first;
+#if _LIBCUDACXX_STD_VER > 17
+            __t = _CUDA_VSTD::move(__t) + *__first;
 #else
             __t = __t + *__first;
 #endif
@@ -43,7 +43,7 @@ partial_sum(_InputIterator __first, _InputIterator __last, _OutputIterator __res
 }
 
 template <class _InputIterator, class _OutputIterator, class _BinaryOperation>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _OutputIterator
 partial_sum(_InputIterator __first, _InputIterator __last, _OutputIterator __result,
               _BinaryOperation __binary_op)
@@ -54,8 +54,8 @@ partial_sum(_InputIterator __first, _InputIterator __last, _OutputIterator __res
         *__result = __t;
         for (++__first, (void) ++__result; __first != __last; ++__first, (void) ++__result)
         {
-#if _LIBCPP_STD_VER > 17
-            __t = __binary_op(_VSTD::move(__t), *__first);
+#if _LIBCUDACXX_STD_VER > 17
+            __t = __binary_op(_CUDA_VSTD::move(__t), *__first);
 #else
             __t = __binary_op(__t, *__first);
 #endif
@@ -65,6 +65,6 @@ partial_sum(_InputIterator __first, _InputIterator __last, _OutputIterator __res
     return __result;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___NUMERIC_PARTIAL_SUM_H
+#endif // _LIBCUDACXX___NUMERIC_PARTIAL_SUM_H

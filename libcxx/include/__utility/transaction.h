@@ -6,19 +6,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___UTILITY_TRANSACTION_H
-#define _LIBCPP___UTILITY_TRANSACTION_H
+#ifndef _LIBCUDACXX___UTILITY_TRANSACTION_H
+#define _LIBCUDACXX___UTILITY_TRANSACTION_H
 
 #include <__config>
 #include <__utility/exchange.h>
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // __transaction is a helper class for writing code with the strong exception guarantee.
 //
@@ -31,7 +31,7 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 // they can be moved around for convenience.
 //
 // __transaction can help greatly simplify code that would normally be cluttered by
-// `#if _LIBCPP_NO_EXCEPTIONS`. For example:
+// `#if _LIBCUDACXX_NO_EXCEPTIONS`. For example:
 //
 //    template <class Iterator, class Size, class OutputIterator>
 //    Iterator uninitialized_copy_n(Iterator iter, Size n, OutputIterator out) {
@@ -51,16 +51,16 @@ template <class _Rollback>
 struct __transaction {
     __transaction() = delete;
 
-    _LIBCPP_HIDE_FROM_ABI
-    _LIBCPP_CONSTEXPR_AFTER_CXX17 explicit __transaction(_Rollback __rollback)
-        : __rollback_(_VSTD::move(__rollback))
+    _LIBCUDACXX_HIDE_FROM_ABI
+    _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 explicit __transaction(_Rollback __rollback)
+        : __rollback_(_CUDA_VSTD::move(__rollback))
         , __completed_(false)
     { }
 
-    _LIBCPP_HIDE_FROM_ABI
-    _LIBCPP_CONSTEXPR_AFTER_CXX17 __transaction(__transaction&& __other)
+    _LIBCUDACXX_HIDE_FROM_ABI
+    _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 __transaction(__transaction&& __other)
         _NOEXCEPT_(is_nothrow_move_constructible<_Rollback>::value)
-        : __rollback_(_VSTD::move(__other.__rollback_))
+        : __rollback_(_CUDA_VSTD::move(__other.__rollback_))
         , __completed_(__other.__completed_)
     {
         __other.__completed_ = true;
@@ -70,13 +70,13 @@ struct __transaction {
     __transaction& operator=(__transaction const&) = delete;
     __transaction& operator=(__transaction&&) = delete;
 
-    _LIBCPP_HIDE_FROM_ABI
-    _LIBCPP_CONSTEXPR_AFTER_CXX17 void __complete() _NOEXCEPT {
+    _LIBCUDACXX_HIDE_FROM_ABI
+    _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 void __complete() _NOEXCEPT {
         __completed_ = true;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
-    _LIBCPP_CONSTEXPR_AFTER_CXX17 ~__transaction() {
+    _LIBCUDACXX_HIDE_FROM_ABI
+    _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 ~__transaction() {
         if (!__completed_)
             __rollback_();
     }
@@ -87,10 +87,10 @@ private:
 };
 
 template <class _Rollback>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR __transaction<_Rollback> __make_transaction(_Rollback __rollback) {
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR __transaction<_Rollback> __make_transaction(_Rollback __rollback) {
   return __transaction<_Rollback>(std::move(__rollback));
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___UTILITY_TRANSACTION_H
+#endif // _LIBCUDACXX___UTILITY_TRANSACTION_H

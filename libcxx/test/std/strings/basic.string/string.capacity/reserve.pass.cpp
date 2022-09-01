@@ -10,7 +10,7 @@
 
 // void reserve(); // Deprecated in C++20.
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS
 
 #include <string>
 #include <stdexcept>
@@ -31,7 +31,7 @@ test(typename S::size_type min_cap, typename S::size_type erased_index)
     typename S::size_type old_cap = s.capacity();
     S s0 = s;
     s.reserve();
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == s0);
     assert(s.capacity() <= old_cap);
     assert(s.capacity() >= s.size());

@@ -6,19 +6,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_COPY_CV_H
-#define _LIBCPP___TYPE_TRAITS_COPY_CV_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_COPY_CV_H
+#define _LIBCUDACXX___TYPE_TRAITS_COPY_CV_H
 
 #include <__config>
 #include <__type_traits/add_const.h>
 #include <__type_traits/add_cv.h>
 #include <__type_traits/add_volatile.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // Let COPYCV(FROM, TO) be an alias for type TO with the addition of FROM's
 // top-level cv-qualifiers.
@@ -49,6 +49,6 @@ struct __copy_cv<const volatile _From, _To>
 template <class _From, class _To>
 using __copy_cv_t = typename __copy_cv<_From, _To>::type;
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_COPY_CV_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_COPY_CV_H

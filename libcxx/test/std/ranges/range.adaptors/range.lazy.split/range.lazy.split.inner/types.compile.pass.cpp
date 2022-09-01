@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 //  using iterator_category = If<
 //    derived_from<typename iterator_traits<iterator_t<Base>>::iterator_category, forward_iterator_tag>,

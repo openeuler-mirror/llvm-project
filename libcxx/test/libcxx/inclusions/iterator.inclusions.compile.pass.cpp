@@ -18,12 +18,12 @@
 #include <iterator>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_ITERATOR)
- #   error "<iterator> was expected to define _LIBCPP_ITERATOR"
+#if !defined(_LIBCUDACXX_ITERATOR)
+ #   error "<iterator> was expected to define _LIBCUDACXX_ITERATOR"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<iterator> should include <compare> in C++20 and later"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_CONCEPTS)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_CONCEPTS)
  #   error "<iterator> should include <concepts> in C++20 and later"
 #endif

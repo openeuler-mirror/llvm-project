@@ -27,7 +27,7 @@ int main(int, char**)
     {
         typedef std::unordered_map<int, std::string> C;
         const C c;
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
     }
     {
         typedef std::unordered_map<int, std::string> C;
@@ -51,7 +51,7 @@ int main(int, char**)
         typedef std::unordered_map<int, std::string, std::hash<int>, std::equal_to<int>,
                             min_allocator<std::pair<const int, std::string>>> C;
         const C c;
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
     }
     {
         typedef std::unordered_map<int, std::string, std::hash<int>, std::equal_to<int>,

@@ -6,18 +6,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_CALLABLE_H
-#define _LIBCPP___TYPE_TRAITS_IS_CALLABLE_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_CALLABLE_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_CALLABLE_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 #include <__utility/declval.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _Func, class... _Args, class = decltype(std::declval<_Func>()(std::declval<_Args>()...))>
 true_type __is_callable_helper(int);
@@ -27,6 +27,6 @@ false_type __is_callable_helper(...);
 template<class _Func, class... _Args>
 struct __is_callable : decltype(__is_callable_helper<_Func, _Args...>(0)) {};
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_CALLABLE_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_CALLABLE_H

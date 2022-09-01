@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_SUPPORT_OPENBSD_XLOCALE_H
-#define _LIBCPP_SUPPORT_OPENBSD_XLOCALE_H
+#ifndef _LIBCUDACXX_SUPPORT_OPENBSD_XLOCALE_H
+#define _LIBCUDACXX_SUPPORT_OPENBSD_XLOCALE_H
 
 #include <__support/xlocale/__strtonum_fallback.h>
 #include <clocale>
@@ -21,12 +21,12 @@ extern "C" {
 #endif
 
 
-inline _LIBCPP_HIDE_FROM_ABI long
+inline _LIBCUDACXX_HIDE_FROM_ABI long
 strtol_l(const char *__nptr, char **__endptr, int __base, locale_t) {
   return ::strtol(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI unsigned long
+inline _LIBCUDACXX_HIDE_FROM_ABI unsigned long
 strtoul_l(const char *__nptr, char **__endptr, int __base, locale_t) {
   return ::strtoul(__nptr, __endptr, __base);
 }

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_BINARY_SEARCH_H
-#define _LIBCPP___ALGORITHM_BINARY_SEARCH_H
+#ifndef _LIBCUDACXX___ALGORITHM_BINARY_SEARCH_H
+#define _LIBCUDACXX___ALGORITHM_BINARY_SEARCH_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -15,15 +15,15 @@
 #include <__config>
 #include <__iterator/iterator_traits.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _ForwardIterator, class _Tp, class _Compare>
-_LIBCPP_NODISCARD_EXT inline
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_NODISCARD_EXT inline
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 bool
 binary_search(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value, _Compare __comp)
 {
@@ -33,8 +33,8 @@ binary_search(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __va
 }
 
 template <class _ForwardIterator, class _Tp>
-_LIBCPP_NODISCARD_EXT inline
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_NODISCARD_EXT inline
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 bool
 binary_search(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value)
 {
@@ -42,6 +42,6 @@ binary_search(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __va
                               __less<typename iterator_traits<_ForwardIterator>::value_type, _Tp>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_BINARY_SEARCH_H
+#endif // _LIBCUDACXX___ALGORITHM_BINARY_SEARCH_H

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_MAKE_UNSIGNED_H
-#define _LIBCPP___TYPE_TRAITS_MAKE_UNSIGNED_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_MAKE_UNSIGNED_H
+#define _LIBCUDACXX___TYPE_TRAITS_MAKE_UNSIGNED_H
 
 #include <__config>
 #include <__type_traits/apply_cv.h>
@@ -19,11 +19,11 @@
 #include <__type_traits/remove_cv.h>
 #include <__type_traits/type_list.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 typedef
     __type_list<unsigned char,
@@ -31,11 +31,11 @@ typedef
     __type_list<unsigned int,
     __type_list<unsigned long,
     __type_list<unsigned long long,
-#ifndef _LIBCPP_HAS_NO_INT128
+#ifndef _LIBCUDACXX_HAS_NO_INT128
     __type_list<__uint128_t,
 #endif
     __nat
-#ifndef _LIBCPP_HAS_NO_INT128
+#ifndef _LIBCUDACXX_HAS_NO_INT128
     >
 #endif
     > > > > > __unsigned_types;
@@ -58,24 +58,24 @@ template <> struct __make_unsigned<  signed long,      true> {typedef unsigned l
 template <> struct __make_unsigned<unsigned long,      true> {typedef unsigned long      type;};
 template <> struct __make_unsigned<  signed long long, true> {typedef unsigned long long type;};
 template <> struct __make_unsigned<unsigned long long, true> {typedef unsigned long long type;};
-#ifndef _LIBCPP_HAS_NO_INT128
+#ifndef _LIBCUDACXX_HAS_NO_INT128
 template <> struct __make_unsigned<__int128_t,         true> {typedef __uint128_t        type;};
 template <> struct __make_unsigned<__uint128_t,        true> {typedef __uint128_t        type;};
 #endif
 
 template <class _Tp>
-struct _LIBCPP_TEMPLATE_VIS make_unsigned
+struct _LIBCUDACXX_TEMPLATE_VIS make_unsigned
 {
     typedef typename __apply_cv<_Tp, typename __make_unsigned<typename remove_cv<_Tp>::type>::type>::type type;
 };
 
-#if _LIBCPP_STD_VER > 11
+#if _LIBCUDACXX_STD_VER > 11
 template <class _Tp> using make_unsigned_t = typename make_unsigned<_Tp>::type;
 #endif
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 template <class _Tp>
-_LIBCPP_HIDE_FROM_ABI constexpr
+_LIBCUDACXX_HIDE_FROM_ABI constexpr
 typename make_unsigned<_Tp>::type __to_unsigned_like(_Tp __x) noexcept {
     return static_cast<typename make_unsigned<_Tp>::type>(__x);
 }
@@ -84,6 +84,6 @@ typename make_unsigned<_Tp>::type __to_unsigned_like(_Tp __x) noexcept {
 template <class _Tp, class _Up>
 using __copy_unsigned_t = __conditional_t<is_unsigned<_Tp>::value, typename make_unsigned<_Up>::type, _Up>;
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_MAKE_UNSIGNED_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_MAKE_UNSIGNED_H

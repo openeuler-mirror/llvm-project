@@ -61,7 +61,7 @@ void test_sfinae() {
     static_assert(std::is_constructible<U, int*, D const&>::value, "");
     static_assert(std::is_constructible<U, int*, D&>::value, "");
     static_assert(std::is_constructible<U, int*, D&&>::value, "");
-    // FIXME: __libcpp_compressed_pair attempts to perform a move even though
+    // FIXME: __LIBCUDACXX_compressed_pair attempts to perform a move even though
     // it should only copy.
     //D d;
     //U u(nullptr, std::move(d));
@@ -145,7 +145,7 @@ void test_sfinae_runtime() {
     static_assert(!std::is_constructible<U, B*, D const&>::value, "");
     static_assert(!std::is_constructible<U, B*, D&>::value, "");
     static_assert(!std::is_constructible<U, B*, D&&>::value, "");
-    // FIXME: __libcpp_compressed_pair attempts to perform a move even though
+    // FIXME: __LIBCUDACXX_compressed_pair attempts to perform a move even though
     // it should only copy.
     //D d;
     //U u(nullptr, std::move(d));

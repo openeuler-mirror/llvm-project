@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_UCHAR_H
-#define _LIBCPP_UCHAR_H
+#ifndef _LIBCUDACXX_UCHAR_H
+#define _LIBCUDACXX_UCHAR_H
 
 /*
     uchar.h synopsis // since C++11
@@ -32,11 +32,11 @@ size_t c32rtomb(char* s, char32_t c32, mbstate_t* ps);
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if !defined(_LIBCPP_CXX03_LANG)
+#if !defined(_LIBCUDACXX_CXX03_LANG)
 
 // Some platforms don't implement <uchar.h> and we don't want to give a hard
 // error on those platforms. When the platform doesn't provide <uchar.h>, at
@@ -47,6 +47,6 @@ size_t c32rtomb(char* s, char32_t c32, mbstate_t* ps);
 # include <stddef.h>
 #endif
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
-#endif // _LIBCPP_UCHAR_H
+#endif // _LIBCUDACXX_UCHAR_H

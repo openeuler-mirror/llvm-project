@@ -6,7 +6,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-format
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-format
 // TODO FMT Evaluate gcc-12 status
 // UNSUPPORTED: gcc-12
 // TODO FMT Investigate AppleClang ICE
@@ -67,7 +67,7 @@ auto test_exception = []<class CharT, class... Args>(std::string_view what, std:
     std::vformat_to(std::back_inserter(out), fmt, std::make_format_args<context_t<CharT>>(args...));
     assert(false);
   } catch ([[maybe_unused]] const std::format_error& e) {
-    LIBCPP_ASSERT(e.what() == what);
+    LIBCUDACXX_ASSERT(e.what() == what);
     return;
   }
   assert(false);

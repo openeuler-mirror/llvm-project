@@ -6,26 +6,26 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_FILL_N_H
-#define _LIBCPP___ALGORITHM_RANGES_FILL_N_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_FILL_N_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_FILL_N_H
 
 #include <__config>
 #include <__iterator/concepts.h>
 #include <__iterator/incrementable_traits.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __fill_n {
 struct __fn {
   template <class _Type, output_iterator<const _Type&> _Iter>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   _Iter operator()(_Iter __first, iter_difference_t<_Iter> __n, const _Type& __value) const {
     for (; __n != 0; --__n) {
       *__first = __value;
@@ -41,8 +41,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_FILL_N_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_FILL_N_H

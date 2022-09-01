@@ -6,21 +6,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CONCEPTS_COMMON_WITH_H
-#define _LIBCPP___CONCEPTS_COMMON_WITH_H
+#ifndef _LIBCUDACXX___CONCEPTS_COMMON_WITH_H
+#define _LIBCUDACXX___CONCEPTS_COMMON_WITH_H
 
 #include <__concepts/common_reference_with.h>
 #include <__concepts/same_as.h>
 #include <__config>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [concept.common]
 
@@ -40,8 +40,8 @@ concept common_with =
       add_lvalue_reference_t<const _Tp>,
       add_lvalue_reference_t<const _Up>>>;
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___CONCEPTS_COMMON_WITH_H
+#endif // _LIBCUDACXX___CONCEPTS_COMMON_WITH_H

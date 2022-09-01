@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_FIND_END_H
-#define _LIBCPP___ALGORITHM_RANGES_FIND_END_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_FIND_END_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_FIND_END_H
 
 #include <__algorithm/find_end.h>
 #include <__algorithm/iterator_operations.h>
@@ -22,13 +22,13 @@
 #include <__ranges/concepts.h>
 #include <__ranges/subrange.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __find_end {
@@ -39,7 +39,7 @@ struct __fn {
             class _Proj1 = identity,
             class _Proj2 = identity>
     requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   subrange<_Iter1> operator()(_Iter1 __first1, _Sent1 __last1,
                               _Iter2 __first2, _Sent2 __last2,
                               _Pred __pred = {},
@@ -64,7 +64,7 @@ struct __fn {
             class _Proj1 = identity,
             class _Proj2 = identity>
     requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>, _Pred, _Proj1, _Proj2>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   borrowed_subrange_t<_Range1> operator()(_Range1&& __range1,
                                           _Range2&& __range2,
                                           _Pred __pred = {},
@@ -90,8 +90,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_FIND_END_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_FIND_END_H

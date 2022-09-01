@@ -7,20 +7,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_PERMUTABLE_H
-#define _LIBCPP___ITERATOR_PERMUTABLE_H
+#ifndef _LIBCUDACXX___ITERATOR_PERMUTABLE_H
+#define _LIBCUDACXX___ITERATOR_PERMUTABLE_H
 
 #include <__config>
 #include <__iterator/concepts.h>
 #include <__iterator/iter_swap.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <class _Iterator>
 concept permutable =
@@ -28,8 +28,8 @@ concept permutable =
     indirectly_movable_storable<_Iterator, _Iterator> &&
     indirectly_swappable<_Iterator, _Iterator>;
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_PERMUTABLE_H
+#endif // _LIBCUDACXX___ITERATOR_PERMUTABLE_H

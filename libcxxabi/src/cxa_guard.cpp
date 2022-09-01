@@ -19,8 +19,8 @@
     which will turn around and try to call __cxa_guard_acquire reentrantly.
     For this reason, the headers of this file are as restricted as possible.
     Previous implementations of this code for __APPLE__ have used
-    std::__libcpp_mutex_lock and the abort_message utility without problem. This
-    implementation also uses std::__libcpp_condvar_wait which has tested
+    std::__LIBCUDACXX_mutex_lock and the abort_message utility without problem. This
+    implementation also uses std::__LIBCUDACXX_condvar_wait which has tested
     to not be a problem.
 */
 

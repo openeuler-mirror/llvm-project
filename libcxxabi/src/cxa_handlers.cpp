@@ -25,7 +25,7 @@ namespace std
 unexpected_handler
 get_unexpected() noexcept
 {
-    return __libcpp_atomic_load(&__cxa_unexpected_handler, _AO_Acquire);
+    return __LIBCUDACXX_atomic_load(&__cxa_unexpected_handler, _AO_Acquire);
 }
 
 void
@@ -46,7 +46,7 @@ unexpected()
 terminate_handler
 get_terminate() noexcept
 {
-    return __libcpp_atomic_load(&__cxa_terminate_handler, _AO_Acquire);
+    return __LIBCUDACXX_atomic_load(&__cxa_terminate_handler, _AO_Acquire);
 }
 
 void
@@ -95,7 +95,7 @@ terminate() noexcept
 new_handler
 get_new_handler() noexcept
 {
-    return __libcpp_atomic_load(&__cxa_new_handler, _AO_Acquire);
+    return __LIBCUDACXX_atomic_load(&__cxa_new_handler, _AO_Acquire);
 }
 
 }  // std

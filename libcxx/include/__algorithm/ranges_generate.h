@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_GENERATE_H
-#define _LIBCPP___ALGORITHM_RANGES_GENERATE_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_GENERATE_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_GENERATE_H
 
 #include <__concepts/constructible.h>
 #include <__concepts/invocable.h>
@@ -20,13 +20,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __generate {
@@ -34,7 +34,7 @@ namespace __generate {
 struct __fn {
 
   template <class _OutIter, class _Sent, class _Func>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   static _OutIter __generate_fn_impl(_OutIter __first, _Sent __last, _Func& __gen) {
     for (; __first != __last; ++__first) {
       *__first = __gen();
@@ -45,14 +45,14 @@ struct __fn {
 
   template <input_or_output_iterator _OutIter, sentinel_for<_OutIter> _Sent, copy_constructible _Func>
   requires invocable<_Func&> && indirectly_writable<_OutIter, invoke_result_t<_Func&>>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   _OutIter operator()(_OutIter __first, _Sent __last, _Func __gen) const {
     return __generate_fn_impl(std::move(__first), std::move(__last), __gen);
   }
 
   template <class _Range, copy_constructible _Func>
   requires invocable<_Func&> && output_range<_Range, invoke_result_t<_Func&>>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   borrowed_iterator_t<_Range> operator()(_Range&& __range, _Func __gen) const {
     return __generate_fn_impl(ranges::begin(__range), ranges::end(__range), __gen);
   }
@@ -66,8 +66,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_GENERATE_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_GENERATE_H

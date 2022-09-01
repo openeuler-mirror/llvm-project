@@ -55,17 +55,17 @@ extern "C" {
 
 namespace __cxxabiv1 {
 namespace {
-    std::__libcpp_tls_key key_;
-    std::__libcpp_exec_once_flag flag_ = _LIBCPP_EXEC_ONCE_INITIALIZER;
+    std::__LIBCUDACXX_tls_key key_;
+    std::__LIBCUDACXX_exec_once_flag flag_ = _LIBCUDACXX_EXEC_ONCE_INITIALIZER;
 
-    void _LIBCPP_TLS_DESTRUCTOR_CC destruct_(void *p) {
+    void _LIBCUDACXX_TLS_DESTRUCTOR_CC destruct_(void *p) {
         __free_with_fallback(p);
-        if (0 != std::__libcpp_tls_set(key_, NULL))
+        if (0 != std::__LIBCUDACXX_tls_set(key_, NULL))
             abort_message("cannot zero out thread value for __cxa_get_globals()");
     }
 
     void construct_() {
-        if (0 != std::__libcpp_tls_create(&key_, destruct_))
+        if (0 != std::__LIBCUDACXX_tls_create(&key_, destruct_))
             abort_message("cannot create thread specific key for __cxa_get_globals()");
     }
 } // namespace
@@ -81,8 +81,8 @@ extern "C" {
                 __calloc_with_fallback(1, sizeof(__cxa_eh_globals)));
             if (NULL == retVal)
                 abort_message("cannot allocate __cxa_eh_globals");
-            if (0 != std::__libcpp_tls_set(key_, retVal))
-               abort_message("std::__libcpp_tls_set failure in __cxa_get_globals()");
+            if (0 != std::__LIBCUDACXX_tls_set(key_, retVal))
+               abort_message("std::__LIBCUDACXX_tls_set failure in __cxa_get_globals()");
         }
         return retVal;
     }
@@ -93,9 +93,9 @@ extern "C" {
     // libc++abi.
     __cxa_eh_globals *__cxa_get_globals_fast() {
         // First time through, create the key.
-        if (0 != std::__libcpp_execute_once(&flag_, construct_))
+        if (0 != std::__LIBCUDACXX_execute_once(&flag_, construct_))
             abort_message("execute once failure in __cxa_get_globals_fast()");
-        return static_cast<__cxa_eh_globals*>(std::__libcpp_tls_get(key_));
+        return static_cast<__cxa_eh_globals*>(std::__LIBCUDACXX_tls_get(key_));
     }
 } // extern "C"
 } // namespace __cxxabiv1

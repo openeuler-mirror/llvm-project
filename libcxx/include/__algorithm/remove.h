@@ -6,25 +6,25 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_REMOVE_H
-#define _LIBCPP___ALGORITHM_REMOVE_H
+#ifndef _LIBCUDACXX___ALGORITHM_REMOVE_H
+#define _LIBCUDACXX___ALGORITHM_REMOVE_H
 
 #include <__algorithm/find.h>
 #include <__algorithm/find_if.h>
 #include <__config>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _ForwardIterator, class _Tp>
-_LIBCPP_NODISCARD_EXT _LIBCPP_CONSTEXPR_AFTER_CXX17 _ForwardIterator
+_LIBCUDACXX_NODISCARD_EXT _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _ForwardIterator
 remove(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value)
 {
-    __first = _VSTD::find(__first, __last, __value);
+    __first = _CUDA_VSTD::find(__first, __last, __value);
     if (__first != __last)
     {
         _ForwardIterator __i = __first;
@@ -32,7 +32,7 @@ remove(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value)
         {
             if (!(*__i == __value))
             {
-                *__first = _VSTD::move(*__i);
+                *__first = _CUDA_VSTD::move(*__i);
                 ++__first;
             }
         }
@@ -40,6 +40,6 @@ remove(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value)
     return __first;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_REMOVE_H
+#endif // _LIBCUDACXX___ALGORITHM_REMOVE_H

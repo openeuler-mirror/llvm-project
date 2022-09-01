@@ -104,7 +104,7 @@ TEST_CASE(test_replace_filename_calls_refresh) {
     TEST_REQUIRE(ent.path() == file_two);
 
     // removing the file demonstrates that the values where cached previously.
-    LIBCPP_ONLY(remove(file_two));
+    LIBCUDACXX_ONLY(remove(file_two));
 
     TEST_CHECK(ent.file_size() == 101);
   }
@@ -114,8 +114,8 @@ TEST_CASE(test_replace_filename_calls_refresh) {
     ent.replace_filename(sym_two.filename());
     TEST_REQUIRE(ent.path() == sym_two);
 
-    LIBCPP_ONLY(remove(file_two));
-    LIBCPP_ONLY(remove(sym_two));
+    LIBCUDACXX_ONLY(remove(file_two));
+    LIBCUDACXX_ONLY(remove(sym_two));
 
     TEST_CHECK(ent.is_symlink());
     TEST_CHECK(ent.is_regular_file());

@@ -11,7 +11,7 @@
 // Call erase(const_iterator first, const_iterator last); with invalid iterators
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <string>
 
@@ -25,7 +25,7 @@ int main(int, char**) {
         {
             std::string l1("123");
             std::string l2("123");
-            TEST_LIBCPP_ASSERT_FAILURE(
+            TEST_LIBCUDACXX_ASSERT_FAILURE(
                 l1.erase(l2.cbegin(), l1.cbegin() + 1),
                 "string::erase(iterator,  iterator) called with an iterator not referring to this string");
         }
@@ -33,7 +33,7 @@ int main(int, char**) {
             typedef std::basic_string<char, std::char_traits<char>, min_allocator<char> > S;
             S l1("123");
             S l2("123");
-            TEST_LIBCPP_ASSERT_FAILURE(l1.erase(l2.cbegin(), l1.cbegin() + 1),
+            TEST_LIBCUDACXX_ASSERT_FAILURE(l1.erase(l2.cbegin(), l1.cbegin() + 1),
                                         "string::erase(iterator,  iterator) called with an iterator not referring to this string");
         }
     }
@@ -43,13 +43,13 @@ int main(int, char**) {
         {
             std::string l1("123");
             std::string l2("123");
-            TEST_LIBCPP_ASSERT_FAILURE(l1.erase(l1.cbegin(), l2.cbegin() + 1), "Attempted to compare incomparable iterators");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(l1.erase(l1.cbegin(), l2.cbegin() + 1), "Attempted to compare incomparable iterators");
         }
         {
             typedef std::basic_string<char, std::char_traits<char>, min_allocator<char> > S;
             S l1("123");
             S l2("123");
-            TEST_LIBCPP_ASSERT_FAILURE(l1.erase(l1.cbegin(), l2.cbegin() + 1), "Attempted to compare incomparable iterators");
+            TEST_LIBCUDACXX_ASSERT_FAILURE(l1.erase(l1.cbegin(), l2.cbegin() + 1), "Attempted to compare incomparable iterators");
         }
     }
 
@@ -58,7 +58,7 @@ int main(int, char**) {
         {
             std::string l1("123");
             std::string l2("123");
-            TEST_LIBCPP_ASSERT_FAILURE(
+            TEST_LIBCUDACXX_ASSERT_FAILURE(
                 l1.erase(l2.cbegin(), l2.cbegin() + 1),
                 "string::erase(iterator,  iterator) called with an iterator not referring to this string");
         }
@@ -66,7 +66,7 @@ int main(int, char**) {
             typedef std::basic_string<char, std::char_traits<char>, min_allocator<char> > S;
             S l1("123");
             S l2("123");
-            TEST_LIBCPP_ASSERT_FAILURE(
+            TEST_LIBCUDACXX_ASSERT_FAILURE(
                 l1.erase(l2.cbegin(), l2.cbegin() + 1),
                 "string::erase(iterator,  iterator) called with an iterator not referring to this string");
         }
@@ -76,13 +76,13 @@ int main(int, char**) {
     {
         {
             std::string l1("123");
-            TEST_LIBCPP_ASSERT_FAILURE(l1.erase(l1.cbegin() + 1, l1.cbegin()),
+            TEST_LIBCUDACXX_ASSERT_FAILURE(l1.erase(l1.cbegin() + 1, l1.cbegin()),
                                     "string::erase(first, last) called with invalid range");
         }
         {
             typedef std::basic_string<char, std::char_traits<char>, min_allocator<char> > S;
             S l1("123");
-            TEST_LIBCPP_ASSERT_FAILURE(l1.erase(l1.cbegin() + 1, l1.cbegin()),
+            TEST_LIBCUDACXX_ASSERT_FAILURE(l1.erase(l1.cbegin() + 1, l1.cbegin()),
                                     "string::erase(first, last) called with invalid range");
         }
     }

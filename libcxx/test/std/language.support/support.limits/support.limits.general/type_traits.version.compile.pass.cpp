@@ -425,14 +425,14 @@
 #   error "__cpp_lib_is_invocable should have the value 201703L in c++20"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_is_layout_compatible
 #     error "__cpp_lib_is_layout_compatible should be defined in c++20"
 #   endif
 #   if __cpp_lib_is_layout_compatible != 201907L
 #     error "__cpp_lib_is_layout_compatible should have the value 201907L in c++20"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_is_layout_compatible
 #     error "__cpp_lib_is_layout_compatible should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -452,14 +452,14 @@
 #   error "__cpp_lib_is_null_pointer should have the value 201309L in c++20"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_is_pointer_interconvertible
 #     error "__cpp_lib_is_pointer_interconvertible should be defined in c++20"
 #   endif
 #   if __cpp_lib_is_pointer_interconvertible != 201907L
 #     error "__cpp_lib_is_pointer_interconvertible should have the value 201907L in c++20"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_is_pointer_interconvertible
 #     error "__cpp_lib_is_pointer_interconvertible should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -587,14 +587,14 @@
 #   error "__cpp_lib_is_invocable should have the value 201703L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_is_layout_compatible
 #     error "__cpp_lib_is_layout_compatible should be defined in c++2b"
 #   endif
 #   if __cpp_lib_is_layout_compatible != 201907L
 #     error "__cpp_lib_is_layout_compatible should have the value 201907L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_is_layout_compatible
 #     error "__cpp_lib_is_layout_compatible should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -614,14 +614,14 @@
 #   error "__cpp_lib_is_null_pointer should have the value 201309L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_is_pointer_interconvertible
 #     error "__cpp_lib_is_pointer_interconvertible should be defined in c++2b"
 #   endif
 #   if __cpp_lib_is_pointer_interconvertible != 201907L
 #     error "__cpp_lib_is_pointer_interconvertible should have the value 201907L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_is_pointer_interconvertible
 #     error "__cpp_lib_is_pointer_interconvertible should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -648,14 +648,14 @@
 #   error "__cpp_lib_logical_traits should have the value 201510L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_reference_from_temporary
 #     error "__cpp_lib_reference_from_temporary should be defined in c++2b"
 #   endif
 #   if __cpp_lib_reference_from_temporary != 202202L
 #     error "__cpp_lib_reference_from_temporary should have the value 202202L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_reference_from_temporary
 #     error "__cpp_lib_reference_from_temporary should not be defined because it is unimplemented in libc++!"
 #   endif

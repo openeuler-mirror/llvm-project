@@ -24,8 +24,8 @@ TEST_CONSTEXPR_CXX20 bool test() {
     const S& cs = s;
     ASSERT_SAME_TYPE(decltype( s[0]), typename S::reference);
     ASSERT_SAME_TYPE(decltype(cs[0]), typename S::const_reference);
-    LIBCPP_ASSERT_NOEXCEPT(    s[0]);
-    LIBCPP_ASSERT_NOEXCEPT(   cs[0]);
+    LIBCUDACXX_ASSERT_NOEXCEPT(    s[0]);
+    LIBCUDACXX_ASSERT_NOEXCEPT(   cs[0]);
     for (S::size_type i = 0; i < cs.size(); ++i)
     {
         assert(s[i] == static_cast<char>('0' + i));
@@ -42,8 +42,8 @@ TEST_CONSTEXPR_CXX20 bool test() {
     const S& cs = s;
     ASSERT_SAME_TYPE(decltype( s[0]), typename S::reference);
     ASSERT_SAME_TYPE(decltype(cs[0]), typename S::const_reference);
-    LIBCPP_ASSERT_NOEXCEPT(    s[0]);
-    LIBCPP_ASSERT_NOEXCEPT(   cs[0]);
+    LIBCUDACXX_ASSERT_NOEXCEPT(    s[0]);
+    LIBCUDACXX_ASSERT_NOEXCEPT(   cs[0]);
     for (S::size_type i = 0; i < cs.size(); ++i)
     {
         assert(s[i] == static_cast<char>('0' + i));

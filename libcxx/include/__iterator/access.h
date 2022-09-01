@@ -7,20 +7,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_ACCESS_H
-#define _LIBCPP___ITERATOR_ACCESS_H
+#ifndef _LIBCUDACXX___ITERATOR_ACCESS_H
+#define _LIBCUDACXX___ITERATOR_ACCESS_H
 
 #include <__config>
 #include <cstddef>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp, size_t _Np>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 _Tp*
 begin(_Tp (&__array)[_Np])
 {
@@ -28,17 +28,17 @@ begin(_Tp (&__array)[_Np])
 }
 
 template <class _Tp, size_t _Np>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 _Tp*
 end(_Tp (&__array)[_Np])
 {
     return __array + _Np;
 }
 
-#if !defined(_LIBCPP_CXX03_LANG)
+#if !defined(_LIBCUDACXX_CXX03_LANG)
 
 template <class _Cp>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX14
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 auto
 begin(_Cp& __c) -> decltype(__c.begin())
 {
@@ -46,7 +46,7 @@ begin(_Cp& __c) -> decltype(__c.begin())
 }
 
 template <class _Cp>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX14
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 auto
 begin(const _Cp& __c) -> decltype(__c.begin())
 {
@@ -54,7 +54,7 @@ begin(const _Cp& __c) -> decltype(__c.begin())
 }
 
 template <class _Cp>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX14
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 auto
 end(_Cp& __c) -> decltype(__c.end())
 {
@@ -62,36 +62,36 @@ end(_Cp& __c) -> decltype(__c.end())
 }
 
 template <class _Cp>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX14
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
 auto
 end(const _Cp& __c) -> decltype(__c.end())
 {
     return __c.end();
 }
 
-#if _LIBCPP_STD_VER > 11
+#if _LIBCUDACXX_STD_VER > 11
 
 template <class _Cp>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX11
-auto cbegin(const _Cp& __c) -> decltype(_VSTD::begin(__c))
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
+auto cbegin(const _Cp& __c) -> decltype(_CUDA_VSTD::begin(__c))
 {
-    return _VSTD::begin(__c);
+    return _CUDA_VSTD::begin(__c);
 }
 
 template <class _Cp>
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX11
-auto cend(const _Cp& __c) -> decltype(_VSTD::end(__c))
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
+auto cend(const _Cp& __c) -> decltype(_CUDA_VSTD::end(__c))
 {
-    return _VSTD::end(__c);
+    return _CUDA_VSTD::end(__c);
 }
 
 #endif
 
 
-#else  // defined(_LIBCPP_CXX03_LANG)
+#else  // defined(_LIBCUDACXX_CXX03_LANG)
 
 template <class _Cp>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 typename _Cp::iterator
 begin(_Cp& __c)
 {
@@ -99,7 +99,7 @@ begin(_Cp& __c)
 }
 
 template <class _Cp>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 typename _Cp::const_iterator
 begin(const _Cp& __c)
 {
@@ -107,7 +107,7 @@ begin(const _Cp& __c)
 }
 
 template <class _Cp>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 typename _Cp::iterator
 end(_Cp& __c)
 {
@@ -115,15 +115,15 @@ end(_Cp& __c)
 }
 
 template <class _Cp>
-_LIBCPP_INLINE_VISIBILITY
+_LIBCUDACXX_INLINE_VISIBILITY
 typename _Cp::const_iterator
 end(const _Cp& __c)
 {
     return __c.end();
 }
 
-#endif // !defined(_LIBCPP_CXX03_LANG)
+#endif // !defined(_LIBCUDACXX_CXX03_LANG)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_ACCESS_H
+#endif // _LIBCUDACXX___ITERATOR_ACCESS_H

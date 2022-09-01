@@ -6,18 +6,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Test that _LIBCPP_NODISCARD_EXT and _LIBCPP_NODISCARD_AFTER_CXX17 are defined
-// to the appropriate warning-generating attribute when _LIBCPP_ENABLE_NODISCARD
+// Test that _LIBCUDACXX_NODISCARD_EXT and _LIBCUDACXX_NODISCARD_AFTER_CXX17 are defined
+// to the appropriate warning-generating attribute when _LIBCUDACXX_ENABLE_NODISCARD
 // is explicitly provided.
 
 // UNSUPPORTED: c++03
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_NODISCARD
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_NODISCARD
 
 #include <__config>
 
-_LIBCPP_NODISCARD_EXT int foo() { return 42; }
-_LIBCPP_NODISCARD_AFTER_CXX17 int bar() { return 42; }
+_LIBCUDACXX_NODISCARD_EXT int foo() { return 42; }
+_LIBCUDACXX_NODISCARD_AFTER_CXX17 int bar() { return 42; }
 
 int main(int, char**) {
   foo(); // expected-warning-re {{ignoring return value of function declared with {{'nodiscard'|warn_unused_result}} attribute}}

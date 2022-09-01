@@ -23,10 +23,10 @@ test(typename C::size_type n, const typename C::value_type& x,
      const typename C::allocator_type& a)
 {
     C c(n, x, a);
-    LIBCPP_ASSERT(c.__invariants());
+    LIBCUDACXX_ASSERT(c.__invariants());
     assert(a == c.get_allocator());
     assert(c.size() == n);
-    LIBCPP_ASSERT(is_contiguous_container_asan_correct(c));
+    LIBCUDACXX_ASSERT(is_contiguous_container_asan_correct(c));
     for (typename C::const_iterator i = c.cbegin(), e = c.cend(); i != e; ++i)
         assert(*i == x);
 }

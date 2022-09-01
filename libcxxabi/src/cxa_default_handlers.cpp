@@ -119,7 +119,7 @@ set_unexpected(unexpected_handler func) noexcept
 {
     if (func == 0)
         func = default_unexpected_handler;
-    return __libcpp_atomic_exchange(&__cxa_unexpected_handler, func,
+    return __LIBCUDACXX_atomic_exchange(&__cxa_unexpected_handler, func,
                                     _AO_Acq_Rel);
 }
 
@@ -128,14 +128,14 @@ set_terminate(terminate_handler func) noexcept
 {
     if (func == 0)
         func = default_terminate_handler;
-    return __libcpp_atomic_exchange(&__cxa_terminate_handler, func,
+    return __LIBCUDACXX_atomic_exchange(&__cxa_terminate_handler, func,
                                     _AO_Acq_Rel);
 }
 
 new_handler
 set_new_handler(new_handler handler) noexcept
 {
-    return __libcpp_atomic_exchange(&__cxa_new_handler, handler, _AO_Acq_Rel);
+    return __LIBCUDACXX_atomic_exchange(&__cxa_new_handler, handler, _AO_Acq_Rel);
 }
 
 }

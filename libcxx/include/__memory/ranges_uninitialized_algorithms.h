@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___MEMORY_RANGES_UNINITIALIZED_ALGORITHMS_H
-#define _LIBCPP___MEMORY_RANGES_UNINITIALIZED_ALGORITHMS_H
+#ifndef _LIBCUDACXX___MEMORY_RANGES_UNINITIALIZED_ALGORITHMS_H
+#define _LIBCUDACXX___MEMORY_RANGES_UNINITIALIZED_ALGORITHMS_H
 
 #include <__algorithm/in_out_result.h>
 #include <__concepts/constructible.h>
@@ -26,13 +26,13 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
 
@@ -46,8 +46,8 @@ struct __fn {
     requires default_initializable<iter_value_t<_ForwardIterator>>
   _ForwardIterator operator()(_ForwardIterator __first, _Sentinel __last) const {
     using _ValueType = remove_reference_t<iter_reference_t<_ForwardIterator>>;
-    return _VSTD::__uninitialized_default_construct<_ValueType>(
-        _VSTD::move(__first), _VSTD::move(__last));
+    return _CUDA_VSTD::__uninitialized_default_construct<_ValueType>(
+        _CUDA_VSTD::move(__first), _CUDA_VSTD::move(__last));
   }
 
   template <__nothrow_forward_range _ForwardRange>
@@ -73,7 +73,7 @@ struct __fn {
   _ForwardIterator operator()(_ForwardIterator __first,
                               iter_difference_t<_ForwardIterator> __n) const {
     using _ValueType = remove_reference_t<iter_reference_t<_ForwardIterator>>;
-    return _VSTD::__uninitialized_default_construct_n<_ValueType>(_VSTD::move(__first), __n);
+    return _CUDA_VSTD::__uninitialized_default_construct_n<_ValueType>(_CUDA_VSTD::move(__first), __n);
   }
 };
 
@@ -93,8 +93,8 @@ struct __fn {
     requires default_initializable<iter_value_t<_ForwardIterator>>
   _ForwardIterator operator()(_ForwardIterator __first, _Sentinel __last) const {
     using _ValueType = remove_reference_t<iter_reference_t<_ForwardIterator>>;
-    return _VSTD::__uninitialized_value_construct<_ValueType>(
-        _VSTD::move(__first), _VSTD::move(__last));
+    return _CUDA_VSTD::__uninitialized_value_construct<_ValueType>(
+        _CUDA_VSTD::move(__first), _CUDA_VSTD::move(__last));
   }
 
   template <__nothrow_forward_range _ForwardRange>
@@ -120,7 +120,7 @@ struct __fn {
   _ForwardIterator operator()(_ForwardIterator __first,
                               iter_difference_t<_ForwardIterator> __n) const {
     using _ValueType = remove_reference_t<iter_reference_t<_ForwardIterator>>;
-    return _VSTD::__uninitialized_value_construct_n<_ValueType>(_VSTD::move(__first), __n);
+    return _CUDA_VSTD::__uninitialized_value_construct_n<_ValueType>(_CUDA_VSTD::move(__first), __n);
   }
 };
 
@@ -141,7 +141,7 @@ struct __fn {
     requires constructible_from<iter_value_t<_ForwardIterator>, const _Tp&>
   _ForwardIterator operator()(_ForwardIterator __first, _Sentinel __last, const _Tp& __x) const {
     using _ValueType = remove_reference_t<iter_reference_t<_ForwardIterator>>;
-    return _VSTD::__uninitialized_fill<_ValueType>(_VSTD::move(__first), _VSTD::move(__last), __x);
+    return _CUDA_VSTD::__uninitialized_fill<_ValueType>(_CUDA_VSTD::move(__first), _CUDA_VSTD::move(__last), __x);
   }
 
   template <__nothrow_forward_range _ForwardRange, class _Tp>
@@ -168,7 +168,7 @@ struct __fn {
                               iter_difference_t<_ForwardIterator> __n,
                               const _Tp& __x) const {
     using _ValueType = remove_reference_t<iter_reference_t<_ForwardIterator>>;
-    return _VSTD::__uninitialized_fill_n<_ValueType>(_VSTD::move(__first), __n, __x);
+    return _CUDA_VSTD::__uninitialized_fill_n<_ValueType>(_CUDA_VSTD::move(__first), __n, __x);
   }
 };
 
@@ -195,9 +195,9 @@ struct __fn {
   operator()(_InputIterator __ifirst, _Sentinel1 __ilast, _OutputIterator __ofirst, _Sentinel2 __olast) const {
     using _ValueType = remove_reference_t<iter_reference_t<_OutputIterator>>;
 
-    auto __result = _VSTD::__uninitialized_copy<_ValueType>(_VSTD::move(__ifirst), _VSTD::move(__ilast),
-                                                            _VSTD::move(__ofirst), _VSTD::move(__olast));
-    return {_VSTD::move(__result.first), _VSTD::move(__result.second)};
+    auto __result = _CUDA_VSTD::__uninitialized_copy<_ValueType>(_CUDA_VSTD::move(__ifirst), _CUDA_VSTD::move(__ilast),
+                                                            _CUDA_VSTD::move(__ofirst), _CUDA_VSTD::move(__olast));
+    return {_CUDA_VSTD::move(__result.first), _CUDA_VSTD::move(__result.second)};
   }
 
   template <input_range _InputRange, __nothrow_forward_range _OutputRange>
@@ -231,9 +231,9 @@ struct __fn {
   operator()(_InputIterator __ifirst, iter_difference_t<_InputIterator> __n,
              _OutputIterator __ofirst, _Sentinel __olast) const {
     using _ValueType = remove_reference_t<iter_reference_t<_OutputIterator>>;
-    auto __result = _VSTD::__uninitialized_copy_n<_ValueType>(_VSTD::move(__ifirst), __n,
-                                                              _VSTD::move(__ofirst), _VSTD::move(__olast));
-    return {_VSTD::move(__result.first), _VSTD::move(__result.second)};
+    auto __result = _CUDA_VSTD::__uninitialized_copy_n<_ValueType>(_CUDA_VSTD::move(__ifirst), __n,
+                                                              _CUDA_VSTD::move(__ofirst), _CUDA_VSTD::move(__olast));
+    return {_CUDA_VSTD::move(__result.first), _CUDA_VSTD::move(__result.second)};
   }
 };
 
@@ -260,9 +260,9 @@ struct __fn {
   operator()(_InputIterator __ifirst, _Sentinel1 __ilast, _OutputIterator __ofirst, _Sentinel2 __olast) const {
     using _ValueType = remove_reference_t<iter_reference_t<_OutputIterator>>;
     auto __iter_move = [](auto&& __iter) -> decltype(auto) { return ranges::iter_move(__iter); };
-    auto __result = _VSTD::__uninitialized_move<_ValueType>(_VSTD::move(__ifirst), _VSTD::move(__ilast),
-                                                            _VSTD::move(__ofirst), _VSTD::move(__olast), __iter_move);
-    return {_VSTD::move(__result.first), _VSTD::move(__result.second)};
+    auto __result = _CUDA_VSTD::__uninitialized_move<_ValueType>(_CUDA_VSTD::move(__ifirst), _CUDA_VSTD::move(__ilast),
+                                                            _CUDA_VSTD::move(__ofirst), _CUDA_VSTD::move(__olast), __iter_move);
+    return {_CUDA_VSTD::move(__result.first), _CUDA_VSTD::move(__result.second)};
   }
 
   template <input_range _InputRange, __nothrow_forward_range _OutputRange>
@@ -297,9 +297,9 @@ struct __fn {
              _OutputIterator __ofirst, _Sentinel __olast) const {
     using _ValueType = remove_reference_t<iter_reference_t<_OutputIterator>>;
     auto __iter_move = [](auto&& __iter) -> decltype(auto) { return ranges::iter_move(__iter); };
-    auto __result = _VSTD::__uninitialized_move_n<_ValueType>(_VSTD::move(__ifirst), __n,
-                                                              _VSTD::move(__ofirst), _VSTD::move(__olast), __iter_move);
-    return {_VSTD::move(__result.first), _VSTD::move(__result.second)};
+    auto __result = _CUDA_VSTD::__uninitialized_move_n<_ValueType>(_CUDA_VSTD::move(__ifirst), __n,
+                                                              _CUDA_VSTD::move(__ofirst), _CUDA_VSTD::move(__olast), __iter_move);
+    return {_CUDA_VSTD::move(__result.first), _CUDA_VSTD::move(__result.second)};
   }
 };
 
@@ -311,8 +311,8 @@ inline namespace __cpo {
 
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___MEMORY_RANGES_UNINITIALIZED_ALGORITHMS_H
+#endif // _LIBCUDACXX___MEMORY_RANGES_UNINITIALIZED_ALGORITHMS_H

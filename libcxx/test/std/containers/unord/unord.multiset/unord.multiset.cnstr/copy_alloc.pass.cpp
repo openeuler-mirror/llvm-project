@@ -52,7 +52,7 @@ int main(int, char**)
             test_allocator<int>(10)
            );
         C c(c0, test_allocator<int>(5));
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         CheckConsecutiveValues<C::const_iterator>(c.find(1), c.end(), 1, 2);
         CheckConsecutiveValues<C::const_iterator>(c.find(2), c.end(), 2, 2);
@@ -91,7 +91,7 @@ int main(int, char**)
             min_allocator<int>()
            );
         C c(c0, min_allocator<int>());
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         CheckConsecutiveValues<C::const_iterator>(c.find(1), c.end(), 1, 2);
         CheckConsecutiveValues<C::const_iterator>(c.find(2), c.end(), 2, 2);

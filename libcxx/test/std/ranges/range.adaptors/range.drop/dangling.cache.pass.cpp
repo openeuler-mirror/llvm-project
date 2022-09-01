@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // If we have a copy-propagating cache, when we copy ZeroOnDestroy, we will get a
 // dangling reference to the copied-from object. This test ensures that we do not

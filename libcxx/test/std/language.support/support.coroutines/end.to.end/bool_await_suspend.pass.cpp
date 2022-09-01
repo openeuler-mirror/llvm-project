@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-no-coroutines
+// UNSUPPORTED: LIBCUDACXX-no-coroutines
 
 // See https://llvm.org/PR33271
 // UNSUPPORTED: ubsan

@@ -36,13 +36,13 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef _LIBCPP_SRC_INCLUDE_RYU_DIGIT_TABLE_H
-#define _LIBCPP_SRC_INCLUDE_RYU_DIGIT_TABLE_H
+#ifndef _LIBCUDACXX_SRC_INCLUDE_RYU_DIGIT_TABLE_H
+#define _LIBCUDACXX_SRC_INCLUDE_RYU_DIGIT_TABLE_H
 
 #include <__charconv/tables.h>
 #include <__config>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // A table of all two-digit numbers. This is used to speed up decimal digit
 // generation by copying pairs of digits into the final output.
@@ -52,6 +52,6 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 // reuses the table already available in libc++.
 inline constexpr auto& __DIGIT_TABLE = __itoa::__table<>::__digits_base_10;
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_SRC_INCLUDE_RYU_DIGIT_TABLE_H
+#endif // _LIBCUDACXX_SRC_INCLUDE_RYU_DIGIT_TABLE_H

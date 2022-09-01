@@ -25,7 +25,7 @@ int main(int, char**)
     {
         typedef std::unordered_set<int> C;
         const C c;
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
     }
     {
         typedef std::unordered_set<int> C;
@@ -48,7 +48,7 @@ int main(int, char**)
     {
         typedef std::unordered_set<int, std::hash<int>, std::equal_to<int>, min_allocator<int>> C;
         const C c;
-        LIBCPP_ASSERT(c.bucket_count() == 0);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 0);
     }
     {
         typedef std::unordered_set<int, std::hash<int>, std::equal_to<int>, min_allocator<int>> C;

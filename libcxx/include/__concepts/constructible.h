@@ -6,21 +6,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CONCEPTS_CONSTRUCTIBLE_H
-#define _LIBCPP___CONCEPTS_CONSTRUCTIBLE_H
+#ifndef _LIBCUDACXX___CONCEPTS_CONSTRUCTIBLE_H
+#define _LIBCUDACXX___CONCEPTS_CONSTRUCTIBLE_H
 
 #include <__concepts/convertible_to.h>
 #include <__concepts/destructible.h>
 #include <__config>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [concept.constructible]
 template<class _Tp, class... _Args>
@@ -49,8 +49,8 @@ concept copy_constructible =
   constructible_from<_Tp, const _Tp&> && convertible_to<const _Tp&, _Tp> &&
   constructible_from<_Tp, const _Tp> && convertible_to<const _Tp, _Tp>;
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___CONCEPTS_CONSTRUCTIBLE_H
+#endif // _LIBCUDACXX___CONCEPTS_CONSTRUCTIBLE_H

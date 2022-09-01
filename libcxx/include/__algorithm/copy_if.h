@@ -6,19 +6,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_COPY_IF_H
-#define _LIBCPP___ALGORITHM_COPY_IF_H
+#ifndef _LIBCUDACXX___ALGORITHM_COPY_IF_H
+#define _LIBCUDACXX___ALGORITHM_COPY_IF_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _InputIterator, class _OutputIterator, class _Predicate>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _OutputIterator
 copy_if(_InputIterator __first, _InputIterator __last,
         _OutputIterator __result, _Predicate __pred)
@@ -34,6 +34,6 @@ copy_if(_InputIterator __first, _InputIterator __last,
     return __result;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_COPY_IF_H
+#endif // _LIBCUDACXX___ALGORITHM_COPY_IF_H

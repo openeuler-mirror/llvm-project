@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_MAX_ELEMENT_H
-#define _LIBCPP___ALGORITHM_RANGES_MAX_ELEMENT_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_MAX_ELEMENT_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_MAX_ELEMENT_H
 
 #include <__algorithm/ranges_min_element.h>
 #include <__config>
@@ -20,20 +20,20 @@
 #include <__ranges/concepts.h>
 #include <__ranges/dangling.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __max_element {
 struct __fn {
   template <forward_iterator _Ip, sentinel_for<_Ip> _Sp, class _Proj = identity,
             indirect_strict_weak_order<projected<_Ip, _Proj>> _Comp = ranges::less>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   _Ip operator()(_Ip __first, _Sp __last, _Comp __comp = {}, _Proj __proj = {}) const {
     auto __comp_lhs_rhs_swapped = [&](auto&& __lhs, auto&& __rhs) { return std::invoke(__comp, __rhs, __lhs); };
     return ranges::__min_element_impl(__first, __last, __comp_lhs_rhs_swapped, __proj);
@@ -41,7 +41,7 @@ struct __fn {
 
   template <forward_range _Rp, class _Proj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rp>, _Proj>> _Comp = ranges::less>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   borrowed_iterator_t<_Rp> operator()(_Rp&& __r, _Comp __comp = {}, _Proj __proj = {}) const {
     auto __comp_lhs_rhs_swapped = [&](auto&& __lhs, auto&& __rhs) { return std::invoke(__comp, __rhs, __lhs); };
     return ranges::__min_element_impl(ranges::begin(__r), ranges::end(__r), __comp_lhs_rhs_swapped, __proj);
@@ -54,8 +54,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_MAX_ELEMENT_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_MAX_ELEMENT_H

@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // constexpr inner-iterator& inner-iterator::operator++();
 //
@@ -27,7 +27,7 @@ struct EmptyView : std::ranges::view_base {
 };
 static_assert(std::ranges::forward_range<EmptyView>);
 static_assert(std::ranges::view<EmptyView>);
-LIBCPP_STATIC_ASSERT(std::ranges::__tiny_range<EmptyView>);
+LIBCUDACXX_STATIC_ASSERT(std::ranges::__tiny_range<EmptyView>);
 
 constexpr bool test() {
   // Can call `inner-iterator::operator++`; `View` is a forward range.

@@ -40,7 +40,7 @@ test(S s, typename S::size_type pos1, typename S::size_type n1,
     if (pos1 <= old_size && pos2 <= sv.size())
     {
         s.replace(pos1, n1, sv, pos2, n2);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == expected);
         SizeT xlen = std::min<SizeT>(n1, old_size - pos1);
         SizeT rlen = std::min<SizeT>(n2, sv.size() - pos2);
@@ -76,7 +76,7 @@ test_npos(S s, typename S::size_type pos1, typename S::size_type n1,
     if (pos1 <= old_size && pos2 <= sv.size())
     {
         s.replace(pos1, n1, sv, pos2);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == expected);
         SizeT xlen = std::min<SizeT>(n1, old_size - pos1);
         SizeT rlen = std::min<SizeT>(S::npos, sv.size() - pos2);

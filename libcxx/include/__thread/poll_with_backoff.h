@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___THREAD_POLL_WITH_BACKOFF_H
-#define _LIBCPP___THREAD_POLL_WITH_BACKOFF_H
+#ifndef _LIBCUDACXX___THREAD_POLL_WITH_BACKOFF_H
+#define _LIBCUDACXX___THREAD_POLL_WITH_BACKOFF_H
 
 #include <__availability>
 #include <__chrono/duration.h>
@@ -17,13 +17,13 @@
 #include <__config>
 #include <__filesystem/file_time_type.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-static _LIBCPP_CONSTEXPR const int __libcpp_polling_count = 64;
+static _LIBCUDACXX_CONSTEXPR const int __LIBCUDACXX_polling_count = 64;
 
 // Polls a thread for a condition given by a predicate, and backs off based on a backoff policy
 // before polling again.
@@ -37,13 +37,13 @@ static _LIBCPP_CONSTEXPR const int __libcpp_polling_count = 64;
 // - __max_elapsed is the maximum duration to try polling for. If the maximum duration is exceeded,
 //   the polling loop will return false to report a timeout.
 template<class _Fn, class _BFn>
-_LIBCPP_AVAILABILITY_SYNC _LIBCPP_HIDE_FROM_ABI
-bool __libcpp_thread_poll_with_backoff(_Fn&& __f, _BFn&& __bf, chrono::nanoseconds __max_elapsed = chrono::nanoseconds::zero()) {
+_LIBCUDACXX_AVAILABILITY_SYNC _LIBCUDACXX_HIDE_FROM_ABI
+bool __LIBCUDACXX_thread_poll_with_backoff(_Fn&& __f, _BFn&& __bf, chrono::nanoseconds __max_elapsed = chrono::nanoseconds::zero()) {
     auto const __start = chrono::high_resolution_clock::now();
     for (int __count = 0;;) {
       if (__f())
         return true; // _Fn completion means success
-      if (__count < __libcpp_polling_count) {
+      if (__count < __LIBCUDACXX_polling_count) {
         __count += 1;
         continue;
       }
@@ -62,12 +62,12 @@ bool __libcpp_thread_poll_with_backoff(_Fn&& __f, _BFn&& __bf, chrono::nanosecon
 // so this should most likely only be used on single-threaded systems where there
 // are no other threads to compete with.
 struct __spinning_backoff_policy {
-  _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR
+  _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR
   bool operator()(chrono::nanoseconds const&) const {
       return false;
   }
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___THREAD_POLL_WITH_BACKOFF_H
+#endif // _LIBCUDACXX___THREAD_POLL_WITH_BACKOFF_H

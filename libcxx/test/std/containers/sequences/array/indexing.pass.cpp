@@ -22,7 +22,7 @@ TEST_CONSTEXPR_CXX17 bool tests()
         typedef double T;
         typedef std::array<T, 3> C;
         C c = {1, 2, 3.5};
-        LIBCPP_ASSERT_NOEXCEPT(c[0]);
+        LIBCUDACXX_ASSERT_NOEXCEPT(c[0]);
         ASSERT_SAME_TYPE(C::reference, decltype(c[0]));
         C::reference r1 = c[0];
         assert(r1 == 1);
@@ -41,7 +41,7 @@ TEST_CONSTEXPR_CXX17 bool tests()
             typedef double T;
             typedef std::array<T, 0> C;
             C c = {};
-            LIBCPP_ASSERT_NOEXCEPT(c[0]);
+            LIBCUDACXX_ASSERT_NOEXCEPT(c[0]);
             ASSERT_SAME_TYPE(C::reference, decltype(c[0]));
             if (c.size() > (0)) { // always false
               C::reference r = c[0];
@@ -52,7 +52,7 @@ TEST_CONSTEXPR_CXX17 bool tests()
             typedef double T;
             typedef std::array<const T, 0> C;
             C c = {};
-            LIBCPP_ASSERT_NOEXCEPT(c[0]);
+            LIBCUDACXX_ASSERT_NOEXCEPT(c[0]);
             ASSERT_SAME_TYPE(C::reference, decltype(c[0]));
             if (c.size() > (0)) { // always false
               C::reference r = c[0];

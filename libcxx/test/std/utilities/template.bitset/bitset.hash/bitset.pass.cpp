@@ -35,7 +35,7 @@ test()
     H h;
     T bs(static_cast<unsigned long long>(N));
     const std::size_t result = h(bs);
-    LIBCPP_ASSERT(result == N);
+    LIBCUDACXX_ASSERT(result == N);
     ((void)result); // Prevent unused warning
 }
 

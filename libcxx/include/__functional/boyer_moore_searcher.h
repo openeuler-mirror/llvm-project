@@ -6,10 +6,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FUNCTIONAL_BOYER_MOORE_SEARCHER_H
-#define _LIBCPP___FUNCTIONAL_BOYER_MOORE_SEARCHER_H
+#ifndef _LIBCUDACXX___FUNCTIONAL_BOYER_MOORE_SEARCHER_H
+#define _LIBCUDACXX___FUNCTIONAL_BOYER_MOORE_SEARCHER_H
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
@@ -25,12 +25,12 @@
 #include <unordered_map>
 #include <vector>
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Key,
           class _Value,
@@ -53,16 +53,16 @@ private:
   unordered_map<_Key, _Value, _Hash, _BinaryPredicate> __table_;
 
 public:
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   explicit _BMSkipTable(size_t __sz, value_type __default_value, _Hash __hash, _BinaryPredicate __pred)
       : __default_value_(__default_value),
         __table_(__sz, __hash, __pred) {}
 
-  _LIBCPP_HIDE_FROM_ABI void insert(const key_type& __key, value_type __val) {
+  _LIBCUDACXX_HIDE_FROM_ABI void insert(const key_type& __key, value_type __val) {
     __table_[__key] = __val;
   }
 
-  _LIBCPP_HIDE_FROM_ABI value_type operator[](const key_type& __key) const {
+  _LIBCUDACXX_HIDE_FROM_ABI value_type operator[](const key_type& __key) const {
     auto __it = __table_.find(__key);
     return __it == __table_.end() ? __default_value_ : __it->second;
   }
@@ -83,15 +83,15 @@ private:
   static_assert(numeric_limits<unsigned_key_type>::max() < 256);
 
 public:
-  _LIBCPP_HIDE_FROM_ABI explicit _BMSkipTable(size_t, value_type __default_value, _Hash, _BinaryPredicate) {
+  _LIBCUDACXX_HIDE_FROM_ABI explicit _BMSkipTable(size_t, value_type __default_value, _Hash, _BinaryPredicate) {
     std::fill_n(__table_.data(), __table_.size(), __default_value);
   }
 
-  _LIBCPP_HIDE_FROM_ABI void insert(key_type __key, value_type __val) {
+  _LIBCUDACXX_HIDE_FROM_ABI void insert(key_type __key, value_type __val) {
     __table_[static_cast<unsigned_key_type>(__key)] = __val;
   }
 
-  _LIBCPP_HIDE_FROM_ABI value_type operator[](key_type __key) const {
+  _LIBCUDACXX_HIDE_FROM_ABI value_type operator[](key_type __key) const {
     return __table_[static_cast<unsigned_key_type>(__key)];
   }
 };
@@ -99,7 +99,7 @@ public:
 template <class _RandomAccessIterator1,
           class _Hash = hash<typename iterator_traits<_RandomAccessIterator1>::value_type>,
           class _BinaryPredicate = equal_to<>>
-class _LIBCPP_TEMPLATE_VIS boyer_moore_searcher {
+class _LIBCUDACXX_TEMPLATE_VIS boyer_moore_searcher {
 private:
   using difference_type = typename std::iterator_traits<_RandomAccessIterator1>::difference_type;
   using value_type = typename std::iterator_traits<_RandomAccessIterator1>::value_type;
@@ -227,7 +227,7 @@ private:
 template <class _RandomAccessIterator1,
           class _Hash = hash<typename iterator_traits<_RandomAccessIterator1>::value_type>,
           class _BinaryPredicate = equal_to<>>
-class _LIBCPP_TEMPLATE_VIS boyer_moore_horspool_searcher {
+class _LIBCUDACXX_TEMPLATE_VIS boyer_moore_horspool_searcher {
 private:
   using difference_type = typename iterator_traits<_RandomAccessIterator1>::difference_type;
   using value_type = typename iterator_traits<_RandomAccessIterator1>::value_type;
@@ -304,10 +304,10 @@ private:
   }
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
-#endif // _LIBCPP___FUNCTIONAL_BOYER_MOORE_SEARCHER_H
+#endif // _LIBCUDACXX___FUNCTIONAL_BOYER_MOORE_SEARCHER_H

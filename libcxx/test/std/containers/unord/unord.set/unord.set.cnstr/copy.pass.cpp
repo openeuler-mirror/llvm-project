@@ -51,7 +51,7 @@ int main(int, char**)
             test_allocator<int>(10)
            );
         C c = c0;
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.count(1) == 1);
         assert(c.count(2) == 1);
@@ -90,7 +90,7 @@ int main(int, char**)
             other_allocator<int>(10)
            );
         C c = c0;
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.count(1) == 1);
         assert(c.count(2) == 1);
@@ -128,7 +128,7 @@ int main(int, char**)
             min_allocator<int>()
            );
         C c = c0;
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 4);
         assert(c.count(1) == 1);
         assert(c.count(2) == 1);

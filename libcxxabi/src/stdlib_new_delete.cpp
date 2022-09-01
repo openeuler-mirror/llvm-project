@@ -131,7 +131,7 @@ operator delete[] (void* ptr, size_t) noexcept
     ::operator delete[](ptr);
 }
 
-#if !defined(_LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION)
+#if !defined(_LIBCUDACXX_HAS_NO_LIBRARY_ALIGNED_ALLOCATION)
 
 _LIBCXXABI_WEAK
 void *
@@ -149,7 +149,7 @@ operator new(std::size_t size, std::align_val_t alignment) _THROW_BAD_ALLOC
     // If allocation fails and there is no new_handler, we throw bad_alloc
     // (or return nullptr if exceptions are disabled).
     void* p;
-    while ((p = std::__libcpp_aligned_alloc(static_cast<std::size_t>(alignment), size)) == nullptr)
+    while ((p = std::__LIBCUDACXX_aligned_alloc(static_cast<std::size_t>(alignment), size)) == nullptr)
     {
         std::new_handler nh = std::get_new_handler();
         if (nh)
@@ -214,7 +214,7 @@ _LIBCXXABI_WEAK
 void
 operator delete(void* ptr, std::align_val_t) noexcept
 {
-    std::__libcpp_aligned_free(ptr);
+    std::__LIBCUDACXX_aligned_free(ptr);
 }
 
 _LIBCXXABI_WEAK
@@ -252,4 +252,4 @@ operator delete[] (void* ptr, size_t, std::align_val_t alignment) noexcept
     ::operator delete[](ptr, alignment);
 }
 
-#endif // !_LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION
+#endif // !_LIBCUDACXX_HAS_NO_LIBRARY_ALIGNED_ALLOCATION

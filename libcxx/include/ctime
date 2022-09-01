@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_CTIME
-#define _LIBCPP_CTIME
+#ifndef _LIBCUDACXX_CTIME
+#define _LIBCUDACXX_CTIME
 
 /*
     ctime synopsis
@@ -49,32 +49,32 @@ int timespec_get( struct timespec *ts, int base); // C++17
 #include <__config>
 #include <time.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-using ::clock_t _LIBCPP_USING_IF_EXISTS;
-using ::size_t _LIBCPP_USING_IF_EXISTS;
-using ::time_t _LIBCPP_USING_IF_EXISTS;
-using ::tm _LIBCPP_USING_IF_EXISTS;
-#if _LIBCPP_STD_VER > 14
-using ::timespec _LIBCPP_USING_IF_EXISTS;
+using ::clock_t _LIBCUDACXX_USING_IF_EXISTS;
+using ::size_t _LIBCUDACXX_USING_IF_EXISTS;
+using ::time_t _LIBCUDACXX_USING_IF_EXISTS;
+using ::tm _LIBCUDACXX_USING_IF_EXISTS;
+#if _LIBCUDACXX_STD_VER > 14
+using ::timespec _LIBCUDACXX_USING_IF_EXISTS;
 #endif
-using ::clock _LIBCPP_USING_IF_EXISTS;
-using ::difftime _LIBCPP_USING_IF_EXISTS;
-using ::mktime _LIBCPP_USING_IF_EXISTS;
-using ::time _LIBCPP_USING_IF_EXISTS;
-using ::asctime _LIBCPP_USING_IF_EXISTS;
-using ::ctime _LIBCPP_USING_IF_EXISTS;
-using ::gmtime _LIBCPP_USING_IF_EXISTS;
-using ::localtime _LIBCPP_USING_IF_EXISTS;
-using ::strftime _LIBCPP_USING_IF_EXISTS;
-#if _LIBCPP_STD_VER > 14
-using ::timespec_get _LIBCPP_USING_IF_EXISTS;
+using ::clock _LIBCUDACXX_USING_IF_EXISTS;
+using ::difftime _LIBCUDACXX_USING_IF_EXISTS;
+using ::mktime _LIBCUDACXX_USING_IF_EXISTS;
+using ::time _LIBCUDACXX_USING_IF_EXISTS;
+using ::asctime _LIBCUDACXX_USING_IF_EXISTS;
+using ::ctime _LIBCUDACXX_USING_IF_EXISTS;
+using ::gmtime _LIBCUDACXX_USING_IF_EXISTS;
+using ::localtime _LIBCUDACXX_USING_IF_EXISTS;
+using ::strftime _LIBCUDACXX_USING_IF_EXISTS;
+#if _LIBCUDACXX_STD_VER > 14
+using ::timespec_get _LIBCUDACXX_USING_IF_EXISTS;
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_CTIME
+#endif // _LIBCUDACXX_CTIME

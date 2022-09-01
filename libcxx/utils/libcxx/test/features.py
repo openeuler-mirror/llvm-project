@@ -43,7 +43,7 @@ DEFAULT_FEATURES = [
   Feature(name='-fsized-deallocation',          when=lambda cfg: hasCompileFlag(cfg, '-fsized-deallocation')),
   Feature(name='-faligned-allocation',          when=lambda cfg: hasCompileFlag(cfg, '-faligned-allocation')),
   Feature(name='fdelayed-template-parsing',     when=lambda cfg: hasCompileFlag(cfg, '-fdelayed-template-parsing')),
-  Feature(name='libcpp-no-coroutines',          when=lambda cfg: featureTestMacros(cfg).get('__cpp_impl_coroutine', 0) < 201902),
+  Feature(name='LIBCUDACXX-no-coroutines',          when=lambda cfg: featureTestMacros(cfg).get('__cpp_impl_coroutine', 0) < 201902),
   Feature(name='has-fobjc-arc',                 when=lambda cfg: hasCompileFlag(cfg, '-xobjective-c++ -fobjc-arc') and
                                                                  sys.platform.lower().strip() == 'darwin'), # TODO: this doesn't handle cross-compiling to Apple platforms.
   Feature(name='objective-c++',                 when=lambda cfg: hasCompileFlag(cfg, '-xobjective-c++ -fobjc-arc')),
@@ -82,7 +82,7 @@ DEFAULT_FEATURES = [
   # Check for a Windows UCRT bug (fixed in UCRT/Windows 10.0.20348.0):
   # https://developercommunity.visualstudio.com/t/utf-8-locales-break-ctype-functions-for-wchar-type/1653678
   Feature(name='win32-broken-utf8-wchar-ctype',
-          when=lambda cfg: not '_LIBCPP_HAS_NO_LOCALIZATION' in compilerMacros(cfg) and '_WIN32' in compilerMacros(cfg) and not programSucceeds(cfg, """
+          when=lambda cfg: not '_LIBCUDACXX_HAS_NO_LOCALIZATION' in compilerMacros(cfg) and '_WIN32' in compilerMacros(cfg) and not programSucceeds(cfg, """
             #include <locale.h>
             #include <wctype.h>
             int main(int, char**) {
@@ -94,7 +94,7 @@ DEFAULT_FEATURES = [
   # Check for a Windows UCRT bug (fixed in UCRT/Windows 10.0.19041.0).
   # https://developercommunity.visualstudio.com/t/printf-formatting-with-g-outputs-too/1660837
   Feature(name='win32-broken-printf-g-precision',
-          when=lambda cfg: not '_LIBCPP_HAS_NO_LOCALIZATION' in compilerMacros(cfg) and '_WIN32' in compilerMacros(cfg) and not programSucceeds(cfg, """
+          when=lambda cfg: not '_LIBCUDACXX_HAS_NO_LOCALIZATION' in compilerMacros(cfg) and '_WIN32' in compilerMacros(cfg) and not programSucceeds(cfg, """
             #include <stdio.h>
             #include <string.h>
             int main(int, char**) {
@@ -107,7 +107,7 @@ DEFAULT_FEATURES = [
   # Check for Glibc < 2.27, where the ru_RU.UTF-8 locale had
   # mon_decimal_point == ".", which our tests don't handle.
   Feature(name='glibc-old-ru_RU-decimal-point',
-          when=lambda cfg: not '_LIBCPP_HAS_NO_LOCALIZATION' in compilerMacros(cfg) and not programSucceeds(cfg, """
+          when=lambda cfg: not '_LIBCUDACXX_HAS_NO_LOCALIZATION' in compilerMacros(cfg) and not programSucceeds(cfg, """
             #include <locale.h>
             #include <string.h>
             int main(int, char**) {
@@ -155,7 +155,7 @@ DEFAULT_FEATURES = [
   # - Enable -Wplacement-new with GCC.
   # - Enable -Wclass-memaccess with GCC.
   Feature(name='gcc',                                                                                                              when=_isGCC,
-          actions=[AddCompileFlag('-D_LIBCPP_DISABLE_DEPRECATION_WARNINGS'),
+          actions=[AddCompileFlag('-D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS'),
                    AddCompileFlag('-Wno-placement-new'),
                    AddCompileFlag('-Wno-class-memaccess')]),
   Feature(name=lambda cfg: 'gcc-{__GNUC__}'.format(**compilerMacros(cfg)),                                                         when=_isGCC),
@@ -170,26 +170,26 @@ DEFAULT_FEATURES = [
 # Deduce and add the test features that that are implied by the #defines in
 # the <__config_site> header.
 #
-# For each macro of the form `_LIBCPP_XXX_YYY_ZZZ` defined below that
+# For each macro of the form `_LIBCUDACXX_XXX_YYY_ZZZ` defined below that
 # is defined after including <__config_site>, add a Lit feature called
-# `libcpp-xxx-yyy-zzz`. When a macro is defined to a specific value
-# (e.g. `_LIBCPP_ABI_VERSION=2`), the feature is `libcpp-xxx-yyy-zzz=<value>`.
+# `LIBCUDACXX-xxx-yyy-zzz`. When a macro is defined to a specific value
+# (e.g. `_LIBCUDACXX_ABI_VERSION=2`), the feature is `LIBCUDACXX-xxx-yyy-zzz=<value>`.
 #
-# Note that features that are more strongly tied to libc++ are named libcpp-foo,
-# while features that are more general in nature are not prefixed with 'libcpp-'.
+# Note that features that are more strongly tied to libc++ are named LIBCUDACXX-foo,
+# while features that are more general in nature are not prefixed with 'LIBCUDACXX-'.
 macros = {
-  '_LIBCPP_HAS_NO_MONOTONIC_CLOCK': 'no-monotonic-clock',
-  '_LIBCPP_HAS_NO_THREADS': 'no-threads',
-  '_LIBCPP_HAS_THREAD_API_EXTERNAL': 'libcpp-has-thread-api-external',
-  '_LIBCPP_HAS_THREAD_API_PTHREAD': 'libcpp-has-thread-api-pthread',
-  '_LIBCPP_NO_VCRUNTIME': 'libcpp-no-vcruntime',
-  '_LIBCPP_ABI_VERSION': 'libcpp-abi-version',
-  '_LIBCPP_HAS_NO_FILESYSTEM_LIBRARY': 'no-filesystem',
-  '_LIBCPP_HAS_NO_RANDOM_DEVICE': 'no-random-device',
-  '_LIBCPP_HAS_NO_LOCALIZATION': 'no-localization',
-  '_LIBCPP_HAS_NO_WIDE_CHARACTERS': 'no-wide-characters',
-  '_LIBCPP_HAS_NO_UNICODE': 'libcpp-has-no-unicode',
-  '_LIBCPP_ENABLE_DEBUG_MODE': 'libcpp-has-debug-mode',
+  '_LIBCUDACXX_HAS_NO_MONOTONIC_CLOCK': 'no-monotonic-clock',
+  '_LIBCUDACXX_HAS_NO_THREADS': 'no-threads',
+  '_LIBCUDACXX_HAS_THREAD_API_EXTERNAL': 'LIBCUDACXX-has-thread-api-external',
+  '_LIBCUDACXX_HAS_THREAD_API_PTHREAD': 'LIBCUDACXX-has-thread-api-pthread',
+  '_LIBCUDACXX_NO_VCRUNTIME': 'LIBCUDACXX-no-vcruntime',
+  '_LIBCUDACXX_ABI_VERSION': 'LIBCUDACXX-abi-version',
+  '_LIBCUDACXX_HAS_NO_FILESYSTEM_LIBRARY': 'no-filesystem',
+  '_LIBCUDACXX_HAS_NO_RANDOM_DEVICE': 'no-random-device',
+  '_LIBCUDACXX_HAS_NO_LOCALIZATION': 'no-localization',
+  '_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS': 'no-wide-characters',
+  '_LIBCUDACXX_HAS_NO_UNICODE': 'LIBCUDACXX-has-no-unicode',
+  '_LIBCUDACXX_ENABLE_DEBUG_MODE': 'LIBCUDACXX-has-debug-mode',
 }
 for macro, feature in macros.items():
   DEFAULT_FEATURES.append(

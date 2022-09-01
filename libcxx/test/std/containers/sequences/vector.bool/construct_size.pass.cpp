@@ -24,7 +24,7 @@ TEST_CONSTEXPR_CXX20 void test2(typename C::size_type n,
 {
 #if TEST_STD_VER >= 14
     C c(n, a);
-    LIBCPP_ASSERT(c.__invariants());
+    LIBCUDACXX_ASSERT(c.__invariants());
     assert(c.size() == n);
     assert(c.get_allocator() == a);
     for (typename C::const_iterator i = c.cbegin(), e = c.cend(); i != e; ++i)
@@ -39,7 +39,7 @@ template <class C>
 TEST_CONSTEXPR_CXX20 void test1(typename C::size_type n)
 {
     C c(n);
-    LIBCPP_ASSERT(c.__invariants());
+    LIBCUDACXX_ASSERT(c.__invariants());
     assert(c.size() == n);
     assert(c.get_allocator() == typename C::allocator_type());
     for (typename C::const_iterator i = c.cbegin(), e = c.cend(); i != e; ++i)

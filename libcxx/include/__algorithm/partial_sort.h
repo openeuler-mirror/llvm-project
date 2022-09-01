@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_PARTIAL_SORT_H
-#define _LIBCPP___ALGORITHM_PARTIAL_SORT_H
+#ifndef _LIBCUDACXX___ALGORITHM_PARTIAL_SORT_H
+#define _LIBCUDACXX___ALGORITHM_PARTIAL_SORT_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -22,14 +22,14 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy, class _Compare, class _RandomAccessIterator, class _Sentinel>
-_LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _RandomAccessIterator __partial_sort_impl(
     _RandomAccessIterator __first, _RandomAccessIterator __middle, _Sentinel __last, _Compare&& __comp) {
   if (__first == __middle) {
@@ -55,7 +55,7 @@ _RandomAccessIterator __partial_sort_impl(
 }
 
 template <class _AlgPolicy, class _Compare, class _RandomAccessIterator, class _Sentinel>
-_LIBCPP_CONSTEXPR_AFTER_CXX17
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _RandomAccessIterator __partial_sort(_RandomAccessIterator __first, _RandomAccessIterator __middle, _Sentinel __last,
                                      _Compare& __comp) {
   if (__first == __middle)
@@ -72,7 +72,7 @@ _RandomAccessIterator __partial_sort(_RandomAccessIterator __first, _RandomAcces
 }
 
 template <class _RandomAccessIterator, class _Compare>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 void
 partial_sort(_RandomAccessIterator __first, _RandomAccessIterator __middle, _RandomAccessIterator __last,
              _Compare __comp)
@@ -84,14 +84,14 @@ partial_sort(_RandomAccessIterator __first, _RandomAccessIterator __middle, _Ran
 }
 
 template <class _RandomAccessIterator>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 void
 partial_sort(_RandomAccessIterator __first, _RandomAccessIterator __middle, _RandomAccessIterator __last)
 {
-    _VSTD::partial_sort(__first, __middle, __last,
+    _CUDA_VSTD::partial_sort(__first, __middle, __last,
                         __less<typename iterator_traits<_RandomAccessIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_PARTIAL_SORT_H
+#endif // _LIBCUDACXX___ALGORITHM_PARTIAL_SORT_H

@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FUNCTIONAL_BIND_H
-#define _LIBCPP___FUNCTIONAL_BIND_H
+#ifndef _LIBCUDACXX___FUNCTIONAL_BIND_H
+#define _LIBCUDACXX___FUNCTIONAL_BIND_H
 
 #include <__config>
 #include <__functional/invoke.h>
@@ -17,11 +17,11 @@
 #include <tuple>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<class _Tp>
 struct is_bind_expression : _If<
@@ -30,7 +30,7 @@ struct is_bind_expression : _If<
     is_bind_expression<__uncvref_t<_Tp> >
 > {};
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr size_t is_bind_expression_v = is_bind_expression<_Tp>::value;
 #endif
@@ -42,7 +42,7 @@ struct is_placeholder : _If<
     is_placeholder<__uncvref_t<_Tp> >
 > {};
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr size_t is_placeholder_v = is_placeholder<_Tp>::value;
 #endif
@@ -52,17 +52,17 @@ namespace placeholders
 
 template <int _Np> struct __ph {};
 
-#if defined(_LIBCPP_CXX03_LANG) || defined(_LIBCPP_BUILDING_LIBRARY)
-_LIBCPP_FUNC_VIS extern const __ph<1>   _1;
-_LIBCPP_FUNC_VIS extern const __ph<2>   _2;
-_LIBCPP_FUNC_VIS extern const __ph<3>   _3;
-_LIBCPP_FUNC_VIS extern const __ph<4>   _4;
-_LIBCPP_FUNC_VIS extern const __ph<5>   _5;
-_LIBCPP_FUNC_VIS extern const __ph<6>   _6;
-_LIBCPP_FUNC_VIS extern const __ph<7>   _7;
-_LIBCPP_FUNC_VIS extern const __ph<8>   _8;
-_LIBCPP_FUNC_VIS extern const __ph<9>   _9;
-_LIBCPP_FUNC_VIS extern const __ph<10> _10;
+#if defined(_LIBCUDACXX_CXX03_LANG) || defined(_LIBCUDACXX_BUILDING_LIBRARY)
+_LIBCUDACXX_FUNC_VIS extern const __ph<1>   _1;
+_LIBCUDACXX_FUNC_VIS extern const __ph<2>   _2;
+_LIBCUDACXX_FUNC_VIS extern const __ph<3>   _3;
+_LIBCUDACXX_FUNC_VIS extern const __ph<4>   _4;
+_LIBCUDACXX_FUNC_VIS extern const __ph<5>   _5;
+_LIBCUDACXX_FUNC_VIS extern const __ph<6>   _6;
+_LIBCUDACXX_FUNC_VIS extern const __ph<7>   _7;
+_LIBCUDACXX_FUNC_VIS extern const __ph<8>   _8;
+_LIBCUDACXX_FUNC_VIS extern const __ph<9>   _9;
+_LIBCUDACXX_FUNC_VIS extern const __ph<10> _10;
 #else
 /* inline */ constexpr __ph<1>   _1{};
 /* inline */ constexpr __ph<2>   _2{};
@@ -74,7 +74,7 @@ _LIBCPP_FUNC_VIS extern const __ph<10> _10;
 /* inline */ constexpr __ph<8>   _8{};
 /* inline */ constexpr __ph<9>   _9{};
 /* inline */ constexpr __ph<10> _10{};
-#endif // defined(_LIBCPP_CXX03_LANG) || defined(_LIBCPP_BUILDING_LIBRARY)
+#endif // defined(_LIBCUDACXX_CXX03_LANG) || defined(_LIBCUDACXX_BUILDING_LIBRARY)
 
 } // namespace placeholders
 
@@ -83,10 +83,10 @@ struct is_placeholder<placeholders::__ph<_Np> >
     : public integral_constant<int, _Np> {};
 
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
 template <class _Tp, class _Uj>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 _Tp&
 __mu(reference_wrapper<_Tp> __t, _Uj&)
 {
@@ -94,15 +94,15 @@ __mu(reference_wrapper<_Tp> __t, _Uj&)
 }
 
 template <class _Ti, class ..._Uj, size_t ..._Indx>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 typename __invoke_of<_Ti&, _Uj...>::type
 __mu_expand(_Ti& __ti, tuple<_Uj...>& __uj, __tuple_indices<_Indx...>)
 {
-    return __ti(_VSTD::forward<_Uj>(_VSTD::get<_Indx>(__uj))...);
+    return __ti(_CUDA_VSTD::forward<_Uj>(_CUDA_VSTD::get<_Indx>(__uj))...);
 }
 
 template <class _Ti, class ..._Uj>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 typename __enable_if_t
 <
     is_bind_expression<_Ti>::value,
@@ -111,7 +111,7 @@ typename __enable_if_t
 __mu(_Ti& __ti, tuple<_Uj...>& __uj)
 {
     typedef typename __make_tuple_indices<sizeof...(_Uj)>::type __indices;
-    return _VSTD::__mu_expand(__ti, __uj, __indices());
+    return _CUDA_VSTD::__mu_expand(__ti, __uj, __indices());
 }
 
 template <bool IsPh, class _Ti, class _Uj>
@@ -124,7 +124,7 @@ struct __mu_return2<true, _Ti, _Uj>
 };
 
 template <class _Ti, class _Uj>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 typename enable_if
 <
     0 < is_placeholder<_Ti>::value,
@@ -133,11 +133,11 @@ typename enable_if
 __mu(_Ti&, _Uj& __uj)
 {
     const size_t _Indx = is_placeholder<_Ti>::value - 1;
-    return _VSTD::forward<typename tuple_element<_Indx, _Uj>::type>(_VSTD::get<_Indx>(__uj));
+    return _CUDA_VSTD::forward<typename tuple_element<_Indx, _Uj>::type>(_CUDA_VSTD::get<_Indx>(__uj));
 }
 
 template <class _Ti, class _Uj>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 typename enable_if
 <
     !is_bind_expression<_Ti>::value &&
@@ -255,12 +255,12 @@ struct __bind_return<_Fp, const tuple<_BoundArgs...>, _TupleUj, true>
 };
 
 template <class _Fp, class _BoundArgs, size_t ..._Indx, class _Args>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 typename __bind_return<_Fp, _BoundArgs, _Args>::type
 __apply_functor(_Fp& __f, _BoundArgs& __bound_args, __tuple_indices<_Indx...>,
                 _Args&& __args)
 {
-    return _VSTD::__invoke(__f, _VSTD::__mu(_VSTD::get<_Indx>(__bound_args), __args)...);
+    return _CUDA_VSTD::__invoke(__f, _CUDA_VSTD::__mu(_CUDA_VSTD::get<_Indx>(__bound_args), __args)...);
 }
 
 template<class _Fp, class ..._BoundArgs>
@@ -282,27 +282,27 @@ public:
                                   !is_same<typename remove_reference<_Gp>::type,
                                            __bind>::value
                                >::type>
-      _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+      _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
       explicit __bind(_Gp&& __f, _BA&& ...__bound_args)
-        : __f_(_VSTD::forward<_Gp>(__f)),
-          __bound_args_(_VSTD::forward<_BA>(__bound_args)...) {}
+        : __f_(_CUDA_VSTD::forward<_Gp>(__f)),
+          __bound_args_(_CUDA_VSTD::forward<_BA>(__bound_args)...) {}
 
     template <class ..._Args>
-        _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+        _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
         typename __bind_return<_Fd, _Td, tuple<_Args&&...> >::type
         operator()(_Args&& ...__args)
         {
-            return _VSTD::__apply_functor(__f_, __bound_args_, __indices(),
-                                  tuple<_Args&&...>(_VSTD::forward<_Args>(__args)...));
+            return _CUDA_VSTD::__apply_functor(__f_, __bound_args_, __indices(),
+                                  tuple<_Args&&...>(_CUDA_VSTD::forward<_Args>(__args)...));
         }
 
     template <class ..._Args>
-        _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+        _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
         typename __bind_return<const _Fd, const _Td, tuple<_Args&&...> >::type
         operator()(_Args&& ...__args) const
         {
-            return _VSTD::__apply_functor(__f_, __bound_args_, __indices(),
-                                   tuple<_Args&&...>(_VSTD::forward<_Args>(__args)...));
+            return _CUDA_VSTD::__apply_functor(__f_, __bound_args_, __indices(),
+                                   tuple<_Args&&...>(_CUDA_VSTD::forward<_Args>(__args)...));
         }
 };
 
@@ -327,13 +327,13 @@ public:
                                   !is_same<typename remove_reference<_Gp>::type,
                                            __bind_r>::value
                                >::type>
-      _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+      _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
       explicit __bind_r(_Gp&& __f, _BA&& ...__bound_args)
-        : base(_VSTD::forward<_Gp>(__f),
-               _VSTD::forward<_BA>(__bound_args)...) {}
+        : base(_CUDA_VSTD::forward<_Gp>(__f),
+               _CUDA_VSTD::forward<_BA>(__bound_args)...) {}
 
     template <class ..._Args>
-        _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+        _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
         typename enable_if
         <
             is_convertible<typename __bind_return<_Fd, _Td, tuple<_Args&&...> >::type,
@@ -343,11 +343,11 @@ public:
         operator()(_Args&& ...__args)
         {
             typedef __invoke_void_return_wrapper<_Rp> _Invoker;
-            return _Invoker::__call(static_cast<base&>(*this), _VSTD::forward<_Args>(__args)...);
+            return _Invoker::__call(static_cast<base&>(*this), _CUDA_VSTD::forward<_Args>(__args)...);
         }
 
     template <class ..._Args>
-        _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+        _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
         typename enable_if
         <
             is_convertible<typename __bind_return<const _Fd, const _Td, tuple<_Args&&...> >::type,
@@ -357,7 +357,7 @@ public:
         operator()(_Args&& ...__args) const
         {
             typedef __invoke_void_return_wrapper<_Rp> _Invoker;
-            return _Invoker::__call(static_cast<base const&>(*this), _VSTD::forward<_Args>(__args)...);
+            return _Invoker::__call(static_cast<base const&>(*this), _CUDA_VSTD::forward<_Args>(__args)...);
         }
 };
 
@@ -365,25 +365,25 @@ template<class _Rp, class _Fp, class ..._BoundArgs>
 struct is_bind_expression<__bind_r<_Rp, _Fp, _BoundArgs...> > : public true_type {};
 
 template<class _Fp, class ..._BoundArgs>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 __bind<_Fp, _BoundArgs...>
 bind(_Fp&& __f, _BoundArgs&&... __bound_args)
 {
     typedef __bind<_Fp, _BoundArgs...> type;
-    return type(_VSTD::forward<_Fp>(__f), _VSTD::forward<_BoundArgs>(__bound_args)...);
+    return type(_CUDA_VSTD::forward<_Fp>(__f), _CUDA_VSTD::forward<_BoundArgs>(__bound_args)...);
 }
 
 template<class _Rp, class _Fp, class ..._BoundArgs>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 __bind_r<_Rp, _Fp, _BoundArgs...>
 bind(_Fp&& __f, _BoundArgs&&... __bound_args)
 {
     typedef __bind_r<_Rp, _Fp, _BoundArgs...> type;
-    return type(_VSTD::forward<_Fp>(__f), _VSTD::forward<_BoundArgs>(__bound_args)...);
+    return type(_CUDA_VSTD::forward<_Fp>(__f), _CUDA_VSTD::forward<_BoundArgs>(__bound_args)...);
 }
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FUNCTIONAL_BIND_H
+#endif // _LIBCUDACXX___FUNCTIONAL_BIND_H

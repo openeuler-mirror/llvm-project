@@ -1,2 +1,2 @@
 #pragma GCC system_header
-GetSystemTimeInit GetSystemTimeAsFileTimeFunc _LIBCPP_INIT_PRIORITY_MAX;
+GetSystemTimeInit GetSystemTimeAsFileTimeFunc _LIBCUDACXX_INIT_PRIORITY_MAX;

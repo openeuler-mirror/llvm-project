@@ -269,9 +269,9 @@ endif()
 # library.
 add_definitions(-D_LIBCXXABI_BUILDING_LIBRARY)
 
-# libcxxabi needs to, for various reasons, include the libcpp headers as if
+# libcxxabi needs to, for various reasons, include the LIBCUDACXX headers as if
 # it is being built as part of libcxx.
-add_definitions(-D_LIBCPP_BUILDING_LIBRARY)
+add_definitions(-D_LIBCUDACXX_BUILDING_LIBRARY)
 
 add_compile_flags_if_supported(-Werror=return-type)
 
@@ -417,19 +417,19 @@ if (LIBCXXABI_HAS_UNDEFINED_SYMBOLS)
 endif()
 
 if (LIBCXXABI_HAS_PTHREAD_API)
-  add_definitions(-D_LIBCPP_HAS_THREAD_API_PTHREAD)
+  add_definitions(-D_LIBCUDACXX_HAS_THREAD_API_PTHREAD)
 endif()
 
 if (LIBCXXABI_HAS_WIN32_THREAD_API)
-  add_definitions(-D_LIBCPP_HAS_THREAD_API_WIN32)
+  add_definitions(-D_LIBCUDACXX_HAS_THREAD_API_WIN32)
 endif()
 
 if (LIBCXXABI_HAS_EXTERNAL_THREAD_API)
-  add_definitions(-D_LIBCPP_HAS_THREAD_API_EXTERNAL)
+  add_definitions(-D_LIBCUDACXX_HAS_THREAD_API_EXTERNAL)
 endif()
 
 if (LIBCXXABI_BUILD_EXTERNAL_THREAD_LIBRARY)
-  add_definitions(-D_LIBCPP_HAS_THREAD_LIBRARY_EXTERNAL)
+  add_definitions(-D_LIBCUDACXX_HAS_THREAD_LIBRARY_EXTERNAL)
 endif()
 
 if (MSVC)

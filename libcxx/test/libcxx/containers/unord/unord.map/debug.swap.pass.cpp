@@ -15,7 +15,7 @@
 // void swap(unordered_map& x, unordered_map& y);
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <unordered_map>
 
@@ -31,7 +31,7 @@ int main(int, char**) {
     std::unordered_map<int, int>::iterator i2 = c2.begin();
     swap(c1, c2);
     c1.erase(i2);
-    TEST_LIBCPP_ASSERT_FAILURE(
+    TEST_LIBCUDACXX_ASSERT_FAILURE(
         c1.erase(i1), "unordered container erase(iterator) called with an iterator not referring to this container");
 
     return 0;

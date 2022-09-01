@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_ROTATE_H
-#define _LIBCPP___ALGORITHM_RANGES_ROTATE_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_ROTATE_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_ROTATE_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__algorithm/ranges_iterator_concept.h>
@@ -21,13 +21,13 @@
 #include <__ranges/subrange.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __rotate {
@@ -35,7 +35,7 @@ namespace __rotate {
 struct __fn {
 
   template <class _Iter, class _Sent>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   static subrange<_Iter> __rotate_fn_impl(_Iter __first, _Iter __middle, _Sent __last) {
     auto __ret = std::__rotate<_RangeAlgPolicy>(
       std::move(__first), std::move(__middle), std::move(__last));
@@ -43,14 +43,14 @@ struct __fn {
   }
 
   template <permutable _Iter, sentinel_for<_Iter> _Sent>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   subrange<_Iter> operator()(_Iter __first, _Iter __middle, _Sent __last) const {
     return __rotate_fn_impl(std::move(__first), std::move(__middle), std::move(__last));
   }
 
   template <forward_range _Range>
   requires permutable<iterator_t<_Range>>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   borrowed_subrange_t<_Range> operator()(_Range&& __range, iterator_t<_Range> __middle) const {
     return __rotate_fn_impl(ranges::begin(__range), std::move(__middle), ranges::end(__range));
   }
@@ -64,8 +64,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_ROTATE_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_ROTATE_H

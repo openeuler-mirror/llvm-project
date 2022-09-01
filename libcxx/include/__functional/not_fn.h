@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FUNCTIONAL_NOT_FN_H
-#define _LIBCPP___FUNCTIONAL_NOT_FN_H
+#ifndef _LIBCUDACXX___FUNCTIONAL_NOT_FN_H
+#define _LIBCUDACXX___FUNCTIONAL_NOT_FN_H
 
 #include <__config>
 #include <__functional/invoke.h>
@@ -16,21 +16,21 @@
 #include <__utility/forward.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 
 struct __not_fn_op {
     template <class... _Args>
-    _LIBCPP_HIDE_FROM_ABI
-    _LIBCPP_CONSTEXPR_AFTER_CXX17 auto operator()(_Args&&... __args) const
-        noexcept(noexcept(!_VSTD::invoke(_VSTD::forward<_Args>(__args)...)))
-        -> decltype(      !_VSTD::invoke(_VSTD::forward<_Args>(__args)...))
-        { return          !_VSTD::invoke(_VSTD::forward<_Args>(__args)...); }
+    _LIBCUDACXX_HIDE_FROM_ABI
+    _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 auto operator()(_Args&&... __args) const
+        noexcept(noexcept(!_CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Args>(__args)...)))
+        -> decltype(      !_CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Args>(__args)...))
+        { return          !_CUDA_VSTD::invoke(_CUDA_VSTD::forward<_Args>(__args)...); }
 };
 
 template <class _Fn>
@@ -42,13 +42,13 @@ template <class _Fn, class = enable_if_t<
     is_constructible_v<decay_t<_Fn>, _Fn> &&
     is_move_constructible_v<decay_t<_Fn>>
 >>
-_LIBCPP_HIDE_FROM_ABI
-_LIBCPP_CONSTEXPR_AFTER_CXX17 auto not_fn(_Fn&& __f) {
-    return __not_fn_t<decay_t<_Fn>>(_VSTD::forward<_Fn>(__f));
+_LIBCUDACXX_HIDE_FROM_ABI
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX17 auto not_fn(_Fn&& __f) {
+    return __not_fn_t<decay_t<_Fn>>(_CUDA_VSTD::forward<_Fn>(__f));
 }
 
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FUNCTIONAL_NOT_FN_H
+#endif // _LIBCUDACXX___FUNCTIONAL_NOT_FN_H

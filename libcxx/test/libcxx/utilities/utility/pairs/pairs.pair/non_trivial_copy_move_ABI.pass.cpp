@@ -14,9 +14,9 @@
 
 // template <class T1, class T2> struct pair
 
-// Test that we provide the non-trivial copy operations when _LIBCPP_DEPRECATED_ABI_DISABLE_PAIR_TRIVIAL_COPY_CTOR
+// Test that we provide the non-trivial copy operations when _LIBCUDACXX_DEPRECATED_ABI_DISABLE_PAIR_TRIVIAL_COPY_CTOR
 // is specified.
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DEPRECATED_ABI_DISABLE_PAIR_TRIVIAL_COPY_CTOR
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DEPRECATED_ABI_DISABLE_PAIR_TRIVIAL_COPY_CTOR
 
 #include <utility>
 #include <type_traits>

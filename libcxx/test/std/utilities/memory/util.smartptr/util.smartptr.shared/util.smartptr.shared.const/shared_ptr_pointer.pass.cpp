@@ -94,7 +94,7 @@ int main(int, char**)
       assert(p2.get() == nullptr);
     }
 
-#if TEST_STD_VER > 17 && defined(_LIBCPP_VERSION)
+#if TEST_STD_VER > 17 && defined(_LIBCUDACXX_VERSION)
     // This won't pass when LWG-2996 is implemented.
     {
       std::shared_ptr<A> pA(new A);

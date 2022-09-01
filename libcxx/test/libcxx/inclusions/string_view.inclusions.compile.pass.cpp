@@ -20,9 +20,9 @@
 #include <string_view>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_STRING_VIEW)
- #   error "<string_view> was expected to define _LIBCPP_STRING_VIEW"
+#if !defined(_LIBCUDACXX_STRING_VIEW)
+ #   error "<string_view> was expected to define _LIBCUDACXX_STRING_VIEW"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<string_view> should include <compare> in C++20 and later"
 #endif

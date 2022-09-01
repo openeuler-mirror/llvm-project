@@ -7,19 +7,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___MEMORY_ALLOCATION_GUARD_H
-#define _LIBCPP___MEMORY_ALLOCATION_GUARD_H
+#ifndef _LIBCUDACXX___MEMORY_ALLOCATION_GUARD_H
+#define _LIBCUDACXX___MEMORY_ALLOCATION_GUARD_H
 
 #include <__config>
 #include <__memory/allocator_traits.h>
 #include <__utility/move.h>
 #include <cstddef>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // Helper class to allocate memory using an Allocator in an exception safe
 // manner.
@@ -46,28 +46,28 @@ struct __allocation_guard {
     using _Size = typename allocator_traits<_Alloc>::size_type;
 
     template<class _AllocT> // we perform the allocator conversion inside the constructor
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     explicit __allocation_guard(_AllocT __alloc, _Size __n)
-        : __alloc_(_VSTD::move(__alloc))
+        : __alloc_(_CUDA_VSTD::move(__alloc))
         , __n_(__n)
         , __ptr_(allocator_traits<_Alloc>::allocate(__alloc_, __n_)) // initialization order is important
     { }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     ~__allocation_guard() _NOEXCEPT {
         if (__ptr_ != nullptr) {
             allocator_traits<_Alloc>::deallocate(__alloc_, __ptr_, __n_);
         }
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     _Pointer __release_ptr() _NOEXCEPT { // not called __release() because it's a keyword in objective-c++
         _Pointer __tmp = __ptr_;
         __ptr_ = nullptr;
         return __tmp;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     _Pointer __get() const _NOEXCEPT {
         return __ptr_;
     }
@@ -78,6 +78,6 @@ private:
     _Pointer __ptr_;
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___MEMORY_ALLOCATION_GUARD_H
+#endif // _LIBCUDACXX___MEMORY_ALLOCATION_GUARD_H

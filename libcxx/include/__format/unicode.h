@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_UNICODE_H
-#define _LIBCPP___FORMAT_UNICODE_H
+#ifndef _LIBCUDACXX___FORMAT_UNICODE_H
+#define _LIBCUDACXX___FORMAT_UNICODE_H
 
 #include <__assert>
 #include <__config>
@@ -16,15 +16,15 @@
 #include <__utility/unreachable.h>
 #include <bit>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
-#  ifndef _LIBCPP_HAS_NO_UNICODE
+#  ifndef _LIBCUDACXX_HAS_NO_UNICODE
 
 /// Implements the grapheme cluster boundary rules
 ///
@@ -43,7 +43,7 @@ namespace __unicode {
 
 inline constexpr char32_t __replacement_character = U'\ufffd';
 
-_LIBCPP_HIDE_FROM_ABI constexpr bool __is_continuation(const char* __char, int __count) {
+_LIBCUDACXX_HIDE_FROM_ABI constexpr bool __is_continuation(const char* __char, int __count) {
   do {
     if ((*__char & 0b1000'0000) != 0b1000'0000)
       return false;
@@ -64,19 +64,19 @@ class __code_point_view;
 template <>
 class __code_point_view<char> {
 public:
-  _LIBCPP_HIDE_FROM_ABI constexpr explicit __code_point_view(const char* __first, const char* __last)
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit __code_point_view(const char* __first, const char* __last)
       : __first_(__first), __last_(__last) {}
 
-  _LIBCPP_HIDE_FROM_ABI constexpr bool __at_end() const noexcept { return __first_ == __last_; }
-  _LIBCPP_HIDE_FROM_ABI constexpr const char* __position() const noexcept { return __first_; }
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool __at_end() const noexcept { return __first_ == __last_; }
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr const char* __position() const noexcept { return __first_; }
 
-  _LIBCPP_HIDE_FROM_ABI constexpr char32_t __consume() noexcept {
-    _LIBCPP_ASSERT(__first_ != __last_, "can't move beyond the end of input");
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr char32_t __consume() noexcept {
+    _LIBCUDACXX_ASSERT(__first_ != __last_, "can't move beyond the end of input");
 
     // Based on the number of leading 1 bits the number of code units in the
     // code point can be determined. See
     // https://en.wikipedia.org/wiki/UTF-8#Encoding
-    switch (_VSTD::countl_one(static_cast<unsigned char>(*__first_))) {
+    switch (_CUDA_VSTD::countl_one(static_cast<unsigned char>(*__first_))) {
     case 0:
       return *__first_++;
 
@@ -135,14 +135,14 @@ private:
 template <>
 class __code_point_view<wchar_t> {
 public:
-  _LIBCPP_HIDE_FROM_ABI constexpr explicit __code_point_view(const wchar_t* __first, const wchar_t* __last)
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit __code_point_view(const wchar_t* __first, const wchar_t* __last)
       : __first_(__first), __last_(__last) {}
 
-  _LIBCPP_HIDE_FROM_ABI constexpr const wchar_t* __position() const noexcept { return __first_; }
-  _LIBCPP_HIDE_FROM_ABI constexpr bool __at_end() const noexcept { return __first_ == __last_; }
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr const wchar_t* __position() const noexcept { return __first_; }
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool __at_end() const noexcept { return __first_ == __last_; }
 
-  _LIBCPP_HIDE_FROM_ABI constexpr char32_t __consume() noexcept {
-    _LIBCPP_ASSERT(__first_ != __last_, "can't move beyond the end of input");
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr char32_t __consume() noexcept {
+    _LIBCUDACXX_ASSERT(__first_ != __last_, "can't move beyond the end of input");
 
     if constexpr (sizeof(wchar_t) == 2) {
       char32_t __result = *__first_++;
@@ -167,8 +167,8 @@ public:
       return __result;
     } else {
       // TODO FMT P2593R0 Use static_assert(false, "sizeof(wchar_t) has a not implemented value");
-      _LIBCPP_ASSERT(sizeof(wchar_t) == 0, "sizeof(wchar_t) has a not implemented value");
-      __libcpp_unreachable();
+      _LIBCUDACXX_ASSERT(sizeof(wchar_t) == 0, "sizeof(wchar_t) has a not implemented value");
+      __LIBCUDACXX_unreachable();
     }
   }
 
@@ -178,7 +178,7 @@ private:
 };
 #    endif
 
-_LIBCPP_HIDE_FROM_ABI constexpr bool __at_extended_grapheme_cluster_break(
+_LIBCUDACXX_HIDE_FROM_ABI constexpr bool __at_extended_grapheme_cluster_break(
     bool& __ri_break_allowed,
     bool __has_extened_pictographic,
     __extended_grapheme_custer_property_boundary::__property __prev,
@@ -191,8 +191,8 @@ _LIBCPP_HIDE_FROM_ABI constexpr bool __at_extended_grapheme_cluster_break(
 
   // *** Break at the start and end of text, unless the text is empty. ***
 
-  _LIBCPP_ASSERT(__prev != __property::__sot, "should be handled in the constructor"); // GB1
-  _LIBCPP_ASSERT(__prev != __property::__eot, "should be handled by our caller");      // GB2
+  _LIBCUDACXX_ASSERT(__prev != __property::__sot, "should be handled in the constructor"); // GB1
+  _LIBCUDACXX_ASSERT(__prev != __property::__eot, "should be handled by our caller");      // GB2
 
   // *** Do not break between a CR and LF. Otherwise, break before and after controls. ***
   if (__prev == __property::__CR && __next == __property::__LF) // GB3
@@ -269,7 +269,7 @@ _LIBCPP_HIDE_FROM_ABI constexpr bool __at_extended_grapheme_cluster_break(
 template <class _CharT>
 class __extended_grapheme_cluster_view {
 public:
-  _LIBCPP_HIDE_FROM_ABI constexpr explicit __extended_grapheme_cluster_view(const _CharT* __first, const _CharT* __last)
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit __extended_grapheme_cluster_view(const _CharT* __first, const _CharT* __last)
       : __code_point_view_(__first, __last),
         __next_code_point_(__code_point_view_.__consume()),
         __next_prop_(__extended_grapheme_custer_property_boundary::__get_property(__next_code_point_)) {}
@@ -288,8 +288,8 @@ public:
     const _CharT* __last_;
   };
 
-  _LIBCPP_HIDE_FROM_ABI constexpr __cluster __consume() {
-    _LIBCPP_ASSERT(
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr __cluster __consume() {
+    _LIBCUDACXX_ASSERT(
         __next_prop_ != __extended_grapheme_custer_property_boundary::__property::__eot,
         "can't move beyond the end of input");
     char32_t __code_point = __next_code_point_;
@@ -306,7 +306,7 @@ private:
   char32_t __next_code_point_;
   __extended_grapheme_custer_property_boundary::__property __next_prop_;
 
-  _LIBCPP_HIDE_FROM_ABI constexpr const _CharT* __get_break() {
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr const _CharT* __get_break() {
     bool __ri_break_allowed         = true;
     bool __has_extened_pictographic = false;
     while (true) {
@@ -330,10 +330,10 @@ private:
 
 } // namespace __unicode
 
-#  endif //  _LIBCPP_HAS_NO_UNICODE
+#  endif //  _LIBCUDACXX_HAS_NO_UNICODE
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_UNICODE_H
+#endif // _LIBCUDACXX___FORMAT_UNICODE_H

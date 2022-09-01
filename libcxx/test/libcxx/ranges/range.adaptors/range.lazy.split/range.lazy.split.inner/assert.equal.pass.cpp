@@ -7,8 +7,8 @@
 //===----------------------------------------------------------------------===//
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: c++03, c++11, c++14, c++17, !libcpp-has-debug-mode, libcpp-has-no-incomplete-ranges
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_ASSERTIONS=1
+// UNSUPPORTED: c++03, c++11, c++14, c++17, !LIBCUDACXX-has-debug-mode, LIBCUDACXX-has-no-incomplete-ranges
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_ASSERTIONS=1
 
 // <ranges>
 
@@ -24,12 +24,12 @@
 int main(int, char**) {
   {
     InnerIterForward i;
-    TEST_LIBCPP_ASSERT_FAILURE(i == std::default_sentinel, "Cannot call comparison on a default-constructed iterator.");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(i == std::default_sentinel, "Cannot call comparison on a default-constructed iterator.");
   }
 
   {
     InnerIterInput i;
-    TEST_LIBCPP_ASSERT_FAILURE(i == std::default_sentinel, "Cannot call comparison on a default-constructed iterator.");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(i == std::default_sentinel, "Cannot call comparison on a default-constructed iterator.");
   }
 
   return 0;

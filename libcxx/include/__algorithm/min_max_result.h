@@ -7,50 +7,50 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_MIN_MAX_RESULT_H
-#define _LIBCPP___ALGORITHM_MIN_MAX_RESULT_H
+#ifndef _LIBCUDACXX___ALGORITHM_MIN_MAX_RESULT_H
+#define _LIBCUDACXX___ALGORITHM_MIN_MAX_RESULT_H
 
 #include <__concepts/convertible_to.h>
 #include <__config>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
 
 template <class _T1>
 struct min_max_result {
-  _LIBCPP_NO_UNIQUE_ADDRESS _T1 min;
-  _LIBCPP_NO_UNIQUE_ADDRESS _T1 max;
+  _LIBCUDACXX_NO_UNIQUE_ADDRESS _T1 min;
+  _LIBCUDACXX_NO_UNIQUE_ADDRESS _T1 max;
 
   template <class _T2>
     requires convertible_to<const _T1&, _T2>
-  _LIBCPP_HIDE_FROM_ABI constexpr operator min_max_result<_T2>() const & {
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr operator min_max_result<_T2>() const & {
     return {min, max};
   }
 
   template <class _T2>
     requires convertible_to<_T1, _T2>
-  _LIBCPP_HIDE_FROM_ABI constexpr operator min_max_result<_T2>() && {
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr operator min_max_result<_T2>() && {
     return {std::move(min), std::move(max)};
   }
 };
 
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___ALGORITHM_MIN_MAX_RESULT_H
+#endif // _LIBCUDACXX___ALGORITHM_MIN_MAX_RESULT_H

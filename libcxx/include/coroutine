@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_COROUTINE
-#define _LIBCPP_COROUTINE
+#ifndef _LIBCUDACXX_COROUTINE
+#define _LIBCUDACXX_COROUTINE
 
 /**
     coroutine synopsis
@@ -46,15 +46,15 @@ struct suspend_always;
 #include <__coroutine/trivial_awaitables.h>
 #include <version>
 
-#ifndef _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
+#ifndef _LIBCUDACXX_REMOVE_TRANSITIVE_INCLUDES
 #  include <iosfwd>
 #endif
 
 // standard-mandated includes
 #include <compare>
 
-#ifndef _LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER
+#ifndef _LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER
 #  pragma GCC system_header
 #endif
 
-#endif // _LIBCPP_COROUTINE
+#endif // _LIBCUDACXX_COROUTINE

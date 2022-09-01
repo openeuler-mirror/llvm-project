@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FUNCTIONAL_MEM_FN_H
-#define _LIBCPP___FUNCTIONAL_MEM_FN_H
+#ifndef _LIBCUDACXX___FUNCTIONAL_MEM_FN_H
+#define _LIBCUDACXX___FUNCTIONAL_MEM_FN_H
 
 #include <__config>
 #include <__functional/binary_function.h>
@@ -17,11 +17,11 @@
 #include <__utility/forward.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp>
 class __mem_fn : public __weak_result_type<_Tp>
@@ -33,12 +33,12 @@ private:
     type __f_;
 
 public:
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
     __mem_fn(type __f) _NOEXCEPT : __f_(__f) {}
 
     // invoke
     template <class... _ArgTypes>
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 
     typename __invoke_return<type, _ArgTypes...>::type
     operator() (_ArgTypes&&... __args) const {
@@ -47,13 +47,13 @@ public:
 };
 
 template<class _Rp, class _Tp>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 __mem_fn<_Rp _Tp::*>
 mem_fn(_Rp _Tp::* __pm) _NOEXCEPT
 {
     return __mem_fn<_Rp _Tp::*>(__pm);
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FUNCTIONAL_MEM_FN_H
+#endif // _LIBCUDACXX___FUNCTIONAL_MEM_FN_H

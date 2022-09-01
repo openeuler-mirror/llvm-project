@@ -23,7 +23,7 @@ TEST_CONSTEXPR_CXX20 void
 test(S s, S str, S expected)
 {
     s.assign(str);
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == expected);
 }
 
@@ -32,7 +32,7 @@ TEST_CONSTEXPR_CXX20 void
 testAlloc(S s, S str, const typename S::allocator_type& a)
 {
     s.assign(str);
-    LIBCPP_ASSERT(s.__invariants());
+    LIBCUDACXX_ASSERT(s.__invariants());
     assert(s == str);
     assert(s.get_allocator() == a);
 }

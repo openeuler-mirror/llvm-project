@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_COMPARE
-#define _LIBCPP_COMPARE
+#ifndef _LIBCUDACXX_COMPARE
+#define _LIBCUDACXX_COMPARE
 
 /*
     compare synopsis
@@ -156,8 +156,8 @@ namespace std {
 #include <__config>
 #include <version>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#endif // _LIBCPP_COMPARE
+#endif // _LIBCUDACXX_COMPARE

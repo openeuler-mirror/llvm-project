@@ -35,7 +35,7 @@ to gradually fix their tests while updating to new faster algorithms.
 Design
 ======
 
-* Introduce new macro ``_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY`` which should
+* Introduce new macro ``_LIBCUDACXX_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY`` which should
   be a part of the libcxx config.
 * This macro randomizes the unspecified behavior of algorithms and containers.
   For example, for sorting algorithm the input range is shuffled and then
@@ -50,7 +50,7 @@ Design
   runs, for example, for tests become flaky and eventually be seen as broken.
   For platforms which do not support ASLR, the seed is fixed during build.
 * The users can fix the seed of the random number generator by providing
-  ``_LIBCPP_RANDOMIZE_UNSPECIFIED_STABILITY_SEED=seed`` definition.
+  ``_LIBCUDACXX_RANDOMIZE_UNSPECIFIED_STABILITY_SEED=seed`` definition.
 
 This comes with some side effects if any of the flags is on:
 

@@ -6,26 +6,26 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_REFERENCE_WRAPPER_H
-#define _LIBCPP___TYPE_TRAITS_IS_REFERENCE_WRAPPER_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_REFERENCE_WRAPPER_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_REFERENCE_WRAPPER_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 #include <__type_traits/remove_cv.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-template <class _Tp> class _LIBCPP_TEMPLATE_VIS reference_wrapper;
+template <class _Tp> class _LIBCUDACXX_TEMPLATE_VIS reference_wrapper;
 
 template <class _Tp> struct __is_reference_wrapper_impl : public false_type {};
 template <class _Tp> struct __is_reference_wrapper_impl<reference_wrapper<_Tp> > : public true_type {};
 template <class _Tp> struct __is_reference_wrapper
     : public __is_reference_wrapper_impl<typename remove_cv<_Tp>::type> {};
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_ENABLE_IF_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_ENABLE_IF_H

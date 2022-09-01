@@ -6,25 +6,25 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Make sure that _LIBCPP_ASSERT is a single expression. This is useful so we can use
+// Make sure that _LIBCUDACXX_ASSERT is a single expression. This is useful so we can use
 // it in places that require an expression, such as in a constructor initializer list.
 
-// RUN: %{build} -Wno-macro-redefined -D_LIBCPP_ENABLE_ASSERTIONS=1
+// RUN: %{build} -Wno-macro-redefined -D_LIBCUDACXX_ENABLE_ASSERTIONS=1
 // RUN: %{run}
 
-// RUN: %{build} -Wno-macro-redefined -D_LIBCPP_ENABLE_ASSERTIONS=0
+// RUN: %{build} -Wno-macro-redefined -D_LIBCUDACXX_ENABLE_ASSERTIONS=0
 // RUN: %{run}
 
-// RUN: %{build} -Wno-macro-redefined -D_LIBCPP_ENABLE_ASSERTIONS=0 -D_LIBCPP_ASSERTIONS_DISABLE_ASSUME
+// RUN: %{build} -Wno-macro-redefined -D_LIBCUDACXX_ENABLE_ASSERTIONS=0 -D_LIBCUDACXX_ASSERTIONS_DISABLE_ASSUME
 // RUN: %{run}
 
 #include <__assert>
 #include <cassert>
 
 void f() {
-  int i = (_LIBCPP_ASSERT(true, "message"), 3);
+  int i = (_LIBCUDACXX_ASSERT(true, "message"), 3);
   assert(i == 3);
-  return _LIBCPP_ASSERT(true, "message");
+  return _LIBCUDACXX_ASSERT(true, "message");
 }
 
 int main(int, char**) {

@@ -33,7 +33,7 @@ int main(int, char**) {
           std::regex(
               "a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaa",
               op));
-      LIBCPP_ASSERT(false);
+      LIBCUDACXX_ASSERT(false);
       assert(b);
     } catch (const std::regex_error &e) {
       assert(e.code() == std::regex_constants::error_complexity);

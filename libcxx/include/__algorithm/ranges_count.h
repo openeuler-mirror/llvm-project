@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_COUNT_H
-#define _LIBCPP___ALGORITHM_RANGES_COUNT_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_COUNT_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_COUNT_H
 
 #include <__algorithm/ranges_count_if.h>
 #include <__config>
@@ -21,20 +21,20 @@
 #include <__ranges/concepts.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __count {
 struct __fn {
   template <input_iterator _Iter, sentinel_for<_Iter> _Sent, class _Type, class _Proj = identity>
     requires indirect_binary_predicate<ranges::equal_to, projected<_Iter, _Proj>, const _Type*>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   iter_difference_t<_Iter> operator()(_Iter __first, _Sent __last, const _Type& __value, _Proj __proj = {}) const {
     auto __pred = [&](auto&& __e) { return __e == __value; };
     return ranges::__count_if_impl(std::move(__first), std::move(__last), __pred, __proj);
@@ -42,7 +42,7 @@ struct __fn {
 
   template <input_range _Range, class _Type, class _Proj = identity>
     requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Range>, _Proj>, const _Type*>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   range_difference_t<_Range> operator()(_Range&& __r, const _Type& __value, _Proj __proj = {}) const {
     auto __pred = [&](auto&& __e) { return __e == __value; };
     return ranges::__count_if_impl(ranges::begin(__r), ranges::end(__r), __pred, __proj);
@@ -55,8 +55,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_COUNT_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_COUNT_H

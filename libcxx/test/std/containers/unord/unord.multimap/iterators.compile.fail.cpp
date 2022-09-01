@@ -40,7 +40,7 @@ int main(int, char**)
             P(2, "four"),
         };
         C c(a, a + sizeof(a)/sizeof(a[0]));
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         assert(std::distance(c.begin(), c.end()) == c.size());
         assert(std::distance(c.cbegin(), c.cend()) == c.size());
@@ -62,7 +62,7 @@ int main(int, char**)
             P(2, "four"),
         };
         const C c(a, a + sizeof(a)/sizeof(a[0]));
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         assert(std::distance(c.begin(), c.end()) == c.size());
         assert(std::distance(c.cbegin(), c.cend()) == c.size());

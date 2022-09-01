@@ -6,30 +6,30 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FUNCTIONAL_UNWRAP_REF_H
-#define _LIBCPP___FUNCTIONAL_UNWRAP_REF_H
+#ifndef _LIBCUDACXX___FUNCTIONAL_UNWRAP_REF_H
+#define _LIBCUDACXX___FUNCTIONAL_UNWRAP_REF_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp>
-struct __unwrap_reference { typedef _LIBCPP_NODEBUG _Tp type; };
+struct __unwrap_reference { typedef _LIBCUDACXX_NODEBUG _Tp type; };
 
 template <class _Tp>
 class reference_wrapper;
 
 template <class _Tp>
-struct __unwrap_reference<reference_wrapper<_Tp> > { typedef _LIBCPP_NODEBUG _Tp& type; };
+struct __unwrap_reference<reference_wrapper<_Tp> > { typedef _LIBCUDACXX_NODEBUG _Tp& type; };
 
 template <class _Tp>
 struct decay;
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 template <class _Tp>
 struct unwrap_reference : __unwrap_reference<_Tp> { };
 
@@ -45,13 +45,13 @@ using unwrap_ref_decay_t = typename unwrap_ref_decay<_Tp>::type;
 
 template <class _Tp>
 struct __unwrap_ref_decay
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
     : unwrap_ref_decay<_Tp>
 #else
     : __unwrap_reference<typename decay<_Tp>::type>
 #endif
 { };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FUNCTIONAL_UNWRAP_REF_H
+#endif // _LIBCUDACXX___FUNCTIONAL_UNWRAP_REF_H

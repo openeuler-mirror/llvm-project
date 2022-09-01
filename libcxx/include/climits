@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_CLIMITS
-#define _LIBCPP_CLIMITS
+#ifndef _LIBCUDACXX_CLIMITS
+#define _LIBCUDACXX_CLIMITS
 
 /*
     climits synopsis
@@ -41,8 +41,8 @@ Macros:
 #include <__config>
 #include <limits.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#endif // _LIBCPP_CLIMITS
+#endif // _LIBCUDACXX_CLIMITS

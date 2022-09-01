@@ -11,7 +11,7 @@
 // iterator insert(const_iterator p, size_type n, charT c);
 
 // REQUIRES: has-unix-headers
-// UNSUPPORTED: !libcpp-has-debug-mode, c++03
+// UNSUPPORTED: !LIBCUDACXX-has-debug-mode, c++03
 
 #include <string>
 
@@ -20,7 +20,7 @@
 int main(int, char**) {
     std::string s;
     std::string s2;
-    TEST_LIBCPP_ASSERT_FAILURE(
+    TEST_LIBCUDACXX_ASSERT_FAILURE(
         s.insert(s2.begin(), 1, 'a'),
         "string::insert(iterator, n, value) called with an iterator not referring to this string");
 

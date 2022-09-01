@@ -8,10 +8,10 @@
 
 // This test ensures that assertions are enabled by default when the debug mode is enabled.
 
-// REQUIRES: libcpp-has-debug-mode
+// REQUIRES: LIBCUDACXX-has-debug-mode
 
 #include <version>
 
-#if !defined(_LIBCPP_ENABLE_ASSERTIONS) || _LIBCPP_ENABLE_ASSERTIONS == 0
+#if !defined(_LIBCUDACXX_ENABLE_ASSERTIONS) || _LIBCUDACXX_ENABLE_ASSERTIONS == 0
 #   error "Assertions should be enabled automatically when the debug mode is enabled"
 #endif

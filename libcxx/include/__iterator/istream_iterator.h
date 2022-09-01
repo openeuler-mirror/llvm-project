@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_ISTREAM_ITERATOR_H
-#define _LIBCPP___ITERATOR_ISTREAM_ITERATOR_H
+#ifndef _LIBCUDACXX___ITERATOR_ISTREAM_ITERATOR_H
+#define _LIBCUDACXX___ITERATOR_ISTREAM_ITERATOR_H
 
 #include <__config>
 #include <__iterator/default_sentinel.h>
@@ -18,21 +18,21 @@
 #include <cstddef>
 #include <iosfwd> // for forward declarations of char_traits and basic_istream
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-_LIBCPP_SUPPRESS_DEPRECATED_PUSH
+_LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH
 template <class _Tp, class _CharT = char,
           class _Traits = char_traits<_CharT>, class _Distance = ptrdiff_t>
-class _LIBCPP_TEMPLATE_VIS istream_iterator
-#if _LIBCPP_STD_VER <= 14 || !defined(_LIBCPP_ABI_NO_ITERATOR_BASES)
+class _LIBCUDACXX_TEMPLATE_VIS istream_iterator
+#if _LIBCUDACXX_STD_VER <= 14 || !defined(_LIBCUDACXX_ABI_NO_ITERATOR_BASES)
     : public iterator<input_iterator_tag, _Tp, _Distance, const _Tp*, const _Tp&>
 #endif
 {
-_LIBCPP_SUPPRESS_DEPRECATED_POP
+_LIBCUDACXX_SUPPRESS_DEPRECATED_POP
 public:
     typedef input_iterator_tag iterator_category;
     typedef _Tp value_type;
@@ -46,42 +46,42 @@ private:
     istream_type* __in_stream_;
     _Tp __value_;
 public:
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR istream_iterator() : __in_stream_(nullptr), __value_() {}
-#if _LIBCPP_STD_VER > 17
-    _LIBCPP_HIDE_FROM_ABI constexpr istream_iterator(default_sentinel_t) : istream_iterator() {}
-#endif // _LIBCPP_STD_VER > 17
-    _LIBCPP_INLINE_VISIBILITY istream_iterator(istream_type& __s) : __in_stream_(_VSTD::addressof(__s))
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR istream_iterator() : __in_stream_(nullptr), __value_() {}
+#if _LIBCUDACXX_STD_VER > 17
+    _LIBCUDACXX_HIDE_FROM_ABI constexpr istream_iterator(default_sentinel_t) : istream_iterator() {}
+#endif // _LIBCUDACXX_STD_VER > 17
+    _LIBCUDACXX_INLINE_VISIBILITY istream_iterator(istream_type& __s) : __in_stream_(_CUDA_VSTD::addressof(__s))
         {
             if (!(*__in_stream_ >> __value_))
                 __in_stream_ = nullptr;
         }
 
-    _LIBCPP_INLINE_VISIBILITY const _Tp& operator*() const {return __value_;}
-    _LIBCPP_INLINE_VISIBILITY const _Tp* operator->() const {return _VSTD::addressof((operator*()));}
-    _LIBCPP_INLINE_VISIBILITY istream_iterator& operator++()
+    _LIBCUDACXX_INLINE_VISIBILITY const _Tp& operator*() const {return __value_;}
+    _LIBCUDACXX_INLINE_VISIBILITY const _Tp* operator->() const {return _CUDA_VSTD::addressof((operator*()));}
+    _LIBCUDACXX_INLINE_VISIBILITY istream_iterator& operator++()
         {
             if (!(*__in_stream_ >> __value_))
                 __in_stream_ = nullptr;
             return *this;
         }
-    _LIBCPP_INLINE_VISIBILITY istream_iterator  operator++(int)
+    _LIBCUDACXX_INLINE_VISIBILITY istream_iterator  operator++(int)
         {istream_iterator __t(*this); ++(*this); return __t;}
 
     template <class _Up, class _CharU, class _TraitsU, class _DistanceU>
-    friend _LIBCPP_INLINE_VISIBILITY
+    friend _LIBCUDACXX_INLINE_VISIBILITY
     bool
     operator==(const istream_iterator<_Up, _CharU, _TraitsU, _DistanceU>& __x,
                const istream_iterator<_Up, _CharU, _TraitsU, _DistanceU>& __y);
 
-#if _LIBCPP_STD_VER > 17
-    friend _LIBCPP_HIDE_FROM_ABI bool operator==(const istream_iterator& __i, default_sentinel_t) {
+#if _LIBCUDACXX_STD_VER > 17
+    friend _LIBCUDACXX_HIDE_FROM_ABI bool operator==(const istream_iterator& __i, default_sentinel_t) {
       return __i.__in_stream_ == nullptr;
     }
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 };
 
 template <class _Tp, class _CharT, class _Traits, class _Distance>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator==(const istream_iterator<_Tp, _CharT, _Traits, _Distance>& __x,
            const istream_iterator<_Tp, _CharT, _Traits, _Distance>& __y)
@@ -89,17 +89,17 @@ operator==(const istream_iterator<_Tp, _CharT, _Traits, _Distance>& __x,
     return __x.__in_stream_ == __y.__in_stream_;
 }
 
-#if _LIBCPP_STD_VER <= 17
+#if _LIBCUDACXX_STD_VER <= 17
 template <class _Tp, class _CharT, class _Traits, class _Distance>
-inline _LIBCPP_INLINE_VISIBILITY
+inline _LIBCUDACXX_INLINE_VISIBILITY
 bool
 operator!=(const istream_iterator<_Tp, _CharT, _Traits, _Distance>& __x,
            const istream_iterator<_Tp, _CharT, _Traits, _Distance>& __y)
 {
     return !(__x == __y);
 }
-#endif // _LIBCPP_STD_VER <= 17
+#endif // _LIBCUDACXX_STD_VER <= 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_ISTREAM_ITERATOR_H
+#endif // _LIBCUDACXX___ITERATOR_ISTREAM_ITERATOR_H

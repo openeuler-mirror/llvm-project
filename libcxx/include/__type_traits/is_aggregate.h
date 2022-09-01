@@ -6,28 +6,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_AGGREGATE_H
-#define _LIBCPP___TYPE_TRAITS_IS_AGGREGATE_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_AGGREGATE_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_AGGREGATE_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS
 is_aggregate : public integral_constant<bool, __is_aggregate(_Tp)> {};
 
 template <class _Tp>
 inline constexpr bool is_aggregate_v = __is_aggregate(_Tp);
 
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_AGGREGATE_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_AGGREGATE_H

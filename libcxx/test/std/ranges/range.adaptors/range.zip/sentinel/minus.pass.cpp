@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17, c++20
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // template <bool OtherConst>
 // requires(sized_sentinel_for<sentinel_t<maybe-const<Const, Views>>,
@@ -121,7 +121,7 @@ constexpr bool test() {
     // simple-view
     std::ranges::zip_view v{ForwardSizedNonCommon(buffer1)};
     static_assert(!std::ranges::common_range<decltype(v)>);
-    LIBCPP_STATIC_ASSERT(std::ranges::__simple_view<decltype(v)>);
+    LIBCUDACXX_STATIC_ASSERT(std::ranges::__simple_view<decltype(v)>);
 
     auto it = v.begin();
     auto st = v.end();
@@ -160,7 +160,7 @@ constexpr bool test() {
     // underlying sentinels cannot substract underlying const iterators
     std::ranges::zip_view v(NonSimpleForwardSizedNonCommon{buffer1});
     static_assert(!std::ranges::common_range<decltype(v)>);
-    LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<decltype(v)>);
+    LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<decltype(v)>);
 
     using Iter = std::ranges::iterator_t<decltype(v)>;
     using ConstIter = std::ranges::iterator_t<const decltype(v)>;
@@ -192,7 +192,7 @@ constexpr bool test() {
     // const compatible allow non-const to const conversion
     std::ranges::zip_view v(ConstCompatibleForwardSized{buffer1});
     static_assert(!std::ranges::common_range<decltype(v)>);
-    LIBCPP_STATIC_ASSERT(!std::ranges::__simple_view<decltype(v)>);
+    LIBCUDACXX_STATIC_ASSERT(!std::ranges::__simple_view<decltype(v)>);
 
     using Iter = std::ranges::iterator_t<decltype(v)>;
     using ConstIter = std::ranges::iterator_t<const decltype(v)>;

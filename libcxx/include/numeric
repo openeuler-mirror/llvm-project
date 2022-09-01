@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_NUMERIC
-#define _LIBCPP_NUMERIC
+#ifndef _LIBCUDACXX_NUMERIC
+#define _LIBCUDACXX_NUMERIC
 
 /*
     numeric synopsis
@@ -163,17 +163,17 @@ template<class T>
 #include <__numeric/transform_inclusive_scan.h>
 #include <__numeric/transform_reduce.h>
 
-#ifndef _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
+#ifndef _LIBCUDACXX_REMOVE_TRANSITIVE_INCLUDES
 #  include <functional>
 #  include <iterator>
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if defined(_LIBCPP_HAS_PARALLEL_ALGORITHMS) && _LIBCPP_STD_VER >= 17
+#if defined(_LIBCUDACXX_HAS_PARALLEL_ALGORITHMS) && _LIBCUDACXX_STD_VER >= 17
 #   include <__pstl_numeric>
 #endif
 
-#endif // _LIBCPP_NUMERIC
+#endif // _LIBCUDACXX_NUMERIC

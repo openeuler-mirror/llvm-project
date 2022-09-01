@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_REVERSE_H
-#define _LIBCPP___ALGORITHM_RANGES_REVERSE_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_REVERSE_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_REVERSE_H
 
 #include <__config>
 #include <__iterator/concepts.h>
@@ -18,13 +18,13 @@
 #include <__ranges/concepts.h>
 #include <__ranges/dangling.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __reverse {
@@ -32,7 +32,7 @@ struct __fn {
 
   template <bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent>
     requires permutable<_Iter>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   _Iter operator()(_Iter __first, _Sent __last) const {
     if constexpr (random_access_iterator<_Iter>) {
       if (__first == __last)
@@ -63,7 +63,7 @@ struct __fn {
 
   template <bidirectional_range _Range>
     requires permutable<iterator_t<_Range>>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   borrowed_iterator_t<_Range> operator()(_Range&& __range) const {
     return (*this)(ranges::begin(__range), ranges::end(__range));
   }
@@ -76,8 +76,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_REVERSE_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_REVERSE_H

@@ -50,7 +50,7 @@ void check_random_device_invalid(const std::string &token) {
 #ifndef TEST_HAS_NO_EXCEPTIONS
   try {
     std::random_device r(token);
-    LIBCPP_ASSERT(false);
+    LIBCUDACXX_ASSERT(false);
   } catch (const std::system_error&) {
   }
 #else
@@ -64,13 +64,13 @@ int main(int, char**) {
   }
   // Check the validity of various tokens
   {
-#if defined(_LIBCPP_USING_ARC4_RANDOM)
+#if defined(_LIBCUDACXX_USING_ARC4_RANDOM)
     check_random_device_valid("/dev/urandom");
     check_random_device_valid("/dev/random");
     check_random_device_valid("/dev/null");
     check_random_device_valid("/dev/nonexistent");
     check_random_device_valid("wrong file");
-#elif defined(_LIBCPP_USING_DEV_RANDOM)
+#elif defined(_LIBCUDACXX_USING_DEV_RANDOM)
     check_random_device_valid("/dev/urandom");
     check_random_device_valid("/dev/random");
     check_random_device_valid("/dev/null");

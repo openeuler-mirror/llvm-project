@@ -14,8 +14,8 @@
 // in Musl.
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_SUPPORT_MUSL_XLOCALE_H
-#define _LIBCPP_SUPPORT_MUSL_XLOCALE_H
+#ifndef _LIBCUDACXX_SUPPORT_MUSL_XLOCALE_H
+#define _LIBCUDACXX_SUPPORT_MUSL_XLOCALE_H
 
 #include <cstdlib>
 #include <cwchar>
@@ -24,27 +24,27 @@
 extern "C" {
 #endif
 
-inline _LIBCPP_HIDE_FROM_ABI long long
+inline _LIBCUDACXX_HIDE_FROM_ABI long long
 strtoll_l(const char *__nptr, char **__endptr, int __base, locale_t) {
   return ::strtoll(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI unsigned long long
+inline _LIBCUDACXX_HIDE_FROM_ABI unsigned long long
 strtoull_l(const char *__nptr, char **__endptr, int __base, locale_t) {
   return ::strtoull(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI long long
+inline _LIBCUDACXX_HIDE_FROM_ABI long long
 wcstoll_l(const wchar_t *__nptr, wchar_t **__endptr, int __base, locale_t) {
   return ::wcstoll(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI long long
+inline _LIBCUDACXX_HIDE_FROM_ABI long long
 wcstoull_l(const wchar_t *__nptr, wchar_t **__endptr, int __base, locale_t) {
   return ::wcstoull(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI long double
+inline _LIBCUDACXX_HIDE_FROM_ABI long double
 wcstold_l(const wchar_t *__nptr, wchar_t **__endptr, locale_t) {
   return ::wcstold(__nptr, __endptr);
 }
@@ -53,4 +53,4 @@ wcstold_l(const wchar_t *__nptr, wchar_t **__endptr, locale_t) {
 }
 #endif
 
-#endif // _LIBCPP_SUPPORT_MUSL_XLOCALE_H
+#endif // _LIBCUDACXX_SUPPORT_MUSL_XLOCALE_H

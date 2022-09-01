@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_EMPTY_H
-#define _LIBCPP___RANGES_EMPTY_H
+#ifndef _LIBCUDACXX___RANGES_EMPTY_H
+#define _LIBCUDACXX___RANGES_EMPTY_H
 
 #include <__concepts/class_or_enum.h>
 #include <__config>
@@ -16,13 +16,13 @@
 #include <__ranges/size.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 // [range.prim.empty]
 
@@ -51,19 +51,19 @@ namespace __empty {
 
   struct __fn {
     template <__member_empty _Tp>
-    [[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr bool operator()(_Tp&& __t) const
+    [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator()(_Tp&& __t) const
         noexcept(noexcept(bool(__t.empty()))) {
       return bool(__t.empty());
     }
 
     template <__can_invoke_size _Tp>
-    [[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr bool operator()(_Tp&& __t) const
+    [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator()(_Tp&& __t) const
         noexcept(noexcept(ranges::size(__t))) {
       return ranges::size(__t) == 0;
     }
 
     template<__can_compare_begin_end _Tp>
-    [[nodiscard]] _LIBCPP_HIDE_FROM_ABI constexpr bool operator()(_Tp&& __t) const
+    [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator()(_Tp&& __t) const
         noexcept(noexcept(bool(ranges::begin(__t) == ranges::end(__t)))) {
       return ranges::begin(__t) == ranges::end(__t);
     }
@@ -75,8 +75,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_EMPTY_H
+#endif // _LIBCUDACXX___RANGES_EMPTY_H

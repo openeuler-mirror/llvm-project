@@ -7,26 +7,26 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FILESYSTEM_FILE_TIME_TYPE_H
-#define _LIBCPP___FILESYSTEM_FILE_TIME_TYPE_H
+#ifndef _LIBCUDACXX___FILESYSTEM_FILE_TIME_TYPE_H
+#define _LIBCUDACXX___FILESYSTEM_FILE_TIME_TYPE_H
 
 #include <__availability>
 #include <__chrono/file_clock.h>
 #include <__chrono/time_point.h>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
-_LIBCPP_BEGIN_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_BEGIN_NAMESPACE_FILESYSTEM
 
 typedef chrono::time_point<_FilesystemClock> file_time_type;
 
-_LIBCPP_END_NAMESPACE_FILESYSTEM
+_LIBCUDACXX_END_NAMESPACE_FILESYSTEM
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
-#endif // _LIBCPP___FILESYSTEM_FILE_TIME_TYPE_H
+#endif // _LIBCUDACXX___FILESYSTEM_FILE_TIME_TYPE_H

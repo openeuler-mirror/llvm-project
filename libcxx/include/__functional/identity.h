@@ -7,40 +7,40 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FUNCTIONAL_IDENTITY_H
-#define _LIBCPP___FUNCTIONAL_IDENTITY_H
+#ifndef _LIBCUDACXX___FUNCTIONAL_IDENTITY_H
+#define _LIBCUDACXX___FUNCTIONAL_IDENTITY_H
 
 #include <__config>
 #include <__utility/forward.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 struct __identity {
   template <class _Tp>
-  _LIBCPP_NODISCARD _LIBCPP_CONSTEXPR _Tp&& operator()(_Tp&& __t) const _NOEXCEPT {
+  _LIBCUDACXX_NODISCARD _LIBCUDACXX_CONSTEXPR _Tp&& operator()(_Tp&& __t) const _NOEXCEPT {
     return std::forward<_Tp>(__t);
   }
 
   using is_transparent = void;
 };
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 struct identity {
     template<class _Tp>
-    _LIBCPP_NODISCARD_EXT constexpr _Tp&& operator()(_Tp&& __t) const noexcept
+    _LIBCUDACXX_NODISCARD_EXT constexpr _Tp&& operator()(_Tp&& __t) const noexcept
     {
-        return _VSTD::forward<_Tp>(__t);
+        return _CUDA_VSTD::forward<_Tp>(__t);
     }
 
     using is_transparent = void;
 };
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FUNCTIONAL_IDENTITY_H
+#endif // _LIBCUDACXX___FUNCTIONAL_IDENTITY_H

@@ -26,10 +26,10 @@ int main(int, char**)
     const unsigned sa = sizeof(ia)/sizeof(ia[0]);
     std::minstd_rand g;
     std::shuffle(ia, ia+sa, g);
-    LIBCPP_ASSERT(std::equal(ia, ia+sa, ia1));
+    LIBCUDACXX_ASSERT(std::equal(ia, ia+sa, ia1));
     assert(std::is_permutation(ia, ia+sa, ia1));
     std::shuffle(ia, ia+sa, std::move(g));
-    LIBCPP_ASSERT(std::equal(ia, ia+sa, ia2));
+    LIBCUDACXX_ASSERT(std::equal(ia, ia+sa, ia2));
     assert(std::is_permutation(ia, ia+sa, ia2));
 
   return 0;

@@ -6,41 +6,41 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef __LIBCPP___COROUTINE_TRIVIAL_AWAITABLES_H
-#define __LIBCPP___COROUTINE_TRIVIAL_AWAITABLES_H
+#ifndef __LIBCUDACXX___COROUTINE_TRIVIAL_AWAITABLES_H
+#define __LIBCUDACXX___COROUTINE_TRIVIAL_AWAITABLES_H
 
 #include <__config>
 #include <__coroutine/coroutine_handle.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_CXX20_COROUTINES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_CXX20_COROUTINES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // [coroutine.trivial.awaitables]
 struct suspend_never {
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr bool await_ready() const noexcept { return true; }
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr void await_suspend(coroutine_handle<>) const noexcept {}
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr void await_resume() const noexcept {}
 };
 
 struct suspend_always {
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr bool await_ready() const noexcept { return false; }
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr void await_suspend(coroutine_handle<>) const noexcept {}
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr void await_resume() const noexcept {}
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // __LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_CXX20_COROUTINES)
+#endif // __LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_CXX20_COROUTINES)
 
-#endif // __LIBCPP___COROUTINE_TRIVIAL_AWAITABLES_H
+#endif // __LIBCUDACXX___COROUTINE_TRIVIAL_AWAITABLES_H

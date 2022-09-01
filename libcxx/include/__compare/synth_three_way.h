@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___COMPARE_SYNTH_THREE_WAY_H
-#define _LIBCPP___COMPARE_SYNTH_THREE_WAY_H
+#ifndef _LIBCUDACXX___COMPARE_SYNTH_THREE_WAY_H
+#define _LIBCUDACXX___COMPARE_SYNTH_THREE_WAY_H
 
 #include <__compare/ordering.h>
 #include <__compare/three_way_comparable.h>
@@ -15,17 +15,17 @@
 #include <__config>
 #include <__utility/declval.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 // [expos.only.func]
 
-_LIBCPP_HIDE_FROM_ABI inline constexpr auto __synth_three_way =
+_LIBCUDACXX_HIDE_FROM_ABI inline constexpr auto __synth_three_way =
   []<class _Tp, class _Up>(const _Tp& __t, const _Up& __u)
     requires requires {
       { __t < __u } -> __boolean_testable;
@@ -44,8 +44,8 @@ _LIBCPP_HIDE_FROM_ABI inline constexpr auto __synth_three_way =
 template <class _Tp, class _Up = _Tp>
 using __synth_three_way_result = decltype(std::__synth_three_way(declval<_Tp&>(), declval<_Up&>()));
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___COMPARE_SYNTH_THREE_WAY_H
+#endif // _LIBCUDACXX___COMPARE_SYNTH_THREE_WAY_H

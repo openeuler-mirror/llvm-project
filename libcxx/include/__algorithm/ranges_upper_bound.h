@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_UPPER_BOUND_H
-#define _LIBCPP___ALGORITHM_RANGES_UPPER_BOUND_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_UPPER_BOUND_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_UPPER_BOUND_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__algorithm/lower_bound.h>
@@ -21,20 +21,20 @@
 #include <__ranges/concepts.h>
 #include <__ranges/dangling.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __upper_bound {
 struct __fn {
   template <forward_iterator _Iter, sentinel_for<_Iter> _Sent, class _Type, class _Proj = identity,
             indirect_strict_weak_order<const _Type*, projected<_Iter, _Proj>> _Comp = ranges::less>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   _Iter operator()(_Iter __first, _Sent __last, const _Type& __value, _Comp __comp = {}, _Proj __proj = {}) const {
     auto __comp_lhs_rhs_swapped = [&](const auto& __lhs, const auto& __rhs) {
       return !std::invoke(__comp, __rhs, __lhs);
@@ -45,7 +45,7 @@ struct __fn {
 
   template <forward_range _Range, class _Type, class _Proj = identity,
             indirect_strict_weak_order<const _Type*, projected<iterator_t<_Range>, _Proj>> _Comp = ranges::less>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   borrowed_iterator_t<_Range> operator()(_Range&& __r,
                                          const _Type& __value,
                                          _Comp __comp = {},
@@ -68,8 +68,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_UPPER_BOUND_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_UPPER_BOUND_H

@@ -8,7 +8,7 @@
 
 // Test that the default verbose termination function aborts the program.
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_ASSERTIONS=1
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_ASSERTIONS=1
 
 #include <csignal>
 #include <cstdlib>
@@ -21,6 +21,6 @@ void signal_handler(int signal) {
 
 int main(int, char**) {
   if (std::signal(SIGABRT, signal_handler) != SIG_ERR)
-    _LIBCPP_ASSERT(false, "foo");
+    _LIBCUDACXX_ASSERT(false, "foo");
   return EXIT_FAILURE;
 }

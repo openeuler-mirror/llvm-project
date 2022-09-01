@@ -6,19 +6,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_IS_PARTITIONED_H
-#define _LIBCPP___ALGORITHM_IS_PARTITIONED_H
+#ifndef _LIBCUDACXX___ALGORITHM_IS_PARTITIONED_H
+#define _LIBCUDACXX___ALGORITHM_IS_PARTITIONED_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _InputIterator, class _Predicate>
-_LIBCPP_NODISCARD_EXT _LIBCPP_CONSTEXPR_AFTER_CXX17 bool
+_LIBCUDACXX_NODISCARD_EXT _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 bool
 is_partitioned(_InputIterator __first, _InputIterator __last, _Predicate __pred)
 {
     for (; __first != __last; ++__first)
@@ -33,6 +33,6 @@ is_partitioned(_InputIterator __first, _InputIterator __last, _Predicate __pred)
     return true;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_IS_PARTITIONED_H
+#endif // _LIBCUDACXX___ALGORITHM_IS_PARTITIONED_H

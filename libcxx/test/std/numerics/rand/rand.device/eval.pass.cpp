@@ -30,12 +30,12 @@ int main(int, char**)
 
     // When using the `/dev/urandom` implementation, make sure that we throw
     // an exception when we hit EOF while reading the custom-provided file.
-#if !defined(TEST_HAS_NO_EXCEPTIONS) && defined(_LIBCPP_USING_DEV_RANDOM)
+#if !defined(TEST_HAS_NO_EXCEPTIONS) && defined(_LIBCUDACXX_USING_DEV_RANDOM)
     {
         std::random_device r("/dev/null");
         try {
             (void)r();
-            LIBCPP_ASSERT(false);
+            LIBCUDACXX_ASSERT(false);
         } catch (const std::system_error&) {
         }
     }

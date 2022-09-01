@@ -302,9 +302,9 @@ if (LIBCXX_ENABLE_STATIC)
       append_flags_if_supported(CXX_STATIC_LIBRARY_FLAGS -fvisibility-global-new-delete-hidden)
     endif()
     target_compile_options(cxx_static PRIVATE ${CXX_STATIC_LIBRARY_FLAGS})
-    # _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS can be defined in __config_site
+    # _LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS can be defined in __config_site
     # too. Define it in the same way here, to avoid redefinition conflicts.
-    target_compile_definitions(cxx_static PRIVATE _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS=)
+    target_compile_definitions(cxx_static PRIVATE _LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS=)
   endif()
 
   list(APPEND LIBCXX_BUILD_TARGETS "cxx_static")
@@ -331,9 +331,9 @@ else()
 endif()
 
 if (LIBCXX_HERMETIC_STATIC_LIBRARY)
-  # _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS can be defined in __config_site
+  # _LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS can be defined in __config_site
   # too. Define it in the same way here, to avoid redefinition conflicts.
-  target_compile_definitions(cxx_experimental PRIVATE _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS=)
+  target_compile_definitions(cxx_experimental PRIVATE _LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS=)
 endif()
 
 set_target_properties(cxx_experimental
@@ -342,7 +342,7 @@ set_target_properties(cxx_experimental
     OUTPUT_NAME   "c++experimental"
 )
 cxx_add_common_build_flags(cxx_experimental)
-target_compile_options(cxx_experimental PUBLIC -D_LIBCPP_ENABLE_EXPERIMENTAL)
+target_compile_options(cxx_experimental PUBLIC -D_LIBCUDACXX_ENABLE_EXPERIMENTAL)
 
 
 if (LIBCXX_BUILD_EXTERNAL_THREAD_LIBRARY)

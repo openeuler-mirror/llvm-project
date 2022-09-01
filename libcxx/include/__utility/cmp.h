@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___UTILITY_CMP_H
-#define _LIBCPP___UTILITY_CMP_H
+#ifndef _LIBCUDACXX___UTILITY_CMP_H
+#define _LIBCUDACXX___UTILITY_CMP_H
 
 #include <__config>
 #include <__utility/forward.h>
@@ -15,32 +15,32 @@
 #include <limits>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 template<class _Tp, class... _Up>
 struct _IsSameAsAny : _Or<_IsSame<_Tp, _Up>...> {};
 
 template<class _Tp>
 concept __is_safe_integral_cmp = is_integral_v<_Tp> &&
                       !_IsSameAsAny<_Tp, bool, char, char16_t, char32_t
-#ifndef _LIBCPP_HAS_NO_CHAR8_T
+#ifndef _LIBCUDACXX_HAS_NO_CHAR8_T
                                     , char8_t
 #endif
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
                                     , wchar_t
 #endif
                                     >::value;
 
 template<__is_safe_integral_cmp _Tp, __is_safe_integral_cmp _Up>
-_LIBCPP_INLINE_VISIBILITY constexpr
+_LIBCUDACXX_INLINE_VISIBILITY constexpr
 bool cmp_equal(_Tp __t, _Up __u) noexcept
 {
   if constexpr (is_signed_v<_Tp> == is_signed_v<_Up>)
@@ -52,14 +52,14 @@ bool cmp_equal(_Tp __t, _Up __u) noexcept
 }
 
 template<__is_safe_integral_cmp _Tp, __is_safe_integral_cmp _Up>
-_LIBCPP_INLINE_VISIBILITY constexpr
+_LIBCUDACXX_INLINE_VISIBILITY constexpr
 bool cmp_not_equal(_Tp __t, _Up __u) noexcept
 {
-  return !_VSTD::cmp_equal(__t, __u);
+  return !_CUDA_VSTD::cmp_equal(__t, __u);
 }
 
 template<__is_safe_integral_cmp _Tp, __is_safe_integral_cmp _Up>
-_LIBCPP_INLINE_VISIBILITY constexpr
+_LIBCUDACXX_INLINE_VISIBILITY constexpr
 bool cmp_less(_Tp __t, _Up __u) noexcept
 {
   if constexpr (is_signed_v<_Tp> == is_signed_v<_Up>)
@@ -71,37 +71,37 @@ bool cmp_less(_Tp __t, _Up __u) noexcept
 }
 
 template<__is_safe_integral_cmp _Tp, __is_safe_integral_cmp _Up>
-_LIBCPP_INLINE_VISIBILITY constexpr
+_LIBCUDACXX_INLINE_VISIBILITY constexpr
 bool cmp_greater(_Tp __t, _Up __u) noexcept
 {
-  return _VSTD::cmp_less(__u, __t);
+  return _CUDA_VSTD::cmp_less(__u, __t);
 }
 
 template<__is_safe_integral_cmp _Tp, __is_safe_integral_cmp _Up>
-_LIBCPP_INLINE_VISIBILITY constexpr
+_LIBCUDACXX_INLINE_VISIBILITY constexpr
 bool cmp_less_equal(_Tp __t, _Up __u) noexcept
 {
-  return !_VSTD::cmp_greater(__t, __u);
+  return !_CUDA_VSTD::cmp_greater(__t, __u);
 }
 
 template<__is_safe_integral_cmp _Tp, __is_safe_integral_cmp _Up>
-_LIBCPP_INLINE_VISIBILITY constexpr
+_LIBCUDACXX_INLINE_VISIBILITY constexpr
 bool cmp_greater_equal(_Tp __t, _Up __u) noexcept
 {
-  return !_VSTD::cmp_less(__t, __u);
+  return !_CUDA_VSTD::cmp_less(__t, __u);
 }
 
 template<__is_safe_integral_cmp _Tp, __is_safe_integral_cmp _Up>
-_LIBCPP_INLINE_VISIBILITY constexpr
+_LIBCUDACXX_INLINE_VISIBILITY constexpr
 bool in_range(_Up __u) noexcept
 {
-  return _VSTD::cmp_less_equal(__u, numeric_limits<_Tp>::max()) &&
-         _VSTD::cmp_greater_equal(__u, numeric_limits<_Tp>::min());
+  return _CUDA_VSTD::cmp_less_equal(__u, numeric_limits<_Tp>::max()) &&
+         _CUDA_VSTD::cmp_greater_equal(__u, numeric_limits<_Tp>::min());
 }
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___UTILITY_CMP_H
+#endif // _LIBCUDACXX___UTILITY_CMP_H

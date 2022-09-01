@@ -25,8 +25,8 @@ test(S s0, const typename S::allocator_type& a)
 {
     S s1 = s0;
     S s2(std::move(s0), a);
-    LIBCPP_ASSERT(s2.__invariants());
-    LIBCPP_ASSERT(s0.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s0.__invariants());
     assert(s2 == s1);
     assert(s2.capacity() >= s2.size());
     assert(s2.get_allocator() == a);

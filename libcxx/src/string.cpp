@@ -15,13 +15,13 @@
 #include <stdio.h>
 #include <string>
 
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 #  include <cwchar>
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#ifndef _LIBCPP_ABI_DO_NOT_EXPORT_BASIC_STRING_COMMON
+#ifndef _LIBCUDACXX_ABI_DO_NOT_EXPORT_BASIC_STRING_COMMON
 
 template <bool>
 struct __basic_string_common;
@@ -29,8 +29,8 @@ struct __basic_string_common;
 // The struct isn't declared anymore in the headers. It's only here for ABI compatibility.
 template <>
 struct __basic_string_common<true> {
-    _LIBCPP_NORETURN _LIBCPP_EXPORTED_FROM_ABI void __throw_length_error() const;
-    _LIBCPP_NORETURN _LIBCPP_EXPORTED_FROM_ABI void __throw_out_of_range() const;
+    _LIBCUDACXX_NORETURN _LIBCUDACXX_EXPORTED_FROM_ABI void __throw_length_error() const;
+    _LIBCUDACXX_NORETURN _LIBCUDACXX_EXPORTED_FROM_ABI void __throw_out_of_range() const;
 };
 
 void __basic_string_common<true>::__throw_length_error() const {
@@ -40,21 +40,21 @@ void __basic_string_common<true>::__throw_out_of_range() const {
     std::__throw_out_of_range("basic_string");
 }
 
-#endif // _LIBCPP_ABI_DO_NOT_EXPORT_BASIC_STRING_COMMON
+#endif // _LIBCUDACXX_ABI_DO_NOT_EXPORT_BASIC_STRING_COMMON
 
-#define _LIBCPP_EXTERN_TEMPLATE_DEFINE(...) template __VA_ARGS__;
-#ifdef _LIBCPP_ABI_STRING_OPTIMIZED_EXTERNAL_INSTANTIATION
-    _LIBCPP_STRING_UNSTABLE_EXTERN_TEMPLATE_LIST(_LIBCPP_EXTERN_TEMPLATE_DEFINE, char)
-#   ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
-        _LIBCPP_STRING_UNSTABLE_EXTERN_TEMPLATE_LIST(_LIBCPP_EXTERN_TEMPLATE_DEFINE, wchar_t)
+#define _LIBCUDACXX_EXTERN_TEMPLATE_DEFINE(...) template __VA_ARGS__;
+#ifdef _LIBCUDACXX_ABI_STRING_OPTIMIZED_EXTERNAL_INSTANTIATION
+    _LIBCUDACXX_STRING_UNSTABLE_EXTERN_TEMPLATE_LIST(_LIBCUDACXX_EXTERN_TEMPLATE_DEFINE, char)
+#   ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
+        _LIBCUDACXX_STRING_UNSTABLE_EXTERN_TEMPLATE_LIST(_LIBCUDACXX_EXTERN_TEMPLATE_DEFINE, wchar_t)
 #   endif
 #else
-    _LIBCPP_STRING_V1_EXTERN_TEMPLATE_LIST(_LIBCPP_EXTERN_TEMPLATE_DEFINE, char)
-#   ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
-        _LIBCPP_STRING_V1_EXTERN_TEMPLATE_LIST(_LIBCPP_EXTERN_TEMPLATE_DEFINE, wchar_t)
+    _LIBCUDACXX_STRING_V1_EXTERN_TEMPLATE_LIST(_LIBCUDACXX_EXTERN_TEMPLATE_DEFINE, char)
+#   ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
+        _LIBCUDACXX_STRING_V1_EXTERN_TEMPLATE_LIST(_LIBCUDACXX_EXTERN_TEMPLATE_DEFINE, wchar_t)
 #   endif
 #endif
-#undef _LIBCPP_EXTERN_TEMPLATE_DEFINE
+#undef _LIBCUDACXX_EXTERN_TEMPLATE_DEFINE
 
 template string operator+<char, char_traits<char>, allocator<char>>(char const*, string const&);
 
@@ -63,11 +63,11 @@ namespace
 
 template<typename T>
 inline void throw_helper(const string& msg) {
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
     throw T(msg);
 #else
     fprintf(stderr, "%s\n", msg.c_str());
-    _VSTD::abort();
+    _CUDA_VSTD::abort();
 #endif
 }
 
@@ -131,7 +131,7 @@ inline unsigned long long as_integer(const string& func, const string& s, size_t
     return as_integer_helper<unsigned long long>(func, s, idx, base, strtoull);
 }
 
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 // wstring
 template<>
 inline int as_integer(const string& func, const wstring& s, size_t* idx, int base) {
@@ -164,7 +164,7 @@ template<>
 inline unsigned long long as_integer(const string& func, const wstring& s, size_t* idx, int base) {
     return as_integer_helper<unsigned long long>(func, s, idx, base, wcstoull);
 }
-#endif // _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#endif // _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 
 // as_float
 
@@ -203,7 +203,7 @@ inline long double as_float(const string& func, const string& s, size_t* idx) {
     return as_float_helper<long double>(func, s, idx, strtold);
 }
 
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 template<>
 inline float as_float(const string& func, const wstring& s, size_t* idx) {
     return as_float_helper<float>(func, s, idx, wcstof);
@@ -218,7 +218,7 @@ template<>
 inline long double as_float(const string& func, const wstring& s, size_t* idx) {
     return as_float_helper<long double>(func, s, idx, wcstold);
 }
-#endif // _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#endif // _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 
 }  // unnamed namespace
 
@@ -254,7 +254,7 @@ long double stold(const string& str, size_t* idx) {
     return as_float<long double>("stold", str, idx);
 }
 
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 int stoi(const wstring& str, size_t* idx, int base) {
     return as_integer<int>("stoi", str, idx, base);
 }
@@ -286,7 +286,7 @@ double stod(const wstring& str, size_t* idx) {
 long double stold(const wstring& str, size_t* idx) {
     return as_float<long double>("stold", str, idx);
 }
-#endif // !_LIBCPP_HAS_NO_WIDE_CHARACTERS
+#endif // !_LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 
 // to_string
 
@@ -328,7 +328,7 @@ struct initial_string<string> {
     }
 };
 
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 template <>
 struct initial_string<wstring> {
     wstring operator()() const {
@@ -341,13 +341,13 @@ struct initial_string<wstring> {
 typedef int (*wide_printf)(wchar_t* __restrict, size_t, const wchar_t*__restrict, ...);
 
 inline wide_printf get_swprintf() {
-#ifndef _LIBCPP_MSVCRT
+#ifndef _LIBCUDACXX_MSVCRT
     return swprintf;
 #else
     return static_cast<int (__cdecl*)(wchar_t* __restrict, size_t, const wchar_t*__restrict, ...)>(_snwprintf);
 #endif
 }
-#endif // _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#endif // _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 
 template <typename S, typename V>
 S i_to_string(V v) {
@@ -357,7 +357,7 @@ S i_to_string(V v) {
     constexpr size_t bufsize = numeric_limits<V>::digits10 + 2;  // +1 for minus, +1 for digits10
     char buf[bufsize];
     const auto res = to_chars(buf, buf + bufsize, v);
-    _LIBCPP_ASSERT(res.ec == errc(), "bufsize must be large enough to accomodate the value");
+    _LIBCUDACXX_ASSERT(res.ec == errc(), "bufsize must be large enough to accomodate the value");
     return S(buf, res.ptr);
 }
 
@@ -370,7 +370,7 @@ string  to_string (unsigned val)           { return i_to_string< string>(val); }
 string  to_string (unsigned long val)      { return i_to_string< string>(val); }
 string  to_string (unsigned long long val) { return i_to_string< string>(val); }
 
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 wstring to_wstring(int val)                { return i_to_string<wstring>(val); }
 wstring to_wstring(long val)               { return i_to_string<wstring>(val); }
 wstring to_wstring(long long val)          { return i_to_string<wstring>(val); }
@@ -383,10 +383,10 @@ string  to_string (float val)       { return as_string(snprintf,       initial_s
 string  to_string (double val)      { return as_string(snprintf,       initial_string< string>()(),   "%f", val); }
 string  to_string (long double val) { return as_string(snprintf,       initial_string< string>()(),  "%Lf", val); }
 
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 wstring to_wstring(float val)       { return as_string(get_swprintf(), initial_string<wstring>()(),  L"%f", val); }
 wstring to_wstring(double val)      { return as_string(get_swprintf(), initial_string<wstring>()(),  L"%f", val); }
 wstring to_wstring(long double val) { return as_string(get_swprintf(), initial_string<wstring>()(), L"%Lf", val); }
 #endif
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

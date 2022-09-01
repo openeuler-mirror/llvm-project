@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // <memory>
 
@@ -34,7 +34,7 @@
 // Because this is a variable and not a function, it's guaranteed that ADL won't be used. However,
 // implementations are allowed to use a different mechanism to achieve this effect, so this check is
 // libc++-specific.
-LIBCPP_STATIC_ASSERT(std::is_class_v<decltype(std::ranges::uninitialized_default_construct)>);
+LIBCUDACXX_STATIC_ASSERT(std::is_class_v<decltype(std::ranges::uninitialized_default_construct)>);
 
 struct NotDefaultCtrable { NotDefaultCtrable() = delete; };
 static_assert(!std::is_invocable_v<decltype(std::ranges::uninitialized_default_construct),

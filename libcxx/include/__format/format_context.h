@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMAT_CONTEXT_H
-#define _LIBCPP___FORMAT_FORMAT_CONTEXT_H
+#ifndef _LIBCUDACXX___FORMAT_FORMAT_CONTEXT_H
+#define _LIBCUDACXX___FORMAT_FORMAT_CONTEXT_H
 
 #include <__availability>
 #include <__config>
@@ -21,52 +21,52 @@
 #include <concepts>
 #include <cstddef>
 
-#ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
 #include <locale>
 #include <optional>
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 template <class _OutIt, class _CharT>
 requires output_iterator<_OutIt, const _CharT&>
-class _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT basic_format_context;
+class _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT basic_format_context;
 
-#ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
 /**
  * Helper to create a basic_format_context.
  *
  * This is needed since the constructor is private.
  */
 template <class _OutIt, class _CharT>
-_LIBCPP_HIDE_FROM_ABI basic_format_context<_OutIt, _CharT>
+_LIBCUDACXX_HIDE_FROM_ABI basic_format_context<_OutIt, _CharT>
 __format_context_create(
     _OutIt __out_it,
     basic_format_args<basic_format_context<_OutIt, _CharT>> __args,
-    optional<_VSTD::locale>&& __loc = nullopt) {
-  return _VSTD::basic_format_context(_VSTD::move(__out_it), __args,
-                                     _VSTD::move(__loc));
+    optional<_CUDA_VSTD::locale>&& __loc = nullopt) {
+  return _CUDA_VSTD::basic_format_context(_CUDA_VSTD::move(__out_it), __args,
+                                     _CUDA_VSTD::move(__loc));
 }
 #else
 template <class _OutIt, class _CharT>
-_LIBCPP_HIDE_FROM_ABI basic_format_context<_OutIt, _CharT>
+_LIBCUDACXX_HIDE_FROM_ABI basic_format_context<_OutIt, _CharT>
 __format_context_create(
     _OutIt __out_it,
     basic_format_args<basic_format_context<_OutIt, _CharT>> __args) {
-  return _VSTD::basic_format_context(_VSTD::move(__out_it), __args);
+  return _CUDA_VSTD::basic_format_context(_CUDA_VSTD::move(__out_it), __args);
 }
 #endif
 
 using format_context =
     basic_format_context<back_insert_iterator<__format::__output_buffer<char>>,
                          char>;
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 using wformat_context = basic_format_context<
     back_insert_iterator<__format::__output_buffer<wchar_t>>, wchar_t>;
 #endif
@@ -75,10 +75,10 @@ template <class _OutIt, class _CharT>
 requires output_iterator<_OutIt, const _CharT&>
 class
     // clang-format off
-    _LIBCPP_TEMPLATE_VIS
-    _LIBCPP_AVAILABILITY_FORMAT
-    _LIBCPP_PREFERRED_NAME(format_context)
-    _LIBCPP_IF_WIDE_CHARACTERS(_LIBCPP_PREFERRED_NAME(wformat_context))
+    _LIBCUDACXX_TEMPLATE_VIS
+    _LIBCUDACXX_AVAILABILITY_FORMAT
+    _LIBCUDACXX_PREFERRED_NAME(format_context)
+    _LIBCUDACXX_IF_WIDE_CHARACTERS(_LIBCUDACXX_PREFERRED_NAME(wformat_context))
     // clang-format on
     basic_format_context {
 public:
@@ -90,24 +90,24 @@ public:
   basic_format_context(const basic_format_context&) = delete;
   basic_format_context& operator=(const basic_format_context&) = delete;
 
-  _LIBCPP_HIDE_FROM_ABI basic_format_arg<basic_format_context>
+  _LIBCUDACXX_HIDE_FROM_ABI basic_format_arg<basic_format_context>
   arg(size_t __id) const noexcept {
     return __args_.get(__id);
   }
-#ifndef _LIBCPP_HAS_NO_LOCALIZATION
-  _LIBCPP_HIDE_FROM_ABI _VSTD::locale locale() {
+#ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
+  _LIBCUDACXX_HIDE_FROM_ABI _CUDA_VSTD::locale locale() {
     if (!__loc_)
-      __loc_ = _VSTD::locale{};
+      __loc_ = _CUDA_VSTD::locale{};
     return *__loc_;
   }
 #endif
-  _LIBCPP_HIDE_FROM_ABI iterator out() { return __out_it_; }
-  _LIBCPP_HIDE_FROM_ABI void advance_to(iterator __it) { __out_it_ = __it; }
+  _LIBCUDACXX_HIDE_FROM_ABI iterator out() { return __out_it_; }
+  _LIBCUDACXX_HIDE_FROM_ABI void advance_to(iterator __it) { __out_it_ = __it; }
 
 private:
   iterator __out_it_;
   basic_format_args<basic_format_context> __args_;
-#ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
 
   // The Standard doesn't specify how the locale is stored.
   // [format.context]/6
@@ -118,34 +118,34 @@ private:
   // locale() is called and the optional has no value the value will be created.
   // This allows the implementation to lazily create the locale.
   // TODO FMT Validate whether lazy creation is the best solution.
-  optional<_VSTD::locale> __loc_;
+  optional<_CUDA_VSTD::locale> __loc_;
 
   template <class __OutIt, class __CharT>
-  friend _LIBCPP_HIDE_FROM_ABI basic_format_context<__OutIt, __CharT>
+  friend _LIBCUDACXX_HIDE_FROM_ABI basic_format_context<__OutIt, __CharT>
   __format_context_create(__OutIt, basic_format_args<basic_format_context<__OutIt, __CharT>>,
-                          optional<_VSTD::locale>&&);
+                          optional<_CUDA_VSTD::locale>&&);
 
   // Note: the Standard doesn't specify the required constructors.
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   explicit basic_format_context(_OutIt __out_it,
                                 basic_format_args<basic_format_context> __args,
-                                optional<_VSTD::locale>&& __loc)
-      : __out_it_(_VSTD::move(__out_it)), __args_(__args),
-        __loc_(_VSTD::move(__loc)) {}
+                                optional<_CUDA_VSTD::locale>&& __loc)
+      : __out_it_(_CUDA_VSTD::move(__out_it)), __args_(__args),
+        __loc_(_CUDA_VSTD::move(__loc)) {}
 #else
   template <class __OutIt, class __CharT>
-  friend _LIBCPP_HIDE_FROM_ABI basic_format_context<__OutIt, __CharT>
+  friend _LIBCUDACXX_HIDE_FROM_ABI basic_format_context<__OutIt, __CharT>
       __format_context_create(__OutIt, basic_format_args<basic_format_context<__OutIt, __CharT>>);
 
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   explicit basic_format_context(_OutIt __out_it,
                                 basic_format_args<basic_format_context> __args)
-      : __out_it_(_VSTD::move(__out_it)), __args_(__args) {}
+      : __out_it_(_CUDA_VSTD::move(__out_it)), __args_(__args) {}
 #endif
 };
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_FORMAT_CONTEXT_H
+#endif // _LIBCUDACXX___FORMAT_FORMAT_CONTEXT_H

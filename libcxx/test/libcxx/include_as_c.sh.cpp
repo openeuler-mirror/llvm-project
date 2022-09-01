@@ -29,7 +29,7 @@
 #include <float.h>
 #include <inttypes.h>
 #include <limits.h>
-#ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
 #   include <locale.h>
 #endif
 #include <math.h>
@@ -45,7 +45,7 @@
 #ifndef _MSC_VER
 #    include <tgmath.h>
 #endif
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 #   include <wchar.h>
 #   include <wctype.h>
 #endif

@@ -17,7 +17,7 @@
 
 // REQUIRES: has-unix-headers
 // XFAIL: use_system_cxx_lib && target={{.+}}-apple-macosx{{10.9|10.10|10.11|10.12|10.13|10.14|10.15|11.0|12.0}}
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_ASSERTIONS=1
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_ENABLE_ASSERTIONS=1
 
 #include <array>
 #include <span>
@@ -28,10 +28,10 @@ int main(int, char**) {
     std::array<int, 3> array{0, 1, 2};
 
     auto too_large = [&] { std::span<int, 3> const s(array.data(), 4); (void)s; };
-    TEST_LIBCPP_ASSERT_FAILURE(too_large(), "size mismatch in span's constructor (iterator, len)");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(too_large(), "size mismatch in span's constructor (iterator, len)");
 
     auto too_small = [&] { std::span<int, 3> const s(array.data(), 2); (void)s; };
-    TEST_LIBCPP_ASSERT_FAILURE(too_small(), "size mismatch in span's constructor (iterator, len)");
+    TEST_LIBCUDACXX_ASSERT_FAILURE(too_small(), "size mismatch in span's constructor (iterator, len)");
 
     return 0;
 }

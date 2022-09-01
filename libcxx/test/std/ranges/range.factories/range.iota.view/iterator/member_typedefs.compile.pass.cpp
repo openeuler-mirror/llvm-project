@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-has-no-incomplete-ranges
+// UNSUPPORTED: LIBCUDACXX-has-no-incomplete-ranges
 
 // Test iterator category and iterator concepts.
 
@@ -70,7 +70,7 @@ void test() {
     static_assert(std::same_as<Iter::value_type, char>);
     static_assert(sizeof(Iter::difference_type) > sizeof(char));
     static_assert(std::is_signed_v<Iter::difference_type>);
-    LIBCPP_STATIC_ASSERT(std::same_as<Iter::difference_type, int>);
+    LIBCUDACXX_STATIC_ASSERT(std::same_as<Iter::difference_type, int>);
   }
   {
     const std::ranges::iota_view<short> io(0);
@@ -80,7 +80,7 @@ void test() {
     static_assert(std::same_as<Iter::value_type, short>);
     static_assert(sizeof(Iter::difference_type) > sizeof(short));
     static_assert(std::is_signed_v<Iter::difference_type>);
-    LIBCPP_STATIC_ASSERT(std::same_as<Iter::difference_type, int>);
+    LIBCUDACXX_STATIC_ASSERT(std::same_as<Iter::difference_type, int>);
   }
   {
     const std::ranges::iota_view<int> io(0);
@@ -92,9 +92,9 @@ void test() {
     static_assert(std::is_signed_v<Iter::difference_type>);
     // If we're compiling for 32 bit or windows, int and long are the same size, so long long is the correct difference type.
 #if INTPTR_MAX == INT32_MAX || defined(_WIN32)
-    LIBCPP_STATIC_ASSERT(std::same_as<Iter::difference_type, long long>);
+    LIBCUDACXX_STATIC_ASSERT(std::same_as<Iter::difference_type, long long>);
 #else
-    LIBCPP_STATIC_ASSERT(std::same_as<Iter::difference_type, long>);
+    LIBCUDACXX_STATIC_ASSERT(std::same_as<Iter::difference_type, long>);
 #endif
   }
   {
@@ -106,7 +106,7 @@ void test() {
     // Same as below, if there is no type larger than long, we can just use that.
     static_assert(sizeof(Iter::difference_type) >= sizeof(long));
     static_assert(std::is_signed_v<Iter::difference_type>);
-    LIBCPP_STATIC_ASSERT(std::same_as<Iter::difference_type, long long>);
+    LIBCUDACXX_STATIC_ASSERT(std::same_as<Iter::difference_type, long long>);
   }
   {
     const std::ranges::iota_view<long long> io(0);
@@ -118,7 +118,7 @@ void test() {
     // https://eel.is/c++draft/range.iota.view#1.3
     static_assert(sizeof(Iter::difference_type) >= sizeof(long long));
     static_assert(std::is_signed_v<Iter::difference_type>);
-    LIBCPP_STATIC_ASSERT(std::same_as<Iter::difference_type, long long>);
+    LIBCUDACXX_STATIC_ASSERT(std::same_as<Iter::difference_type, long long>);
   }
   {
     const std::ranges::iota_view<Decrementable> io;

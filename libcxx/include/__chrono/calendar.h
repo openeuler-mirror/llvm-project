@@ -7,20 +7,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___CHRONO_CALENDAR_H
-#define _LIBCPP___CHRONO_CALENDAR_H
+#ifndef _LIBCUDACXX___CHRONO_CALENDAR_H
+#define _LIBCUDACXX___CHRONO_CALENDAR_H
 
 #include <__chrono/duration.h>
 #include <__chrono/time_point.h>
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace chrono
 {
@@ -31,14 +31,14 @@ using local_time  = time_point<local_t, Duration>;
 using local_seconds = local_time<seconds>;
 using local_days    = local_time<days>;
 
-struct last_spec { _LIBCPP_HIDE_FROM_ABI explicit last_spec() = default; };
+struct last_spec { _LIBCUDACXX_HIDE_FROM_ABI explicit last_spec() = default; };
 inline constexpr last_spec last{};
 
 
 } // namespace chrono
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17
+#endif // _LIBCUDACXX_STD_VER > 17
 
-#endif // _LIBCPP___CHRONO_CALENDAR_H
+#endif // _LIBCUDACXX___CHRONO_CALENDAR_H

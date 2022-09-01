@@ -6,17 +6,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_CORE_CONVERTIBLE_H
-#define _LIBCPP___TYPE_TRAITS_IS_CORE_CONVERTIBLE_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_CORE_CONVERTIBLE_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_CORE_CONVERTIBLE_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // [conv.general]/3 says "E is convertible to T" whenever "T t=E;" is well-formed.
 // We can't test for that, but we can test implicit convertibility by passing it
@@ -31,6 +31,6 @@ struct __is_core_convertible<_Tp, _Up, decltype(
     static_cast<void(*)(_Up)>(0) ( static_cast<_Tp(*)()>(0)() )
 )> : public true_type {};
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_CORE_CONVERTIBLE_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_CORE_CONVERTIBLE_H

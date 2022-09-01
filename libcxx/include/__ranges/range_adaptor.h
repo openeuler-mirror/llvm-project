@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___RANGES_RANGE_ADAPTOR_H
-#define _LIBCPP___RANGES_RANGE_ADAPTOR_H
+#ifndef _LIBCUDACXX___RANGES_RANGE_ADAPTOR_H
+#define _LIBCUDACXX___RANGES_RANGE_ADAPTOR_H
 
 #include <__config>
 #include <__functional/compose.h>
@@ -19,13 +19,13 @@
 #include <concepts>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 // CRTP base that one can derive from in order to be considered a range adaptor closure
 // by the library. When deriving from this class, a pipe operator will be provided to
@@ -50,7 +50,7 @@ struct __range_adaptor_closure {
     template <ranges::viewable_range _View, _RangeAdaptorClosure _Closure>
         requires same_as<_Tp, remove_cvref_t<_Closure>> &&
                  invocable<_Closure, _View>
-    [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+    [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
     friend constexpr decltype(auto) operator|(_View&& __view, _Closure&& __closure)
         noexcept(is_nothrow_invocable_v<_Closure, _View>)
     { return std::invoke(std::forward<_Closure>(__closure), std::forward<_View>(__view)); }
@@ -59,15 +59,15 @@ struct __range_adaptor_closure {
         requires same_as<_Tp, remove_cvref_t<_Closure>> &&
                  constructible_from<decay_t<_Closure>, _Closure> &&
                  constructible_from<decay_t<_OtherClosure>, _OtherClosure>
-    [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+    [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
     friend constexpr auto operator|(_Closure&& __c1, _OtherClosure&& __c2)
         noexcept(is_nothrow_constructible_v<decay_t<_Closure>, _Closure> &&
                  is_nothrow_constructible_v<decay_t<_OtherClosure>, _OtherClosure>)
     { return __range_adaptor_closure_t(std::__compose(std::forward<_OtherClosure>(__c2), std::forward<_Closure>(__c1))); }
 };
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_RANGE_ADAPTOR_H
+#endif // _LIBCUDACXX___RANGES_RANGE_ADAPTOR_H

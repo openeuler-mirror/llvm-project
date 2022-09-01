@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_REPLACE_H
-#define _LIBCPP___ALGORITHM_RANGES_REPLACE_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_REPLACE_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_REPLACE_H
 
 #include <__algorithm/ranges_replace_if.h>
 #include <__config>
@@ -20,13 +20,13 @@
 #include <__ranges/dangling.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined (_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined (_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __replace {
@@ -38,7 +38,7 @@ struct __fn {
             class _Proj = identity>
     requires indirectly_writable<_Iter, const _Type2&>
           && indirect_binary_predicate<ranges::equal_to, projected<_Iter, _Proj>, const _Type1*>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   _Iter operator()(_Iter __first, _Sent __last,
                    const _Type1& __old_value,
                    const _Type2& __new_value,
@@ -53,7 +53,7 @@ struct __fn {
             class _Proj = identity>
     requires indirectly_writable<iterator_t<_Range>, const _Type2&>
           && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Range>, _Proj>, const _Type1*>
-  _LIBCPP_HIDE_FROM_ABI constexpr borrowed_iterator_t<_Range>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr borrowed_iterator_t<_Range>
   operator()(_Range&& __range, const _Type1& __old_value, const _Type2& __new_value, _Proj __proj = {}) const {
     auto __pred = [&](auto&& __val) { return __val == __old_value; };
     return ranges::__replace_if_impl(ranges::begin(__range), ranges::end(__range), __pred, __new_value, __proj);
@@ -67,8 +67,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined (_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined (_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_REPLACE_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_REPLACE_H

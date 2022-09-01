@@ -23,7 +23,7 @@ void
 test(const S& s, typename S::value_type c, typename S::size_type pos,
      typename S::size_type x)
 {
-    LIBCPP_ASSERT_NOEXCEPT(s.find_last_not_of(c, pos));
+    LIBCUDACXX_ASSERT_NOEXCEPT(s.find_last_not_of(c, pos));
     assert(s.find_last_not_of(c, pos) == x);
     if (x != S::npos)
         assert(x <= pos && x < s.size());
@@ -33,7 +33,7 @@ template <class S>
 void
 test(const S& s, typename S::value_type c, typename S::size_type x)
 {
-    LIBCPP_ASSERT_NOEXCEPT(s.find_last_not_of(c));
+    LIBCUDACXX_ASSERT_NOEXCEPT(s.find_last_not_of(c));
     assert(s.find_last_not_of(c) == x);
     if (x != S::npos)
         assert(x < s.size());

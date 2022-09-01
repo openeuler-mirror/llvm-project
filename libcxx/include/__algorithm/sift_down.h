@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_SIFT_DOWN_H
-#define _LIBCPP___ALGORITHM_SIFT_DOWN_H
+#ifndef _LIBCUDACXX___ALGORITHM_SIFT_DOWN_H
+#define _LIBCUDACXX___ALGORITHM_SIFT_DOWN_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__assert>
@@ -15,14 +15,14 @@
 #include <__iterator/iterator_traits.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _AlgPolicy, class _Compare, class _RandomAccessIterator>
-_LIBCPP_CONSTEXPR_AFTER_CXX11 void
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX11 void
 __sift_down(_RandomAccessIterator __first, _Compare&& __comp,
             typename iterator_traits<_RandomAccessIterator>::difference_type __len,
             _RandomAccessIterator __start)
@@ -74,16 +74,16 @@ __sift_down(_RandomAccessIterator __first, _Compare&& __comp,
 
         // check if we are in heap-order
     } while (!__comp(*__child_i, __top));
-    *__start = _VSTD::move(__top);
+    *__start = _CUDA_VSTD::move(__top);
 }
 
 template <class _AlgPolicy, class _Compare, class _RandomAccessIterator>
-_LIBCPP_CONSTEXPR_AFTER_CXX11 _RandomAccessIterator
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX11 _RandomAccessIterator
 __floyd_sift_down(_RandomAccessIterator __first, _Compare&& __comp,
                   typename iterator_traits<_RandomAccessIterator>::difference_type __len)
 {
     using difference_type = typename iterator_traits<_RandomAccessIterator>::difference_type;
-    _LIBCPP_ASSERT(__len >= 2, "shouldn't be called unless __len >= 2");
+    _LIBCUDACXX_ASSERT(__len >= 2, "shouldn't be called unless __len >= 2");
 
     _RandomAccessIterator __hole = __first;
     _RandomAccessIterator __child_i = __first;
@@ -109,6 +109,6 @@ __floyd_sift_down(_RandomAccessIterator __first, _Compare&& __comp,
     }
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_SIFT_DOWN_H
+#endif // _LIBCUDACXX___ALGORITHM_SIFT_DOWN_H

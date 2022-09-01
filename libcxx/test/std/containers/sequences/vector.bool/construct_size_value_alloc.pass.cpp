@@ -23,7 +23,7 @@ TEST_CONSTEXPR_CXX20 void test(typename C::size_type n,
                                     const typename C::allocator_type& a)
 {
     C c(n, x, a);
-    LIBCPP_ASSERT(c.__invariants());
+    LIBCUDACXX_ASSERT(c.__invariants());
     assert(a == c.get_allocator());
     assert(c.size() == n);
     for (typename C::const_iterator i = c.cbegin(), e = c.cend(); i != e; ++i)

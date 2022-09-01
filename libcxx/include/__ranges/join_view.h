@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_JOIN_VIEW_H
-#define _LIBCPP___RANGES_JOIN_VIEW_H
+#ifndef _LIBCUDACXX___RANGES_JOIN_VIEW_H
+#define _LIBCUDACXX___RANGES_JOIN_VIEW_H
 
 #include <__concepts/constructible.h>
 #include <__concepts/convertible_to.h>
@@ -29,13 +29,13 @@
 #include <optional>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
   template<class>
@@ -73,24 +73,24 @@ namespace ranges {
 
     static constexpr bool _UseCache = !is_reference_v<_InnerRange>;
     using _Cache = _If<_UseCache, __non_propagating_cache<remove_cvref_t<_InnerRange>>, __empty_cache>;
-    _LIBCPP_NO_UNIQUE_ADDRESS _Cache __cache_;
-    _LIBCPP_NO_UNIQUE_ADDRESS _View __base_ = _View();
+    _LIBCUDACXX_NO_UNIQUE_ADDRESS _Cache __cache_;
+    _LIBCUDACXX_NO_UNIQUE_ADDRESS _View __base_ = _View();
 
   public:
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     join_view() requires default_initializable<_View> = default;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr explicit join_view(_View __base)
       : __base_(std::move(__base)) {}
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _View base() const& requires copy_constructible<_View> { return __base_; }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _View base() && { return std::move(__base_); }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto begin() {
       constexpr bool __use_const = __simple_view<_View> &&
                                    is_reference_v<range_reference_t<_View>>;
@@ -98,7 +98,7 @@ namespace ranges {
     }
 
     template<class _V2 = _View>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto begin() const
       requires input_range<const _V2> &&
                is_reference_v<range_reference_t<const _V2>>
@@ -106,7 +106,7 @@ namespace ranges {
       return __iterator<true>{*this, ranges::begin(__base_)};
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto end() {
       if constexpr (forward_range<_View> &&
                     is_reference_v<_InnerRange> &&
@@ -119,7 +119,7 @@ namespace ranges {
     }
 
     template<class _V2 = _View>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr auto end() const
       requires input_range<const _V2> &&
                is_reference_v<range_reference_t<const _V2>>
@@ -148,21 +148,21 @@ namespace ranges {
     sentinel_t<_Base> __end_ = sentinel_t<_Base>();
 
   public:
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     __sentinel() = default;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr explicit __sentinel(_Parent& __parent)
       : __end_(ranges::end(__parent.__base_)) {}
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __sentinel(__sentinel<!_Const> __s)
       requires _Const && convertible_to<sentinel_t<_View>, sentinel_t<_Base>>
       : __end_(std::move(__s.__end_)) {}
 
     template<bool _OtherConst>
       requires sentinel_for<sentinel_t<_Base>, iterator_t<__maybe_const<_OtherConst, _View>>>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     friend constexpr bool operator==(const __iterator<_OtherConst>& __x, const __sentinel& __y) {
       return __x.__outer_ == __y.__end_;
     }
@@ -190,7 +190,7 @@ namespace ranges {
     optional<_Inner> __inner_;
     _Parent *__parent_ = nullptr;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr void __satisfy() {
       for (; __outer_ != ranges::end(__parent_->__base_); ++__outer_) {
         auto&& __inner = [&]() -> auto&& {
@@ -225,17 +225,17 @@ namespace ranges {
     using difference_type = common_type_t<
       range_difference_t<_Base>, range_difference_t<range_reference_t<_Base>>>;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     __iterator() requires default_initializable<_Outer> = default;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __iterator(_Parent& __parent, _Outer __outer)
       : __outer_(std::move(__outer))
       , __parent_(std::addressof(__parent)) {
       __satisfy();
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __iterator(__iterator<!_Const> __i)
       requires _Const &&
                convertible_to<iterator_t<_View>, _Outer> &&
@@ -244,19 +244,19 @@ namespace ranges {
       , __inner_(std::move(__i.__inner_))
       , __parent_(__i.__parent_) {}
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr decltype(auto) operator*() const {
       return **__inner_;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _Inner operator->() const
       requires __has_arrow<_Inner> && copyable<_Inner>
     {
       return *__inner_;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __iterator& operator++() {
       auto&& __inner = [&]() -> auto&& {
         if constexpr (__ref_is_glvalue)
@@ -271,12 +271,12 @@ namespace ranges {
       return *this;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr void operator++(int) {
       ++*this;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __iterator operator++(int)
       requires __ref_is_glvalue &&
                forward_range<_Base> &&
@@ -287,7 +287,7 @@ namespace ranges {
       return __tmp;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __iterator& operator--()
       requires __ref_is_glvalue &&
                bidirectional_range<_Base> &&
@@ -306,7 +306,7 @@ namespace ranges {
       return *this;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr __iterator operator--(int)
       requires __ref_is_glvalue &&
                bidirectional_range<_Base> &&
@@ -318,7 +318,7 @@ namespace ranges {
       return __tmp;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     friend constexpr bool operator==(const __iterator& __x, const __iterator& __y)
       requires __ref_is_glvalue &&
                equality_comparable<iterator_t<_Base>> &&
@@ -327,14 +327,14 @@ namespace ranges {
       return __x.__outer_ == __y.__outer_ && __x.__inner_ == __y.__inner_;
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     friend constexpr decltype(auto) iter_move(const __iterator& __i)
       noexcept(noexcept(ranges::iter_move(*__i.__inner_)))
     {
       return ranges::iter_move(*__i.__inner_);
     }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     friend constexpr void iter_swap(const __iterator& __x, const __iterator& __y)
       noexcept(noexcept(ranges::iter_swap(*__x.__inner_, *__y.__inner_)))
       requires indirectly_swappable<_Inner>
@@ -350,7 +350,7 @@ namespace views {
 namespace __join_view {
 struct __fn : __range_adaptor_closure<__fn> {
   template<class _Range>
-  [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
   constexpr auto operator()(_Range&& __range) const
     noexcept(noexcept(join_view<all_t<_Range&&>>(std::forward<_Range>(__range))))
     -> decltype(      join_view<all_t<_Range&&>>(std::forward<_Range>(__range)))
@@ -363,8 +363,8 @@ inline namespace __cpo {
 } // namespace views
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_JOIN_VIEW_H
+#endif // _LIBCUDACXX___RANGES_JOIN_VIEW_H

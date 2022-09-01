@@ -43,14 +43,14 @@ void test_const_container( const C& c )
 template<typename T>
 void test_const_container( const std::initializer_list<T>& c)
 {
-    LIBCPP_ASSERT_NOEXCEPT(std::size(c)); // our std::size is conditionally noexcept
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::size(c)); // our std::size is conditionally noexcept
     assert ( std::size(c)   == c.size());
 }
 
 template<typename T>
 void test_container( std::initializer_list<T>& c )
 {
-    LIBCPP_ASSERT_NOEXCEPT(std::size(c)); // our std::size is conditionally noexcept
+    LIBCUDACXX_ASSERT_NOEXCEPT(std::size(c)); // our std::size is conditionally noexcept
     assert ( std::size(c)   == c.size());
 }
 

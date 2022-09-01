@@ -8,12 +8,12 @@
 
 #include <algorithm>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // TODO(varconst): this currently doesn't benefit `ranges::sort` because it uses `ranges::less` instead of `__less`.
 
 template void __sort<__less<char>&, char*>(char*, char*, __less<char>&);
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 template void __sort<__less<wchar_t>&, wchar_t*>(wchar_t*, wchar_t*, __less<wchar_t>&);
 #endif
 template void __sort<__less<signed char>&, signed char*>(signed char*, signed char*, __less<signed char>&);
@@ -31,7 +31,7 @@ template void __sort<__less<double>&, double*>(double*, double*, __less<double>&
 template void __sort<__less<long double>&, long double*>(long double*, long double*, __less<long double>&);
 
 template bool __insertion_sort_incomplete<__less<char>&, char*>(char*, char*, __less<char>&);
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#ifndef _LIBCUDACXX_HAS_NO_WIDE_CHARACTERS
 template bool __insertion_sort_incomplete<__less<wchar_t>&, wchar_t*>(wchar_t*, wchar_t*, __less<wchar_t>&);
 #endif
 template bool __insertion_sort_incomplete<__less<signed char>&, signed char*>(signed char*, signed char*, __less<signed char>&);
@@ -50,4 +50,4 @@ template bool __insertion_sort_incomplete<__less<long double>&, long double*>(lo
 
 template unsigned __sort5<__less<long double>&, long double*>(long double*, long double*, long double*, long double*, long double*, __less<long double>&);
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD

@@ -54,7 +54,7 @@ int main(int, char**)
             test_allocator<std::pair<const int, std::string> >(10)
            );
         C c = c0;
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         std::multiset<std::string> s;
         s.insert("one");
@@ -101,7 +101,7 @@ int main(int, char**)
             other_allocator<std::pair<const int, std::string> >(10)
            );
         C c = c0;
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         std::multiset<std::string> s;
         s.insert("one");
@@ -147,7 +147,7 @@ int main(int, char**)
             min_allocator<std::pair<const int, std::string> >()
            );
         C c = c0;
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.size() == 6);
         std::multiset<std::string> s;
         s.insert("one");

@@ -651,7 +651,7 @@ __cxa_increment_exception_refcount(void *thrown_object) throw() {
     if (thrown_object != NULL )
     {
         __cxa_exception* exception_header = cxa_exception_from_thrown_object(thrown_object);
-        std::__libcpp_atomic_add(&exception_header->referenceCount, size_t(1));
+        std::__LIBCUDACXX_atomic_add(&exception_header->referenceCount, size_t(1));
     }
 }
 
@@ -668,7 +668,7 @@ void __cxa_decrement_exception_refcount(void *thrown_object) throw() {
     if (thrown_object != NULL )
     {
         __cxa_exception* exception_header = cxa_exception_from_thrown_object(thrown_object);
-        if (std::__libcpp_atomic_add(&exception_header->referenceCount, size_t(-1)) == 0)
+        if (std::__LIBCUDACXX_atomic_add(&exception_header->referenceCount, size_t(-1)) == 0)
         {
             if (NULL != exception_header->exceptionDestructor)
                 exception_header->exceptionDestructor(thrown_object);

@@ -37,7 +37,7 @@ test(S str, unsigned pos)
     if (pos <= str.size())
     {
         S s2(str, pos);
-        LIBCPP_ASSERT(s2.__invariants());
+        LIBCUDACXX_ASSERT(s2.__invariants());
         typename S::size_type rlen = str.size() - pos;
         assert(s2.size() == rlen);
         assert(T::compare(s2.data(), str.data() + pos, rlen) == 0);
@@ -69,7 +69,7 @@ test(S str, unsigned pos, unsigned n)
     if (pos <= str.size())
     {
         S s2(str, pos, n);
-        LIBCPP_ASSERT(s2.__invariants());
+        LIBCUDACXX_ASSERT(s2.__invariants());
         typename S::size_type rlen = std::min<typename S::size_type>(str.size() - pos, n);
         assert(s2.size() == rlen);
         assert(T::compare(s2.data(), str.data() + pos, rlen) == 0);
@@ -101,7 +101,7 @@ test(S str, unsigned pos, unsigned n, const typename S::allocator_type& a)
     if (pos <= str.size())
     {
         S s2(str, pos, n, a);
-        LIBCPP_ASSERT(s2.__invariants());
+        LIBCUDACXX_ASSERT(s2.__invariants());
         typename S::size_type rlen = std::min<typename S::size_type>(str.size() - pos, n);
         assert(s2.size() == rlen);
         assert(T::compare(s2.data(), str.data() + pos, rlen) == 0);

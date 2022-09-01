@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_EXPERIMENTAL_UNORDERED_MAP
-#define _LIBCPP_EXPERIMENTAL_UNORDERED_MAP
+#ifndef _LIBCUDACXX_EXPERIMENTAL_UNORDERED_MAP
+#define _LIBCUDACXX_EXPERIMENTAL_UNORDERED_MAP
 
 /*
     experimental/unordered_map synopsis
@@ -45,7 +45,7 @@ namespace pmr {
 #include <experimental/memory_resource>
 #include <unordered_map>
 
-#ifndef _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
+#ifndef _LIBCUDACXX_REMOVE_TRANSITIVE_INCLUDES
 #  include <algorithm>
 #  include <array>
 #  include <bit>
@@ -53,22 +53,22 @@ namespace pmr {
 #  include <vector>
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_LFTS_PMR
+_LIBCUDACXX_BEGIN_NAMESPACE_LFTS_PMR
 
 template <class _Key, class _Value,
           class _Hash = hash<_Key>, class _Pred = equal_to<_Key>>
-using unordered_map = _VSTD::unordered_map<_Key, _Value, _Hash, _Pred,
+using unordered_map = _CUDA_VSTD::unordered_map<_Key, _Value, _Hash, _Pred,
                         polymorphic_allocator<pair<const _Key, _Value>>>;
 
 template <class _Key, class _Value,
           class _Hash = hash<_Key>, class _Pred = equal_to<_Key>>
-using unordered_multimap = _VSTD::unordered_multimap<_Key, _Value, _Hash, _Pred,
+using unordered_multimap = _CUDA_VSTD::unordered_multimap<_Key, _Value, _Hash, _Pred,
                         polymorphic_allocator<pair<const _Key, _Value>>>;
 
-_LIBCPP_END_NAMESPACE_LFTS_PMR
+_LIBCUDACXX_END_NAMESPACE_LFTS_PMR
 
-#endif /* _LIBCPP_EXPERIMENTAL_UNORDERED_MAP */
+#endif /* _LIBCUDACXX_EXPERIMENTAL_UNORDERED_MAP */

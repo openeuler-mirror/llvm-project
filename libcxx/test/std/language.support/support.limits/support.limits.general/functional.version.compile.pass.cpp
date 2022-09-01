@@ -254,7 +254,7 @@
 #   error "__cpp_lib_not_fn should have the value 201603L in c++20"
 # endif
 
-# if !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+# if !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 #   ifndef __cpp_lib_ranges
 #     error "__cpp_lib_ranges should be defined in c++20"
 #   endif
@@ -263,7 +263,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_ranges
-#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES) is not defined!"
+#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES) is not defined!"
 #   endif
 # endif
 
@@ -290,14 +290,14 @@
 
 #elif TEST_STD_VER > 20
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_bind_back
 #     error "__cpp_lib_bind_back should be defined in c++2b"
 #   endif
 #   if __cpp_lib_bind_back != 202202L
 #     error "__cpp_lib_bind_back should have the value 202202L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_bind_back
 #     error "__cpp_lib_bind_back should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -331,27 +331,27 @@
 #   error "__cpp_lib_invoke should have the value 201411L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_invoke_r
 #     error "__cpp_lib_invoke_r should be defined in c++2b"
 #   endif
 #   if __cpp_lib_invoke_r != 202106L
 #     error "__cpp_lib_invoke_r should have the value 202106L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_invoke_r
 #     error "__cpp_lib_invoke_r should not be defined because it is unimplemented in libc++!"
 #   endif
 # endif
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_move_only_function
 #     error "__cpp_lib_move_only_function should be defined in c++2b"
 #   endif
 #   if __cpp_lib_move_only_function != 202110L
 #     error "__cpp_lib_move_only_function should have the value 202110L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_move_only_function
 #     error "__cpp_lib_move_only_function should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -364,7 +364,7 @@
 #   error "__cpp_lib_not_fn should have the value 201603L in c++2b"
 # endif
 
-# if !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+# if !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 #   ifndef __cpp_lib_ranges
 #     error "__cpp_lib_ranges should be defined in c++2b"
 #   endif
@@ -373,7 +373,7 @@
 #   endif
 # else
 #   ifdef __cpp_lib_ranges
-#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES) is not defined!"
+#     error "__cpp_lib_ranges should not be defined when !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES) is not defined!"
 #   endif
 # endif
 

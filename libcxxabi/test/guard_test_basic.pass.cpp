@@ -130,8 +130,8 @@ int main(int, char**) {
 #else
     static_assert(CurrentImplementation == Implementation::GlobalMutex, "");
     static_assert(std::is_same<SelectedImplementation,
-                               GlobalMutexGuard<LibcppMutex, LibcppCondVar, GlobalStatic<LibcppMutex>::instance,
-                                                GlobalStatic<LibcppCondVar>::instance>>::value,
+                               GlobalMutexGuard<LIBCUDACXXMutex, LIBCUDACXXCondVar, GlobalStatic<LIBCUDACXXMutex>::instance,
+                                                GlobalStatic<LIBCUDACXXCondVar>::instance>>::value,
                   "");
 #endif
   }

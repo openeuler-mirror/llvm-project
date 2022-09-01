@@ -6,32 +6,32 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_REFERENCE_H
-#define _LIBCPP___TYPE_TRAITS_IS_REFERENCE_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_REFERENCE_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_REFERENCE_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 #if __has_builtin(__is_lvalue_reference) && \
     __has_builtin(__is_rvalue_reference) && \
     __has_builtin(__is_reference)
 
 template<class _Tp>
-struct _LIBCPP_TEMPLATE_VIS is_lvalue_reference : _BoolConstant<__is_lvalue_reference(_Tp)> { };
+struct _LIBCUDACXX_TEMPLATE_VIS is_lvalue_reference : _BoolConstant<__is_lvalue_reference(_Tp)> { };
 
 template<class _Tp>
-struct _LIBCPP_TEMPLATE_VIS is_rvalue_reference : _BoolConstant<__is_rvalue_reference(_Tp)> { };
+struct _LIBCUDACXX_TEMPLATE_VIS is_rvalue_reference : _BoolConstant<__is_rvalue_reference(_Tp)> { };
 
 template<class _Tp>
-struct _LIBCPP_TEMPLATE_VIS is_reference : _BoolConstant<__is_reference(_Tp)> { };
+struct _LIBCUDACXX_TEMPLATE_VIS is_reference : _BoolConstant<__is_reference(_Tp)> { };
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr bool is_reference_v = __is_reference(_Tp);
 template <class _Tp>
@@ -42,17 +42,17 @@ inline constexpr bool is_rvalue_reference_v = __is_rvalue_reference(_Tp);
 
 #else // __has_builtin(__is_lvalue_reference) && etc...
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS is_lvalue_reference       : public false_type {};
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS is_lvalue_reference<_Tp&> : public true_type {};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS is_lvalue_reference       : public false_type {};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS is_lvalue_reference<_Tp&> : public true_type {};
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS is_rvalue_reference        : public false_type {};
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS is_rvalue_reference<_Tp&&> : public true_type {};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS is_rvalue_reference        : public false_type {};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS is_rvalue_reference<_Tp&&> : public true_type {};
 
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS is_reference        : public false_type {};
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS is_reference<_Tp&>  : public true_type {};
-template <class _Tp> struct _LIBCPP_TEMPLATE_VIS is_reference<_Tp&&> : public true_type {};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS is_reference        : public false_type {};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS is_reference<_Tp&>  : public true_type {};
+template <class _Tp> struct _LIBCUDACXX_TEMPLATE_VIS is_reference<_Tp&&> : public true_type {};
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class _Tp>
 inline constexpr bool is_reference_v = is_reference<_Tp>::value;
 
@@ -65,6 +65,6 @@ inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<_Tp>::value;
 
 #endif // __has_builtin(__is_lvalue_reference) && etc...
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_REFERENCE_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_REFERENCE_H

@@ -6,21 +6,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___UTILITY_PRIORITY_TAG_H
-#define _LIBCPP___UTILITY_PRIORITY_TAG_H
+#ifndef _LIBCUDACXX___UTILITY_PRIORITY_TAG_H
+#define _LIBCUDACXX___UTILITY_PRIORITY_TAG_H
 
 #include <__config>
 #include <cstddef>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template<size_t _Ip> struct __priority_tag : __priority_tag<_Ip - 1> {};
 template<> struct __priority_tag<0> {};
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___UTILITY_PRIORITY_TAG_H
+#endif // _LIBCUDACXX___UTILITY_PRIORITY_TAG_H

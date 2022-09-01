@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_INPLACE_MERGE_H
-#define _LIBCPP___ALGORITHM_RANGES_INPLACE_MERGE_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_INPLACE_MERGE_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_INPLACE_MERGE_H
 
 #include <__algorithm/inplace_merge.h>
 #include <__algorithm/iterator_operations.h>
@@ -27,20 +27,20 @@
 #include <__utility/forward.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __inplace_merge {
 
   struct __fn {
     template <class _Iter, class _Sent, class _Comp, class _Proj>
-    _LIBCPP_HIDE_FROM_ABI static constexpr auto
+    _LIBCUDACXX_HIDE_FROM_ABI static constexpr auto
     __inplace_merge_impl(_Iter __first, _Iter __middle, _Sent __last, _Comp&& __comp, _Proj&& __proj) {
       auto __last_iter = ranges::next(__middle, __last);
       std::__inplace_merge<_RangeAlgPolicy>(
@@ -54,7 +54,7 @@ namespace __inplace_merge {
         class _Comp = ranges::less,
         class _Proj = identity>
       requires sortable<_Iter, _Comp, _Proj>
-    _LIBCPP_HIDE_FROM_ABI _Iter
+    _LIBCUDACXX_HIDE_FROM_ABI _Iter
     operator()(_Iter __first, _Iter __middle, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const {
       return __inplace_merge_impl(
           std::move(__first), std::move(__middle), std::move(__last), std::move(__comp), std::move(__proj));
@@ -64,7 +64,7 @@ namespace __inplace_merge {
       requires sortable<
           iterator_t<_Range>,
           _Comp,
-          _Proj> _LIBCPP_HIDE_FROM_ABI borrowed_iterator_t<_Range>
+          _Proj> _LIBCUDACXX_HIDE_FROM_ABI borrowed_iterator_t<_Range>
       operator()(_Range&& __range, iterator_t<_Range> __middle, _Comp __comp = {}, _Proj __proj = {}) const {
       return __inplace_merge_impl(
           ranges::begin(__range), std::move(__middle), ranges::end(__range), std::move(__comp), std::move(__proj));
@@ -78,8 +78,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_INPLACE_MERGE_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_INPLACE_MERGE_H

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_IS_PARTITIONED_H
-#define _LIBCPP___ALGORITHM_RANGES_IS_PARTITIONED_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_IS_PARTITIONED_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_IS_PARTITIONED_H
 
 #include <__config>
 #include <__functional/identity.h>
@@ -19,20 +19,20 @@
 #include <__ranges/concepts.h>
 #include <__utility/move.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __is_partitioned {
 struct __fn {
 
   template <class _Iter, class _Sent, class _Proj, class _Pred>
-  _LIBCPP_HIDE_FROM_ABI constexpr static
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr static
   bool __is_parititioned_impl(_Iter __first, _Sent __last, _Pred& __pred, _Proj& __proj) {
     for (; __first != __last; ++__first) {
       if (!std::invoke(__pred, std::invoke(__proj, *__first)))
@@ -54,7 +54,7 @@ struct __fn {
   template <input_iterator _Iter, sentinel_for<_Iter> _Sent,
             class _Proj = identity,
             indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   bool operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const {
     return __is_parititioned_impl(std::move(__first), std::move(__last), __pred, __proj);
   }
@@ -62,7 +62,7 @@ struct __fn {
   template <input_range _Range,
             class _Proj = identity,
             indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
-  _LIBCPP_HIDE_FROM_ABI constexpr
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr
   bool operator()(_Range&& __range, _Pred __pred, _Proj __proj = {}) const {
     return __is_parititioned_impl(ranges::begin(__range), ranges::end(__range), __pred, __proj);
   }
@@ -74,8 +74,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_IS_PARTITIONED_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_IS_PARTITIONED_H

@@ -27,7 +27,7 @@ test(const charT* s, unsigned n)
     typedef typename S::traits_type T;
     typedef typename S::allocator_type A;
     S s2(s, n);
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s2.size() == n);
     assert(T::compare(s2.data(), s, n) == 0);
     assert(s2.get_allocator() == A());
@@ -41,7 +41,7 @@ test(const charT* s, unsigned n, const A& a)
     typedef std::basic_string<charT, std::char_traits<charT>, A> S;
     typedef typename S::traits_type T;
     S s2(s, n, a);
-    LIBCPP_ASSERT(s2.__invariants());
+    LIBCUDACXX_ASSERT(s2.__invariants());
     assert(s2.size() == n);
     assert(T::compare(s2.data(), s, n) == 0);
     assert(s2.get_allocator() == a);

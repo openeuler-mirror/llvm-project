@@ -100,7 +100,7 @@ void do_derived_assign_test() {
   }
   reset();
   {
-#ifdef _LIBCPP_VERSION // assignment from std::array is a libc++ extension
+#ifdef _LIBCUDACXX_VERSION // assignment from std::array is a libc++ extension
     DerivedFromTup<std::array<int, 2>> d;
     std::get<0>(d) = 42;
     std::get<1>(d) = 101;

@@ -37,7 +37,7 @@ int main(int, char**)
             test_equal_to<NotConstructible>(9),
             test_allocator<NotConstructible>(10)
            );
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.hash_function() == test_hash<NotConstructible>(8));
         assert(c.key_eq() == test_equal_to<NotConstructible>(9));
         assert(c.get_allocator() == (test_allocator<NotConstructible>(10)));
@@ -59,7 +59,7 @@ int main(int, char**)
             test_equal_to<NotConstructible>(9),
             min_allocator<NotConstructible>()
            );
-        LIBCPP_ASSERT(c.bucket_count() == 7);
+        LIBCUDACXX_ASSERT(c.bucket_count() == 7);
         assert(c.hash_function() == test_hash<NotConstructible>(8));
         assert(c.key_eq() == test_equal_to<NotConstructible>(9));
         assert(c.get_allocator() == (min_allocator<NotConstructible>()));

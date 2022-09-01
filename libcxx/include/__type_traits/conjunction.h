@@ -6,21 +6,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_CONJUNCTION_H
-#define _LIBCPP___TYPE_TRAITS_CONJUNCTION_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_CONJUNCTION_H
+#define _LIBCUDACXX___TYPE_TRAITS_CONJUNCTION_H
 
 #include <__config>
 #include <__type_traits/conditional.h>
 #include <__type_traits/enable_if.h>
 #include <__type_traits/integral_constant.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 
 template <class _Arg, class... _Args>
 struct __conjunction_impl {
@@ -38,7 +38,7 @@ struct conjunction : __conjunction_impl<true_type, _Args...>::type {};
 template<class... _Args>
 inline constexpr bool conjunction_v = conjunction<_Args...>::value;
 
-#endif // _LIBCPP_STD_VER > 14
+#endif // _LIBCUDACXX_STD_VER > 14
 
 template <class...>
 using __expand_to_true = true_type;
@@ -50,8 +50,8 @@ template <class...>
 false_type __and_helper(...);
 
 template <class... _Pred>
-using _And _LIBCPP_NODEBUG = decltype(__and_helper<_Pred...>(0));
+using _And _LIBCUDACXX_NODEBUG = decltype(__and_helper<_Pred...>(0));
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_CONJUNCTION_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_CONJUNCTION_H

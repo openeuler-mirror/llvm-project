@@ -6,22 +6,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_IS_HEAP_UNTIL_H
-#define _LIBCPP___ALGORITHM_IS_HEAP_UNTIL_H
+#ifndef _LIBCUDACXX___ALGORITHM_IS_HEAP_UNTIL_H
+#define _LIBCUDACXX___ALGORITHM_IS_HEAP_UNTIL_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
 #include <__config>
 #include <__iterator/iterator_traits.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Compare, class _RandomAccessIterator>
-_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 _RandomAccessIterator
+_LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _RandomAccessIterator
 __is_heap_until(_RandomAccessIterator __first, _RandomAccessIterator __last, _Compare&& __comp)
 {
     typedef typename iterator_traits<_RandomAccessIterator>::difference_type difference_type;
@@ -48,7 +48,7 @@ __is_heap_until(_RandomAccessIterator __first, _RandomAccessIterator __last, _Co
 }
 
 template <class _RandomAccessIterator, class _Compare>
-_LIBCPP_NODISCARD_EXT inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 _RandomAccessIterator
+_LIBCUDACXX_NODISCARD_EXT inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _RandomAccessIterator
 is_heap_until(_RandomAccessIterator __first, _RandomAccessIterator __last, _Compare __comp)
 {
     typedef typename __comp_ref_type<_Compare>::type _Comp_ref;
@@ -56,12 +56,12 @@ is_heap_until(_RandomAccessIterator __first, _RandomAccessIterator __last, _Comp
 }
 
 template<class _RandomAccessIterator>
-_LIBCPP_NODISCARD_EXT inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17 _RandomAccessIterator
+_LIBCUDACXX_NODISCARD_EXT inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 _RandomAccessIterator
 is_heap_until(_RandomAccessIterator __first, _RandomAccessIterator __last)
 {
-    return _VSTD::__is_heap_until(__first, __last, __less<typename iterator_traits<_RandomAccessIterator>::value_type>());
+    return _CUDA_VSTD::__is_heap_until(__first, __last, __less<typename iterator_traits<_RandomAccessIterator>::value_type>());
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_IS_HEAP_UNTIL_H
+#endif // _LIBCUDACXX___ALGORITHM_IS_HEAP_UNTIL_H

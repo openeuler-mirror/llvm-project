@@ -36,15 +36,15 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef _LIBCPP_SRC_INCLUDE_RYU_D2FIXED_FULL_TABLE_H
-#define _LIBCPP_SRC_INCLUDE_RYU_D2FIXED_FULL_TABLE_H
+#ifndef _LIBCUDACXX_SRC_INCLUDE_RYU_D2FIXED_FULL_TABLE_H
+#define _LIBCUDACXX_SRC_INCLUDE_RYU_D2FIXED_FULL_TABLE_H
 
 // Avoid formatting to keep the changes with the original code minimal.
 // clang-format off
 
 #include <__config>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 inline constexpr int __TABLE_SIZE = 64;
 
@@ -4444,8 +4444,8 @@ inline constexpr uint64_t __POW10_SPLIT_2[3133][3] = {
   {                    0u,                    0u,          33000000000u },
 };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
 // clang-format on
 
-#endif // _LIBCPP_SRC_INCLUDE_RYU_D2FIXED_FULL_TABLE_H
+#endif // _LIBCUDACXX_SRC_INCLUDE_RYU_D2FIXED_FULL_TABLE_H

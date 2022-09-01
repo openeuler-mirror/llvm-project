@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_MIN_H
-#define _LIBCPP___ALGORITHM_MIN_H
+#ifndef _LIBCUDACXX___ALGORITHM_MIN_H
+#define _LIBCUDACXX___ALGORITHM_MIN_H
 
 #include <__algorithm/comp.h>
 #include <__algorithm/comp_ref_type.h>
@@ -15,18 +15,18 @@
 #include <__config>
 #include <initializer_list>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Tp, class _Compare>
-_LIBCPP_NODISCARD_EXT inline
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_NODISCARD_EXT inline
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 const _Tp&
 min(const _Tp& __a, const _Tp& __b, _Compare __comp)
 {
@@ -34,39 +34,39 @@ min(const _Tp& __a, const _Tp& __b, _Compare __comp)
 }
 
 template <class _Tp>
-_LIBCPP_NODISCARD_EXT inline
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_NODISCARD_EXT inline
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 const _Tp&
 min(const _Tp& __a, const _Tp& __b)
 {
-    return _VSTD::min(__a, __b, __less<_Tp>());
+    return _CUDA_VSTD::min(__a, __b, __less<_Tp>());
 }
 
-#ifndef _LIBCPP_CXX03_LANG
+#ifndef _LIBCUDACXX_CXX03_LANG
 
 template<class _Tp, class _Compare>
-_LIBCPP_NODISCARD_EXT inline
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_NODISCARD_EXT inline
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 _Tp
 min(initializer_list<_Tp> __t, _Compare __comp)
 {
     typedef typename __comp_ref_type<_Compare>::type _Comp_ref;
-    return *_VSTD::__min_element<_Comp_ref>(__t.begin(), __t.end(), __comp);
+    return *_CUDA_VSTD::__min_element<_Comp_ref>(__t.begin(), __t.end(), __comp);
 }
 
 template<class _Tp>
-_LIBCPP_NODISCARD_EXT inline
-_LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX11
+_LIBCUDACXX_NODISCARD_EXT inline
+_LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
 _Tp
 min(initializer_list<_Tp> __t)
 {
-    return *_VSTD::min_element(__t.begin(), __t.end(), __less<_Tp>());
+    return *_CUDA_VSTD::min_element(__t.begin(), __t.end(), __less<_Tp>());
 }
 
-#endif // _LIBCPP_CXX03_LANG
+#endif // _LIBCUDACXX_CXX03_LANG
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___ALGORITHM_MIN_H
+#endif // _LIBCUDACXX___ALGORITHM_MIN_H

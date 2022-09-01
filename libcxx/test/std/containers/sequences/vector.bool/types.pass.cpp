@@ -67,7 +67,7 @@ test()
     static_assert((std::is_same<
         typename C::const_reverse_iterator,
         std::reverse_iterator<typename C::const_iterator> >::value), "");
-#if !defined(_LIBCPP_VERSION) || defined(_LIBCPP_ABI_BITSET_VECTOR_BOOL_CONST_SUBSCRIPT_RETURN_BOOL)
+#if !defined(_LIBCUDACXX_VERSION) || defined(_LIBCUDACXX_ABI_BITSET_VECTOR_BOOL_CONST_SUBSCRIPT_RETURN_BOOL)
     static_assert(std::is_same<typename C::const_reference, bool>::value, "");
 #endif
 }

@@ -1,5 +1,5 @@
-#ifndef LIBCPP_TEST_VALARRAY_HELPER_H
-#define LIBCPP_TEST_VALARRAY_HELPER_H
+#ifndef LIBCUDACXX_TEST_VALARRAY_HELPER_H
+#define LIBCUDACXX_TEST_VALARRAY_HELPER_H
 
 #include <cmath>
 
@@ -15,4 +15,4 @@ inline bool is_about(double x, double y, int significant_digits) {
     return std::abs(x - y) < epsilon;
 }
 
-#endif /* LIBCPP_TEST_VALARRAY_HELPER */
+#endif /* LIBCUDACXX_TEST_VALARRAY_HELPER */

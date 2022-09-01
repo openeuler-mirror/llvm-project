@@ -12,7 +12,7 @@
 
 // map& operator=(const map& m);
 
-// XFAIL: libcpp-has-debug-mode
+// XFAIL: LIBCUDACXX-has-debug-mode
 
 #include <map>
 #include <algorithm>

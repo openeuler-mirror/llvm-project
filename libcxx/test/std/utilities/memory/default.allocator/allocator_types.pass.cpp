@@ -29,7 +29,7 @@
 // ...
 // };
 
-// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS
 
 #include <memory>
 #include <type_traits>
@@ -59,7 +59,7 @@ void test() {
 
 int main(int, char**) {
     test<char>();
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
     test<char const>(); // extension
 #endif
     return 0;

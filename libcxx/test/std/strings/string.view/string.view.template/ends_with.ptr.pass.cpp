@@ -28,7 +28,7 @@ int main(int, char**)
     SV  sv2 { s + 3, 2 };
     SV  svNot {"def", 3 };
 
-    LIBCPP_ASSERT_NOEXCEPT(sv0.ends_with(""));
+    LIBCUDACXX_ASSERT_NOEXCEPT(sv0.ends_with(""));
 
     assert ( sv0.ends_with(""));
     assert (!sv0.ends_with("e"));

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_SHUFFLE_H
-#define _LIBCPP___ALGORITHM_RANGES_SHUFFLE_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_SHUFFLE_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_SHUFFLE_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__algorithm/shuffle.h>
@@ -27,13 +27,13 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __shuffle {
@@ -42,7 +42,7 @@ struct __fn {
 
   template <random_access_iterator _Iter, sentinel_for<_Iter> _Sent, class _Gen>
   requires permutable<_Iter> && uniform_random_bit_generator<remove_reference_t<_Gen>>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   _Iter operator()(_Iter __first, _Sent __last, _Gen&& __gen) const {
     _ClassicGenAdaptor<_Gen> __adapted_gen(__gen);
     return std::__shuffle<_RangeAlgPolicy>(std::move(__first), std::move(__last), __adapted_gen);
@@ -50,7 +50,7 @@ struct __fn {
 
   template<random_access_range _Range, class _Gen>
   requires permutable<iterator_t<_Range>> && uniform_random_bit_generator<remove_reference_t<_Gen>>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   borrowed_iterator_t<_Range> operator()(_Range&& __range, _Gen&& __gen) const {
     return (*this)(ranges::begin(__range), ranges::end(__range), std::forward<_Gen>(__gen));
   }
@@ -64,8 +64,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_SHUFFLE_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_SHUFFLE_H

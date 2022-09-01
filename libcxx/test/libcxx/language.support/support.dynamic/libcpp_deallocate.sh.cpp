@@ -109,21 +109,21 @@ void operator delete(void* p, size_t n)TEST_NOEXCEPT {
 
 #ifndef NO_ALIGN
 void operator delete(void* p, std::align_val_t a)TEST_NOEXCEPT {
-  std::__libcpp_aligned_free(p);
+  std::__LIBCUDACXX_aligned_free(p);
   stats.aligned_called++;
   stats.last_align = static_cast<int>(a);
   stats.last_size = -1;
 }
 
 void operator delete(void* p, size_t n, std::align_val_t a)TEST_NOEXCEPT {
-  std::__libcpp_aligned_free(p);
+  std::__LIBCUDACXX_aligned_free(p);
   stats.aligned_sized_called++;
   stats.last_align = static_cast<int>(a);
   stats.last_size = n;
 }
 #endif
 
-void test_libcpp_dealloc() {
+void test_LIBCUDACXX_dealloc() {
   void* p = nullptr;
 #ifdef __STDCPP_DEFAULT_NEW_ALIGNMENT__
   size_t over_align_val = __STDCPP_DEFAULT_NEW_ALIGNMENT__ * 2;
@@ -134,42 +134,42 @@ void test_libcpp_dealloc() {
   size_t with_size_val = 2;
 
   {
-    std::__libcpp_deallocate_unsized(p, under_align_val);
+    std::__LIBCUDACXX_deallocate_unsized(p, under_align_val);
     assert(stats.expect_plain());
   }
   stats.reset();
 
 #if defined(NO_SIZE) && defined(NO_ALIGN)
   {
-    std::__libcpp_deallocate(p, with_size_val, over_align_val);
+    std::__LIBCUDACXX_deallocate(p, with_size_val, over_align_val);
     assert(stats.expect_plain());
   }
   stats.reset();
 #elif defined(NO_SIZE)
   {
-    std::__libcpp_deallocate(p, with_size_val, over_align_val);
+    std::__LIBCUDACXX_deallocate(p, with_size_val, over_align_val);
     assert(stats.expect_align(over_align_val));
   }
   stats.reset();
 #elif defined(NO_ALIGN)
   {
-    std::__libcpp_deallocate(p, with_size_val, over_align_val);
+    std::__LIBCUDACXX_deallocate(p, with_size_val, over_align_val);
     assert(stats.expect_size(with_size_val));
   }
   stats.reset();
 #else
   {
-    std::__libcpp_deallocate(p, with_size_val, over_align_val);
+    std::__LIBCUDACXX_deallocate(p, with_size_val, over_align_val);
     assert(stats.expect_size_align(with_size_val, over_align_val));
   }
   stats.reset();
   {
-    std::__libcpp_deallocate_unsized(p, over_align_val);
+    std::__LIBCUDACXX_deallocate_unsized(p, over_align_val);
     assert(stats.expect_align(over_align_val));
   }
   stats.reset();
   {
-    std::__libcpp_deallocate(p, with_size_val, under_align_val);
+    std::__LIBCUDACXX_deallocate(p, with_size_val, under_align_val);
     assert(stats.expect_size(with_size_val));
   }
   stats.reset();
@@ -245,7 +245,7 @@ void test_allocator_and_new_match() {
 }
 
 int main(int, char**) {
-  test_libcpp_dealloc();
+  test_LIBCUDACXX_dealloc();
   test_allocator_and_new_match();
 
   return 0;

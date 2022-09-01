@@ -131,7 +131,7 @@ DEFAULT_PARAMETERS = [
             help="Whether to enable warnings when compiling the test suite.",
             actions=lambda warnings: [] if not warnings else
               [AddOptionalWarningFlag(w) for w in _warningFlags] +
-              [AddCompileFlag('-D_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER')]
+              [AddCompileFlag('-D_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER')]
             ),
 
   Parameter(name='use_sanitizer', choices=['', 'Address', 'Undefined', 'Memory', 'MemoryWithOrigins', 'Thread', 'DataFlow', 'Leaks'], type=str, default='',
@@ -168,10 +168,10 @@ DEFAULT_PARAMETERS = [
               # as those features are added after processing parameters.
               AddFeature('c++experimental'),
               PrependLinkFlag(lambda cfg: '-llibc++experimental' if _isMSVC(cfg) else '-lc++experimental'),
-              AddCompileFlag('-D_LIBCPP_ENABLE_EXPERIMENTAL'),
+              AddCompileFlag('-D_LIBCUDACXX_ENABLE_EXPERIMENTAL'),
             ] if experimental else [
-              AddFeature('libcpp-has-no-incomplete-format'),
-              AddFeature('libcpp-has-no-incomplete-ranges')
+              AddFeature('LIBCUDACXX-has-no-incomplete-format'),
+              AddFeature('LIBCUDACXX-has-no-incomplete-ranges')
             ]),
 
   Parameter(name='long_tests', choices=[True, False], type=bool, default=True,
@@ -184,8 +184,8 @@ DEFAULT_PARAMETERS = [
             help="Whether to enable assertions when compiling the test suite. This is only meaningful when "
                  "running the tests against libc++.",
             actions=lambda assertions: [
-              AddCompileFlag('-D_LIBCPP_ENABLE_ASSERTIONS=1'),
-              AddFeature('libcpp-has-assertions')
+              AddCompileFlag('-D_LIBCUDACXX_ENABLE_ASSERTIONS=1'),
+              AddFeature('LIBCUDACXX-has-assertions')
             ] if assertions else []),
 
   Parameter(name='additional_features', type=list, default=[],
@@ -200,7 +200,7 @@ DEFAULT_PARAMETERS = [
                  "points at which we bulk-remove transitive includes.",
             actions=lambda enabled: [] if enabled else [
               AddFeature('transitive-includes-disabled'),
-              AddCompileFlag('-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES')
+              AddCompileFlag('-D_LIBCUDACXX_REMOVE_TRANSITIVE_INCLUDES')
             ]),
 ]
 
@@ -235,6 +235,6 @@ DEFAULT_PARAMETERS += [
     ] if useSystem else [
       # If we're testing upstream libc++, disable availability markup,
       # which is not relevant for non-shipped flavors of libc++.
-      AddCompileFlag('-D_LIBCPP_DISABLE_AVAILABILITY')
+      AddCompileFlag('-D_LIBCUDACXX_DISABLE_AVAILABILITY')
     ])
 ]

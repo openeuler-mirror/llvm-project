@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMATTER_OUTPUT_H
-#define _LIBCPP___FORMAT_FORMATTER_OUTPUT_H
+#ifndef _LIBCUDACXX___FORMAT_FORMATTER_OUTPUT_H
+#define _LIBCUDACXX___FORMAT_FORMATTER_OUTPUT_H
 
 #include <__algorithm/copy.h>
 #include <__algorithm/copy_n.h>
@@ -24,17 +24,17 @@
 #include <string>
 #include <string_view>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace __formatter {
 
-_LIBCPP_HIDE_FROM_ABI constexpr char __hex_to_upper(char __c) {
+_LIBCUDACXX_HIDE_FROM_ABI constexpr char __hex_to_upper(char __c) {
   switch (__c) {
   case 'a':
     return 'A';
@@ -52,21 +52,21 @@ _LIBCPP_HIDE_FROM_ABI constexpr char __hex_to_upper(char __c) {
   return __c;
 }
 
-struct _LIBCPP_TYPE_VIS __padding_size_result {
+struct _LIBCUDACXX_TYPE_VIS __padding_size_result {
   size_t __before_;
   size_t __after_;
 };
 
-_LIBCPP_HIDE_FROM_ABI constexpr __padding_size_result
+_LIBCUDACXX_HIDE_FROM_ABI constexpr __padding_size_result
 __padding_size(size_t __size, size_t __width, __format_spec::__alignment __align) {
-  _LIBCPP_ASSERT(__width > __size, "don't call this function when no padding is required");
-  _LIBCPP_ASSERT(
+  _LIBCUDACXX_ASSERT(__width > __size, "don't call this function when no padding is required");
+  _LIBCUDACXX_ASSERT(
       __align != __format_spec::__alignment::__zero_padding, "the caller should have handled the zero-padding");
 
   size_t __fill = __width - __size;
   switch (__align) {
   case __format_spec::__alignment::__zero_padding:
-    __libcpp_unreachable();
+    __LIBCUDACXX_unreachable();
 
   case __format_spec::__alignment::__left:
     return {0, __fill};
@@ -83,11 +83,11 @@ __padding_size(size_t __size, size_t __width, __format_spec::__alignment __align
   case __format_spec::__alignment::__right:
     return {__fill, 0};
   }
-  __libcpp_unreachable();
+  __LIBCUDACXX_unreachable();
 }
 
 template <class _OutIt, class _CharT>
-_LIBCPP_HIDE_FROM_ABI _OutIt __write_using_decimal_separators(_OutIt __out_it, const char* __begin, const char* __first,
+_LIBCUDACXX_HIDE_FROM_ABI _OutIt __write_using_decimal_separators(_OutIt __out_it, const char* __begin, const char* __first,
                                                               const char* __last, string&& __grouping, _CharT __sep,
                                                               __format_spec::__parsed_specifications<_CharT> __specs) {
   int __size = (__first - __begin) +    // [sign][prefix]
@@ -97,27 +97,27 @@ _LIBCPP_HIDE_FROM_ABI _OutIt __write_using_decimal_separators(_OutIt __out_it, c
   __padding_size_result __padding = {0, 0};
   if (__specs.__alignment_ == __format_spec::__alignment::__zero_padding) {
     // Write [sign][prefix].
-    __out_it = _VSTD::copy(__begin, __first, _VSTD::move(__out_it));
+    __out_it = _CUDA_VSTD::copy(__begin, __first, _CUDA_VSTD::move(__out_it));
 
     if (__specs.__width_ > __size) {
       // Write zero padding.
       __padding.__before_ = __specs.__width_ - __size;
-      __out_it = _VSTD::fill_n(_VSTD::move(__out_it), __specs.__width_ - __size, _CharT('0'));
+      __out_it = _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __specs.__width_ - __size, _CharT('0'));
     }
   } else {
     if (__specs.__width_ > __size) {
       // Determine padding and write padding.
       __padding = __padding_size(__size, __specs.__width_, __specs.__alignment_);
 
-      __out_it = _VSTD::fill_n(_VSTD::move(__out_it), __padding.__before_, __specs.__fill_);
+      __out_it = _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __padding.__before_, __specs.__fill_);
     }
     // Write [sign][prefix].
-    __out_it = _VSTD::copy(__begin, __first, _VSTD::move(__out_it));
+    __out_it = _CUDA_VSTD::copy(__begin, __first, _CUDA_VSTD::move(__out_it));
   }
 
   auto __r = __grouping.rbegin();
   auto __e = __grouping.rend() - 1;
-  _LIBCPP_ASSERT(__r != __e, "The slow grouping formatting is used while "
+  _LIBCUDACXX_ASSERT(__r != __e, "The slow grouping formatting is used while "
                              "there will be no separators written.");
   // The output is divided in small groups of numbers to write:
   // - A group before the first separator.
@@ -133,10 +133,10 @@ _LIBCPP_HIDE_FROM_ABI _OutIt __write_using_decimal_separators(_OutIt __out_it, c
   while (true) {
     if (__specs.__std_.__type_ == __format_spec::__type::__hexadecimal_upper_case) {
       __last = __first + *__r;
-      __out_it = _VSTD::transform(__first, __last, _VSTD::move(__out_it), __hex_to_upper);
+      __out_it = _CUDA_VSTD::transform(__first, __last, _CUDA_VSTD::move(__out_it), __hex_to_upper);
       __first = __last;
     } else {
-      __out_it = _VSTD::copy_n(__first, *__r, _VSTD::move(__out_it));
+      __out_it = _CUDA_VSTD::copy_n(__first, *__r, _CUDA_VSTD::move(__out_it));
       __first += *__r;
     }
 
@@ -147,7 +147,7 @@ _LIBCPP_HIDE_FROM_ABI _OutIt __write_using_decimal_separators(_OutIt __out_it, c
     *__out_it++ = __sep;
   }
 
-  return _VSTD::fill_n(_VSTD::move(__out_it), __padding.__after_, __specs.__fill_);
+  return _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __padding.__after_, __specs.__fill_);
 }
 
 /// Writes the input to the output with the required padding.
@@ -174,48 +174,48 @@ _LIBCPP_HIDE_FROM_ABI _OutIt __write_using_decimal_separators(_OutIt __out_it, c
 /// conversion, which means the [\a __first, \a __last) always contains elements
 /// of the type \c char.
 template <class _CharT, class _ParserCharT>
-_LIBCPP_HIDE_FROM_ABI auto __write(
+_LIBCUDACXX_HIDE_FROM_ABI auto __write(
     const _CharT* __first,
     const _CharT* __last,
     output_iterator<const _CharT&> auto __out_it,
     __format_spec::__parsed_specifications<_ParserCharT> __specs,
     ptrdiff_t __size) -> decltype(__out_it) {
-  _LIBCPP_ASSERT(__first <= __last, "Not a valid range");
+  _LIBCUDACXX_ASSERT(__first <= __last, "Not a valid range");
 
   if (__size >= __specs.__width_)
-    return _VSTD::copy(__first, __last, _VSTD::move(__out_it));
+    return _CUDA_VSTD::copy(__first, __last, _CUDA_VSTD::move(__out_it));
 
   __padding_size_result __padding = __formatter::__padding_size(__size, __specs.__width_, __specs.__std_.__alignment_);
-  __out_it = _VSTD::fill_n(_VSTD::move(__out_it), __padding.__before_, __specs.__fill_);
-  __out_it = _VSTD::copy(__first, __last, _VSTD::move(__out_it));
-  return _VSTD::fill_n(_VSTD::move(__out_it), __padding.__after_, __specs.__fill_);
+  __out_it = _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __padding.__before_, __specs.__fill_);
+  __out_it = _CUDA_VSTD::copy(__first, __last, _CUDA_VSTD::move(__out_it));
+  return _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __padding.__after_, __specs.__fill_);
 }
 
 /// \overload
 ///
 /// Calls the function above where \a __size = \a __last - \a __first.
 template <class _CharT, class _ParserCharT>
-_LIBCPP_HIDE_FROM_ABI auto __write(const _CharT* __first, const _CharT* __last,
+_LIBCUDACXX_HIDE_FROM_ABI auto __write(const _CharT* __first, const _CharT* __last,
                                    output_iterator<const _CharT&> auto __out_it,
                                    __format_spec::__parsed_specifications<_ParserCharT> __specs) -> decltype(__out_it) {
-  return __write(__first, __last, _VSTD::move(__out_it), __specs, __last - __first);
+  return __write(__first, __last, _CUDA_VSTD::move(__out_it), __specs, __last - __first);
 }
 
 template <class _CharT, class _ParserCharT, class _UnaryOperation>
-_LIBCPP_HIDE_FROM_ABI auto __write_transformed(const _CharT* __first, const _CharT* __last,
+_LIBCUDACXX_HIDE_FROM_ABI auto __write_transformed(const _CharT* __first, const _CharT* __last,
                                                output_iterator<const _CharT&> auto __out_it,
                                                __format_spec::__parsed_specifications<_ParserCharT> __specs,
                                                _UnaryOperation __op) -> decltype(__out_it) {
-  _LIBCPP_ASSERT(__first <= __last, "Not a valid range");
+  _LIBCUDACXX_ASSERT(__first <= __last, "Not a valid range");
 
   ptrdiff_t __size = __last - __first;
   if (__size >= __specs.__width_)
-    return _VSTD::transform(__first, __last, _VSTD::move(__out_it), __op);
+    return _CUDA_VSTD::transform(__first, __last, _CUDA_VSTD::move(__out_it), __op);
 
   __padding_size_result __padding = __padding_size(__size, __specs.__width_, __specs.__alignment_);
-  __out_it = _VSTD::fill_n(_VSTD::move(__out_it), __padding.__before_, __specs.__fill_);
-  __out_it = _VSTD::transform(__first, __last, _VSTD::move(__out_it), __op);
-  return _VSTD::fill_n(_VSTD::move(__out_it), __padding.__after_, __specs.__fill_);
+  __out_it = _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __padding.__before_, __specs.__fill_);
+  __out_it = _CUDA_VSTD::transform(__first, __last, _CUDA_VSTD::move(__out_it), __op);
+  return _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __padding.__after_, __specs.__fill_);
 }
 
 /// Writes additional zero's for the precision before the exponent.
@@ -227,7 +227,7 @@ _LIBCPP_HIDE_FROM_ABI auto __write_transformed(const _CharT* __first, const _Cha
 /// \param __num_trailing_zeros The number of 0's to write before the exponent
 ///                             character.
 template <class _CharT, class _ParserCharT>
-_LIBCPP_HIDE_FROM_ABI auto __write_using_trailing_zeros(
+_LIBCUDACXX_HIDE_FROM_ABI auto __write_using_trailing_zeros(
     const _CharT* __first,
     const _CharT* __last,
     output_iterator<const _CharT&> auto __out_it,
@@ -235,34 +235,34 @@ _LIBCPP_HIDE_FROM_ABI auto __write_using_trailing_zeros(
     size_t __size,
     const _CharT* __exponent,
     size_t __num_trailing_zeros) -> decltype(__out_it) {
-  _LIBCPP_ASSERT(__first <= __last, "Not a valid range");
-  _LIBCPP_ASSERT(__num_trailing_zeros > 0, "The overload not writing trailing zeros should have been used");
+  _LIBCUDACXX_ASSERT(__first <= __last, "Not a valid range");
+  _LIBCUDACXX_ASSERT(__num_trailing_zeros > 0, "The overload not writing trailing zeros should have been used");
 
   __padding_size_result __padding =
       __padding_size(__size + __num_trailing_zeros, __specs.__width_, __specs.__alignment_);
-  __out_it = _VSTD::fill_n(_VSTD::move(__out_it), __padding.__before_, __specs.__fill_);
-  __out_it = _VSTD::copy(__first, __exponent, _VSTD::move(__out_it));
-  __out_it = _VSTD::fill_n(_VSTD::move(__out_it), __num_trailing_zeros, _CharT('0'));
-  __out_it = _VSTD::copy(__exponent, __last, _VSTD::move(__out_it));
-  return _VSTD::fill_n(_VSTD::move(__out_it), __padding.__after_, __specs.__fill_);
+  __out_it = _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __padding.__before_, __specs.__fill_);
+  __out_it = _CUDA_VSTD::copy(__first, __exponent, _CUDA_VSTD::move(__out_it));
+  __out_it = _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __num_trailing_zeros, _CharT('0'));
+  __out_it = _CUDA_VSTD::copy(__exponent, __last, _CUDA_VSTD::move(__out_it));
+  return _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __padding.__after_, __specs.__fill_);
 }
 
 /// Writes a string using format's width estimation algorithm.
 ///
 /// \pre !__specs.__has_precision()
 ///
-/// \note When \c _LIBCPP_HAS_NO_UNICODE is defined the function assumes the
+/// \note When \c _LIBCUDACXX_HAS_NO_UNICODE is defined the function assumes the
 /// input is ASCII.
 template <class _CharT>
-_LIBCPP_HIDE_FROM_ABI auto __write_string_no_precision(
+_LIBCUDACXX_HIDE_FROM_ABI auto __write_string_no_precision(
     basic_string_view<_CharT> __str,
     output_iterator<const _CharT&> auto __out_it,
     __format_spec::__parsed_specifications<_CharT> __specs) -> decltype(__out_it) {
-  _LIBCPP_ASSERT(!__specs.__has_precision(), "use __write_string");
+  _LIBCUDACXX_ASSERT(!__specs.__has_precision(), "use __write_string");
 
   // No padding -> copy the string
   if (!__specs.__has_width())
-    return _VSTD::copy(__str.begin(), __str.end(), _VSTD::move(__out_it));
+    return _CUDA_VSTD::copy(__str.begin(), __str.end(), _CUDA_VSTD::move(__out_it));
 
   // Note when the estimated width is larger than size there's no padding. So
   // there's no reason to get the real size when the estimate is larger than or
@@ -271,11 +271,11 @@ _LIBCPP_HIDE_FROM_ABI auto __write_string_no_precision(
       __format_spec::__estimate_column_width(__str, __specs.__width_, __format_spec::__column_width_rounding::__up)
           .__width_;
 
-  return __formatter::__write(__str.begin(), __str.end(), _VSTD::move(__out_it), __specs, __size);
+  return __formatter::__write(__str.begin(), __str.end(), _CUDA_VSTD::move(__out_it), __specs, __size);
 }
 
 template <class _CharT>
-_LIBCPP_HIDE_FROM_ABI int __truncate(basic_string_view<_CharT>& __str, int __precision) {
+_LIBCUDACXX_HIDE_FROM_ABI int __truncate(basic_string_view<_CharT>& __str, int __precision) {
   __format_spec::__column_width_result<_CharT> __result =
       __format_spec::__estimate_column_width(__str, __precision, __format_spec::__column_width_rounding::__down);
   __str = basic_string_view<_CharT>{__str.begin(), __result.__last_};
@@ -284,25 +284,25 @@ _LIBCPP_HIDE_FROM_ABI int __truncate(basic_string_view<_CharT>& __str, int __pre
 
 /// Writes a string using format's width estimation algorithm.
 ///
-/// \note When \c _LIBCPP_HAS_NO_UNICODE is defined the function assumes the
+/// \note When \c _LIBCUDACXX_HAS_NO_UNICODE is defined the function assumes the
 /// input is ASCII.
 template <class _CharT>
-_LIBCPP_HIDE_FROM_ABI auto __write_string(
+_LIBCUDACXX_HIDE_FROM_ABI auto __write_string(
     basic_string_view<_CharT> __str,
     output_iterator<const _CharT&> auto __out_it,
     __format_spec::__parsed_specifications<_CharT> __specs) -> decltype(__out_it) {
   if (!__specs.__has_precision())
-    return __formatter::__write_string_no_precision(__str, _VSTD::move(__out_it), __specs);
+    return __formatter::__write_string_no_precision(__str, _CUDA_VSTD::move(__out_it), __specs);
 
   int __size = __formatter::__truncate(__str, __specs.__precision_);
 
-  return __write(__str.begin(), __str.end(), _VSTD::move(__out_it), __specs, __size);
+  return __write(__str.begin(), __str.end(), _CUDA_VSTD::move(__out_it), __specs, __size);
 }
 
 } // namespace __formatter
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___FORMAT_FORMATTER_OUTPUT_H
+#endif // _LIBCUDACXX___FORMAT_FORMATTER_OUTPUT_H

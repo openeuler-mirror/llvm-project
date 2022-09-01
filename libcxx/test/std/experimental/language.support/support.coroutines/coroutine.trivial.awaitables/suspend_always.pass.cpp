@@ -35,19 +35,19 @@ int main(int, char**)
   S s{};
   S const& cs = s;
   {
-    LIBCPP_STATIC_ASSERT(noexcept(s.await_ready()), "");
+    LIBCUDACXX_STATIC_ASSERT(noexcept(s.await_ready()), "");
     static_assert(std::is_same<decltype(s.await_ready()), bool>::value, "");
     assert(s.await_ready() == false);
     assert(cs.await_ready() == false);
   }
   {
-    LIBCPP_STATIC_ASSERT(noexcept(s.await_suspend(h)), "");
+    LIBCUDACXX_STATIC_ASSERT(noexcept(s.await_suspend(h)), "");
     static_assert(std::is_same<decltype(s.await_suspend(h)), void>::value, "");
     s.await_suspend(h);
     cs.await_suspend(h);
   }
   {
-    LIBCPP_STATIC_ASSERT(noexcept(s.await_resume()), "");
+    LIBCUDACXX_STATIC_ASSERT(noexcept(s.await_resume()), "");
     static_assert(std::is_same<decltype(s.await_resume()), void>::value, "");
     s.await_resume();
     cs.await_resume();

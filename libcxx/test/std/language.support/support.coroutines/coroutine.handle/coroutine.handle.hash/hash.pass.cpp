@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-no-coroutines
+// UNSUPPORTED: LIBCUDACXX-no-coroutines
 
 // <coroutine>
 
@@ -36,8 +36,8 @@ void do_test(int *LHSVal, int *RHSVal) {
   const C RHS = C::from_address(RHSVal);
   const std::hash<C> h;
 
-  LIBCPP_ASSERT(h(LHS) == ExpectLHS);
-  LIBCPP_ASSERT(h(RHS) == ExpectRHS);
+  LIBCUDACXX_ASSERT(h(LHS) == ExpectLHS);
+  LIBCUDACXX_ASSERT(h(RHS) == ExpectRHS);
   assert((h(LHS) == h(RHS)) == (LHSVal == RHSVal));
   {
     ASSERT_SAME_TYPE(decltype(h(LHS)), size_t);

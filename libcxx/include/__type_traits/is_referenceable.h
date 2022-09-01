@@ -6,18 +6,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_IS_REFERENCEABLE_H
-#define _LIBCPP___TYPE_TRAITS_IS_REFERENCEABLE_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_IS_REFERENCEABLE_H
+#define _LIBCUDACXX___TYPE_TRAITS_IS_REFERENCEABLE_H
 
 #include <__config>
 #include <__type_traits/integral_constant.h>
 #include <__type_traits/is_same.h>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 struct __is_referenceable_impl {
     template <class _Tp> static _Tp& __test(int);
@@ -28,6 +28,6 @@ template <class _Tp>
 struct __is_referenceable : integral_constant<bool,
     _IsNotSame<decltype(__is_referenceable_impl::__test<_Tp>(0)), false_type>::value> {};
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_IS_REFERENCEABLE_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_IS_REFERENCEABLE_H

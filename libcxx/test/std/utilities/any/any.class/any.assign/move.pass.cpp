@@ -40,12 +40,12 @@ void test_move_assign() {
 
         assert(LHS::count == 1);
         assert(RHS::count == 2 + a2.has_value());
-        LIBCPP_ASSERT(RHS::count == 2); // libc++ leaves the object empty
+        LIBCUDACXX_ASSERT(RHS::count == 2); // libc++ leaves the object empty
 
         assertContains<RHS>(a, 2);
         if (a2.has_value())
             assertContains<RHS>(a2, 0);
-        LIBCPP_ASSERT(!a2.has_value());
+        LIBCUDACXX_ASSERT(!a2.has_value());
     }
     assert(LHS::count == 0);
     assert(RHS::count == 0);
@@ -63,12 +63,12 @@ void test_move_assign_empty() {
         a = std::move(a2);
 
         assert(LHS::count == 1 + a2.has_value());
-        LIBCPP_ASSERT(LHS::count == 1);
+        LIBCUDACXX_ASSERT(LHS::count == 1);
 
         assertContains<LHS>(a, 1);
         if (a2.has_value())
             assertContains<LHS>(a2, 0);
-        LIBCPP_ASSERT(!a2.has_value());
+        LIBCUDACXX_ASSERT(!a2.has_value());
     }
     assert(LHS::count == 0);
     {

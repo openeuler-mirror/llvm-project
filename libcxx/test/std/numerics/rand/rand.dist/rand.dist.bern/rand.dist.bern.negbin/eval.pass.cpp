@@ -302,7 +302,7 @@ int main(int, char**) {
     tests<unsigned long>();
     tests<unsigned long long>();
 
-#if defined(_LIBCPP_VERSION) // extension
+#if defined(_LIBCUDACXX_VERSION) // extension
     // TODO: std::negative_binomial_distribution currently doesn't work reliably with small types.
     // tests<int8_t>();
     // tests<uint8_t>();

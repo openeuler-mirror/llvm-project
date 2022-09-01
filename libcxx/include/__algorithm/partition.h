@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_PARTITION_H
-#define _LIBCPP___ALGORITHM_PARTITION_H
+#ifndef _LIBCUDACXX___ALGORITHM_PARTITION_H
+#define _LIBCUDACXX___ALGORITHM_PARTITION_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__config>
@@ -16,14 +16,14 @@
 #include <__utility/pair.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 template <class _Predicate, class _AlgPolicy, class _ForwardIterator, class _Sentinel>
-_LIBCPP_CONSTEXPR_AFTER_CXX17 pair<_ForwardIterator, _ForwardIterator>
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX17 pair<_ForwardIterator, _ForwardIterator>
 __partition_impl(_ForwardIterator __first, _Sentinel __last, _Predicate __pred, forward_iterator_tag)
 {
     while (true)
@@ -48,7 +48,7 @@ __partition_impl(_ForwardIterator __first, _Sentinel __last, _Predicate __pred, 
 }
 
 template <class _Predicate, class _AlgPolicy, class _BidirectionalIterator, class _Sentinel>
-_LIBCPP_CONSTEXPR_AFTER_CXX17 pair<_BidirectionalIterator, _BidirectionalIterator>
+_LIBCUDACXX_CONSTEXPR_AFTER_CXX17 pair<_BidirectionalIterator, _BidirectionalIterator>
 __partition_impl(_BidirectionalIterator __first, _Sentinel __sentinel, _Predicate __pred,
             bidirectional_iterator_tag)
 {
@@ -76,7 +76,7 @@ __partition_impl(_BidirectionalIterator __first, _Sentinel __sentinel, _Predicat
 }
 
 template <class _AlgPolicy, class _ForwardIterator, class _Sentinel, class _Predicate, class _IterCategory>
-inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 pair<_ForwardIterator, _ForwardIterator> __partition(
     _ForwardIterator __first, _Sentinel __last, _Predicate&& __pred, _IterCategory __iter_category) {
   return std::__partition_impl<__uncvref_t<_Predicate>&, _AlgPolicy>(
@@ -84,7 +84,7 @@ pair<_ForwardIterator, _ForwardIterator> __partition(
 }
 
 template <class _ForwardIterator, class _Predicate>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 _ForwardIterator
 partition(_ForwardIterator __first, _ForwardIterator __last, _Predicate __pred)
 {
@@ -93,6 +93,6 @@ partition(_ForwardIterator __first, _ForwardIterator __last, _Predicate __pred)
   return __result.first;
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ALGORITHM_PARTITION_H
+#endif // _LIBCUDACXX___ALGORITHM_PARTITION_H

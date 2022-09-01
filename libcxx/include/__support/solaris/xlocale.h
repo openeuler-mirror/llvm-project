@@ -32,37 +32,37 @@ struct lconv *localeconv(void);
 struct lconv *localeconv_l(locale_t __l);
 
 // FIXME: These are quick-and-dirty hacks to make things pretend to work
-inline _LIBCPP_HIDE_FROM_ABI long long
+inline _LIBCUDACXX_HIDE_FROM_ABI long long
 strtoll_l(const char *__nptr, char **__endptr, int __base, locale_t __loc) {
   return ::strtoll(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI long
+inline _LIBCUDACXX_HIDE_FROM_ABI long
 strtol_l(const char *__nptr, char **__endptr, int __base, locale_t __loc) {
   return ::strtol(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI unsigned long long
+inline _LIBCUDACXX_HIDE_FROM_ABI unsigned long long
 strtoull_l(const char *__nptr, char **__endptr, int __base, locale_t __loc) 
   return ::strtoull(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI unsigned long
+inline _LIBCUDACXX_HIDE_FROM_ABI unsigned long
 strtoul_l(const char *__nptr, char **__endptr, int __base, locale_t __loc) {
   return ::strtoul(__nptr, __endptr, __base);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI float
+inline _LIBCUDACXX_HIDE_FROM_ABI float
 strtof_l(const char *__nptr, char **__endptr, locale_t __loc) {
   return ::strtof(__nptr, __endptr);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI double
+inline _LIBCUDACXX_HIDE_FROM_ABI double
 strtod_l(const char *__nptr, char **__endptr, locale_t __loc) {
   return ::strtod(__nptr, __endptr);
 }
 
-inline _LIBCPP_HIDE_FROM_ABI long double
+inline _LIBCUDACXX_HIDE_FROM_ABI long double
 strtold_l(const char *__nptr, char **__endptr, locale_t __loc) {
   return ::strtold(__nptr, __endptr);
 }

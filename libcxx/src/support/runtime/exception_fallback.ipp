@@ -18,16 +18,16 @@ static constinit std::unexpected_handler __unexpected_handler = nullptr;
 unexpected_handler
 set_unexpected(unexpected_handler func) noexcept
 {
-  return __libcpp_atomic_exchange(&__unexpected_handler, func);
+  return __LIBCUDACXX_atomic_exchange(&__unexpected_handler, func);
 }
 
 unexpected_handler
 get_unexpected() noexcept
 {
-  return __libcpp_atomic_load(&__unexpected_handler);
+  return __LIBCUDACXX_atomic_load(&__unexpected_handler);
 }
 
-_LIBCPP_NORETURN
+_LIBCUDACXX_NORETURN
 void unexpected()
 {
     (*get_unexpected())();
@@ -38,28 +38,28 @@ void unexpected()
 terminate_handler
 set_terminate(terminate_handler func) noexcept
 {
-  return __libcpp_atomic_exchange(&__terminate_handler, func);
+  return __LIBCUDACXX_atomic_exchange(&__terminate_handler, func);
 }
 
 terminate_handler
 get_terminate() noexcept
 {
-  return __libcpp_atomic_load(&__terminate_handler);
+  return __LIBCUDACXX_atomic_load(&__terminate_handler);
 }
 
-_LIBCPP_NORETURN
+_LIBCUDACXX_NORETURN
 void
 terminate() noexcept
 {
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
     try
     {
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
         (*get_terminate())();
         // handler should not return
         fprintf(stderr, "terminate_handler unexpectedly returned\n");
         ::abort();
-#ifndef _LIBCPP_NO_EXCEPTIONS
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
     }
     catch (...)
     {
@@ -67,7 +67,7 @@ terminate() noexcept
         fprintf(stderr, "terminate_handler unexpectedly threw an exception\n");
         ::abort();
     }
-#endif // _LIBCPP_NO_EXCEPTIONS
+#endif // _LIBCUDACXX_NO_EXCEPTIONS
 }
 
 bool uncaught_exception() noexcept { return uncaught_exceptions() > 0; }

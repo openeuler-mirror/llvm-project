@@ -36,14 +36,14 @@
 
 #elif TEST_STD_VER == 17
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_to_chars
 #     error "__cpp_lib_to_chars should be defined in c++17"
 #   endif
 #   if __cpp_lib_to_chars != 201611L
 #     error "__cpp_lib_to_chars should have the value 201611L in c++17"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_to_chars
 #     error "__cpp_lib_to_chars should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -51,14 +51,14 @@
 
 #elif TEST_STD_VER == 20
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_to_chars
 #     error "__cpp_lib_to_chars should be defined in c++20"
 #   endif
 #   if __cpp_lib_to_chars != 201611L
 #     error "__cpp_lib_to_chars should have the value 201611L in c++20"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_to_chars
 #     error "__cpp_lib_to_chars should not be defined because it is unimplemented in libc++!"
 #   endif
@@ -66,14 +66,14 @@
 
 #elif TEST_STD_VER > 20
 
-# if !defined(_LIBCPP_VERSION)
+# if !defined(_LIBCUDACXX_VERSION)
 #   ifndef __cpp_lib_to_chars
 #     error "__cpp_lib_to_chars should be defined in c++2b"
 #   endif
 #   if __cpp_lib_to_chars != 201611L
 #     error "__cpp_lib_to_chars should have the value 201611L in c++2b"
 #   endif
-# else // _LIBCPP_VERSION
+# else // _LIBCUDACXX_VERSION
 #   ifdef __cpp_lib_to_chars
 #     error "__cpp_lib_to_chars should not be defined because it is unimplemented in libc++!"
 #   endif

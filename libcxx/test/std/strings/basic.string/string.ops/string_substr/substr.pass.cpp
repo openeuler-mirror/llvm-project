@@ -25,7 +25,7 @@ test(const S& s, typename S::size_type pos, typename S::size_type n)
     if (pos <= s.size())
     {
         S str = s.substr(pos, n);
-        LIBCPP_ASSERT(str.__invariants());
+        LIBCUDACXX_ASSERT(str.__invariants());
         assert(pos <= s.size());
         typename S::size_type rlen = std::min(n, s.size() - pos);
         assert(str.size() == rlen);

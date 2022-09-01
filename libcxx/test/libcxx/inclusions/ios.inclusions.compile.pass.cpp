@@ -20,9 +20,9 @@
 #include <ios>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_IOS)
- #   error "<ios> was expected to define _LIBCPP_IOS"
+#if !defined(_LIBCUDACXX_IOS)
+ #   error "<ios> was expected to define _LIBCUDACXX_IOS"
 #endif
-#if !defined(_LIBCPP_IOSFWD)
+#if !defined(_LIBCUDACXX_IOSFWD)
  #   error "<ios> should include <iosfwd> in C++03 and later"
 #endif

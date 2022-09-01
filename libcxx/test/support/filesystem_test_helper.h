@@ -593,7 +593,7 @@ inline bool ErrorIs(const std::error_code& ec, std::errc First, ErrcT... Rest) {
 // available in single-threaded mode.
 template <class Dur> void SleepFor(Dur dur) {
     using namespace std::chrono;
-#if defined(_LIBCPP_HAS_NO_MONOTONIC_CLOCK)
+#if defined(_LIBCUDACXX_HAS_NO_MONOTONIC_CLOCK)
     using Clock = system_clock;
 #else
     using Clock = steady_clock;
@@ -656,7 +656,7 @@ struct ExceptionChecker {
     TEST_CHECK(ErrorIsImp(Err.code(), {expected_err}));
     TEST_CHECK(Err.path1() == expected_path1);
     TEST_CHECK(Err.path2() == expected_path2);
-    LIBCPP_ONLY(check_libcxx_string(Err));
+    LIBCUDACXX_ONLY(check_libcxx_string(Err));
   }
 
   void check_libcxx_string(fs::filesystem_error const& Err) {

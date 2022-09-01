@@ -35,9 +35,9 @@ void checkIteratorConcepts() {
   static_assert(std::bidirectional_iterator<It>);
 #endif
   ASSERT_SAME_TYPE(Traits::value_type, path);
-  LIBCPP_STATIC_ASSERT(std::is_same<Traits::iterator_category, std::input_iterator_tag>::value, "");
-  LIBCPP_STATIC_ASSERT(std::is_same<Traits::pointer, path const*>::value, "");
-  LIBCPP_STATIC_ASSERT(std::is_same<Traits::reference, path>::value, "");
+  LIBCUDACXX_STATIC_ASSERT(std::is_same<Traits::iterator_category, std::input_iterator_tag>::value, "");
+  LIBCUDACXX_STATIC_ASSERT(std::is_same<Traits::pointer, path const*>::value, "");
+  LIBCUDACXX_STATIC_ASSERT(std::is_same<Traits::reference, path>::value, "");
   {
     It it;
     ASSERT_SAME_TYPE(It&, decltype(++it));

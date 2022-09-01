@@ -58,15 +58,15 @@ void duplicate_keys_test() {
   test_allocator_statistics alloc_stats;
   typedef std::set<int, std::less<int>, test_allocator<int> > Set;
   {
-    LIBCPP_ASSERT(alloc_stats.alloc_count == 0);
+    LIBCUDACXX_ASSERT(alloc_stats.alloc_count == 0);
     Set s({1, 2, 3}, std::less<int>(), test_allocator<int>(&alloc_stats));
-    LIBCPP_ASSERT(alloc_stats.alloc_count == 3);
+    LIBCUDACXX_ASSERT(alloc_stats.alloc_count == 3);
     s = {4, 4, 4, 4, 4};
-    LIBCPP_ASSERT(alloc_stats.alloc_count == 1);
+    LIBCUDACXX_ASSERT(alloc_stats.alloc_count == 1);
     assert(s.size() == 1);
     assert(*s.begin() == 4);
   }
-  LIBCPP_ASSERT(alloc_stats.alloc_count == 0);
+  LIBCUDACXX_ASSERT(alloc_stats.alloc_count == 0);
 }
 
 int main(int, char**) {

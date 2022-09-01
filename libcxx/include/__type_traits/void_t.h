@@ -6,24 +6,24 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___TYPE_TRAITS_VOID_T_H
-#define _LIBCPP___TYPE_TRAITS_VOID_T_H
+#ifndef _LIBCUDACXX___TYPE_TRAITS_VOID_T_H
+#define _LIBCUDACXX___TYPE_TRAITS_VOID_T_H
 
 #include <__config>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 14
+#if _LIBCUDACXX_STD_VER > 14
 template <class...> using void_t = void;
 #endif
 
 template <class>
 struct __void_t { typedef void type; };
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___TYPE_TRAITS_VOID_T_H
+#endif // _LIBCUDACXX___TYPE_TRAITS_VOID_T_H

@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#ifndef _LIBCPP___RANGES_SINGLE_VIEW_H
-#define _LIBCPP___RANGES_SINGLE_VIEW_H
+#ifndef _LIBCUDACXX___RANGES_SINGLE_VIEW_H
+#define _LIBCUDACXX___RANGES_SINGLE_VIEW_H
 
 #include <__config>
 #include <__ranges/copyable_box.h>
@@ -19,13 +19,13 @@
 #include <concepts>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
 namespace ranges {
   template<copy_constructible _Tp>
@@ -34,40 +34,40 @@ namespace ranges {
     __copyable_box<_Tp> __value_;
 
   public:
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     single_view() requires default_initializable<_Tp> = default;
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr explicit single_view(const _Tp& __t) : __value_(in_place, __t) {}
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr explicit single_view(_Tp&& __t) : __value_(in_place, std::move(__t)) {}
 
     template<class... _Args>
       requires constructible_from<_Tp, _Args...>
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr explicit single_view(in_place_t, _Args&&... __args)
       : __value_{in_place, std::forward<_Args>(__args)...} {}
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _Tp* begin() noexcept { return data(); }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr const _Tp* begin() const noexcept { return data(); }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _Tp* end() noexcept { return data() + 1; }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr const _Tp* end() const noexcept { return data() + 1; }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     static constexpr size_t size() noexcept { return 1; }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr _Tp* data() noexcept { return __value_.operator->(); }
 
-    _LIBCPP_HIDE_FROM_ABI
+    _LIBCUDACXX_HIDE_FROM_ABI
     constexpr const _Tp* data() const noexcept { return __value_.operator->(); }
   };
 
@@ -79,7 +79,7 @@ namespace __single_view {
 
 struct __fn : __range_adaptor_closure<__fn> {
   template<class _Range>
-  [[nodiscard]] _LIBCPP_HIDE_FROM_ABI
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI
   constexpr auto operator()(_Range&& __range) const
     noexcept(noexcept(single_view<decay_t<_Range&&>>(std::forward<_Range>(__range))))
     -> decltype(      single_view<decay_t<_Range&&>>(std::forward<_Range>(__range)))
@@ -94,8 +94,8 @@ inline namespace __cpo {
 } // namespace views
 } // namespace ranges
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___RANGES_SINGLE_VIEW_H
+#endif // _LIBCUDACXX___RANGES_SINGLE_VIEW_H

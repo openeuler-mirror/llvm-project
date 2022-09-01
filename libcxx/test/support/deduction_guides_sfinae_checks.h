@@ -49,19 +49,19 @@ constexpr void SequenceContainerDeductionGuidesSfinaeAway() {
   // containers because they have constructors of the form `(size_type count,
   // const value_type& value)`. These constructors would be used when passing
   // two integral types and would deduce `value_type` to be an integral type.
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
   using OutputIter = std::insert_iterator<InstantiatedContainer>;
-#endif // _LIBCPP_VERSION
+#endif // _LIBCUDACXX_VERSION
 
   // (iter, iter)
   //
   // Cannot deduce from (BAD_iter, BAD_iter)
-  LIBCPP_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter>);
+  LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter>);
 
   // (iter, iter, alloc)
   //
   // Cannot deduce from (BAD_iter, BAD_iter, alloc)
-  LIBCPP_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter, Alloc>);
+  LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter, Alloc>);
   // Cannot deduce from (iter, iter, BAD_alloc)
   static_assert(SFINAEs_away<Container, Iter, Iter, BadAlloc>);
 
@@ -90,28 +90,28 @@ constexpr void AssociativeContainerDeductionGuidesSfinaeAway() {
   // The only requirement in the Standard is that integral types cannot be
   // considered input iterators, beyond that it is unspecified.
   using BadIter = int;
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
   using OutputIter = std::insert_iterator<InstantiatedContainer>;
-#endif // _LIBCPP_VERSION
+#endif // _LIBCUDACXX_VERSION
   using AllocAsComp = Alloc;
 
   // (iter, iter)
   //
   // Cannot deduce from (BAD_iter, BAD_iter)
   static_assert(SFINAEs_away<Container, BadIter, BadIter>);
-  LIBCPP_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter>);
+  LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter>);
 
   // (iter, iter, comp)
   //
   // Cannot deduce from (BAD_iter, BAD_iter, comp)
   static_assert(SFINAEs_away<Container, BadIter, BadIter, Comp>);
-  LIBCPP_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter, Comp>);
+  LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter, Comp>);
 
   // (iter, iter, comp, alloc)
   //
   // Cannot deduce from (BAD_iter, BAD_iter, comp, alloc)
   static_assert(SFINAEs_away<Container, BadIter, BadIter, Comp, Alloc>);
-  LIBCPP_STATIC_ASSERT(
+  LIBCUDACXX_STATIC_ASSERT(
       SFINAEs_away<Container, OutputIter, OutputIter, Comp, Alloc>);
   // Cannot deduce from (iter, iter, ALLOC_as_comp, alloc)
   static_assert(SFINAEs_away<Container, Iter, Iter, AllocAsComp, Alloc>);
@@ -122,7 +122,7 @@ constexpr void AssociativeContainerDeductionGuidesSfinaeAway() {
   //
   // Cannot deduce from (BAD_iter, BAD_iter, alloc)
   static_assert(SFINAEs_away<Container, BadIter, BadIter, Alloc>);
-  LIBCPP_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter, Alloc>);
+  LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter, Alloc>);
   // Note: (iter, iter, BAD_alloc) is interpreted as (iter, iter, comp)
   // instead and fails upon instantiation. There is no requirement to SFINAE
   // away bad comparators.
@@ -163,9 +163,9 @@ constexpr void UnorderedContainerDeductionGuidesSfinaeAway() {
   // The only requirement in the Standard is that integral types cannot be
   // considered input iterators, beyond that it is unspecified.
   using BadIter = int;
-#ifdef _LIBCPP_VERSION
+#ifdef _LIBCUDACXX_VERSION
   using OutputIter = std::insert_iterator<InstantiatedContainer>;
-#endif // _LIBCPP_VERSION
+#endif // _LIBCUDACXX_VERSION
   using AllocAsHash = Alloc;
   using AllocAsPred = Alloc;
 
@@ -173,19 +173,19 @@ constexpr void UnorderedContainerDeductionGuidesSfinaeAway() {
   //
   // Cannot deduce from (BAD_iter, BAD_iter)
   static_assert(SFINAEs_away<Container, BadIter, BadIter>);
-  LIBCPP_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter>);
+  LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter>);
 
   // (iter, iter, buckets)
   //
   // Cannot deduce from (BAD_iter, BAD_iter, buckets)
   static_assert(SFINAEs_away<Container, BadIter, BadIter, size_t>);
-  LIBCPP_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter, size_t>);
+  LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter, size_t>);
 
   // (iter, iter, buckets, hash)
   //
   // Cannot deduce from (BAD_iter, BAD_iter, buckets, hash)
   static_assert(SFINAEs_away<Container, BadIter, BadIter, size_t, Hash>);
-  LIBCPP_STATIC_ASSERT(
+  LIBCUDACXX_STATIC_ASSERT(
       SFINAEs_away<Container, OutputIter, OutputIter, size_t, Hash>);
   // Cannot deduce from (iter, iter, buckets, BAD_hash)
   static_assert(SFINAEs_away<Container, Iter, Iter, size_t, BadHash>);
@@ -196,7 +196,7 @@ constexpr void UnorderedContainerDeductionGuidesSfinaeAway() {
   //
   // Cannot deduce from (BAD_iter, BAD_iter, buckets, hash, pred)
   static_assert(SFINAEs_away<Container, BadIter, BadIter, size_t, Hash, Pred>);
-  LIBCPP_STATIC_ASSERT(
+  LIBCUDACXX_STATIC_ASSERT(
       SFINAEs_away<Container, OutputIter, OutputIter, size_t, Hash, Pred>);
   // Cannot deduce from (iter, iter, buckets, BAD_hash, pred)
   static_assert(SFINAEs_away<Container, Iter, Iter, size_t, BadHash, Pred>);
@@ -210,7 +210,7 @@ constexpr void UnorderedContainerDeductionGuidesSfinaeAway() {
   // Cannot deduce from (BAD_iter, BAD_iter, buckets, hash, pred, alloc)
   static_assert(
       SFINAEs_away<Container, BadIter, BadIter, size_t, Hash, Pred, Alloc>);
-  LIBCPP_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter,
+  LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter,
       size_t, Hash, Pred, Alloc>);
   // Cannot deduce from (iter, iter, buckets, BAD_hash, pred, alloc)
   static_assert(
@@ -229,7 +229,7 @@ constexpr void UnorderedContainerDeductionGuidesSfinaeAway() {
   //
   // Cannot deduce from (BAD_iter, BAD_iter, buckets, alloc)
   static_assert(SFINAEs_away<Container, BadIter, BadIter, size_t, Alloc>);
-  LIBCPP_STATIC_ASSERT(
+  LIBCUDACXX_STATIC_ASSERT(
       SFINAEs_away<Container, OutputIter, OutputIter, size_t, Alloc>);
   // Note: (iter, iter, buckets, BAD_alloc) is interpreted as (iter, iter,
   // buckets, hash), which is valid because the only requirement for the hash
@@ -239,7 +239,7 @@ constexpr void UnorderedContainerDeductionGuidesSfinaeAway() {
   //
   // Cannot deduce from (BAD_iter, BAD_iter, alloc)
   static_assert(SFINAEs_away<Container, BadIter, BadIter, Alloc>);
-  LIBCPP_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter, Alloc>);
+  LIBCUDACXX_STATIC_ASSERT(SFINAEs_away<Container, OutputIter, OutputIter, Alloc>);
   // Cannot deduce from (iter, iter, BAD_alloc)
   static_assert(SFINAEs_away<Container, Iter, Iter, BadAlloc>);
 
@@ -247,7 +247,7 @@ constexpr void UnorderedContainerDeductionGuidesSfinaeAway() {
   //
   // Cannot deduce from (BAD_iter, BAD_iter, buckets, hash, alloc)
   static_assert(SFINAEs_away<Container, BadIter, BadIter, size_t, Hash, Alloc>);
-  LIBCPP_STATIC_ASSERT(
+  LIBCUDACXX_STATIC_ASSERT(
       SFINAEs_away<Container, OutputIter, OutputIter, size_t, Hash, Alloc>);
   // Cannot deduce from (iter, iter, buckets, BAD_hash, alloc)
   static_assert(SFINAEs_away<Container, Iter, Iter, size_t, BadHash, Alloc>);

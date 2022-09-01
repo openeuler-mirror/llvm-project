@@ -42,7 +42,7 @@ void do_test(coro::coroutine_handle<Promise>&& H) {
   // FIXME Add a runtime test
   {
     ASSERT_SAME_TYPE(decltype(H.destroy()), void);
-    LIBCPP_ASSERT_NOT_NOEXCEPT(H.destroy());
+    LIBCUDACXX_ASSERT_NOT_NOEXCEPT(H.destroy());
     static_assert(has_destroy<HType&>(), "");
     static_assert(has_destroy<HType&&>(), "");
   }

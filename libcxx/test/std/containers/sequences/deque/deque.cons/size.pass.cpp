@@ -101,7 +101,7 @@ int main(int, char**)
     test<DefaultOnly, std::allocator<DefaultOnly> >(4096);
     test<DefaultOnly, std::allocator<DefaultOnly> >(4097);
 
-    LIBCPP_ONLY(test1<DefaultOnly, limited_allocator<DefaultOnly, 4096> >(4095));
+    LIBCUDACXX_ONLY(test1<DefaultOnly, limited_allocator<DefaultOnly, 4096> >(4095));
 
 #if TEST_STD_VER >= 11
     test<DefaultOnly, min_allocator<DefaultOnly> >(4095);

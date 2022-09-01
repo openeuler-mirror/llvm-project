@@ -18,12 +18,12 @@
 #include <deque>
 #include "test_macros.h"
 
-#if !defined(_LIBCPP_DEQUE)
- #   error "<deque> was expected to define _LIBCPP_DEQUE"
+#if !defined(_LIBCUDACXX_DEQUE)
+ #   error "<deque> was expected to define _LIBCUDACXX_DEQUE"
 #endif
-#if TEST_STD_VER > 17 && !defined(_LIBCPP_COMPARE)
+#if TEST_STD_VER > 17 && !defined(_LIBCUDACXX_COMPARE)
  #   error "<deque> should include <compare> in C++20 and later"
 #endif
-#if TEST_STD_VER > 03 && !defined(_LIBCPP_INITIALIZER_LIST)
+#if TEST_STD_VER > 03 && !defined(_LIBCUDACXX_INITIALIZER_LIST)
  #   error "<deque> should include <initializer_list> in C++11 and later"
 #endif

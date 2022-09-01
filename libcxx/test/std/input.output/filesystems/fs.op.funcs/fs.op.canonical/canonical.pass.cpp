@@ -103,7 +103,7 @@ TEST_CASE(test_exception_contains_paths)
     } catch (filesystem_error const& err) {
         TEST_CHECK(err.path1() == p);
         // libc++ provides the current path as the second path in the exception
-        LIBCPP_ONLY(TEST_CHECK(err.path2() == current_path()));
+        LIBCUDACXX_ONLY(TEST_CHECK(err.path2() == current_path()));
     }
     fs::current_path(static_env.Dir);
     try {
@@ -111,7 +111,7 @@ TEST_CASE(test_exception_contains_paths)
         TEST_REQUIRE(false);
     } catch (filesystem_error const& err) {
         TEST_CHECK(err.path1() == p);
-        LIBCPP_ONLY(TEST_CHECK(err.path2() == static_env.Dir));
+        LIBCUDACXX_ONLY(TEST_CHECK(err.path2() == static_env.Dir));
     }
 #endif
 }

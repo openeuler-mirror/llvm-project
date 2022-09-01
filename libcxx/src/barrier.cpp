@@ -8,14 +8,14 @@
 
 #include <__config>
 
-#ifndef _LIBCPP_HAS_NO_THREADS
+#ifndef _LIBCUDACXX_HAS_NO_THREADS
 
 #include <barrier>
 #include <thread>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if !defined(_LIBCPP_HAS_NO_TREE_BARRIER)
+#if !defined(_LIBCUDACXX_HAS_NO_TREE_BARRIER)
 
 class __barrier_algorithm_base {
 public:
@@ -29,14 +29,14 @@ public:
     ptrdiff_t&              __expected;
     unique_ptr<__state_t[]> __state;
 
-    _LIBCPP_HIDDEN
+    _LIBCUDACXX_HIDDEN
     __barrier_algorithm_base(ptrdiff_t& __expected)
         : __expected(__expected)
     {
         size_t const __count = (__expected + 1) >> 1;
         __state = unique_ptr<__state_t[]>(new __state_t[__count]);
     }
-    _LIBCPP_HIDDEN
+    _LIBCUDACXX_HIDDEN
     bool __arrive(__barrier_phase_t __old_phase)
     {
         __barrier_phase_t const __half_step = __old_phase + 1,
@@ -73,25 +73,25 @@ public:
     }
 };
 
-_LIBCPP_EXPORTED_FROM_ABI
+_LIBCUDACXX_EXPORTED_FROM_ABI
 __barrier_algorithm_base * __construct_barrier_algorithm_base(ptrdiff_t& __expected)
 {
     return new __barrier_algorithm_base(__expected);
 }
-_LIBCPP_EXPORTED_FROM_ABI
+_LIBCUDACXX_EXPORTED_FROM_ABI
 bool __arrive_barrier_algorithm_base(__barrier_algorithm_base* __barrier,
                                      __barrier_phase_t __old_phase)
 {
     return __barrier->__arrive(__old_phase);
 }
-_LIBCPP_EXPORTED_FROM_ABI
+_LIBCUDACXX_EXPORTED_FROM_ABI
 void __destroy_barrier_algorithm_base(__barrier_algorithm_base* __barrier)
 {
     delete __barrier;
 }
 
-#endif // !defined(_LIBCPP_HAS_NO_TREE_BARRIER)
+#endif // !defined(_LIBCUDACXX_HAS_NO_TREE_BARRIER)
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif //_LIBCPP_HAS_NO_THREADS
+#endif //_LIBCUDACXX_HAS_NO_THREADS

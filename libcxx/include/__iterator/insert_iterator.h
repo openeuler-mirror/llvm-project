@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ITERATOR_INSERT_ITERATOR_H
-#define _LIBCPP___ITERATOR_INSERT_ITERATOR_H
+#ifndef _LIBCUDACXX___ITERATOR_INSERT_ITERATOR_H
+#define _LIBCUDACXX___ITERATOR_INSERT_ITERATOR_H
 
 #include <__config>
 #include <__iterator/iterator.h>
@@ -18,13 +18,13 @@
 #include <__utility/move.h>
 #include <cstddef>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 template <class _Container>
 using __insert_iterator_iter_t = ranges::iterator_t<_Container>;
 #else
@@ -32,21 +32,21 @@ template <class _Container>
 using __insert_iterator_iter_t = typename _Container::iterator;
 #endif
 
-_LIBCPP_SUPPRESS_DEPRECATED_PUSH
+_LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH
 template <class _Container>
-class _LIBCPP_TEMPLATE_VIS insert_iterator
-#if _LIBCPP_STD_VER <= 14 || !defined(_LIBCPP_ABI_NO_ITERATOR_BASES)
+class _LIBCUDACXX_TEMPLATE_VIS insert_iterator
+#if _LIBCUDACXX_STD_VER <= 14 || !defined(_LIBCUDACXX_ABI_NO_ITERATOR_BASES)
     : public iterator<output_iterator_tag, void, void, void, void>
 #endif
 {
-_LIBCPP_SUPPRESS_DEPRECATED_POP
+_LIBCUDACXX_SUPPRESS_DEPRECATED_POP
 protected:
     _Container* container;
     __insert_iterator_iter_t<_Container> iter;
 public:
     typedef output_iterator_tag iterator_category;
     typedef void value_type;
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
     typedef ptrdiff_t difference_type;
 #else
     typedef void difference_type;
@@ -55,27 +55,27 @@ public:
     typedef void reference;
     typedef _Container container_type;
 
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17 insert_iterator(_Container& __x, __insert_iterator_iter_t<_Container> __i)
-        : container(_VSTD::addressof(__x)), iter(__i) {}
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17 insert_iterator& operator=(const typename _Container::value_type& __value)
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 insert_iterator(_Container& __x, __insert_iterator_iter_t<_Container> __i)
+        : container(_CUDA_VSTD::addressof(__x)), iter(__i) {}
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 insert_iterator& operator=(const typename _Container::value_type& __value)
         {iter = container->insert(iter, __value); ++iter; return *this;}
-#ifndef _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17 insert_iterator& operator=(typename _Container::value_type&& __value)
-        {iter = container->insert(iter, _VSTD::move(__value)); ++iter; return *this;}
-#endif // _LIBCPP_CXX03_LANG
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17 insert_iterator& operator*()        {return *this;}
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17 insert_iterator& operator++()       {return *this;}
-    _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17 insert_iterator& operator++(int)    {return *this;}
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 insert_iterator& operator=(typename _Container::value_type&& __value)
+        {iter = container->insert(iter, _CUDA_VSTD::move(__value)); ++iter; return *this;}
+#endif // _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 insert_iterator& operator*()        {return *this;}
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 insert_iterator& operator++()       {return *this;}
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 insert_iterator& operator++(int)    {return *this;}
 };
 
 template <class _Container>
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR_AFTER_CXX17
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
 insert_iterator<_Container>
 inserter(_Container& __x, __insert_iterator_iter_t<_Container> __i)
 {
     return insert_iterator<_Container>(__x, __i);
 }
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP___ITERATOR_INSERT_ITERATOR_H
+#endif // _LIBCUDACXX___ITERATOR_INSERT_ITERATOR_H

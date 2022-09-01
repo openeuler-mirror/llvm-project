@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___FORMAT_FORMATTER_FLOATING_POINT_H
-#define _LIBCPP___FORMAT_FORMATTER_FLOATING_POINT_H
+#ifndef _LIBCUDACXX___FORMAT_FORMATTER_FLOATING_POINT_H
+#define _LIBCUDACXX___FORMAT_FORMATTER_FLOATING_POINT_H
 
 #include <__algorithm/copy.h>
 #include <__algorithm/copy_n.h>
@@ -31,41 +31,41 @@
 #include <__utility/unreachable.h>
 #include <charconv>
 
-#ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
 #  include <locale>
 #endif
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-_LIBCPP_PUSH_MACROS
+_LIBCUDACXX_PUSH_MACROS
 #include <__undef_macros>
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-#if _LIBCPP_STD_VER > 17
+#if _LIBCUDACXX_STD_VER > 17
 
 namespace __formatter {
 
 template <floating_point _Tp>
-_LIBCPP_HIDE_FROM_ABI char* __to_buffer(char* __first, char* __last, _Tp __value) {
-  to_chars_result __r = _VSTD::to_chars(__first, __last, __value);
-  _LIBCPP_ASSERT(__r.ec == errc(0), "Internal buffer too small");
+_LIBCUDACXX_HIDE_FROM_ABI char* __to_buffer(char* __first, char* __last, _Tp __value) {
+  to_chars_result __r = _CUDA_VSTD::to_chars(__first, __last, __value);
+  _LIBCUDACXX_ASSERT(__r.ec == errc(0), "Internal buffer too small");
   return __r.ptr;
 }
 
 template <floating_point _Tp>
-_LIBCPP_HIDE_FROM_ABI char* __to_buffer(char* __first, char* __last, _Tp __value, chars_format __fmt) {
-  to_chars_result __r = _VSTD::to_chars(__first, __last, __value, __fmt);
-  _LIBCPP_ASSERT(__r.ec == errc(0), "Internal buffer too small");
+_LIBCUDACXX_HIDE_FROM_ABI char* __to_buffer(char* __first, char* __last, _Tp __value, chars_format __fmt) {
+  to_chars_result __r = _CUDA_VSTD::to_chars(__first, __last, __value, __fmt);
+  _LIBCUDACXX_ASSERT(__r.ec == errc(0), "Internal buffer too small");
   return __r.ptr;
 }
 
 template <floating_point _Tp>
-_LIBCPP_HIDE_FROM_ABI char* __to_buffer(char* __first, char* __last, _Tp __value, chars_format __fmt, int __precision) {
-  to_chars_result __r = _VSTD::to_chars(__first, __last, __value, __fmt, __precision);
-  _LIBCPP_ASSERT(__r.ec == errc(0), "Internal buffer too small");
+_LIBCUDACXX_HIDE_FROM_ABI char* __to_buffer(char* __first, char* __last, _Tp __value, chars_format __fmt, int __precision) {
+  to_chars_result __r = _CUDA_VSTD::to_chars(__first, __last, __value, __fmt, __precision);
+  _LIBCUDACXX_ASSERT(__r.ec == errc(0), "Internal buffer too small");
   return __r.ptr;
 }
 
@@ -133,7 +133,7 @@ struct __traits<double> {
 /// Depending on the maxium size required for a value, the buffer is allocated
 /// on the stack or the heap.
 template <floating_point _Fp>
-class _LIBCPP_TEMPLATE_VIS __float_buffer {
+class _LIBCUDACXX_TEMPLATE_VIS __float_buffer {
   using _Traits = __traits<_Fp>;
 
 public:
@@ -145,7 +145,7 @@ public:
   // When supporting long doubles the __max_integral part becomes 4932 which
   // may be too much for some platforms. For these cases a better estimate is
   // required.
-  explicit _LIBCPP_HIDE_FROM_ABI __float_buffer(int __precision)
+  explicit _LIBCUDACXX_HIDE_FROM_ABI __float_buffer(int __precision)
       : __precision_(__precision != -1 ? __precision : _Traits::__max_fractional) {
 
     // When the precision is larger than _Traits::__max_fractional the digits in
@@ -170,19 +170,19 @@ public:
       __begin_ = __buffer_;
   }
 
-  _LIBCPP_HIDE_FROM_ABI ~__float_buffer() {
+  _LIBCUDACXX_HIDE_FROM_ABI ~__float_buffer() {
     if (__size_ > _Traits::__stack_buffer_size)
       allocator<char>{}.deallocate(__begin_, __size_);
   }
-  _LIBCPP_HIDE_FROM_ABI __float_buffer(const __float_buffer&) = delete;
-  _LIBCPP_HIDE_FROM_ABI __float_buffer& operator=(const __float_buffer&) = delete;
+  _LIBCUDACXX_HIDE_FROM_ABI __float_buffer(const __float_buffer&) = delete;
+  _LIBCUDACXX_HIDE_FROM_ABI __float_buffer& operator=(const __float_buffer&) = delete;
 
-  _LIBCPP_HIDE_FROM_ABI char* begin() const { return __begin_; }
-  _LIBCPP_HIDE_FROM_ABI char* end() const { return __begin_ + __size_; }
+  _LIBCUDACXX_HIDE_FROM_ABI char* begin() const { return __begin_; }
+  _LIBCUDACXX_HIDE_FROM_ABI char* end() const { return __begin_ + __size_; }
 
-  _LIBCPP_HIDE_FROM_ABI int __precision() const { return __precision_; }
-  _LIBCPP_HIDE_FROM_ABI int __num_trailing_zeros() const { return __num_trailing_zeros_; }
-  _LIBCPP_HIDE_FROM_ABI void __remove_trailing_zeros() { __num_trailing_zeros_ = 0; }
+  _LIBCUDACXX_HIDE_FROM_ABI int __precision() const { return __precision_; }
+  _LIBCUDACXX_HIDE_FROM_ABI int __num_trailing_zeros() const { return __num_trailing_zeros_; }
+  _LIBCUDACXX_HIDE_FROM_ABI void __remove_trailing_zeros() { __num_trailing_zeros_ = 0; }
 
 private:
   int __precision_;
@@ -214,10 +214,10 @@ struct __float_result {
 /// eSdd and eSdddd (S = sign, d = digit)
 ///
 /// \returns a pointer to the exponent or __last when not found.
-constexpr inline _LIBCPP_HIDE_FROM_ABI char* __find_exponent(char* __first, char* __last) {
+constexpr inline _LIBCUDACXX_HIDE_FROM_ABI char* __find_exponent(char* __first, char* __last) {
   ptrdiff_t __size = __last - __first;
   if (__size > 4) {
-    __first = __last - _VSTD::min(__size, ptrdiff_t(6));
+    __first = __last - _CUDA_VSTD::min(__size, ptrdiff_t(6));
     for (; __first != __last - 3; ++__first) {
       if (*__first == 'e')
         return __first;
@@ -227,7 +227,7 @@ constexpr inline _LIBCPP_HIDE_FROM_ABI char* __find_exponent(char* __first, char
 }
 
 template <class _Fp, class _Tp>
-_LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_default(const __float_buffer<_Fp>& __buffer, _Tp __value,
+_LIBCUDACXX_HIDE_FROM_ABI __float_result __format_buffer_default(const __float_buffer<_Fp>& __buffer, _Tp __value,
                                                              char* __integral) {
   __float_result __result;
   __result.__integral = __integral;
@@ -238,7 +238,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_default(const __float_buffe
   // Constrains:
   // - There's at least one decimal digit before the radix point.
   // - The radix point, when present, is placed before the exponent.
-  __result.__radix_point = _VSTD::find(__result.__integral + 1, __result.__exponent, '.');
+  __result.__radix_point = _CUDA_VSTD::find(__result.__integral + 1, __result.__exponent, '.');
 
   // When the radix point isn't found its position is the exponent instead of
   // __result.__last.
@@ -246,7 +246,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_default(const __float_buffe
     __result.__radix_point = __result.__last;
 
   // clang-format off
-  _LIBCPP_ASSERT((__result.__integral != __result.__last) &&
+  _LIBCUDACXX_ASSERT((__result.__integral != __result.__last) &&
                  (__result.__radix_point == __result.__last || *__result.__radix_point == '.') &&
                  (__result.__exponent == __result.__last || *__result.__exponent == 'e'),
                  "Post-condition failure.");
@@ -256,7 +256,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_default(const __float_buffe
 }
 
 template <class _Fp, class _Tp>
-_LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_hexadecimal_lower_case(const __float_buffer<_Fp>& __buffer,
+_LIBCUDACXX_HIDE_FROM_ABI __float_result __format_buffer_hexadecimal_lower_case(const __float_buffer<_Fp>& __buffer,
                                                                             _Tp __value, int __precision,
                                                                             char* __integral) {
   __float_result __result;
@@ -292,14 +292,14 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_hexadecimal_lower_case(cons
 
     char* __last = __result.__last - 2;
     __first = __last - __traits<_Fp>::__hex_precision_digits;
-    __result.__exponent = _VSTD::find(__first, __last, 'p');
+    __result.__exponent = _CUDA_VSTD::find(__first, __last, 'p');
   } else {
     __result.__radix_point = __result.__last;
     __result.__exponent = __first;
   }
 
   // clang-format off
-  _LIBCPP_ASSERT((__result.__integral != __result.__last) &&
+  _LIBCUDACXX_ASSERT((__result.__integral != __result.__last) &&
                  (__result.__radix_point == __result.__last || *__result.__radix_point == '.') &&
                  (__result.__exponent != __result.__last && *__result.__exponent == 'p'),
                  "Post-condition failure.");
@@ -309,18 +309,18 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_hexadecimal_lower_case(cons
 }
 
 template <class _Fp, class _Tp>
-_LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_hexadecimal_upper_case(const __float_buffer<_Fp>& __buffer,
+_LIBCUDACXX_HIDE_FROM_ABI __float_result __format_buffer_hexadecimal_upper_case(const __float_buffer<_Fp>& __buffer,
                                                                             _Tp __value, int __precision,
                                                                             char* __integral) {
   __float_result __result =
       __formatter::__format_buffer_hexadecimal_lower_case(__buffer, __value, __precision, __integral);
-  _VSTD::transform(__result.__integral, __result.__exponent, __result.__integral, __hex_to_upper);
+  _CUDA_VSTD::transform(__result.__integral, __result.__exponent, __result.__integral, __hex_to_upper);
   *__result.__exponent = 'P';
   return __result;
 }
 
 template <class _Fp, class _Tp>
-_LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_scientific_lower_case(const __float_buffer<_Fp>& __buffer,
+_LIBCUDACXX_HIDE_FROM_ABI __float_result __format_buffer_scientific_lower_case(const __float_buffer<_Fp>& __buffer,
                                                                            _Tp __value, int __precision,
                                                                            char* __integral) {
   __float_result __result;
@@ -329,7 +329,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_scientific_lower_case(const
       __formatter::__to_buffer(__integral, __buffer.end(), __value, chars_format::scientific, __precision);
 
   char* __first = __integral + 1;
-  _LIBCPP_ASSERT(__first != __result.__last, "No exponent present");
+  _LIBCUDACXX_ASSERT(__first != __result.__last, "No exponent present");
   if (*__first == '.') {
     __result.__radix_point = __first;
     __result.__exponent    = __formatter::__find_exponent(__first + 1, __result.__last);
@@ -339,7 +339,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_scientific_lower_case(const
   }
 
   // clang-format off
-  _LIBCPP_ASSERT((__result.__integral != __result.__last) &&
+  _LIBCUDACXX_ASSERT((__result.__integral != __result.__last) &&
                  (__result.__radix_point == __result.__last || *__result.__radix_point == '.') &&
                  (__result.__exponent != __result.__last && *__result.__exponent == 'e'),
                  "Post-condition failure.");
@@ -348,7 +348,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_scientific_lower_case(const
 }
 
 template <class _Fp, class _Tp>
-_LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_scientific_upper_case(const __float_buffer<_Fp>& __buffer,
+_LIBCUDACXX_HIDE_FROM_ABI __float_result __format_buffer_scientific_upper_case(const __float_buffer<_Fp>& __buffer,
                                                                            _Tp __value, int __precision,
                                                                            char* __integral) {
   __float_result __result =
@@ -358,7 +358,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_scientific_upper_case(const
 }
 
 template <class _Fp, class _Tp>
-_LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_fixed(const __float_buffer<_Fp>& __buffer, _Tp __value,
+_LIBCUDACXX_HIDE_FROM_ABI __float_result __format_buffer_fixed(const __float_buffer<_Fp>& __buffer, _Tp __value,
                                                            int __precision, char* __integral) {
   __float_result __result;
   __result.__integral = __integral;
@@ -372,7 +372,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_fixed(const __float_buffer<
   __result.__exponent = __result.__last;
 
   // clang-format off
-  _LIBCPP_ASSERT((__result.__integral != __result.__last) &&
+  _LIBCUDACXX_ASSERT((__result.__integral != __result.__last) &&
                  (__result.__radix_point == __result.__last || *__result.__radix_point == '.') &&
                  (__result.__exponent == __result.__last),
                  "Post-condition failure.");
@@ -381,7 +381,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_fixed(const __float_buffer<
 }
 
 template <class _Fp, class _Tp>
-_LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_general_lower_case(__float_buffer<_Fp>& __buffer, _Tp __value,
+_LIBCUDACXX_HIDE_FROM_ABI __float_result __format_buffer_general_lower_case(__float_buffer<_Fp>& __buffer, _Tp __value,
                                                                         int __precision, char* __integral) {
 
   __buffer.__remove_trailing_zeros();
@@ -404,12 +404,12 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_general_lower_case(__float_
       // In fixed mode the algorithm truncates trailing spaces and possibly the
       // radix point. There's no good guess for the position of the radix point
       // therefore scan the output after the first digit.
-      __result.__radix_point = _VSTD::find(__first, __result.__last, '.');
+      __result.__radix_point = _CUDA_VSTD::find(__first, __result.__last, '.');
     }
   }
 
   // clang-format off
-  _LIBCPP_ASSERT((__result.__integral != __result.__last) &&
+  _LIBCUDACXX_ASSERT((__result.__integral != __result.__last) &&
                  (__result.__radix_point == __result.__last || *__result.__radix_point == '.') &&
                  (__result.__exponent == __result.__last || *__result.__exponent == 'e'),
                  "Post-condition failure.");
@@ -419,7 +419,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_general_lower_case(__float_
 }
 
 template <class _Fp, class _Tp>
-_LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_general_upper_case(__float_buffer<_Fp>& __buffer, _Tp __value,
+_LIBCUDACXX_HIDE_FROM_ABI __float_result __format_buffer_general_upper_case(__float_buffer<_Fp>& __buffer, _Tp __value,
                                                                         int __precision, char* __integral) {
   __float_result __result = __formatter::__format_buffer_general_lower_case(__buffer, __value, __precision, __integral);
   if (__result.__exponent != __result.__last)
@@ -444,7 +444,7 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer_general_upper_case(__float_
 /// - localization needs to do grouping in the integral part.
 template <class _Fp, class _Tp>
 // TODO FMT _Fp should just be _Tp when to_chars has proper long double support.
-_LIBCPP_HIDE_FROM_ABI __float_result __format_buffer(
+_LIBCUDACXX_HIDE_FROM_ABI __float_result __format_buffer(
     __float_buffer<_Fp>& __buffer,
     _Tp __value,
     bool __negative,
@@ -481,24 +481,24 @@ _LIBCPP_HIDE_FROM_ABI __float_result __format_buffer(
     return __formatter::__format_buffer_general_upper_case(__buffer, __value, __buffer.__precision(), __first);
 
   default:
-    _LIBCPP_ASSERT(false, "The parser should have validated the type");
-    __libcpp_unreachable();
+    _LIBCUDACXX_ASSERT(false, "The parser should have validated the type");
+    __LIBCUDACXX_unreachable();
   }
 }
 
-#  ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#  ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
 template <class _OutIt, class _Fp, class _CharT>
-_LIBCPP_HIDE_FROM_ABI _OutIt __format_locale_specific_form(
+_LIBCUDACXX_HIDE_FROM_ABI _OutIt __format_locale_specific_form(
     _OutIt __out_it,
     const __float_buffer<_Fp>& __buffer,
     const __float_result& __result,
-    _VSTD::locale __loc,
+    _CUDA_VSTD::locale __loc,
     __format_spec::__parsed_specifications<_CharT> __specs) {
   const auto& __np = use_facet<numpunct<_CharT>>(__loc);
   string __grouping = __np.grouping();
   char* __first = __result.__integral;
   // When no radix point or exponent are present __last will be __result.__last.
-  char* __last = _VSTD::min(__result.__radix_point, __result.__exponent);
+  char* __last = _CUDA_VSTD::min(__result.__radix_point, __result.__exponent);
 
   ptrdiff_t __digits = __last - __first;
   if (!__grouping.empty()) {
@@ -528,13 +528,13 @@ _LIBCPP_HIDE_FROM_ABI _OutIt __format_locale_specific_form(
   // sign and (zero padding or alignment)
   if (__zero_padding && __first != __buffer.begin())
     *__out_it++ = *__buffer.begin();
-  __out_it = _VSTD::fill_n(_VSTD::move(__out_it), __padding.__before_, __specs.__fill_);
+  __out_it = _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __padding.__before_, __specs.__fill_);
   if (!__zero_padding && __first != __buffer.begin())
     *__out_it++ = *__buffer.begin();
 
   // integral part
   if (__grouping.empty()) {
-    __out_it = _VSTD::copy_n(__first, __digits, _VSTD::move(__out_it));
+    __out_it = _CUDA_VSTD::copy_n(__first, __digits, _CUDA_VSTD::move(__out_it));
   } else {
     auto __r = __grouping.rbegin();
     auto __e = __grouping.rend() - 1;
@@ -546,7 +546,7 @@ _LIBCPP_HIDE_FROM_ABI _OutIt __format_locale_specific_form(
     // This loop achieves that process by testing the termination condition
     // midway in the loop.
     while (true) {
-      __out_it = _VSTD::copy_n(__first, *__r, _VSTD::move(__out_it));
+      __out_it = _CUDA_VSTD::copy_n(__first, *__r, _CUDA_VSTD::move(__out_it));
       __first += *__r;
 
       if (__r == __e)
@@ -560,21 +560,21 @@ _LIBCPP_HIDE_FROM_ABI _OutIt __format_locale_specific_form(
   // fractional part
   if (__result.__radix_point != __result.__last) {
     *__out_it++ = __np.decimal_point();
-    __out_it = _VSTD::copy(__result.__radix_point + 1, __result.__exponent, _VSTD::move(__out_it));
-    __out_it = _VSTD::fill_n(_VSTD::move(__out_it), __buffer.__num_trailing_zeros(), _CharT('0'));
+    __out_it = _CUDA_VSTD::copy(__result.__radix_point + 1, __result.__exponent, _CUDA_VSTD::move(__out_it));
+    __out_it = _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __buffer.__num_trailing_zeros(), _CharT('0'));
   }
 
   // exponent
   if (__result.__exponent != __result.__last)
-    __out_it = _VSTD::copy(__result.__exponent, __result.__last, _VSTD::move(__out_it));
+    __out_it = _CUDA_VSTD::copy(__result.__exponent, __result.__last, _CUDA_VSTD::move(__out_it));
 
   // alignment
-  return _VSTD::fill_n(_VSTD::move(__out_it), __padding.__after_, __specs.__fill_);
+  return _CUDA_VSTD::fill_n(_CUDA_VSTD::move(__out_it), __padding.__after_, __specs.__fill_);
 }
-#  endif // _LIBCPP_HAS_NO_LOCALIZATION
+#  endif // _LIBCUDACXX_HAS_NO_LOCALIZATION
 
 template <class _OutIt, class _CharT>
-_LIBCPP_HIDE_FROM_ABI _OutIt __format_floating_point_non_finite(
+_LIBCUDACXX_HIDE_FROM_ABI _OutIt __format_floating_point_non_finite(
     _OutIt __out_it, __format_spec::__parsed_specifications<_CharT> __specs, bool __negative, bool __isnan) {
   char __buffer[4];
   char* __last = __formatter::__insert_sign(__buffer, __negative, __specs.__std_.__sign_);
@@ -587,7 +587,7 @@ _LIBCPP_HIDE_FROM_ABI _OutIt __format_floating_point_non_finite(
       __specs.__std_.__type_ == __format_spec::__type::__scientific_upper_case ||
       __specs.__std_.__type_ == __format_spec::__type::__fixed_upper_case ||
       __specs.__std_.__type_ == __format_spec::__type::__general_upper_case;
-  __last = _VSTD::copy_n(&("infnanINFNAN"[6 * __upper_case + 3 * __isnan]), 3, __last);
+  __last = _CUDA_VSTD::copy_n(&("infnanINFNAN"[6 * __upper_case + 3 * __isnan]), 3, __last);
 
   // [format.string.std]/13
   // A zero (0) character preceding the width field pads the field with
@@ -596,17 +596,17 @@ _LIBCPP_HIDE_FROM_ABI _OutIt __format_floating_point_non_finite(
   if (__specs.__alignment_ == __format_spec::__alignment::__zero_padding)
     __specs.__alignment_ = __format_spec::__alignment::__right;
 
-  return __formatter::__write(__buffer, __last, _VSTD::move(__out_it), __specs);
+  return __formatter::__write(__buffer, __last, _CUDA_VSTD::move(__out_it), __specs);
 }
 
 template <floating_point _Tp, class _CharT>
-_LIBCPP_HIDE_FROM_ABI auto
+_LIBCUDACXX_HIDE_FROM_ABI auto
 __format_floating_point(_Tp __value, auto& __ctx, __format_spec::__parsed_specifications<_CharT> __specs)
     -> decltype(__ctx.out()) {
-  bool __negative = _VSTD::signbit(__value);
+  bool __negative = _CUDA_VSTD::signbit(__value);
 
-  if (!_VSTD::isfinite(__value)) [[unlikely]]
-    return __formatter::__format_floating_point_non_finite(__ctx.out(), __specs, __negative, _VSTD::isnan(__value));
+  if (!_CUDA_VSTD::isfinite(__value)) [[unlikely]]
+    return __formatter::__format_floating_point_non_finite(__ctx.out(), __specs, __negative, _CUDA_VSTD::isnan(__value));
 
   // Depending on the std-format-spec string the sign and the value
   // might not be outputted together:
@@ -631,7 +631,7 @@ __format_floating_point(_Tp __value, auto& __ctx, __format_spec::__parsed_specif
     // When there is an exponent the point needs to be moved before the
     // exponent. When there's no exponent the rotate does nothing. Since
     // rotate tests whether the operation is a nop, call it unconditionally.
-    _VSTD::rotate(__result.__exponent, __result.__last - 1, __result.__last);
+    _CUDA_VSTD::rotate(__result.__exponent, __result.__last - 1, __result.__last);
     __result.__radix_point = __result.__exponent;
 
     // The radix point is always placed before the exponent.
@@ -641,7 +641,7 @@ __format_floating_point(_Tp __value, auto& __ctx, __format_spec::__parsed_specif
     ++__result.__exponent;
   }
 
-#  ifndef _LIBCPP_HAS_NO_LOCALIZATION
+#  ifndef _LIBCUDACXX_HAS_NO_LOCALIZATION
   if (__specs.__std_.__locale_specific_form_)
     return __formatter::__format_locale_specific_form(__ctx.out(), __buffer, __result, __ctx.locale(), __specs);
 #  endif
@@ -651,14 +651,14 @@ __format_floating_point(_Tp __value, auto& __ctx, __format_spec::__parsed_specif
   if (__size + __num_trailing_zeros >= __specs.__width_) {
     if (__num_trailing_zeros && __result.__exponent != __result.__last)
       // Insert trailing zeros before exponent character.
-      return _VSTD::copy(
+      return _CUDA_VSTD::copy(
           __result.__exponent,
           __result.__last,
-          _VSTD::fill_n(
-              _VSTD::copy(__buffer.begin(), __result.__exponent, __ctx.out()), __num_trailing_zeros, _CharT('0')));
+          _CUDA_VSTD::fill_n(
+              _CUDA_VSTD::copy(__buffer.begin(), __result.__exponent, __ctx.out()), __num_trailing_zeros, _CharT('0')));
 
-    return _VSTD::fill_n(
-        _VSTD::copy(__buffer.begin(), __result.__last, __ctx.out()), __num_trailing_zeros, _CharT('0'));
+    return _CUDA_VSTD::fill_n(
+        _CUDA_VSTD::copy(__buffer.begin(), __result.__last, __ctx.out()), __num_trailing_zeros, _CharT('0'));
   }
 
   auto __out_it = __ctx.out();
@@ -677,17 +677,17 @@ __format_floating_point(_Tp __value, auto& __ctx, __format_spec::__parsed_specif
 
   if (__num_trailing_zeros)
     return __formatter::__write_using_trailing_zeros(
-        __first, __result.__last, _VSTD::move(__out_it), __specs, __size, __result.__exponent, __num_trailing_zeros);
+        __first, __result.__last, _CUDA_VSTD::move(__out_it), __specs, __size, __result.__exponent, __num_trailing_zeros);
 
-  return __formatter::__write(__first, __result.__last, _VSTD::move(__out_it), __specs, __size);
+  return __formatter::__write(__first, __result.__last, _CUDA_VSTD::move(__out_it), __specs, __size);
 }
 
 } // namespace __formatter
 
 template <__formatter::__char_type _CharT>
-struct _LIBCPP_TEMPLATE_VIS __formatter_floating_point {
+struct _LIBCUDACXX_TEMPLATE_VIS __formatter_floating_point {
 public:
-  _LIBCPP_HIDE_FROM_ABI constexpr auto
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr auto
   parse(basic_format_parse_context<_CharT>& __parse_ctx) -> decltype(__parse_ctx.begin()) {
     auto __result = __parser_.__parse(__parse_ctx, __format_spec::__fields_floating_point);
     __format_spec::__process_parsed_floating_point(__parser_);
@@ -695,7 +695,7 @@ public:
   }
 
   template <floating_point _Tp>
-  _LIBCPP_HIDE_FROM_ABI auto format(_Tp __value, auto& __ctx) const -> decltype(__ctx.out()) {
+  _LIBCUDACXX_HIDE_FROM_ABI auto format(_Tp __value, auto& __ctx) const -> decltype(__ctx.out()) {
     return __formatter::__format_floating_point(__value, __ctx, __parser_.__get_parsed_std_specifications(__ctx));
   }
 
@@ -703,19 +703,19 @@ public:
 };
 
 template <__formatter::__char_type _CharT>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT formatter<float, _CharT>
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT formatter<float, _CharT>
     : public __formatter_floating_point<_CharT> {};
 template <__formatter::__char_type _CharT>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT formatter<double, _CharT>
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT formatter<double, _CharT>
     : public __formatter_floating_point<_CharT> {};
 template <__formatter::__char_type _CharT>
-struct _LIBCPP_TEMPLATE_VIS _LIBCPP_AVAILABILITY_FORMAT formatter<long double, _CharT>
+struct _LIBCUDACXX_TEMPLATE_VIS _LIBCUDACXX_AVAILABILITY_FORMAT formatter<long double, _CharT>
     : public __formatter_floating_point<_CharT> {};
 
-#endif //_LIBCPP_STD_VER > 17
+#endif //_LIBCUDACXX_STD_VER > 17
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-_LIBCPP_POP_MACROS
+_LIBCUDACXX_POP_MACROS
 
-#endif // _LIBCPP___FORMAT_FORMATTER_FLOATING_POINT_H
+#endif // _LIBCUDACXX___FORMAT_FORMATTER_FLOATING_POINT_H

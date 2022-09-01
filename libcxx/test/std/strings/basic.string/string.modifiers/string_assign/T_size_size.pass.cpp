@@ -25,7 +25,7 @@ test(S s, SV sv, typename S::size_type pos, typename S::size_type n, S expected)
     if (pos <= sv.size())
     {
         s.assign(sv, pos, n);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == expected);
     }
 #ifndef TEST_HAS_NO_EXCEPTIONS
@@ -51,7 +51,7 @@ test_npos(S s, SV sv, typename S::size_type pos, S expected)
     if (pos <= sv.size())
     {
         s.assign(sv, pos);
-        LIBCPP_ASSERT(s.__invariants());
+        LIBCUDACXX_ASSERT(s.__invariants());
         assert(s == expected);
     }
 #ifndef TEST_HAS_NO_EXCEPTIONS

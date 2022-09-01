@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP___ALGORITHM_RANGES_SAMPLE_H
-#define _LIBCPP___ALGORITHM_RANGES_SAMPLE_H
+#ifndef _LIBCUDACXX___ALGORITHM_RANGES_SAMPLE_H
+#define _LIBCUDACXX___ALGORITHM_RANGES_SAMPLE_H
 
 #include <__algorithm/iterator_operations.h>
 #include <__algorithm/sample.h>
@@ -23,13 +23,13 @@
 #include <__utility/move.h>
 #include <type_traits>
 
-#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#if !defined(_LIBCUDACXX_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header
 #endif
 
-#if _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-_LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 namespace ranges {
 namespace __sample {
@@ -40,7 +40,7 @@ struct __fn {
   requires (forward_iterator<_Iter> || random_access_iterator<_OutIter>) &&
            indirectly_copyable<_Iter, _OutIter> &&
            uniform_random_bit_generator<remove_reference_t<_Gen>>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   _OutIter operator()(_Iter __first, _Sent __last,
                       _OutIter __out_first, iter_difference_t<_Iter> __n, _Gen&& __gen) const {
     _ClassicGenAdaptor<_Gen> __adapted_gen(__gen);
@@ -52,7 +52,7 @@ struct __fn {
   requires (forward_range<_Range> || random_access_iterator<_OutIter>) &&
            indirectly_copyable<iterator_t<_Range>, _OutIter> &&
            uniform_random_bit_generator<remove_reference_t<_Gen>>
-  _LIBCPP_HIDE_FROM_ABI
+  _LIBCUDACXX_HIDE_FROM_ABI
   _OutIter operator()(_Range&& __range, _OutIter __out_first, range_difference_t<_Range> __n, _Gen&& __gen) const {
     return (*this)(ranges::begin(__range), ranges::end(__range),
                    std::move(__out_first), __n, std::forward<_Gen>(__gen));
@@ -67,8 +67,8 @@ inline namespace __cpo {
 } // namespace __cpo
 } // namespace ranges
 
-_LIBCPP_END_NAMESPACE_STD
+_LIBCUDACXX_END_NAMESPACE_STD
 
-#endif // _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_HAS_NO_INCOMPLETE_RANGES)
+#endif // _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_INCOMPLETE_RANGES)
 
-#endif // _LIBCPP___ALGORITHM_RANGES_SAMPLE_H
+#endif // _LIBCUDACXX___ALGORITHM_RANGES_SAMPLE_H
