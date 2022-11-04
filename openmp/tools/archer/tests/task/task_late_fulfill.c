@@ -10,6 +10,7 @@
 // icc compiler does not support detach clause.
 // UNSUPPORTED: icc
 // REQUIRES: tsan
+// REQUIRES: x86_64
 
 #include <omp.h>
 #include <stdio.h>
