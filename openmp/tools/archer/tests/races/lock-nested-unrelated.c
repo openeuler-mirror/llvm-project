@@ -13,6 +13,7 @@
 // RUN: %libarcher-compile-and-run-race | FileCheck %s
 // RUN: %libarcher-compile-and-run-race-noserial | FileCheck %s
 // REQUIRES: tsan
+// REQUIRES: x86_64
 #include <omp.h>
 #include <stdio.h>
 
