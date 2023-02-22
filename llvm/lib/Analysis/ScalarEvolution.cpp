@@ -367,9 +367,30 @@ void SCEV::print(raw_ostream &OS) const {
     OS << "(" << *UDiv->getLHS() << " /u " << *UDiv->getRHS() << ")";
     return;
   }
-  case scUnknown:
-    cast<SCEVUnknown>(this)->getValue()->printAsOperand(OS, false);
+  case scUnknown: {
+    const SCEVUnknown *U = cast<SCEVUnknown>(this);
+    if (U->isVScale()) {
+      OS << "vscale";
+      return;
+    }
+    if (U->isAlignOf(AllocTy)) {
+      OS << "alignof(" << *AllocTy << ")";
+      return;
+    }
+
+    Type *CTy;
+    Constant *FieldNo;
+    if (U->isOffsetOf(CTy, FieldNo)) {
+      OS << "offsetof(" << *CTy << ", ";
+      FieldNo->printAsOperand(OS, false);
+      OS << ")";
+      return;
+    }
+
+    // Otherwise just print it normally.
+    U->getValue()->printAsOperand(OS, false);
     return;
+  }
   case scCouldNotCompute:
     OS << "***COULDNOTCOMPUTE***";
     return;
@@ -566,6 +587,55 @@ void SCEVUnknown::allUsesReplacedWith(Value *New) {
 
   // Replace the value pointer in case someone is still using this SCEVUnknown.
   setValPtr(New);
+}
+
+bool SCEVUnknown::isVScale() const {
+  return match(getValue(), m_VScale());
+}
+
+bool SCEVUnknown::isAlignOf(Type *&AllocTy) const {
+  if (ConstantExpr *VCE = dyn_cast<ConstantExpr>(getValue()))
+    if (VCE->getOpcode() == Instruction::PtrToInt)
+      if (ConstantExpr *CE = dyn_cast<ConstantExpr>(VCE->getOperand(0)))
+        if (CE->getOpcode() == Instruction::GetElementPtr &&
+            CE->getOperand(0)->isNullValue()) {
+          Type *Ty = cast<GEPOperator>(CE)->getSourceElementType();
+          if (StructType *STy = dyn_cast<StructType>(Ty))
+            if (!STy->isPacked() &&
+                CE->getNumOperands() == 3 &&
+                CE->getOperand(1)->isNullValue()) {
+              if (ConstantInt *CI = dyn_cast<ConstantInt>(CE->getOperand(2)))
+                if (CI->isOne() &&
+                    STy->getNumElements() == 2 &&
+                    STy->getElementType(0)->isIntegerTy(1)) {
+                  AllocTy = STy->getElementType(1);
+                  return true;
+                }
+            }
+        }
+
+  return false;
+}
+
+bool SCEVUnknown::isOffsetOf(Type *&CTy, Constant *&FieldNo) const {
+  if (ConstantExpr *VCE = dyn_cast<ConstantExpr>(getValue()))
+    if (VCE->getOpcode() == Instruction::PtrToInt)
+      if (ConstantExpr *CE = dyn_cast<ConstantExpr>(VCE->getOperand(0)))
+        if (CE->getOpcode() == Instruction::GetElementPtr &&
+            CE->getNumOperands() == 3 &&
+            CE->getOperand(0)->isNullValue() &&
+            CE->getOperand(1)->isNullValue()) {
+          Type *Ty = cast<GEPOperator>(CE)->getSourceElementType();
+          // Ignore vector types here so that ScalarEvolutionExpander doesn't
+          // emit getelementptrs that index into vectors.
+          if (Ty->isStructTy() || Ty->isArrayTy()) {
+            CTy = Ty;
+            FieldNo = CE->getOperand(2);
+            return true;
+          }
+        }
+
+  return false;
 }
 
 //===----------------------------------------------------------------------===//
@@ -4316,8 +4386,15 @@ const SCEV *ScalarEvolution::getUMinExpr(SmallVectorImpl<const SCEV *> &Ops,
 const SCEV *
 ScalarEvolution::getSizeOfExpr(Type *IntTy, TypeSize Size) {
   const SCEV *Res = getConstant(IntTy, Size.getKnownMinValue());
-  if (Size.isScalable())
-    Res = getMulExpr(Res, getVScale(IntTy));
+  if (Size.isScalable()) {
+    // TODO: Why is there no ConstantExpr::getVScale()?
+    Type *SrcElemTy = ScalableVectorType::get(Type::getInt8Ty(getContext()), 1);
+    Constant *NullPtr = Constant::getNullValue(SrcElemTy->getPointerTo());
+    Constant *One = ConstantInt::get(IntTy, 1);
+    Constant *GEP = ConstantExpr::getGetElementPtr(SrcElemTy, NullPtr, One);
+    Constant *VScale = ConstantExpr::getPtrToInt(GEP, IntTy);
+    Res = getMulExpr(Res, getUnknown(VScale));
+  }
   return Res;
 }
 
