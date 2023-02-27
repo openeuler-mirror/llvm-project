@@ -367,30 +367,9 @@ void SCEV::print(raw_ostream &OS) const {
     OS << "(" << *UDiv->getLHS() << " /u " << *UDiv->getRHS() << ")";
     return;
   }
-  case scUnknown: {
-    const SCEVUnknown *U = cast<SCEVUnknown>(this);
-    if (U->isVScale()) {
-      OS << "vscale";
-      return;
-    }
-    if (U->isAlignOf(AllocTy)) {
-      OS << "alignof(" << *AllocTy << ")";
-      return;
-    }
-
-    Type *CTy;
-    Constant *FieldNo;
-    if (U->isOffsetOf(CTy, FieldNo)) {
-      OS << "offsetof(" << *CTy << ", ";
-      FieldNo->printAsOperand(OS, false);
-      OS << ")";
-      return;
-    }
-
-    // Otherwise just print it normally.
-    U->getValue()->printAsOperand(OS, false);
+  case scUnknown:
+    cast<SCEVUnknown>(this)->getValue()->printAsOperand(OS, false);
     return;
-  }
   case scCouldNotCompute:
     OS << "***COULDNOTCOMPUTE***";
     return;
@@ -587,10 +566,6 @@ void SCEVUnknown::allUsesReplacedWith(Value *New) {
 
   // Replace the value pointer in case someone is still using this SCEVUnknown.
   setValPtr(New);
-}
-
-bool SCEVUnknown::isVScale() const {
-  return match(getValue(), m_VScale());
 }
 
 bool SCEVUnknown::isAlignOf(Type *&AllocTy) const {
@@ -4386,15 +4361,8 @@ const SCEV *ScalarEvolution::getUMinExpr(SmallVectorImpl<const SCEV *> &Ops,
 const SCEV *
 ScalarEvolution::getSizeOfExpr(Type *IntTy, TypeSize Size) {
   const SCEV *Res = getConstant(IntTy, Size.getKnownMinValue());
-  if (Size.isScalable()) {
-    // TODO: Why is there no ConstantExpr::getVScale()?
-    Type *SrcElemTy = ScalableVectorType::get(Type::getInt8Ty(getContext()), 1);
-    Constant *NullPtr = Constant::getNullValue(SrcElemTy->getPointerTo());
-    Constant *One = ConstantInt::get(IntTy, 1);
-    Constant *GEP = ConstantExpr::getGetElementPtr(SrcElemTy, NullPtr, One);
-    Constant *VScale = ConstantExpr::getPtrToInt(GEP, IntTy);
-    Res = getMulExpr(Res, getUnknown(VScale));
-  }
+  if (Size.isScalable())
+    Res = getMulExpr(Res, getVScale(IntTy));
   return Res;
 }
 

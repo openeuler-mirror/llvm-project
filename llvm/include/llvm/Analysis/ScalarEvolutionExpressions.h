@@ -599,8 +599,6 @@ public:
 
   bool isAlignOf(Type *&AllocTy) const;
   bool isOffsetOf(Type *&STy, Constant *&FieldNo) const;
-  /// Check whether this represents vscale.
-  bool isVScale() const;
 
   Type *getType() const { return getValPtr()->getType(); }
 
