@@ -1058,7 +1058,7 @@ static void computeKnownBitsFromShiftOperator(
     Known.setAllZero();
 }
 
-static ConstantRange getVScaleRange(const Function *F, unsigned BitWidth) {
+ConstantRange llvm::getVScaleRange(const Function *F, unsigned BitWidth) {
   Attribute Attr = F->getFnAttribute(Attribute::VScaleRange);
   // Without vscale_range, we only know that vscale is non-zero.
   if (!Attr.isValid())
