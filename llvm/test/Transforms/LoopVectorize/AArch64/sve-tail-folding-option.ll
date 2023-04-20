@@ -1,7 +1,7 @@
 ; RUN: opt -opaque-pointers=0 < %s -passes=loop-vectorize -sve-tail-folding=disabled -S | FileCheck %s -check-prefix=CHECK-NOTF
 ; RUN: opt -opaque-pointers=0 < %s -passes=loop-vectorize -sve-tail-folding=default -S | FileCheck %s -check-prefix=CHECK-NOTF
 ; RUN: opt -opaque-pointers=0 < %s -passes=loop-vectorize -sve-tail-folding=all -S | FileCheck %s -check-prefix=CHECK-TF
-; RUN: opt -opaque-pointers=0 < %s -passes=loop-vectorize -sve-tail-folding=disabled+simple+reductions+recurrences+reverse -S | FileCheck %s -check-prefix=CHECK-TF
+; RUN: opt -opaque-pointers=0 < %s -passes=loop-vectorize -sve-tail-folding=simple+reductions+recurrences+reverse -S | FileCheck %s -check-prefix=CHECK-TF
 ; RUN: opt -opaque-pointers=0 < %s -passes=loop-vectorize -sve-tail-folding=all+noreductions -S | FileCheck %s -check-prefix=CHECK-TF-NORED
 ; RUN: opt -opaque-pointers=0 < %s -passes=loop-vectorize -sve-tail-folding=all+norecurrences -S | FileCheck %s -check-prefix=CHECK-TF-NOREC
 ; RUN: opt -opaque-pointers=0 < %s -passes=loop-vectorize -sve-tail-folding=all+noreverse -S | FileCheck %s -check-prefix=CHECK-TF-NOREV
