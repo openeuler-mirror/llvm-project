@@ -444,6 +444,11 @@ public:
     return true;
   }
 
+  virtual bool shouldExpandGetVectorLength(EVT CountVT, unsigned VF,
+                                           bool IsScalable) const {
+    return true;
+  }
+
   /// Return true if it is profitable to convert a select of FP constants into
   /// a constant pool load whose address depends on the select condition. The
   /// parameter may be used to differentiate a select with FP compare from
