@@ -163,6 +163,11 @@ static bool isColdBlock(const MachineBasicBlock &MBB,
   if (!Count)
     return true;
 
+  // Temporary hack to cope with AArch64's jump table encoding
+  const TargetInstrInfo &TII = *MBB.getParent()->getSubtarget().getInstrInfo();
+  if (!TII.isMBBSafeToSplitToCold(MBB))
+    return false;
+
   if (PercentileCutoff > 0) {
     return PSI->isColdCountNthPercentile(PercentileCutoff, *Count);
   }
