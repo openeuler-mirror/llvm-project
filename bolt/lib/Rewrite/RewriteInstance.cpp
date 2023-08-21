@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "bolt/Rewrite/RewriteInstance.h"
+#include "bolt/Core/AddressMap.h"
 #include "bolt/Core/BinaryContext.h"
 #include "bolt/Core/BinaryEmitter.h"
 #include "bolt/Core/BinaryFunction.h"
@@ -3169,6 +3170,9 @@ void RewriteInstance::preregisterSections() {
                               ROFlags);
   BC->registerOrUpdateSection(getNewSecPrefix() + ".rodata.cold",
                               ELF::SHT_PROGBITS, ROFlags);
+  BC->registerOrUpdateSection(AddressMap::SectionName, ELF::SHT_PROGBITS,
+                              ROFlags)
+      .setLinkOnly();
 }
 
 void RewriteInstance::emitAndLink() {
@@ -3574,6 +3578,9 @@ void RewriteInstance::mapAllocatableSections(
     }
 
     for (BinarySection &Section : BC->allocatableSections()) {
+      if (Section.isLinkOnly())
+        continue;
+
       if (!Section.hasValidSectionID())
         continue;
 
@@ -3636,6 +3643,12 @@ void RewriteInstance::mapAllocatableSections(
 }
 
 void RewriteInstance::updateOutputValues(const MCAsmLayout &Layout) {
+  if (auto MapSection = BC->getUniqueSectionByName(AddressMap::SectionName)) {
+    auto Map = AddressMap::parse(MapSection->getOutputContents(), *BC);
+    BC->setIOAddressMap(std::move(Map));
+    BC->deregisterSection(*MapSection);
+  }
+
   for (BinaryFunction *Function : BC->getAllBinaryFunctions())
     Function->updateOutputValues(Layout);
 }
@@ -5280,6 +5293,8 @@ void RewriteInstance::rewriteFile() {
   // Write all allocatable sections - reloc-mode text is written here as well
   for (BinarySection &Section : BC->allocatableSections()) {
     if (!Section.isFinalized() || !Section.getOutputData())
+      continue;
+    if (Section.isLinkOnly())
       continue;
 
     if (opts::Verbosity >= 1)
