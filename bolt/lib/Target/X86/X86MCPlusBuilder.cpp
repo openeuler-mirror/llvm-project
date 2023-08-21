@@ -2617,30 +2617,9 @@ public:
       }
     }
 
-    // Extract a symbol and an addend out of the fixup value expression.
-    //
-    // Only the following limited expression types are supported:
-    //   Symbol + Addend
-    //   Symbol
-    uint64_t Addend = 0;
-    MCSymbol *Symbol = nullptr;
-    const MCExpr *ValueExpr = Fixup.getValue();
-    if (ValueExpr->getKind() == MCExpr::Binary) {
-      const auto *BinaryExpr = cast<MCBinaryExpr>(ValueExpr);
-      assert(BinaryExpr->getOpcode() == MCBinaryExpr::Add &&
-             "unexpected binary expression");
-      const MCExpr *LHS = BinaryExpr->getLHS();
-      assert(LHS->getKind() == MCExpr::SymbolRef && "unexpected LHS");
-      Symbol = const_cast<MCSymbol *>(this->getTargetSymbol(LHS));
-      const MCExpr *RHS = BinaryExpr->getRHS();
-      assert(RHS->getKind() == MCExpr::Constant && "unexpected RHS");
-      Addend = cast<MCConstantExpr>(RHS)->getValue();
-    } else {
-      assert(ValueExpr->getKind() == MCExpr::SymbolRef && "unexpected value");
-      Symbol = const_cast<MCSymbol *>(this->getTargetSymbol(ValueExpr));
-    }
+    auto [RelSymbol, RelAddend] = extractFixupExpr(Fixup);
 
-    return Relocation({RelOffset, Symbol, RelType, Addend, 0});
+    return Relocation({RelOffset, RelSymbol, RelType, RelAddend, 0});
   }
 
   bool replaceImmWithSymbolRef(MCInst &Inst, const MCSymbol *Symbol,
