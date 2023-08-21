@@ -857,6 +857,7 @@ struct BBAddrMap {
     bool hasTailCall() const { return MD.HasTailCall; }
     bool isEHPad() const { return MD.IsEHPad; }
     bool canFallThrough() const { return MD.CanFallThrough; }
+    bool hasIndirectBranch() const { return MD.HasIndirectBranch; }
   };
 
   BBAddrMap(uint64_t Addr, std::vector<BBEntry> BBEntries)
