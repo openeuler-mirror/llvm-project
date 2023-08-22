@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++03 -verify -ast-dump %s > %t-03
+// RUN: %clang_cc1 -fsyntax-only -fno-allow-non-const-global-init -std=c++03 -verify -ast-dump %s > %t-03
 // RUN: FileCheck --input-file=%t-03 %s
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -verify -ast-dump %s > %t-11
+// RUN: %clang_cc1 -fsyntax-only -fno-allow-non-const-global-init -std=c++11 -verify -ast-dump %s > %t-11
 // RUN: FileCheck --input-file=%t-11 %s
 // RUN: FileCheck --input-file=%t-11 %s --check-prefix=CHECK-CXX11
 

@@ -6129,6 +6129,10 @@ def fallow_half_arguments_and_returns : Flag<["-"], "fallow-half-arguments-and-r
   HelpText<"Allow function arguments and returns of type half">,
   MarshallingInfoFlag<LangOpts<"HalfArgsAndReturns">>,
   ImpliedByAnyOf<[fnative_half_arguments_and_returns.KeyPath]>;
+defm allow_non_const_global_init : BoolFOption<"allow-non-const-global-init",
+  LangOpts<"NonConstantGlobalInitializers">, DefaultTrue,
+  PosFlag<SetTrue, [], "Allow">, NegFlag<SetFalse, [], "Disallow">,
+  BothFlags<[], " use of non-constant static storage variables in global initializers.">>;
 def fdefault_calling_conv_EQ : Joined<["-"], "fdefault-calling-conv=">,
   HelpText<"Set default calling convention">,
   Values<"cdecl,fastcall,stdcall,vectorcall,regcall">,
