@@ -4128,8 +4128,14 @@ void BinaryFunction::updateOutputValues(const MCAsmLayout &Layout) {
           assert(FragmentBaseAddress == getOutputAddress());
       }
 
-      const uint64_t BBAddress =
-          *BC.getIOAddressMap().lookup(BB->getInputOffset() + getAddress());
+      // Injected functions likely will fail lookup, as they have no
+      // input range. Just assign the BB the output address of the
+      // function.
+      auto MaybeBBAddress =
+          BC.getIOAddressMap().lookup(BB->getInputOffset() + getAddress());
+      const uint64_t BBAddress = MaybeBBAddress  ? *MaybeBBAddress
+                                 : BB->isSplit() ? FF.getAddress()
+                                                 : getOutputAddress();
       BB->setOutputStartAddress(BBAddress);
 
       if (PrevBB)
