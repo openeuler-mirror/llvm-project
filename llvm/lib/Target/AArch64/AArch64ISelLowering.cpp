@@ -1811,6 +1811,10 @@ void AArch64TargetLowering::addTypeForStreamingSVE(MVT VT) {
   setOperationAction(ISD::ZERO_EXTEND, VT, Custom);
 }
 
+bool AArch64TargetLowering::shouldExpandCttzElements(EVT VT) const {
+  return !Subtarget->hasSVEorSME() || VT != MVT::nxv16i1;
+}
+
 void AArch64TargetLowering::addTypeForFixedLengthSVE(MVT VT) {
   assert(VT.isFixedLengthVector() && "Expected fixed length vector type!");
 
@@ -2599,6 +2603,7 @@ const char *AArch64TargetLowering::getTargetNodeName(unsigned Opcode) const {
     MAKE_CASE(AArch64ISD::CALL_BTI)
     MAKE_CASE(AArch64ISD::MRRS)
     MAKE_CASE(AArch64ISD::MSRR)
+    MAKE_CASE(AArch64ISD::CTTZ_ELTS)
   }
 #undef MAKE_CASE
   return nullptr;
@@ -5295,6 +5300,12 @@ SDValue AArch64TargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
         DAG.getTargetConstant(Intrinsic::aarch64_sve_whilelo, dl, MVT::i64);
     return DAG.getNode(ISD::INTRINSIC_WO_CHAIN, dl, Op.getValueType(), ID,
                        Op.getOperand(1), Op.getOperand(2));
+  }
+  case Intrinsic::experimental_cttz_elts: {
+    SDValue NewCttzElts =
+        DAG.getNode(AArch64ISD::CTTZ_ELTS, dl, MVT::i64, Op.getOperand(1));
+
+    return DAG.getZExtOrTrunc(NewCttzElts, dl, Op.getValueType());
   }
   }
 }
