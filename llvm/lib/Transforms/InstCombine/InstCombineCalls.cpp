@@ -92,6 +92,8 @@ namespace llvm {
 /// enable preservation of attributes in assume like:
 /// call void @llvm.assume(i1 true) [ "nonnull"(i32* %PTR) ]
 extern cl::opt<bool> EnableKnowledgeRetention;
+/// enable optimization of abs call in ternary expression
+extern cl::opt<bool> EnableTernaryAbsOptimization;
 } // namespace llvm
 
 /// Return the specified type promoted as it would be to pass though a va_arg
@@ -822,9 +824,18 @@ static Optional<bool> getKnownSign(Value *Op, Instruction *CxtI,
     return true;
 
   Value *X, *Y;
-  if (match(Op, m_NSWSub(m_Value(X), m_Value(Y))))
+  ConstantInt *CI = nullptr;
+  // abs(n*(x-y)) -> n*(x-y) or n*(y-x) when n>0
+  if (match(Op, m_NSWSub(m_Value(X), m_Value(Y))) ||
+      ((EnableTernaryAbsOptimization &&
+        (match(Op, m_NSWShl(m_NSWSub(m_Value(X), m_Value(Y)),
+                            m_StrictlyPositive())) ||
+         match(Op, m_NSWMul(m_NSWSub(m_Value(X), m_Value(Y)),
+                            m_ConstantInt(CI))))))) {
+    if (CI && CI->isNegative())
+      return isImpliedByDomCondition(ICmpInst::ICMP_SGT, X, Y, CxtI, DL);
     return isImpliedByDomCondition(ICmpInst::ICMP_SLT, X, Y, CxtI, DL);
-
+  }
   return isImpliedByDomCondition(
       ICmpInst::ICMP_SLT, Op, Constant::getNullValue(Op->getType()), CxtI, DL);
 }

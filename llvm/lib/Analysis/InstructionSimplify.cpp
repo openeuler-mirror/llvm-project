@@ -33,12 +33,14 @@
 #include "llvm/Analysis/ValueTracking.h"
 #include "llvm/Analysis/VectorUtils.h"
 #include "llvm/IR/ConstantRange.h"
+#include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Operator.h"
 #include "llvm/IR/PatternMatch.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/KnownBits.h"
 #include <algorithm>
 using namespace llvm;
@@ -50,6 +52,13 @@ enum { RecursionLimit = 3 };
 
 STATISTIC(NumExpand, "Number of expansions");
 STATISTIC(NumReassoc, "Number of reassociations");
+
+namespace llvm {
+cl::opt<bool> EnableTernaryAbsOptimization(
+    "enable-ternary-abs-optimization",
+    cl::desc("Enable optimization of abs() call in ternary expression"),
+    cl::init(false));
+} // namespace llvm
 
 static Value *simplifyAndInst(Value *, Value *, const SimplifyQuery &,
                               unsigned);
@@ -4257,6 +4266,39 @@ static Value *simplifySelectWithFakeICmpEq(Value *CmpLHS, Value *CmpRHS,
                                Pred == ICmpInst::ICMP_EQ);
 }
 
+static Value *simplifySelectFromAbs(Value *CmpLHS, Value *CmpRHS,
+                                    Value *TrueVal, Value *FalseVal,
+                                    const SimplifyQuery &Q) {
+  Value *X, *Y;
+  ConstantInt *CI;
+  if (match(CmpLHS,
+            m_NSWAdd(m_NSWSub(m_Value(X), m_Value(Y)), m_ConstantInt(CI))) &&
+      match(CmpRHS, m_Zero()))
+    if (Optional<bool> Flag =
+            isImpliedByDomCondition(ICmpInst::ICMP_SGE, X, Y, Q.CxtI, Q.DL)) {
+      // x-y+1 is positive when x>=y or non-positive when x<y
+      if (CI->isOne())
+        return *Flag ? FalseVal : TrueVal;
+      // x-y+n and x+n-y is positive when x>=y and n>=0
+      if (!CI->isNegative())
+        return *Flag ? FalseVal : nullptr;
+    }
+  // x-y-1 is negative when x<=y or non-negative when x>y
+  if (match(CmpLHS, m_Add(m_Xor(m_Value(Y), m_AllOnes()), m_Value(X))) &&
+      match(CmpRHS, m_Zero()))
+    if (Optional<bool> Flag =
+            isImpliedByDomCondition(ICmpInst::ICMP_SLE, X, Y, Q.CxtI, Q.DL))
+      return *Flag ? TrueVal : FalseVal;
+  // x-y-n is negative when x-y<=0 and -n<0
+  if (match(CmpLHS, m_Add(m_Sub(m_Value(X), m_Value(Y)), m_Negative())) &&
+      match(CmpRHS, m_Zero())) {
+    if (Optional<bool> Flag =
+            isImpliedByDomCondition(ICmpInst::ICMP_SLE, X, Y, Q.CxtI, Q.DL))
+      return *Flag ? TrueVal : nullptr;
+  }
+  return nullptr;
+}
+
 /// Try to simplify a select instruction when its condition operand is an
 /// integer comparison.
 static Value *simplifySelectWithICmpCond(Value *CondVal, Value *TrueVal,
@@ -4358,6 +4400,13 @@ static Value *simplifySelectWithICmpCond(Value *CondVal, Value *TrueVal,
                                /* AllowRefinement */ true,
                                MaxRecurse) == FalseVal)
       return FalseVal;
+  }
+
+  // when select expression is converted from abs() call, it's right TrueVal and
+  // FalseVal are complement, and we try to optimize its value to one of its arm
+  // value based on the signess
+  if (Pred == ICmpInst::ICMP_SLT && EnableTernaryAbsOptimization) {
+    return simplifySelectFromAbs(CmpLHS, CmpRHS, TrueVal, FalseVal, Q);
   }
 
   return nullptr;
