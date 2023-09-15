@@ -190,6 +190,11 @@ private:
   Value *optimizePow(CallInst *CI, IRBuilderBase &B);
   Value *replacePowWithExp(CallInst *Pow, IRBuilderBase &B);
   Value *replacePowWithSqrt(CallInst *Pow, IRBuilderBase &B);
+  Value *replaceNestedPowAndSqrtWithPow(CallInst *Pow, IRBuilderBase &B);
+  Value *replaceNestedPowAndPowWithPow(CallInst *Pow, IRBuilderBase &B);
+  Value *replaceNestedSqrtAndPowWithPow(CallInst *Sqrt,IRBuilderBase &B);
+  Value *optimizeCbrt(CallInst *CI, IRBuilderBase &B);
+
   Value *optimizeExp2(CallInst *CI, IRBuilderBase &B);
   Value *optimizeFMinFMax(CallInst *CI, IRBuilderBase &B);
   Value *optimizeLog(CallInst *CI, IRBuilderBase &B);

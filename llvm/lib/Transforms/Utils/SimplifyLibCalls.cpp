@@ -1971,6 +1971,324 @@ Value *LibCallSimplifier::replacePowWithSqrt(CallInst *Pow, IRBuilderBase &B) {
   return Sqrt;
 }
 
+// pow(sqrt(x),y) -> pow(x,y*0.5)
+Value *LibCallSimplifier::replaceNestedPowAndSqrtWithPow(CallInst *Pow,
+                                                         IRBuilderBase &B) {
+  Value *NewPow = nullptr;
+  Value *Base = Pow->getArgOperand(0);
+  Value *Y = Pow->getArgOperand(1);
+  Module *Mod = Pow->getModule();
+  Type *Ty = Pow->getType();
+  CallInst *BaseFn = dyn_cast<CallInst>(Base);
+  if (BaseFn && BaseFn->hasOneUse() && BaseFn->isFast() && Pow->isFast()) {
+    Function *CalleeFn = BaseFn->getCalledFunction();
+    LibFunc LibFn;
+
+    // Check if Pow complies with the conversion rules.
+    if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(Pow)) {
+      if (II->getIntrinsicID() == Intrinsic::pow && CalleeFn &&
+          CalleeFn->getIntrinsicID() == Intrinsic::sqrt) {
+        Value *X = BaseFn->getOperand(0);
+        // Create a new node Y * 0.5.
+        Value *Mul = B.CreateFMul(Y, ConstantFP::get(Ty, 0.5));
+        NewPow = B.CreateCall(
+            Intrinsic::getDeclaration(Mod, Pow->getIntrinsicID(), Ty),
+            {X, Mul});
+      }
+    } else if (CalleeFn && TLI->getLibFunc(CalleeFn->getName(), LibFn) &&
+             isLibFuncEmittable(Mod, TLI, LibFn)) {
+      LibFunc floatFn, doubleFn, longDFn;
+      switch (LibFn) {
+      case LibFunc_sqrtf:
+      case LibFunc_sqrt:
+      case LibFunc_sqrtl:
+        floatFn = LibFunc_powf;
+        doubleFn = LibFunc_pow;
+        longDFn = LibFunc_powl;
+        break;
+      case LibFunc_sqrtf_finite:
+      case LibFunc_sqrt_finite:
+      case LibFunc_sqrtl_finite:
+        floatFn = LibFunc_powf_finite;
+        doubleFn = LibFunc_pow_finite;
+        longDFn = LibFunc_powl_finite;
+        break;
+      default:
+        return nullptr;
+      }
+      Value *X = BaseFn->getOperand(0);
+      NewPow = emitBinaryFloatFnCall(
+          X, B.CreateFMul(Y, ConstantFP::get(Ty, 0.5)), TLI, doubleFn, floatFn,
+          longDFn, B, CalleeFn->getAttributes());
+    }
+    if (NewPow) {
+      Pow->replaceAllUsesWith(NewPow);
+      return NewPow;
+    }
+  }
+  return nullptr;
+}
+
+//pow(pow(x,y),z)-> pow(x,y*z)
+Value *LibCallSimplifier::replaceNestedPowAndPowWithPow(CallInst *Pow, IRBuilderBase &B){
+  Value *NewPow=nullptr;
+  Value *Base = Pow->getArgOperand(0);
+  Value *Z = Pow->getArgOperand(1);
+  Module *Mod = Pow->getModule();
+  Type *Ty = Pow->getType();
+  CallInst *BaseFn = dyn_cast<CallInst>(Base);
+
+  if (BaseFn && BaseFn->hasOneUse() && BaseFn->isFast() && Pow->isFast()){
+    Function *CalleeFn = BaseFn->getCalledFunction();
+    LibFunc LibFn;
+    // Check if Pow complies with the conversion rules.
+    if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(Pow)) {
+      if (II->getIntrinsicID() == Intrinsic::pow && CalleeFn &&
+          CalleeFn->getIntrinsicID() == Intrinsic::pow) {
+        Value *X = BaseFn->getOperand(0);
+        Value *Y = BaseFn->getOperand(1);
+        Value *Mul = B.CreateFMul(Y, Z);
+        NewPow = B.CreateCall(
+            Intrinsic::getDeclaration(Mod, Pow->getIntrinsicID(), Ty), {X, Mul});
+      }
+    } else if (CalleeFn && TLI->getLibFunc(CalleeFn->getName(), LibFn) &&
+             isLibFuncEmittable(Mod, TLI, LibFn)) {
+      LibFunc floatFn,doubleFn,longDFn;
+      switch (LibFn)
+      {
+      case LibFunc_powf:
+      case LibFunc_pow:
+      case LibFunc_powl:
+        floatFn = LibFunc_powf;
+        doubleFn = LibFunc_pow;
+        longDFn = LibFunc_powl;
+        break;
+      case LibFunc_powf_finite:
+      case LibFunc_pow_finite:
+      case LibFunc_powl_finite:
+        floatFn = LibFunc_powf_finite;
+        doubleFn = LibFunc_pow_finite;
+        longDFn = LibFunc_powl_finite;
+        break;
+      default:
+        return nullptr;
+      }
+      Value *X=BaseFn->getOperand(0);
+      Value *Y=BaseFn->getOperand(1);
+      Value *Mul=B.CreateFMul(Y,Z);
+      NewPow = emitBinaryFloatFnCall(X, Mul, TLI, doubleFn, floatFn, longDFn,
+                B, CalleeFn->getAttributes());
+    }
+    if (NewPow) {
+      Pow->replaceAllUsesWith(NewPow);
+      return NewPow;
+    }
+  }
+  return nullptr;
+}
+
+// sqrt(pow(x,y)) -> pow(|x|,y*0.5)
+Value *LibCallSimplifier::replaceNestedSqrtAndPowWithPow(CallInst *Sqrt,
+                                                         IRBuilderBase &B) {
+  Value *NewPow = nullptr;
+  Value *OldPow = Sqrt->getArgOperand(0);
+  Module *Mod = Sqrt->getModule();
+  Type *Ty = Sqrt->getType();
+  CallInst *Pow = dyn_cast<CallInst>(OldPow);
+  if (Pow && Pow->hasOneUse() && Pow->isFast() && Sqrt->isFast()) {
+    Function *CalleeFn = Pow->getCalledFunction();
+    IRBuilderBase::FastMathFlagGuard Guard(B);
+    B.setFastMathFlags(Sqrt->getFastMathFlags());
+    LibFunc LibFn;
+    // Check if Sqrt complies with the conversion rules.
+    if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(Sqrt)) {
+      if (II->getIntrinsicID() == Intrinsic::sqrt && CalleeFn && 
+          CalleeFn->getIntrinsicID() == Intrinsic::pow) {
+        Value *X = Pow->getOperand(0);
+        Value *Y = Pow->getOperand(1);
+        Value *AbsX = B.CreateSelect(
+            B.CreateFCmpOGT(X, ConstantFP::get(Ty, 0.0)), X, B.CreateFNeg(X));
+        Value *Mul = B.CreateFMul(Y, ConstantFP::get(Ty, 0.5));
+        NewPow = B.CreateCall(
+            Intrinsic::getDeclaration(Mod, Pow->getIntrinsicID(), Ty),
+            {AbsX, Mul});
+      }
+    } else if (CalleeFn && TLI->getLibFunc(CalleeFn->getName(), LibFn) &&
+               isLibFuncEmittable(Mod, TLI, LibFn)) {
+      LibFunc floatFn, doubleFn, longDFn;
+      switch (LibFn) {
+      case LibFunc_powf:
+      case LibFunc_pow:
+      case LibFunc_powl:
+        floatFn = LibFunc_powf;
+        doubleFn = LibFunc_pow;
+        longDFn = LibFunc_powl;
+        break;
+      case LibFunc_powf_finite:
+      case LibFunc_pow_finite:
+      case LibFunc_powl_finite:
+        floatFn = LibFunc_powf_finite;
+        doubleFn = LibFunc_pow_finite;
+        longDFn = LibFunc_powl_finite;
+        break;
+      default:
+        return nullptr;
+      }
+      Value *X = Pow->getOperand(0);
+      Value *Y = Pow->getOperand(1);
+      Value *AbsX = B.CreateSelect(
+            B.CreateFCmpOGT(X, ConstantFP::get(Ty, 0.0)), X, B.CreateFNeg(X));
+      Value *Mul = B.CreateFMul(Y, ConstantFP::get(Ty, 0.5));
+      NewPow = emitBinaryFloatFnCall(AbsX, Mul, TLI, doubleFn, floatFn, longDFn,
+                                     B, CalleeFn->getAttributes());
+    }
+    if (NewPow) {
+      Sqrt->replaceAllUsesWith(NewPow);
+      return NewPow;
+    }
+  }
+  return nullptr;
+}
+
+/* cbrt(expN(X))  -> expN(x/3)
+ * cbrt(sqrt(x))  -> pow(x,1/6)
+ * cbrt(cbrt(x))  -> pow(x,1/9) (incorrect transformation)
+ * When x < 0, the third transformation would yield incorrect results.
+ * Therefore, it is necessary to handle the transformation of x differently
+ * based on different cases.
+ * cbrt(cbrt(x))  -> x>=0?pow(x,1/9):-pow(-x,1/9)
+ */
+Value *LibCallSimplifier::optimizeCbrt(CallInst *CI, IRBuilderBase &B) {
+  Module *M = CI->getModule();
+  Value *Base = CI->getArgOperand(0);
+  CallInst *BaseFn = dyn_cast<CallInst>(Base);
+  Type *Ty = CI->getType();
+  Value *Ret = nullptr, *TempRet1 = nullptr, *TempRet2 = nullptr;
+  if (!TargetLibraryInfoImpl::isCallingConvCCompatible(CI))
+    return nullptr;
+  IRBuilderBase::FastMathFlagGuard Guard(B);
+  B.setFastMathFlags(CI->getFastMathFlags());
+  // Confirming that the internal representation of the cbrt function
+  // also involves a function call, and the fast-math flag is enabled
+  if (BaseFn && BaseFn->hasOneUse() && BaseFn->isFast() && CI->isFast()) {
+    LibFunc LibFn;
+    Function *CalleeFn = BaseFn->getCalledFunction();
+    Value *X;
+    // If the internal representation is an intrinsic call
+    if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(BaseFn)) {
+      Intrinsic::ID IntrinsicID = II->getIntrinsicID();
+      switch (IntrinsicID) {
+      // cbrt(exp(X))  -> exp(X/3)
+      // cbrt(exp2(X))  -> exp2(X/3)
+      case Intrinsic::exp:
+      case Intrinsic::exp2:
+        X = BaseFn->getOperand(0);
+        Ret = B.CreateCall(Intrinsic::getDeclaration(M, IntrinsicID, Ty),
+                           B.CreateFDiv(X, ConstantFP::get(Ty, 3.0)));
+        break;
+      // cbrt(sqrt(X))  -> pow(X,1/6)
+      case Intrinsic::sqrt:
+        X = BaseFn->getOperand(0);
+        Ret = B.CreateCall(Intrinsic::getDeclaration(M, Intrinsic::pow, Ty),
+                           {X, B.CreateFDiv(ConstantFP::get(Ty, 1.0),
+                                            ConstantFP::get(Ty, 6.0))});
+        break;
+      default:
+        return nullptr;
+      }
+    } else if (CalleeFn && TLI->getLibFunc(CalleeFn->getName(), LibFn) &&
+               isLibFuncEmittable(M, TLI, LibFn)) {
+      switch (LibFn) {
+      // cbrt(exp(X))  -> exp(X/3)
+      case LibFunc_exp:
+      case LibFunc_expf:
+      case LibFunc_expl:
+        X = BaseFn->getOperand(0);
+        Ret = emitUnaryFloatFnCall(B.CreateFDiv(X, ConstantFP::get(Ty, 3.0)),
+                                   TLI, LibFunc_exp, LibFunc_expf, LibFunc_expl,
+                                   B, CalleeFn->getAttributes());
+        break;
+      case LibFunc_exp_finite:
+      case LibFunc_expf_finite:
+      case LibFunc_expl_finite:
+        X = BaseFn->getOperand(0);
+        Ret = emitUnaryFloatFnCall(B.CreateFDiv(X, ConstantFP::get(Ty, 3.0)),
+                                   TLI, LibFunc_exp_finite, LibFunc_expf_finite,
+                                   LibFunc_expl_finite, B,
+                                   CalleeFn->getAttributes());
+        break;
+      // cbrt(exp2(X))  -> exp2(X/3)
+      case LibFunc_exp2:
+      case LibFunc_exp2f:
+      case LibFunc_exp2l:
+        X = BaseFn->getOperand(0);
+        Ret = emitUnaryFloatFnCall(B.CreateFDiv(X, ConstantFP::get(Ty, 3.0)),
+                                   TLI, LibFunc_exp2, LibFunc_exp2f,
+                                   LibFunc_exp2l, B, CalleeFn->getAttributes());
+        break;
+      case LibFunc_exp2_finite:
+      case LibFunc_exp2f_finite:
+      case LibFunc_exp2l_finite:
+        X = BaseFn->getOperand(0);
+        Ret = emitUnaryFloatFnCall(B.CreateFDiv(X, ConstantFP::get(Ty, 3.0)),
+                                   TLI, LibFunc_exp2_finite,
+                                   LibFunc_exp2f_finite, LibFunc_exp2l_finite,
+                                   B, CalleeFn->getAttributes());
+        break;
+      // cbrt(sqrt(X))  -> pow(X,1/6)
+      case LibFunc_sqrt:
+      case LibFunc_sqrtf:
+      case LibFunc_sqrtl:
+        X = BaseFn->getOperand(0);
+        Ret = emitBinaryFloatFnCall(
+            X, B.CreateFDiv(ConstantFP::get(Ty, 1.0), ConstantFP::get(Ty, 6.0)),
+            TLI, LibFunc_pow, LibFunc_powf, LibFunc_powl, B,
+            BaseFn->getAttributes());
+        break;
+      // cbrt(sqrt(X))  -> pow(X,1/6)
+      case LibFunc_sqrt_finite:
+      case LibFunc_sqrtf_finite:
+      case LibFunc_sqrtl_finite:
+        X = BaseFn->getOperand(0);
+        Ret = emitBinaryFloatFnCall(
+            X, B.CreateFDiv(ConstantFP::get(Ty, 1.0), ConstantFP::get(Ty, 6.0)),
+            TLI, LibFunc_pow_finite, LibFunc_powf_finite, LibFunc_powl_finite,
+            B, BaseFn->getAttributes());
+        break;
+      // cbrt(cbrt(X))  -> pow(X,1/9)
+      case LibFunc_cbrt:
+      case LibFunc_cbrtf:
+      case LibFunc_cbrtl:
+        X = BaseFn->getOperand(0);
+        // When X >= 0, it can be transformed into pow(X, 1/9)
+        TempRet1 = emitBinaryFloatFnCall(
+            X, B.CreateFDiv(ConstantFP::get(Ty, 1.0), ConstantFP::get(Ty, 9.0)),
+            TLI, LibFunc_pow, LibFunc_powf, LibFunc_powl, B,
+            BaseFn->getAttributes());
+        // When X < 0, it can be transformed into -pow(-X, 1/9)
+        TempRet2 = B.CreateFNeg(emitBinaryFloatFnCall(
+            B.CreateFNeg(X),
+            B.CreateFDiv(ConstantFP::get(Ty, 1.0), ConstantFP::get(Ty, 9.0)),
+            TLI, LibFunc_pow, LibFunc_powf, LibFunc_powl, B,
+            BaseFn->getAttributes()));
+        Ret = B.CreateSelect(B.CreateFCmpOGE(X, ConstantFP::get(Ty, 0.0)),
+                             TempRet1, TempRet2);
+        break;
+      default:
+        return nullptr;
+      }
+    }
+    if (Ret) {
+      CI->replaceAllUsesWith(Ret);
+      return Ret;
+    }
+  }
+  // Reverting to the original handling of the cbrt function
+  if (UnsafeFPShrink && hasFloatVersion(M, CI->getCalledFunction()->getName()))
+      return optimizeUnaryDoubleFP(CI, B, TLI, true);
+  return nullptr;
+}
+
 static Value *createPowWithIntegerExponent(Value *Base, Value *Expo, Module *M,
                                            IRBuilderBase &B) {
   Value *Args[] = {Base, Expo};
@@ -2021,6 +2339,13 @@ Value *LibCallSimplifier::optimizePow(CallInst *Pow, IRBuilderBase &B) {
 
   if (Value *Sqrt = replacePowWithSqrt(Pow, B))
     return Sqrt;
+  
+  //pow(sqrt(x),y) -> pow(x,y*0.5)
+  if (Value *V = replaceNestedPowAndSqrtWithPow(Pow, B))
+    return V;
+  //pow(pow(x,y),z)-> pow(x,y*z)
+  if (Value *V = replaceNestedPowAndPowWithPow(Pow, B))
+    return V;
 
   // If we can approximate pow:
   // pow(x, n) -> powi(x, n) * sqrt(x) if n has exactly a 0.5 fraction
@@ -2313,6 +2638,10 @@ Value *LibCallSimplifier::optimizeSqrt(CallInst *CI, IRBuilderBase &B) {
 
   if (!CI->isFast())
     return Ret;
+
+  // sqrt(pow(x,y)) -> pow(|x|,y*0.5)
+  if (Value *V = replaceNestedSqrtAndPowWithPow(CI, B))
+    return V;
 
   Instruction *I = dyn_cast<Instruction>(CI->getArgOperand(0));
   if (!I || I->getOpcode() != Instruction::FMul || !I->isFast())
@@ -3274,6 +3603,9 @@ Value *LibCallSimplifier::optimizeFloatingPointLibCall(CallInst *CI,
   case LibFunc_powf:
   case LibFunc_pow:
   case LibFunc_powl:
+  case LibFunc_pow_finite:
+  case LibFunc_powf_finite:
+  case LibFunc_powl_finite:
     return optimizePow(CI, Builder);
   case LibFunc_exp2l:
   case LibFunc_exp2:
@@ -3286,6 +3618,9 @@ Value *LibCallSimplifier::optimizeFloatingPointLibCall(CallInst *CI,
   case LibFunc_sqrtf:
   case LibFunc_sqrt:
   case LibFunc_sqrtl:
+  case LibFunc_sqrtf_finite:
+  case LibFunc_sqrt_finite:
+  case LibFunc_sqrtl_finite:
     return optimizeSqrt(CI, Builder);
   case LibFunc_logf:
   case LibFunc_log:
@@ -3327,7 +3662,6 @@ Value *LibCallSimplifier::optimizeFloatingPointLibCall(CallInst *CI,
   case LibFunc_asinh:
   case LibFunc_atan:
   case LibFunc_atanh:
-  case LibFunc_cbrt:
   case LibFunc_cosh:
   case LibFunc_exp:
   case LibFunc_exp10:
@@ -3354,6 +3688,10 @@ Value *LibCallSimplifier::optimizeFloatingPointLibCall(CallInst *CI,
   case LibFunc_cabsf:
   case LibFunc_cabsl:
     return optimizeCAbs(CI, Builder);
+  case LibFunc_cbrtf:
+  case LibFunc_cbrt:
+  case LibFunc_cbrtl:
+    return optimizeCbrt(CI, Builder);
   default:
     return nullptr;
   }
