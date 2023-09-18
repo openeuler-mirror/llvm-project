@@ -1,46 +1,65 @@
+#!/usr/bin/env python3
 import re
 import os
 import sys
 import subprocess
 from itertools import permutations
 
-def extract_opt_options(file_path):
+# function to read options from the instList.txt file
+def read_bisheng_options(file_path):
+    with open(file_path, 'r') as file:
+        options = [line.strip() for line in file.readlines()]
+    return options
+
+def extract_opt_options(file_path, bisheng_options):
     with open(file_path, 'r') as file:
         content = file.read()
 
-    pattern = r'; RUN:.*\bopt\b ([^\|]*)'
-    matches = re.findall(pattern, content)
-    if matches:
-        opt_options = []
-        for match in matches:
-            options = match.strip().split()
-            opt_options.extend(options)
+    tool_info_list = []
+
+    # Define a pattern to match a single RUN line
+    run_pattern = r'; RUN:(.*?)(?=\n; RUN:|$)'
+    run_matches = re.finditer(run_pattern, content, re.DOTALL)
+
+    for run_match in run_matches:
+        run_content = run_match.group(1).strip()
         
+        # Extract the tool name from the RUN line
+        tool_name_match = re.search(r'(\w+)', run_content)
+        if tool_name_match:
+            tool_name = tool_name_match.group(1)
+        else:
+            continue  # Skip if tool name is not found
+        
+        # Extract options from the RUN line
+        tool_option_match = re.search(r'\b' + re.escape(tool_name) + r'\b\s+(.*)', run_content)
+        if tool_option_match:
+            tool_options = tool_option_match.group(1).strip().split()
+        else:
+            tool_options = []
+
         # Replace %s in each option with the input file path
         current_file_path = os.path.abspath(file_path)
-        opt_options_with_path = [opt.replace('%s', current_file_path) for opt in opt_options]
-        
-        optionX_options = [opt for opt in opt_options_with_path if re.match(r'-option', opt)]
-        print("\n所有形式为 -optionX= 的属于 opt 工具的选项:")
-        for option in optionX_options:
-            print(option)
+        tool_options_with_path = [opt.replace('%s', current_file_path) for opt in tool_options]
 
-        other_options = [opt for opt in opt_options_with_path if opt not in optionX_options]
-        print("\n所有其他属于 opt 工具的选项:")
-        for option in other_options:
-            print(option)
-        return optionX_options, other_options
-    else:
-        print("未找到属于 opt 工具的选项")
-        return []
+        # Match options in the IR file with options in bisheng_options
+        need_test_option = [opt for opt in tool_options_with_path if any(bisheng_opt in opt for bisheng_opt in bisheng_options)]
 
-def run_opt(input_file, opt_options):
-    opt_command = f"opt {' '.join(opt_options)} {input_file} -o {input_file}.bc"
+        # Store options other than those in need_test_option
+        other_options = [opt for opt in tool_options_with_path if opt not in need_test_option]
+
+        tool_info_list.append((tool_name, other_options, need_test_option))
+
+    return tool_info_list
+
+
+def run_tool(input_file, tool_options, tool_name):
+    tool_command = f"{tool_name} {' '.join(tool_options)} {input_file} -o {input_file}.bc"
     try:
-        subprocess.run(opt_command, shell=True, check=True)
+        subprocess.run(tool_command, shell=True, check=True)
         return f"{input_file}.bc"
     except subprocess.CalledProcessError:
-        print("运行 opt 工具失败")
+        print(f"Failed to run the {tool_name} tool")
         return None
 
 def run_alive_tv(input_file, bc_file):
@@ -52,41 +71,43 @@ def run_alive_tv(input_file, bc_file):
         else:
             return False
     except subprocess.CalledProcessError:
-        print("运行 alive-tv 工具失败")
+        print("Failed to run the alive-tv tool")
         return False
 
-def test_optionX_combinations(input_file, optionX_options, other_opt_options):
+def test_optionX_combinations(input_file, need_test_option, other_options, tool_name):
 
     unique_optionX_combinations = set()  
     
-    for r in range(1, len(optionX_options) + 1):
-        for combination in permutations(optionX_options, r):
+    for r in range(1, len(need_test_option) + 1):
+        for combination in permutations(need_test_option, r):
             sorted_combination = tuple(sorted(combination))  
             if sorted_combination not in unique_optionX_combinations:
                 unique_optionX_combinations.add(sorted_combination)
                 
-                all_opt_options = list(combination) + other_opt_options
-                bc_file = run_opt(input_file, all_opt_options)
+                all_tool_options = list(combination) + other_options
+                bc_file = run_tool(input_file, all_tool_options,tool_name)
                 if bc_file:
                     if run_alive_tv(input_file, bc_file):
-                        print(f"成功的选项组合: {combination}")
-                        success_found = True
+                        print(f"Successful option combination for '{tool_name}': {combination}")
                     else:
-                        print(f"失败的选项组合: {combination}")
-                        failure_found = True
+                        print(f"Failed option combination for '{tool_name}': {combination}")
                 else:
-                    print(f"选项组合无法运行 opt 工具: {combination}")
-                    failure_found = True
+                    print(f"{tool_name} couldn't run this Option combination : {combination}")
                 
                 
                 if bc_file:
                     os.remove(bc_file)
-    
 
 if len(sys.argv) != 2:
-    print("请提供一个 LLVM IR 文件的路径作为命令行参数")
+    print("Please provide the path to an LLVM IR file as a command-line argument")
 else:
     llvm_ir_path = sys.argv[1]
-    optionX_options, other_opt_options = extract_opt_options(llvm_ir_path)
-    if optionX_options:
-        test_optionX_combinations(llvm_ir_path, optionX_options, other_opt_options)
+    bisheng_option_file = "instList.txt"
+    bisheng_options = read_bisheng_options(bisheng_option_file)
+
+    tool_info_list = extract_opt_options(llvm_ir_path, bisheng_options)
+    
+    for tool_info in tool_info_list:
+        tool_name, other_options, need_test_option = tool_info
+        if need_test_option:
+            test_optionX_combinations(llvm_ir_path, need_test_option, other_options, tool_name)
