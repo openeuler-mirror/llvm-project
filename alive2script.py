@@ -14,16 +14,19 @@ def read_bisheng_options(file_path):
 def extract_opt_options(file_path, bisheng_options):
     with open(file_path, 'r') as file:
         content = file.read()
-
     tool_info_list = []
-
     # Define a pattern to match a single RUN line
     run_pattern = r'; RUN:(.*?)(?=\n; RUN:|$)'
     run_matches = re.finditer(run_pattern, content, re.DOTALL)
-
     for run_match in run_matches:
         run_content = run_match.group(1).strip()
-        
+        # Find the index of the first '|' character
+        first_pipe_index = run_content.find('|')
+
+        if first_pipe_index != -1:
+        # Split run_content at the first '|' character
+            run_content = run_content[:first_pipe_index]
+
         # Extract the tool name from the RUN line
         tool_name_match = re.search(r'(\w+)', run_content)
         if tool_name_match:
@@ -66,7 +69,7 @@ def run_alive_tv(input_file, bc_file):
     alive_tv_command = f"alive-tv {input_file} {bc_file}"
     try:
         result = subprocess.run(alive_tv_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if "Transformation seems to be correct!" in result.stdout:
+        if "Transformation seems to be correct!" in result.stdout and "ERROR" not in result.stdout:
             return True
         else:
             return False
@@ -77,7 +80,6 @@ def run_alive_tv(input_file, bc_file):
 def test_optionX_combinations(input_file, need_test_option, other_options, tool_name):
 
     unique_optionX_combinations = set()  
-    
     for r in range(1, len(need_test_option) + 1):
         for combination in permutations(need_test_option, r):
             sorted_combination = tuple(sorted(combination))  
@@ -90,7 +92,7 @@ def test_optionX_combinations(input_file, need_test_option, other_options, tool_
                     if run_alive_tv(input_file, bc_file):
                         print(f"Successful option combination for '{tool_name}': {combination}")
                     else:
-                        print(f"Failed option combination for '{tool_name}': {combination}")
+                        print(f"Error: Failed option combination for '{tool_name}': {combination}")
                 else:
                     print(f"{tool_name} couldn't run this Option combination : {combination}")
                 
