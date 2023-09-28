@@ -57,7 +57,9 @@ def extract_opt_options(file_path, bisheng_options):
 
 
 def run_tool(input_file, tool_options, tool_name):
-    tool_command = f"{tool_name} {' '.join(tool_options)} {input_file} -o {input_file}.bc"
+    tool_command = f"{tool_name} {' '.join(tool_options)} -o {input_file}.bc"
+    if "-debug" in sys.argv:
+        print(f"----------------------Debug Info: Testing: '{tool_command}'")
     try:
         subprocess.run(tool_command, shell=True, check=True)
         return f"{input_file}.bc"
@@ -95,10 +97,12 @@ def test_optionX_combinations(input_file, need_test_option, other_options, tool_
                         print(f"Error: Failed option combination for '{tool_name}': {combination}")
                 else:
                     print(f"{tool_name} couldn't run this Option combination : {combination}")
+                
+
                 if bc_file:
                     os.remove(bc_file)
 
-if len(sys.argv) != 2:
+if len(sys.argv) < 2:
     print("Please provide the path to an LLVM IR file as a command-line argument")
 else:
     llvm_ir_path = sys.argv[1]
@@ -109,5 +113,11 @@ else:
     
     for tool_info in tool_info_list:
         tool_name, other_options, need_test_option = tool_info
+        
+        if "-debug" in sys.argv:
+            print(f"Debug Info for '{tool_name}':")
+            print(f"  need_test_option: {need_test_option}")
+            print(f"  other_options: {other_options}")
+        
         if need_test_option:
             test_optionX_combinations(llvm_ir_path, need_test_option, other_options, tool_name)
