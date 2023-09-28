@@ -95,8 +95,6 @@ def test_optionX_combinations(input_file, need_test_option, other_options, tool_
                         print(f"Error: Failed option combination for '{tool_name}': {combination}")
                 else:
                     print(f"{tool_name} couldn't run this Option combination : {combination}")
-                
-                
                 if bc_file:
                     os.remove(bc_file)
 
