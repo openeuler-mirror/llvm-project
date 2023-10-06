@@ -532,15 +532,14 @@ public:
 
   void setBlockFreq(const BlockNode &Node, uint64_t Freq);
 
-  raw_ostream &printBlockFreq(raw_ostream &OS, const BlockNode &Node) const;
-  raw_ostream &printBlockFreq(raw_ostream &OS,
-                              const BlockFrequency &Freq) const;
-
   uint64_t getEntryFreq() const {
     assert(!Freqs.empty());
     return Freqs[0].Integer;
   }
 };
+
+void printBlockFreqImpl(raw_ostream &OS, BlockFrequency EntryFreq,
+                        BlockFrequency Freq);
 
 namespace bfi_detail {
 
@@ -1067,11 +1066,6 @@ public:
   raw_ostream &print(raw_ostream &OS) const override;
 
   using BlockFrequencyInfoImplBase::dump;
-  using BlockFrequencyInfoImplBase::printBlockFreq;
-
-  raw_ostream &printBlockFreq(raw_ostream &OS, const BlockT *BB) const {
-    return BlockFrequencyInfoImplBase::printBlockFreq(OS, getNode(BB));
-  }
 
   void verifyMatch(BlockFrequencyInfoImpl<BT> &Other) const;
 };
@@ -1861,7 +1855,7 @@ struct BFIDOTGraphTraitsBase : public DefaultDOTGraphTraits {
       OS << Node->getName() << " : ";
     switch (GType) {
     case GVDT_Fraction:
-      Graph->printBlockFreq(OS, Node);
+      OS << printBlockFreq(*Graph, *Node);
       break;
     case GVDT_Integer:
       OS << Graph->getBlockFreq(Node).getFrequency();
