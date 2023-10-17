@@ -1867,13 +1867,14 @@ def SVBFMLSLT : SInst<"svbfmlslt[_{d}]", "dd$$", "f", MergeNone, "aarch64_sve_bf
 
 def SVBFMLSLB_LANE : SInst<"svbfmlslb_lane[_{d}]", "dd$$i", "f", MergeNone, "aarch64_sve_bfmlslb_lane", [IsOverloadNone], [ImmCheck<3, ImmCheck0_7>]>;
 def SVBFMLSLT_LANE : SInst<"svbfmlslt_lane[_{d}]", "dd$$i", "f", MergeNone, "aarch64_sve_bfmlslt_lane", [IsOverloadNone], [ImmCheck<3, ImmCheck0_7>]>;
+def SVPEXT_SINGLE : SInst<"svpext_lane_{d}", "P}i", "QcQsQiQl", MergeNone, "aarch64_sve_pext", [], [ImmCheck<1, ImmCheck0_3>]>;
+def SVPEXT_X2     : SInst<"svpext_lane_{d}_x2", "2.P}i", "QcQsQiQl", MergeNone, "aarch64_sve_pext_x2", [], [ImmCheck<1, ImmCheck0_1>]>;
 }
 
 let TargetGuard = "sve2p1" in {
 def SVSCLAMP : SInst<"svclamp[_{d}]", "dddd", "csil",     MergeNone, "aarch64_sve_sclamp", [], []>;
 def SVUCLAMP : SInst<"svclamp[_{d}]", "dddd", "UcUsUiUl", MergeNone, "aarch64_sve_uclamp", [], []>;
 def SVCNTP_COUNT : SInst<"svcntp_{d}", "n}i", "QcQsQiQl", MergeNone, "aarch64_sve_cntp_{d}", [IsOverloadNone], [ImmCheck<1, ImmCheck2_4_Mul2>]>;
-
 }
 
 
