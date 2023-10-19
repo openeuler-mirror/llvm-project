@@ -1883,6 +1883,13 @@ def SVWHILELO_COUNT  : SInst<"svwhilelo_{d}",  "}nni", "QcQsQiQl", MergeNone, "a
 def SVWHILELS_COUNT  : SInst<"svwhilels_{d}",  "}nni", "QcQsQiQl", MergeNone, "aarch64_sve_whilels_{d}", [IsOverloadNone], [ImmCheck<2, ImmCheck2_4_Mul2>]>;
 def SVWHILEHI_COUNT  : SInst<"svwhilehi_{d}",  "}nni", "QcQsQiQl", MergeNone, "aarch64_sve_whilehi_{d}", [IsOverloadNone], [ImmCheck<2, ImmCheck2_4_Mul2>]>;
 def SVWHILEHS_COUNT  : SInst<"svwhilehs_{d}",  "}nni", "QcQsQiQl", MergeNone, "aarch64_sve_whilehs_{d}", [IsOverloadNone], [ImmCheck<2, ImmCheck2_4_Mul2>]>;
+
+def SVDOT_X2_S : SInst<"svdot[_{d}_{2}_{3}]", "ddhh", "i",  MergeNone, "aarch64_sve_sdot_x2", [], []>;
+def SVDOT_X2_U : SInst<"svdot[_{d}_{2}_{3}]", "ddhh", "Ui", MergeNone, "aarch64_sve_udot_x2", [], []>;
+def SVDOT_X2_F : SInst<"svdot[_{d}_{2}_{3}]", "ddhh", "f",  MergeNone, "aarch64_sve_fdot_x2", [], []>;
+def SVDOT_LANE_X2_S : SInst<"svdot_lane[_{d}_{2}_{3}]", "ddhhi", "i",  MergeNone, "aarch64_sve_sdot_lane_x2", [], [ImmCheck<3, ImmCheck0_3>]>;
+def SVDOT_LANE_X2_U : SInst<"svdot_lane[_{d}_{2}_{3}]", "ddhhi", "Ui", MergeNone, "aarch64_sve_udot_lane_x2", [], [ImmCheck<3, ImmCheck0_3>]>;
+def SVDOT_LANE_X2_F : SInst<"svdot_lane[_{d}_{2}_{3}]", "ddhhi", "f",  MergeNone, "aarch64_sve_fdot_lane_x2", [], [ImmCheck<3, ImmCheck0_3>]>;
 }
 
 let TargetGuard = "sve2p1" in {
