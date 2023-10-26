@@ -3650,6 +3650,8 @@ static const struct Extension {
     {"sb", {AArch64::FeatureSB}},
     {"ssbs", {AArch64::FeatureSSBS}},
     {"tme", {AArch64::FeatureTME}},
+    {"fpmr", {AArch64::FeatureFPMR}},
+    {"fp8", {AArch64::FeatureFP8}},
     {"sme-fa64",  {AArch64::FeatureSMEFA64}},
     {"cmpbr", {AArch64::FeatureCMPBR}},
     {"lsui", {AArch64::FeatureLSUI}},

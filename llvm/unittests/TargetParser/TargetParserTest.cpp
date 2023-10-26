@@ -1657,9 +1657,9 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
       AArch64::AEK_B16B16,  AArch64::AEK_SMEF16F16, AArch64::AEK_CSSC,
       AArch64::AEK_RCPC3,   AArch64::AEK_THE,       AArch64::AEK_D128,
       AArch64::AEK_LSE128,  AArch64::AEK_SPECRES2,  AArch64::AEK_RASv2,
-      AArch64::AEK_ITE,     AArch64::AEK_GCS,       AArch64::AEK_SMEFA64,
-      AArch64::AEK_FPAC,    AArch64::AEK_CMPBR,     AArch64::AEK_LSUI,
-  };
+      AArch64::AEK_ITE,     AArch64::AEK_GCS,       AArch64::AEK_FPMR,
+      AArch64::AEK_FP8,     AArch64::AEK_SMEFA64,   AArch64::AEK_FPAC,
+      AArch64::AEK_CMPBR,   AArch64::AEK_LSUI};
 
   std::vector<StringRef> Features;
 
@@ -1730,6 +1730,8 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+specres2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+ite"));
   EXPECT_TRUE(llvm::is_contained(Features, "+gcs"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+fpmr"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+fp8"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-fa64"));
   EXPECT_TRUE(llvm::is_contained(Features, "+fpac"));
   EXPECT_TRUE(llvm::is_contained(Features, "+cmpbr"));
@@ -1863,6 +1865,8 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"predres2", "nopredres2", "+specres2", "-specres2"},
       {"rasv2", "norasv2", "+rasv2", "-rasv2"},
       {"gcs", "nogcs", "+gcs", "-gcs"},
+      {"fpmr", "nofpmr", "+fpmr", "-fpmr"},
+      {"fp8", "nofp8", "+fp8", "-fp8"},
       {"cmpbr", "nocmpbr", "+cmpbr", "-cmpbr"},
       {"lsui", "nolsui", "+lsui", "-lsui"},
   };
