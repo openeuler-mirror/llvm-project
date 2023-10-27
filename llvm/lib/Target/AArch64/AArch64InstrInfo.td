@@ -166,6 +166,8 @@ def HasFPMR          : Predicate<"Subtarget->hasFPMR()">,
                                  AssemblerPredicateWithAll<(all_of FeatureFPMR), "fpmr">;
 def HasFP8           : Predicate<"Subtarget->hasFP8()">,
                                  AssemblerPredicateWithAll<(all_of FeatureFP8), "fp8">;
+def HasFAMINMAX      : Predicate<"Subtarget->hasFAMINMAX()">,
+                                 AssemblerPredicateWithAll<(all_of FeatureFAMINMAX), "faminmax">;
 def HasCMPBR         : Predicate<"Subtarget->hasCMPBR()">,
                                  AssemblerPredicateWithAll<(all_of FeatureCMPBR), "cmpbr">;
 def HasLSUI          : Predicate<"Subtarget->hasLSUI()">,
@@ -9280,6 +9282,11 @@ let Predicates = [HasFP8] in {
   defm FSCALE : SIMDThreeSameVectorFP<0b1, 0b1, 0b111, "fscale", null_frag>;
 } // End let Predicates = [HasFP8]
 
+let Predicates = [HasFAMINMAX] in {
+ defm FAMAX : SIMDThreeSameVectorFP<0b0, 0b1, 0b011, "famax", null_frag>;
+ defm FAMIN : SIMDThreeSameVectorFP<0b1, 0b1, 0b011, "famin", null_frag>;
+} // End let Predicates = [HasFAMAXMIN]
+
 let Predicates = [HasCMPBR] in {
  defm CBGT : CmpBranchRegister<0b000, "cbgt">;
  defm CBGE : CmpBranchRegister<0b001, "cbge">;
@@ -9329,7 +9336,6 @@ let Predicates = [HasCMPBR] in {
  defm : CmpBranchWRegisterAlias<"cbhls", "CBHHS">;
  defm : CmpBranchWRegisterAlias<"cbhlt", "CBHGT">;
 } // HasCMPBR
-
 
 include "AArch64InstrAtomics.td"
 include "AArch64SVEInstrInfo.td"

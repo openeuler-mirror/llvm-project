@@ -1658,8 +1658,8 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
       AArch64::AEK_RCPC3,   AArch64::AEK_THE,       AArch64::AEK_D128,
       AArch64::AEK_LSE128,  AArch64::AEK_SPECRES2,  AArch64::AEK_RASv2,
       AArch64::AEK_ITE,     AArch64::AEK_GCS,       AArch64::AEK_FPMR,
-      AArch64::AEK_FP8,     AArch64::AEK_SMEFA64,   AArch64::AEK_FPAC,
-      AArch64::AEK_CMPBR,   AArch64::AEK_LSUI};
+      AArch64::AEK_FP8,     AArch64::AEK_FAMINMAX   AArch64::AEK_SMEFA64,
+      AArch64::AEK_FPAC,    AArch64::AEK_CMPBR,     AArch64::AEK_LSUI};
 
   std::vector<StringRef> Features;
 
@@ -1732,6 +1732,7 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+gcs"));
   EXPECT_TRUE(llvm::is_contained(Features, "+fpmr"));
   EXPECT_TRUE(llvm::is_contained(Features, "+fp8"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+faminmax"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-fa64"));
   EXPECT_TRUE(llvm::is_contained(Features, "+fpac"));
   EXPECT_TRUE(llvm::is_contained(Features, "+cmpbr"));
@@ -1867,6 +1868,7 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"gcs", "nogcs", "+gcs", "-gcs"},
       {"fpmr", "nofpmr", "+fpmr", "-fpmr"},
       {"fp8", "nofp8", "+fp8", "-fp8"},
+      {"faminmax", "nofaminmax", "+faminmax", "-faminmax"},
       {"cmpbr", "nocmpbr", "+cmpbr", "-cmpbr"},
       {"lsui", "nolsui", "+lsui", "-lsui"},
   };

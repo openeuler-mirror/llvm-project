@@ -156,12 +156,13 @@ enum ArchExtKind : uint64_t {
   AEK_RASv2 =       1ULL << 54, // FEAT_RASv2
   AEK_ITE =         1ULL << 55, // FEAT_ITE
   AEK_GCS =         1ULL << 56, // FEAT_GCS
-  AEK_FPMR =        1ULL << 57, // FEAT_GCS
-  AEK_FP8 =         1ULL << 58, // FEAT_GCS
-  AEK_SMEFA64 =     1ULL << 59, // FEAT_SME_FA64
-  AEK_FPAC =        1ULL << 60, // FEAT_FPAC
-  AEK_CMPBR =       1ULL << 61, // FEAT_CMPBR
-  AEK_LSUI =        1ULL << 62, // FEAT_LSUI
+  AEK_FPMR =        1ULL << 57, // AEK_FPMR
+  AEK_FP8 =         1ULL << 58, // AEK_FP8
+  AEK_FAMINMAX =    1ULL << 59, // AEK_FAMINMAX
+  AEK_SMEFA64 =     1ULL << 60, // FEAT_SME_FA64
+  AEK_FPAC =        1ULL << 61, // FEAT_FPAC
+  AEK_CMPBR =       1ULL << 62, // FEAT_CMPBR
+  AEK_LSUI =        1ULL << 63, // FEAT_LSUI
 };
 // clang-format on
 
@@ -270,6 +271,7 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"gcs", AArch64::AEK_GCS, "+gcs", "-gcs", FEAT_MAX, "", 0},
     {"fpmr", AArch64::AEK_FPMR, "+fpmr", "-fpmr", FEAT_INIT, "", 0},
     {"fp8", AArch64::AEK_FP8, "+fp8", "-fp8", FEAT_INIT, "+fpmr", 0},
+    {"faminmax", AArch64::AEK_FAMINMAX, "+faminmax", "-faminmax", FEAT_INIT, "", 0},
     {"sme-fa64",  AArch64::AEK_SMEFA64,  "+sme-fa64", "-sme-fa64",  FEAT_MAX, "", 0},
     {"fpac",  AArch64::AEK_FPAC,  "+fpac", "-fpac",  FEAT_MAX, "", 0},
     {"cmpbr", AArch64::AEK_CMPBR, "+cmpbr", "-cmpbr", FEAT_CMPBR, "", 0},
