@@ -31,8 +31,11 @@ class ObjectFile;
 /// to their functions.
 class InstrProfCorrelator {
 public:
+  /// Indicate which kind correlator to use.
+  enum ProfCorrelatorKind { NONE, DEBUG_INFO };
+
   static llvm::Expected<std::unique_ptr<InstrProfCorrelator>>
-  get(StringRef DebugInfoFilename);
+  get(StringRef Filename, ProfCorrelatorKind FileKind);
 
   /// Construct a ProfileData vector used to correlate raw instrumentation data
   /// to their functions.
@@ -102,7 +105,7 @@ protected:
 
 private:
   static llvm::Expected<std::unique_ptr<InstrProfCorrelator>>
-  get(std::unique_ptr<MemoryBuffer> Buffer);
+  get(std::unique_ptr<MemoryBuffer> Buffer, ProfCorrelatorKind FileKind);
 
   const InstrProfCorrelatorKind Kind;
 };
@@ -126,7 +129,7 @@ public:
 
   static llvm::Expected<std::unique_ptr<InstrProfCorrelatorImpl<IntPtrT>>>
   get(std::unique_ptr<InstrProfCorrelator::Context> Ctx,
-      const object::ObjectFile &Obj);
+      const object::ObjectFile &Obj, ProfCorrelatorKind FileKind);
 
 protected:
   std::vector<RawInstrProf::ProfileData<IntPtrT>> Data;
@@ -135,7 +138,9 @@ protected:
   virtual void correlateProfileDataImpl(
       InstrProfCorrelator::CorrelationData *Data = nullptr) = 0;
 
-  Error dumpYaml(raw_ostream &OS) override;
+  virtual Error correlateProfileNameImpl() = 0;
+
+  Error dumpYaml(int MaxWarnings, raw_ostream &OS) override;
 
   void addProbe(StringRef FunctionName, uint64_t CFGHash, IntPtrT CounterOffset,
                 IntPtrT FunctionPtr, uint32_t NumCounters);
@@ -199,6 +204,8 @@ private:
   /// \endcode
   void correlateProfileDataImpl(
       InstrProfCorrelator::CorrelationData *Data = nullptr) override;
+
+  Error correlateProfileNameImpl() override;
 };
 
 } // end namespace llvm
