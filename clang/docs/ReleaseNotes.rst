@@ -860,6 +860,10 @@ Bug Fixes to C++ Support
   (`#64172 <https://github.com/llvm/llvm-project/issues/64172>`_) and
   (`#64723 <https://github.com/llvm/llvm-project/issues/64723>`_).
 
+- Clang now defers the instantiation of explicit specifier until constraint checking
+  completes (except deduction guides). Fixes:
+  (`#59827 <https://github.com/llvm/llvm-project/issues/59827>`_)
+
 Bug Fixes to AST Handling
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
