@@ -167,10 +167,12 @@ enum ArchExtKind : uint64_t {
   AEK_SSVE_FP8DOT4 = 1ULL << 65, // FEAT_SSVE_FP8DOT4
   AEK_LUT =          1ULL << 66, // FEAT_LUT
   AEK_SME_LUTv2 =    1ULL << 67, // FEAT_SME_LUTv2
-  AEK_SMEFA64 =      1ULL << 68, // FEAT_SME_FA64
-  AEK_FPAC =         1ULL << 69, // FEAT_FPAC
-  AEK_CMPBR =        1ULL << 70, // FEAT_CMPBR
-  AEK_LSUI =         1ULL << 71, // FEAT_LSUI
+  AEK_SMEF8F16 =     1ULL << 68, // FEAT_SME_F8F16
+  AEK_SMEF8F32 =     1ULL << 69, // FEAT_SME_F8F32
+  AEK_SMEFA64 =      1ULL << 70, // FEAT_SME_FA64
+  AEK_FPAC =         1ULL << 71, // FEAT_FPAC
+  AEK_CMPBR =        1ULL << 72, // FEAT_CMPBR
+  AEK_LSUI =         1ULL << 73, // FEAT_LSUI
 };
 // clang-format on
 
@@ -288,6 +290,8 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"ssve-fp8dot4", AArch64::AEK_SSVE_FP8DOT4, "+ssve-fp8dot4", "-ssve-fp8dot4", FEAT_INIT, "+sme2", 0},
     {"lut", AArch64::AEK_LUT, "+lut", "-lut", FEAT_INIT, "", 0},
     {"sme-lutv2", AArch64::AEK_SME_LUTv2, "+sme-lutv2", "-sme-lutv2", FEAT_INIT, "", 0},
+    {"sme-f8f16", AArch64::AEK_SMEF8F16, "+sme-f8f16", "-sme-f8f16", FEAT_INIT, "+sme2,+fp8", 0},
+    {"sme-f8f32", AArch64::AEK_SMEF8F32, "+sme-f8f32", "-sme-f8f32", FEAT_INIT, "+sme2,+fp8", 0},
     {"sme-fa64",  AArch64::AEK_SMEFA64,  "+sme-fa64", "-sme-fa64",  FEAT_MAX, "", 0},
     {"fpac",  AArch64::AEK_FPAC,  "+fpac", "-fpac",  FEAT_MAX, "", 0},
     {"cmpbr", AArch64::AEK_CMPBR, "+cmpbr", "-cmpbr", FEAT_CMPBR, "", 0},

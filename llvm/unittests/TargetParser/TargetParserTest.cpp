@@ -1661,8 +1661,9 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
       AArch64::AEK_FP8,         AArch64::AEK_FAMINMAX,     AArch64::AEK_FP8FMA,
       AArch64::AEK_SSVE_FP8FMA, AArch64::AEK_FP8DOT2,      AArch64::AEK_SSVE_FP8DOT2,
       AArch64::AEK_FP8DOT4,     AArch64::AEK_SSVE_FP8DOT4, AArch64::AEK_LUT,
-      AArch64::AEK_SMEFA64,     AArch64::AEK_SME_LUTv2,    AArch64::AEK_FPAC,
-      AArch64::AEK_CMPBR,        AArch64::AEK_LSUI};
+      AArch64::AEK_SME_LUTv2,   AArch64::AEK_SMEF8F16,     AArch64::AEK_SMEF8F32,
+      AArch64::AEK_SMEFA64,     AArch64::AEK_FPAC,         AArch64::AEK_CMPBR,
+      AArch64::AEK_LSUI};
 
   std::vector<StringRef> Features;
 
@@ -1744,6 +1745,8 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+ssve-fp8dot4"));
   EXPECT_TRUE(llvm::is_contained(Features, "+lut"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-lutv2"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sme-f8f16"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sme-f8f32"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-fa64"));
   EXPECT_TRUE(llvm::is_contained(Features, "+fpac"));
   EXPECT_TRUE(llvm::is_contained(Features, "+cmpbr"));
@@ -1888,6 +1891,8 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"ssve-fp8dot4", "nossve-fp8dot4", "+ssve-fp8dot4", "-ssve-fp8dot4"},
       {"lut", "nolut", "+lut", "-lut"},
       {"sme-lutv2", "nosme-lutv2", "+sme-lutv2", "-sme-lutv2"},
+      {"sme-f8f16", "nosme-f8f16", "+sme-f8f16", "-sme-f8f16"},
+      {"sme-f8f32", "nosme-f8f32", "+sme-f8f32", "-sme-f8f32"},
       {"cmpbr", "nocmpbr", "+cmpbr", "-cmpbr"},
       {"lsui", "nolsui", "+lsui", "-lsui"},
   };
