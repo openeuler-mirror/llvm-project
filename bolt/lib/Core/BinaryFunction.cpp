@@ -4448,10 +4448,6 @@ DebugLocationsVector BinaryFunction::translateInputToOutputLocationList(
   return MergedLL;
 }
 
-bool BinaryFunction::shouldPreserveNops() const {
-  return PreserveNops || opts::KeepNops;
-}
-
 void BinaryFunction::printLoopInfo(raw_ostream &OS) const {
   if (!opts::shouldPrint(*this))
     return;
