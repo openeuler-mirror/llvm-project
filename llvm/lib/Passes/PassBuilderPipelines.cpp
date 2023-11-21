@@ -128,6 +128,10 @@
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
 
+#ifdef ENABLE_CODESIZE_OPT
+#include "llvm/Transforms/IPO/FunctionMerging.h" //func-merging
+#endif
+
 using namespace llvm;
 
 static cl::opt<InliningAdvisorMode> UseInlineAdvisor(
@@ -708,6 +712,14 @@ void PassBuilder::addPGOInstrPassesForO0(ModulePassManager &MPM,
 }
 
 static InlineParams getInlineParamsFromOptLevel(OptimizationLevel Level) {
+#ifdef ENABLE_CODESIZE_OPT
+  //===for size====================
+  if (EnableCodeSize) {
+    if (Level == OptimizationLevel::O2)
+      return getInlineParams(2, 1);
+  }
+  //===for size====================
+#endif
   return getInlineParams(Level.getSpeedupLevel(), Level.getSizeLevel());
 }
 
@@ -1324,6 +1336,13 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
   const ThinOrFullLTOPhase LTOPhase = LTOPreLink
                                           ? ThinOrFullLTOPhase::FullLTOPreLink
                                           : ThinOrFullLTOPhase::None;
+
+#ifdef ENABLE_CODESIZE_OPT
+  if (EnableCodeSize) {
+    MPM.addPass(MergeFunctionsPass());
+    MPM.addPass(FunctionMergingPass());
+  }
+#endif
   // Add the core simplification pipeline.
   MPM.addPass(buildModuleSimplificationPipeline(Level, LTOPhase));
 

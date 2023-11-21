@@ -38,6 +38,10 @@
 #include <memory>
 #include <string>
 
+#ifdef ENABLE_CODESIZE_OPT
+#include "llvm/Support/CodeSizeOpt.h"
+#endif
+
 namespace llvm {
 
 namespace Intrinsic {
@@ -662,7 +666,17 @@ public:
 
   /// Optimize this function for size (-Os) or minimum size (-Oz).
   bool hasOptSize() const {
+  #ifdef ENABLE_CODESIZE_OPT   
+  if(EnableCodeSize){
+    //for size
+    return true;
+  }
+  else{
     return hasFnAttribute(Attribute::OptimizeForSize) || hasMinSize();
+  }
+  #else
+    return hasFnAttribute(Attribute::OptimizeForSize) || hasMinSize();
+  #endif
   }
 
   /// Returns the denormal handling type for the default rounding mode of the
