@@ -1537,6 +1537,13 @@ public:
            getShiftExtendAmount() <= 4;
   }
 
+  bool isLSLImm3Shift() const {
+    if (!isShiftExtend())
+      return false;
+    AArch64_AM::ShiftExtendType ET = getShiftExtendType();
+    return ET == AArch64_AM::LSL && getShiftExtendAmount() <= 7;
+  }
+
   template<int Width> bool isMemXExtend() const {
     if (!isExtend())
       return false;
@@ -2098,6 +2105,12 @@ public:
     assert(N == 1 && "Invalid number of operands!");
     unsigned Imm =
         AArch64_AM::getShifterImm(getShiftExtendType(), getShiftExtendAmount());
+    Inst.addOperand(MCOperand::createImm(Imm));
+  }
+
+  void addLSLImm3ShifterOperands(MCInst &Inst, unsigned N) const {
+    assert(N == 1 && "Invalid number of operands!");
+    unsigned Imm = getShiftExtendAmount();
     Inst.addOperand(MCOperand::createImm(Imm));
   }
 
@@ -3675,6 +3688,7 @@ static const struct Extension {
     {"sme-f8f16", {AArch64::FeatureSMEF8F16}},
     {"sme-f8f32", {AArch64::FeatureSMEF8F32}},
     {"sme-fa64",  {AArch64::FeatureSMEFA64}},
+    {"cpa", {AArch64::FeatureCPA}},
     {"cmpbr", {AArch64::FeatureCMPBR}},
     {"f8f32mm", {AArch64::FeatureF8F32MM}},
     {"f8f16mm", {AArch64::FeatureF8F16MM}},
@@ -6089,6 +6103,9 @@ bool AArch64AsmParser::showMatchError(SMLoc Loc, unsigned ErrCode,
         "Invalid vector list, expected list with each SVE vector in the list "
         "4 registers apart, and the first register in the range [z0, z3] or "
         "[z16, z19] and with correct element type");
+  case Match_AddSubLSLImm3ShiftLarge:
+    return Error(Loc,
+      "expected 'lsl' with optional integer in range [0, 7]");
   default:
     llvm_unreachable("unexpected error code!");
   }
@@ -6473,6 +6490,7 @@ bool AArch64AsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   case Match_InvalidMemoryIndexed8:
   case Match_InvalidMemoryIndexed16:
   case Match_InvalidCondCode:
+  case Match_AddSubLSLImm3ShiftLarge:
   case Match_AddSubRegExtendSmall:
   case Match_AddSubRegExtendLarge:
   case Match_AddSubSecondSource:

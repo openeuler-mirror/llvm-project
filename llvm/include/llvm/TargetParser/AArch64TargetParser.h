@@ -110,7 +110,7 @@ enum ArchExtKind : uint64_t {
   AEK_PROFILE =      7,  // FEAT_SPE
   AEK_RAS =          8,  // FEAT_RAS, FEAT_RASv1p1
   AEK_LSE =          9,  // FEAT_LSE
-  AEK_SVE =          10,  // FEAT_SVE
+  AEK_SVE =          10, // FEAT_SVE
   AEK_DOTPROD =      11, // FEAT_DotProd
   AEK_RCPC =         12, // FEAT_LRCPC
   AEK_RDM =          13, // FEAT_RDM
@@ -158,9 +158,9 @@ enum ArchExtKind : uint64_t {
   AEK_RASv2 =        55, // FEAT_RASv2
   AEK_ITE =          56, // FEAT_ITE
   AEK_GCS =          57, // FEAT_GCS
-  AEK_FPMR =         58, // AEK_FPMR
-  AEK_FP8 =          59, // AEK_FP8
-  AEK_FAMINMAX =     60, // AEK_FAMINMAX
+  AEK_FPMR =         58, // FEAT_FPMR
+  AEK_FP8 =          59, // FEAT_FP8
+  AEK_FAMINMAX =     60, // FEAT_FAMINMAX
   AEK_FP8FMA =       61, // FEAT_FP8FMA
   AEK_SSVE_FP8FMA =  62, // FEAT_SSVE_FP8FMA
   AEK_FP8DOT2 =      63, // FEAT_FP8DOT2
@@ -172,18 +172,19 @@ enum ArchExtKind : uint64_t {
   AEK_SMEF8F16 =     69, // FEAT_SME_F8F16
   AEK_SMEF8F32 =     70, // FEAT_SME_F8F32
   AEK_SMEFA64 =      71, // FEAT_SME_FA64
-  AEK_FPAC =         72, // FEAT_FPAC
-  AEK_CMPBR =        73, // FEAT_CMPBR
-  AEK_LSUI =         74, // FEAT_LSUI
-  AEK_SVE2P2 =       75, // AEK_SVE2P2
-  AEK_SME2P2 =       76, // AEK_SME2P2
-  AEK_SVE_F16F32MM = 77, // AEK_SVE_F16F32MM
-  AEK_SVE_AES2 =     78, // AEK_SVE_AES2
-  AEK_SSVE_AES =     79, // AEK_SSVE_AES
-  AEK_F8F32MM =      80, // AEK_F8F32MM
-  AEK_F8F16MM =      81, // AEK_F8F16MM
-  AEK_LSFE =         82, // AEK_LSFE
-  AEK_FPRCVT =       83, // AEK_FPRCVT
+  AEK_CPA =          72, // FEAT_CPA
+  AEK_FPAC =         73, // FEAT_FPAC
+  AEK_CMPBR =        74, // FEAT_CMPBR
+  AEK_LSUI =         75, // FEAT_LSUI
+  AEK_SVE2P2 =       76, // FEAT_SVE2P2
+  AEK_SME2P2 =       77, // FEAT_SME2P2
+  AEK_SVE_F16F32MM = 78, // FEAT_SVE_F16F32MM
+  AEK_SVE_AES2 =     79, // FEAT_SVE_AES2
+  AEK_SSVE_AES =     80, // FEAT_SSVE_AES
+  AEK_F8F32MM =      81, // FEAT_F8F32MM
+  AEK_F8F16MM =      82, // FEAT_F8F16MM
+  AEK_LSFE =         83, // FEAT_LSFE
+  AEK_FPRCVT =       84, // FEAT_FPRCVT
   AEK_NUM_EXTENSIONS
 };
 using ExtensionBitset = Bitset<AEK_NUM_EXTENSIONS>;
@@ -306,6 +307,7 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"sme-f8f16", AArch64::AEK_SMEF8F16, "+sme-f8f16", "-sme-f8f16", FEAT_INIT, "+sme2,+fp8", 0},
     {"sme-f8f32", AArch64::AEK_SMEF8F32, "+sme-f8f32", "-sme-f8f32", FEAT_INIT, "+sme2,+fp8", 0},
     {"sme-fa64",  AArch64::AEK_SMEFA64,  "+sme-fa64", "-sme-fa64",  FEAT_MAX, "", 0},
+    {"cpa", AArch64::AEK_CPA, "+cpa", "-cpa", FEAT_INIT, "", 0},
     {"fpac",  AArch64::AEK_FPAC,  "+fpac", "-fpac",  FEAT_MAX, "", 0},
     {"cmpbr", AArch64::AEK_CMPBR, "+cmpbr", "-cmpbr", FEAT_CMPBR, "", 0},
     {"lsui", AArch64::AEK_LSUI, "+lsui", "-lsui", FEAT_LSUI, "", 0},
@@ -401,7 +403,8 @@ inline constexpr ArchInfo ARMV9_3A  = { VersionTuple{9, 3}, AProfile, "armv9.3-a
                                         AArch64::ExtensionBitset({AArch64::AEK_MOPS, AArch64::AEK_HBC}))};
 inline constexpr ArchInfo ARMV9_4A  = { VersionTuple{9, 4}, AProfile, "armv9.4-a", "+v9.4a", (ARMV9_3A.DefaultExts |
                                         AArch64::ExtensionBitset({AArch64::AEK_SPECRES2, AArch64::AEK_CSSC, AArch64::AEK_RASv2}))};
-inline constexpr ArchInfo ARMV9_5A  = { VersionTuple{9, 5}, AProfile, "armv9.5-a", "+v9.5a", (ARMV9_4A.DefaultExts)};
+inline constexpr ArchInfo ARMV9_5A  = { VersionTuple{9, 5}, AProfile, "armv9.5-a", "+v9.5a", (ARMV9_4A.DefaultExts |
+                                        AArch64::ExtensionBitset({AArch64::AEK_CPA}))};
 inline constexpr ArchInfo ARMV9_6A  = { VersionTuple{9, 6}, AProfile, "armv9.6-a", "+v9.6a", (ARMV9_5A.DefaultExts |
                                         AArch64::ExtensionBitset({AArch64::AEK_CMPBR, AArch64::AEK_LSUI}))};
 // For v8-R, we do not enable crypto and align with GCC that enables a more minimal set of optional architecture extensions.

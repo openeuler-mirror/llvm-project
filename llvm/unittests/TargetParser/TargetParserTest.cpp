@@ -1766,11 +1766,11 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
       AArch64::AEK_SSVE_FP8FMA, AArch64::AEK_FP8DOT2,      AArch64::AEK_SSVE_FP8DOT2,
       AArch64::AEK_FP8DOT4,     AArch64::AEK_SSVE_FP8DOT4, AArch64::AEK_LUT,
       AArch64::AEK_SME_LUTv2,   AArch64::AEK_SMEF8F16,     AArch64::AEK_SMEF8F32,
-      AArch64::AEK_SMEFA64,     AArch64::AEK_FPAC,         AArch64::AEK_CMPBR,
-      AArch64::AEK_LSUI,        AArch64::AEK_SVE2P2,       AArch64::AEK_SME2P2,
-      AArch64::AEK_SVE_F16F32MM, AArch64::AEK_SVE_AES2,    AArch64::AEK_SSVE_AES,
-      AArch64::AEK_F8F32MM,      AArch64::AEK_F8F16MM,     AArch64::AEK_LSFE,
-      AArch64::AEK_FPRCVT};
+      AArch64::AEK_SMEFA64,     AArch64::AEK_CPA,          AArch64::AEK_FPAC,
+      AArch64::AEK_CMPBR,       AArch64::AEK_LSUI,         AArch64::AEK_SVE2P2,
+      AArch64::AEK_SME2P2,      AArch64::AEK_SVE_F16F32MM, AArch64::AEK_SVE_AES2,
+      AArch64::AEK_SSVE_AES,    AArch64::AEK_F8F32MM,      AArch64::AEK_F8F16MM,
+      AArch64::AEK_LSFE,        AArch64::AEK_FPRCVT};
 
   std::vector<StringRef> Features;
 
@@ -1863,6 +1863,7 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-f8f16"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-f8f32"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-fa64"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+cpa"));
   EXPECT_TRUE(llvm::is_contained(Features, "+fpac"));
   EXPECT_TRUE(llvm::is_contained(Features, "+cmpbr"));
   EXPECT_TRUE(llvm::is_contained(Features, "+lsui"));
