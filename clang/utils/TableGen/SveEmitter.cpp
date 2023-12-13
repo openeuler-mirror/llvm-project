@@ -1267,6 +1267,7 @@ void SVEEmitter::createHeader(raw_ostream &OS) {
   OS << "typedef __SVBFloat16_t svbfloat16_t;\n";
 
   OS << "#include <arm_bf16.h>\n";
+  OS << "#include <arm_vector_types.h>\n";
 
   OS << "typedef __SVFloat32_t svfloat32_t;\n";
   OS << "typedef __SVFloat64_t svfloat64_t;\n";
@@ -1797,4 +1798,5 @@ void EmitSmeStreamingAttrs(RecordKeeper &Records, raw_ostream &OS) {
 void EmitSmeBuiltinZAState(RecordKeeper &Records, raw_ostream &OS) {
   SVEEmitter(Records).createBuiltinZAState(OS);
 }
+
 } // End namespace clang
