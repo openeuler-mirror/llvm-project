@@ -1941,7 +1941,6 @@ def SVFMINQV: SInst<"svminqv[_{d}]", "{Pd", "hfd", MergeNone, "aarch64_sve_fminq
 }
 
 let TargetGuard = "sve2p1" in {
-def SVFCLAMP   : SInst<"svclamp[_{d}]", "dddd", "hfd", MergeNone, "aarch64_sve_fclamp", [], []>;
 def SVPTRUE_COUNT  : SInst<"svptrue_{d}", "}v", "QcQsQiQl", MergeNone, "aarch64_sve_ptrue_{d}", [IsOverloadNone], []>;
 def SVBFMLSLB : SInst<"svbfmlslb[_{d}]", "dd$$", "f", MergeNone, "aarch64_sve_bfmlslb", [IsOverloadNone], []>;
 def SVBFMLSLT : SInst<"svbfmlslt[_{d}]", "dd$$", "f", MergeNone, "aarch64_sve_bfmlslt", [IsOverloadNone], []>;
@@ -1981,10 +1980,12 @@ def SVPSEL_B : SInst<"svpsel_lane_b8",  "PPPm", "Pc", MergeNone, "", [], []>;
 def SVPSEL_H : SInst<"svpsel_lane_b16", "PPPm", "Ps", MergeNone, "", [], []>;
 def SVPSEL_S : SInst<"svpsel_lane_b32", "PPPm", "Pi", MergeNone, "", [], []>;
 def SVPSEL_D : SInst<"svpsel_lane_b64", "PPPm", "Pl", MergeNone, "", [], []>;
-
-def SVCNTP_COUNT : SInst<"svcntp_{d}", "n}i", "QcQsQiQl", MergeNone, "aarch64_sve_cntp_{d}", [IsOverloadNone], [ImmCheck<1, ImmCheck2_4_Mul2>]>;
 }
 
+let TargetGuard = "sve2p1|sme2" in {
+  def SVFCLAMP   : SInst<"svclamp[_{d}]", "dddd", "hfd", MergeNone, "aarch64_sve_fclamp", [IsStreamingCompatible], []>;
+  def SVCNTP_COUNT : SInst<"svcntp_{d}", "n}i", "QcQsQiQl", MergeNone, "aarch64_sve_cntp_{d}", [IsOverloadNone, IsStreamingCompatible], [ImmCheck<1, ImmCheck2_4_Mul2>]>;
+}
 
 let TargetGuard = "sve2p1,b16b16" in {
 defm SVMUL_BF  : SInstZPZZ<"svmul",  "b", "aarch64_sve_fmul",   "aarch64_sve_fmul_u">;
