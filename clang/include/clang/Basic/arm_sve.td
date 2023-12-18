@@ -2059,8 +2059,8 @@ let SVETargetGuard = "sve2p1", SMETargetGuard = "sme2" in {
   def SVCNTP_COUNT : SInst<"svcntp_{d}", "n}i", "QcQsQiQl", MergeNone, "aarch64_sve_cntp_{d}", [IsOverloadNone, VerifyRuntimeMode], [ImmCheck<1, ImmCheck2_4_Mul2>]>;
 }
 
-let SVETargetGuard = "sve2p1", SMETargetGuard = InvalidMode in {
-defm SVREVD : SInstZPZ<"svrevd", "csilUcUsUiUl", "aarch64_sve_revd">;
+let SVETargetGuard = "sve2p1", SMETargetGuard = "sme" in {
+defm SVREVD : SInstZPZ<"svrevd", "csilUcUsUiUlbhfd", "aarch64_sve_revd">;
 }
 
 let SVETargetGuard = "sve2,b16b16", SMETargetGuard = "sme2,b16b16" in {
