@@ -1927,3 +1927,8 @@ def : RWSysReg<"PFAR_EL2",          0b11, 0b100, 0b0110, 0b0000, 0b101>;
 // v9.4a Exception-based event profiling (FEAT_EBEP)
 //                                  Op0   Op1    CRn     CRm     Op2
 def : RWSysReg<"PM",                0b11, 0b000, 0b0100, 0b0011, 0b001>;
+
+// v9.5a Hardware Dirty State Tracking Structure (FEAT_HDBSS)
+//                                  Op0   Op1    CRn     CRm     Op2
+def : RWSysReg<"HDBSSBR_EL2",       0b11, 0b100, 0b0010, 0b0011, 0b010>;
+def : RWSysReg<"HDBSSPROD_EL2",     0b11, 0b100, 0b0010, 0b0011, 0b011>;
