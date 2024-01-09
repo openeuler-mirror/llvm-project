@@ -483,6 +483,8 @@ public:
     llvm_unreachable("Unknown TargetTransformInfo::CacheLevel");
   }
 
+  std::optional<unsigned> getMinPageSize() const { return {}; }
+
   unsigned getPrefetchDistance() const { return 0; }
   unsigned getMinPrefetchStride(unsigned NumMemAccesses,
                                 unsigned NumStridedMemAccesses,
