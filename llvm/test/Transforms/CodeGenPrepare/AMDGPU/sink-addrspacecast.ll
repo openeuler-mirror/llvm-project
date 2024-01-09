@@ -1,4 +1,4 @@
-; RUN: opt -S -codegenprepare -mtriple=amdgcn--amdhsa < %s | FileCheck %s
+; RUN: opt -S -passes='require<profile-summary>,function(codegenprepare)' -mtriple=amdgcn--amdhsa < %s | FileCheck %s
 
 ; CHECK-LABEL: @no_sink_local_to_flat(
 ; CHECK: addrspacecast

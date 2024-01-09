@@ -1,6 +1,6 @@
 ; RUN: llc -mtriple aarch64 -mattr=+sve -asm-verbose=0 < %s | FileCheck %s
 ; RUN: llc -mtriple aarch64 -mattr=+sve -asm-verbose=0 -opaque-pointers < %s | FileCheck %s
-; RUN: opt -mtriple=aarch64 -codegenprepare -S < %s | llc -mtriple=aarch64 -mattr=+sve -asm-verbose=0 | FileCheck %s
+; RUN: opt -mtriple=aarch64 -passes='require<profile-summary>,function(codegenprepare)' -S < %s | llc -mtriple=aarch64 -mattr=+sve -asm-verbose=0 | FileCheck %s
 
 ;
 ; RDVL
