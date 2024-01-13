@@ -3,6 +3,7 @@
 
 /// Fails when only leak sanitizer is enabled
 // UNSUPPORTED: arm-linux, armhf-linux
+// UNSUPPORTED: aarch64-target-arch
 
 #include <stdio.h>
 #include <stdlib.h>
