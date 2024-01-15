@@ -13,6 +13,7 @@
 // RUN: cat %device_rundir/%t.log.* >> %t.log
 // RUN: %adb_shell 'cat %device_rundir/%t.log.*' >> %t.log
 // RUN: FileCheck %s --check-prefix=CHECK-ERROR < %t.log.*
+// REQUIRES: x86_64
 
 #include <stdio.h>
 #include <stdlib.h>

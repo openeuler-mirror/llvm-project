@@ -3,6 +3,7 @@
 
 /// Fails when only leak sanitizer is enabled
 // UNSUPPORTED: arm-linux, armhf-linux
+// REQUIRES: x86_64
 
 #include <assert.h>
 #include <stdio.h>
