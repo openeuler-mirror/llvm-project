@@ -317,6 +317,11 @@ if (LLVM_COMPILER_IS_GCC_COMPATIBLE)
   endif()
 endif ()
 
+option(BUILD_FOR_OPENEULER "Add gcc compatible options for openEuler toolchain" OFF)
+if (BUILD_FOR_OPENEULER)
+  add_definitions( -DBUILD_FOR_OPENEULER )
+endif()
+
 # Determine HOST_LINK_VERSION on Darwin.
 set(HOST_LINK_VERSION)
 if (APPLE AND NOT CMAKE_LINKER MATCHES ".*lld.*")

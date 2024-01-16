@@ -1,3 +1,7 @@
 set(LLVM_TARGET_DEFINITIONS Options.td)
+if (BUILD_FOR_OPENEULER)
+tablegen(LLVM Options.inc -gen-opt-parser-defs -DBUILD_FOR_OPENEULER)
+else()
 tablegen(LLVM Options.inc -gen-opt-parser-defs)
+endif()
 add_public_tablegen_target(ClangDriverOptions)
