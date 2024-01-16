@@ -4680,6 +4680,17 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back("-triple");
   CmdArgs.push_back(Args.MakeArgString(TripleStr));
 
+#ifdef BUILD_FOR_OPENEULER
+  if (Args.hasFlag(options::OPT_fgcc_compatible,
+                   options::OPT_fno_gcc_compatible, true)) {
+    CmdArgs.push_back("-Wno-error=unknown-warning-option");
+    CmdArgs.push_back("-Wno-error=unused-parameter");
+    CmdArgs.push_back("-Wno-error=unused-function");
+    CmdArgs.push_back("-Wno-error=unused-but-set-parameter");
+    CmdArgs.push_back("-Wno-error=unused-but-set-variable");
+  }
+#endif
+
   if (const Arg *MJ = Args.getLastArg(options::OPT_MJ)) {
     DumpCompilationDatabase(C, MJ->getValue(), TripleStr, Output, Input, Args);
     Args.ClaimAllArgs(options::OPT_MJ);

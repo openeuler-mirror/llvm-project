@@ -1786,6 +1786,12 @@ def fmemory_profile_use_EQ : Joined<["-"], "fmemory-profile-use=">,
     HelpText<"Use memory profile for profile-guided memory optimization">,
     MarshallingInfoString<CodeGenOpts<"MemoryProfileUsePath">>;
 
+#ifdef BUILD_FOR_OPENEULER
+def fgcc_compatible : Flag<["-"], "fgcc-compatible">, Group<f_Group>,
+  HelpText<"Enable gcc compatibility for openEuler.">;
+def fno_gcc_compatible : Flag<["-"], "fno-gcc-compatible">, Group<f_Group>;
+#endif
+
 // Begin sanitizer flags. These should all be core options exposed in all driver
 // modes.
 let Flags = [CC1Option, CoreOption] in {
@@ -5151,6 +5157,14 @@ def falign_jumps_EQ : Joined<["-"], "falign-jumps=">, Group<clang_ignored_gcc_op
 // FIXME: This option should be supported and wired up to our diognostics, but
 // ignore it for now to avoid breaking builds that use it.
 def fdiagnostics_show_location_EQ : Joined<["-"], "fdiagnostics-show-location=">, Group<clang_ignored_f_Group>;
+
+#ifdef BUILD_FOR_OPENEULER
+def flifetime_dse_EQ : Joined<["-"], "flifetime-dse=">, Group<clang_ignored_gcc_optimization_f_Group>;
+defm peephole : BooleanFFlag<"peephole">, Group<clang_ignored_gcc_optimization_f_Group>;
+defm peephole2 : BooleanFFlag<"peephole2">, Group<clang_ignored_gcc_optimization_f_Group>;
+defm aggressive_loop_optiomizations : BooleanFFlag<"aggressive-loop-optiomizations">, Group<clang_ignored_gcc_optimization_f_Group>;
+def flto_partition_EQ : Joined<["-"], "flto-partition=">, Group<clang_ignored_gcc_optimization_f_Group>;
+#endif
 
 defm check_new : BoolOption<"f", "check-new",
   LangOpts<"CheckNew">, DefaultFalse,

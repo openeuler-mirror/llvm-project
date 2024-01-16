@@ -1491,6 +1491,14 @@ Compilation *Driver::BuildCompilation(ArrayRef<const char *> ArgList) {
   // Populate the tool chains for the offloading devices, if any.
   CreateOffloadingDeviceToolChains(*C, Inputs);
 
+#ifdef BUILD_FOR_OPENEULER
+  if(C->getArgs().hasFlag(options::OPT_fgcc_compatible,
+                          options::OPT_fno_gcc_compatible, true)) {
+    getDiags().setDiagnosticGroupWarningAsError("unused-command-line-argument", 0);
+    getDiags().setDiagnosticGroupWarningAsError("ignored-optimization-argument", 0);
+  }
+#endif
+
   // Construct the list of abstract actions to perform for this compilation. On
   // MachO targets this uses the driver-driver and universal actions.
   if (TC.getTriple().isOSBinFormatMachO())
