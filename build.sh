@@ -7,6 +7,7 @@ CXX_COMPILER_PATH=g++
 # Initialize our own variables:
 buildtype=RelWithDebInfo
 backends="ARM;AArch64;X86"
+build_for_openeuler="0"
 enabled_projects="clang;lld;compiler-rt;openmp;clang-tools-extra"
 embedded_toolchain="0"
 split_dwarf=on
@@ -48,6 +49,7 @@ Options:
   -b type  Specify CMake build type (default: $buildtype).
   -c       Use ccache (default: $use_ccache).
   -e       Build for embedded cross tool chain.
+  -E       Build for opeEuler.
   -h       Display this help message.
   -i       Install the build (default: $do_install).
   -I name  Specify install directory name (default: "$install_dir_name").
@@ -63,7 +65,7 @@ EOF
 
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
-while getopts :b:cehiI:j:orstvX: optchr; do
+while getopts :b:ceEhiI:j:orstvX: optchr; do
   case "$optchr" in
     b)
       buildtype="$OPTARG"
@@ -84,6 +86,9 @@ while getopts :b:cehiI:j:orstvX: optchr; do
       ;;
     e)
       embedded_toolchain="1"
+      ;;
+    E)
+      build_for_openeuler="1"
       ;;
     h)
       usage
@@ -153,6 +158,11 @@ fi
 if [ $install_toolchain_only == "1" ]; then
   echo "Only install toolchain"
   CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON"
+fi
+
+if [ $build_for_openeuler == "1"]; then
+  echo "Build for openEuler"
+  CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_FOR_OPENEULER=ON"
 fi
 
 # Build and install
