@@ -130,6 +130,7 @@ protected:
     ARMv92a,
     ARMv93a,
     ARMv94a,
+    ARMv95a,
   };
 
 public:
