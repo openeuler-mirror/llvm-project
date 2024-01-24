@@ -434,6 +434,8 @@ static Error replaceAndRemoveSections(const CommonConfig &Config,
         return false;
       if (StringRef(Sec.Name).startswith(".gnu.warning"))
         return false;
+      if (StringRef(Sec.Name).startswith(".gnu_debuglink"))
+        return false;
       // We keep the .ARM.attribute section to maintain compatibility
       // with Debian derived distributions. This is a bug in their
       // patchset as documented here:
