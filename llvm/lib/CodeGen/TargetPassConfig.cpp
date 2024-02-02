@@ -1260,20 +1260,24 @@ void TargetPassConfig::addMachinePasses() {
   if (GCEmptyBlocks)
     addPass(llvm::createGCEmptyBasicBlocksPass());
 
+  bool NeedsBBSections =
+      TM->getBBSectionsType() != llvm::BasicBlockSection::None;
   // Machine function splitter uses the basic block sections feature. Both
-  // cannot be enabled at the same time. Basic block sections takes precedence.
-  // FIXME: In principle, BasicBlockSection::Labels and splitting can used
-  // together. Update this check once we have addressed any issues.
-  if (TM->getBBSectionsType() != llvm::BasicBlockSection::None) {
+  // cannot be enabled at the same time. We do not apply machine function
+  // splitter if -basic-block-sections is requested.
+  if (!NeedsBBSections && (TM->Options.EnableMachineFunctionSplitter ||
+                           EnableMachineFunctionSplitter)) {
+    addPass(createMachineFunctionSplitterPass());
+  }
+  // We run the BasicBlockSections pass if either we need BB sections or BB
+  // address map (or both).
+  if (NeedsBBSections || TM->Options.BBAddrMap) {
     if (TM->getBBSectionsType() == llvm::BasicBlockSection::List) {
       addPass(llvm::createBasicBlockSectionsProfileReaderWrapperPass(
           TM->getBBSectionsFuncListBuf()));
       addPass(llvm::createBasicBlockPathCloningPass());
     }
     addPass(llvm::createBasicBlockSectionsPass());
-  } else if (TM->Options.EnableMachineFunctionSplitter ||
-             EnableMachineFunctionSplitter) {
-    addPass(createMachineFunctionSplitterPass());
   }
 
   addPostBBSections();

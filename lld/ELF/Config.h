@@ -168,6 +168,7 @@ struct Config {
   llvm::StringRef whyExtract;
   StringRef zBtiReport = "none";
   StringRef zCetReport = "none";
+  bool ltoBBAddrMap;
   llvm::StringRef ltoBasicBlockSections;
   std::pair<llvm::StringRef, llvm::StringRef> thinLTOObjectSuffixReplace;
   std::pair<llvm::StringRef, llvm::StringRef> thinLTOPrefixReplace;
