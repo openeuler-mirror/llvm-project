@@ -44,6 +44,7 @@ public:
   void relocate(uint8_t *loc, const Relocation &rel,
                 uint64_t val) const override;
   bool relaxOnce(int pass) const override;
+  void finalizeRelax(int passes) const override;
 };
 
 } // end anonymous namespace
@@ -513,33 +514,14 @@ void RISCV::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
   }
 }
 
-namespace {
-struct SymbolAnchor {
-  uint64_t offset;
-  Defined *d;
-  bool end; // true for the anchor of st_value+st_size
-};
-} // namespace
 
-struct elf::RISCVRelaxAux {
-  // This records symbol start and end offsets which will be adjusted according
-  // to the nearest relocDeltas element.
-  SmallVector<SymbolAnchor, 0> anchors;
-  // For relocations[i], the actual offset is r_offset - (i ? relocDeltas[i-1] :
-  // 0).
-  std::unique_ptr<uint32_t[]> relocDeltas;
-  // For relocations[i], the actual type is relocTypes[i].
-  std::unique_ptr<RelType[]> relocTypes;
-  SmallVector<uint32_t, 0> writes;
-};
-
-static void initSymbolAnchors() {
+void elf::initSymbolAnchors() {
   SmallVector<InputSection *, 0> storage;
   for (OutputSection *osec : outputSections) {
     if (!(osec->flags & SHF_EXECINSTR))
       continue;
     for (InputSection *sec : getInputSections(*osec, storage)) {
-      sec->relaxAux = make<RISCVRelaxAux>();
+      sec->relaxAux = make<RelaxAux>();
       if (sec->relocs().size()) {
         sec->relaxAux->relocDeltas =
             std::make_unique<uint32_t[]>(sec->relocs().size());
@@ -766,7 +748,7 @@ bool RISCV::relaxOnce(int pass) const {
   return changed;
 }
 
-void elf::riscvFinalizeRelax(int passes) {
+void RISCV::finalizeRelax(int passes) const {
   llvm::TimeTraceScope timeScope("Finalize RISC-V relaxation");
   log("relaxation passes: " + Twine(passes));
   SmallVector<InputSection *, 0> storage;
@@ -774,7 +756,7 @@ void elf::riscvFinalizeRelax(int passes) {
     if (!(osec->flags & SHF_EXECINSTR))
       continue;
     for (InputSection *sec : getInputSections(*osec, storage)) {
-      RISCVRelaxAux &aux = *sec->relaxAux;
+      RelaxAux &aux = *sec->relaxAux;
       if (!aux.relocDeltas)
         continue;
 
