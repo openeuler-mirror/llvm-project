@@ -538,9 +538,6 @@ public:
   }
 };
 
-void printBlockFreqImpl(raw_ostream &OS, BlockFrequency EntryFreq,
-                        BlockFrequency Freq);
-
 namespace bfi_detail {
 
 template <class BlockT> struct TypeMap {};
