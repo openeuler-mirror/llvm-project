@@ -1493,7 +1493,7 @@ Compilation *Driver::BuildCompilation(ArrayRef<const char *> ArgList) {
 
 #ifdef BUILD_FOR_OPENEULER
   if(C->getArgs().hasFlag(options::OPT_fgcc_compatible,
-                          options::OPT_fno_gcc_compatible, true)) {
+                          options::OPT_fno_gcc_compatible, false)) {
     getDiags().setDiagnosticGroupWarningAsError("unused-command-line-argument", 0);
     getDiags().setDiagnosticGroupWarningAsError("ignored-optimization-argument", 0);
   }

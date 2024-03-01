@@ -4682,7 +4682,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
 #ifdef BUILD_FOR_OPENEULER
   if (Args.hasFlag(options::OPT_fgcc_compatible,
-                   options::OPT_fno_gcc_compatible, true)) {
+                   options::OPT_fno_gcc_compatible, false)) {
     CmdArgs.push_back("-Wno-error=unknown-warning-option");
     CmdArgs.push_back("-Wno-error=unused-parameter");
     CmdArgs.push_back("-Wno-error=unused-function");
