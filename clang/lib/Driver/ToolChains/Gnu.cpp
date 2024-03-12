@@ -2341,7 +2341,8 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
 
   static const char *const LoongArch64LibDirs[] = {"/lib64", "/lib"};
   static const char *const LoongArch64Triples[] = {
-      "loongarch64-linux-gnu", "loongarch64-unknown-linux-gnu"};
+      "loongarch64-linux-gnu", "loongarch64-unknown-linux-gnu",
+      "loongarch64-openEuler-linux"};
 
   static const char *const M68kLibDirs[] = {"/lib"};
   static const char *const M68kTriples[] = {
