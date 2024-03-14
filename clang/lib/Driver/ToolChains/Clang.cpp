@@ -4683,11 +4683,31 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 #ifdef BUILD_FOR_OPENEULER
   if (Args.hasFlag(options::OPT_fgcc_compatible,
                    options::OPT_fno_gcc_compatible, false)) {
+    // compatibility relevent warnings
     CmdArgs.push_back("-Wno-error=unknown-warning-option");
+    CmdArgs.push_back("-Wno-error=ignored-attributes");
+    // By default, clang reports warnings, but gcc does not.
     CmdArgs.push_back("-Wno-error=unused-parameter");
     CmdArgs.push_back("-Wno-error=unused-function");
     CmdArgs.push_back("-Wno-error=unused-but-set-parameter");
     CmdArgs.push_back("-Wno-error=unused-but-set-variable");
+    CmdArgs.push_back("-Wno-error=deprecated-non-prototype");
+    CmdArgs.push_back("-Wno-error=unsafe-buffer-usage");
+    CmdArgs.push_back("-Wno-error=string-plus-int");
+    // By default, clang reports errors, but gcc reports warnings.
+    // when -Werror is passed don't add -Wno-error=*.
+    if(!D.getDiags().getWarningsAsErrors()) {
+      CmdArgs.push_back("-Wno-error=implicit-function-declaration");
+      CmdArgs.push_back("-Wno-error=incompatible-function-pointer-types");
+      CmdArgs.push_back("-Wno-error=register");
+      CmdArgs.push_back("-Wno-error=int-conversion");
+      CmdArgs.push_back("-Wno-error=implicit-int");
+      CmdArgs.push_back("-Wno-error=enum-constexpr-conversion");
+      CmdArgs.push_back("-Wno-error=return-type");
+    }
+    //other warnings
+    CmdArgs.push_back("-Wno-error=cast-align");
+    CmdArgs.push_back("-Wno-error=enum-conversion");
   }
 #endif
 
