@@ -9,7 +9,7 @@
 ## emit special opcodes to make .debug_line smaller, but we don't do this for
 ## consistency.
 
-# RUN: llvm-mc -filetype=obj -triple=riscv64 -g -dwarf-version=5 -mattr=+relax < %s -o %t
+# RUN: llvm-mc -filetype=obj -triple=riscv64 -g -dwarf-version=5 -mattr=+relax -riscv-uleb128-reloc=1 < %s -o %t
 # RUN: llvm-dwarfdump -eh-frame -debug-line -debug-rnglists -v %t | FileCheck %s
 # RUN: llvm-readobj -r -x .eh_frame %t | FileCheck %s --check-prefix=RELOC
 
@@ -48,9 +48,10 @@
 # RELOC-NEXT:   0x34 R_RISCV_32_PCREL <null> 0x0
 # RELOC-NEXT: }
 
-## TODO A section needs two relocations.
 # RELOC:      Section ([[#]]) .rela.debug_rnglists {
 # RELOC-NEXT:   0xD R_RISCV_64 .text.foo 0x0
+# RELOC-NEXT:   0x15 R_RISCV_SET_ULEB128 <null> 0x0
+# RELOC-NEXT:   0x15 R_RISCV_SUB_ULEB128 .text.foo 0x0
 # RELOC-NEXT:   0x17 R_RISCV_64 .text.bar 0x0
 # RELOC-NEXT: }
 

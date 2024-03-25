@@ -611,11 +611,6 @@ static void AttemptToFoldSymbolOffsetDifference(
     if (Asm->isThumbFunc(&SA))
       Addend |= 1;
 
-    // If symbol is labeled as micromips, we set low-bit to ensure
-    // correct offset in .gcc_except_table
-    if (Asm->getBackend().isMicroMips(&SA))
-      Addend |= 1;
-
     // Clear the symbol expr pointers to indicate we have folded these
     // operands.
     A = B = nullptr;
@@ -635,7 +630,8 @@ static void AttemptToFoldSymbolOffsetDifference(
   // instructions and InSet is false (not expressions in directive like
   // .size/.fill), disable the fast path.
   if (Layout && (InSet || !SecA.hasInstructions() ||
-                 !Asm->getContext().getTargetTriple().isRISCV())) {
+                 !(Asm->getContext().getTargetTriple().isRISCV() ||
+                   Asm->getContext().getTargetTriple().isLoongArch()))) {
     // If both symbols are in the same fragment, return the difference of their
     // offsets. canGetFragmentOffset(FA) may be false.
     if (FA == FB && !SA.isVariable() && !SB.isVariable()) {
@@ -706,8 +702,14 @@ static void AttemptToFoldSymbolOffsetDifference(
       }
 
       int64_t Num;
+      unsigned Count;
       if (DF) {
         Displacement += DF->getContents().size();
+      } else if (auto *AF = dyn_cast<MCAlignFragment>(FI);
+                 AF && Layout && AF->hasEmitNops() &&
+                 !Asm->getBackend().shouldInsertExtraNopBytesForCodeAlign(
+                     *AF, Count)) {
+        Displacement += Asm->computeFragmentSize(*Layout, *AF);
       } else if (auto *FF = dyn_cast<MCFillFragment>(FI);
                  FF && FF->getNumValues().evaluateAsAbsolute(Num)) {
         Displacement += Num * FF->getValueSize();
