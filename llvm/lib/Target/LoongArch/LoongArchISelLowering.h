@@ -110,6 +110,20 @@ enum NodeType : unsigned {
 
   // Read CPU configuration information operation
   CPUCFG,
+
+  // Vector Shuffle
+  VREPLVE,
+
+  // Extended vector element extraction
+  VPICK_SEXT_ELT,
+  VPICK_ZEXT_ELT,
+
+  // Vector comparisons
+  VALL_ZERO,
+  VANY_ZERO,
+  VALL_NONZERO,
+  VANY_NONZERO,
+
   // Intrinsic operations end =============================================
 };
 } // end namespace LoongArchISD
@@ -216,6 +230,10 @@ public:
       MachineMemOperand::Flags Flags = MachineMemOperand::MONone,
       unsigned *Fast = nullptr) const override;
 
+  bool isShuffleMaskLegal(ArrayRef<int> Mask, EVT VT) const override {
+    return false;
+  }
+
 private:
   /// Target-specific function used to lower LoongArch calling conventions.
   typedef bool LoongArchCCAssignFn(const DataLayout &DL, LoongArchABI::ABI ABI,
@@ -261,6 +279,10 @@ private:
   SDValue lowerFRAMEADDR(SDValue Op, SelectionDAG &DAG) const;
   SDValue lowerRETURNADDR(SDValue Op, SelectionDAG &DAG) const;
   SDValue lowerWRITE_REGISTER(SDValue Op, SelectionDAG &DAG) const;
+  SDValue lowerEXTRACT_VECTOR_ELT(SDValue Op, SelectionDAG &DAG) const;
+  SDValue lowerINSERT_VECTOR_ELT(SDValue Op, SelectionDAG &DAG) const;
+  SDValue lowerBUILD_VECTOR(SDValue Op, SelectionDAG &DAG) const;
+  SDValue lowerVECTOR_SHUFFLE(SDValue Op, SelectionDAG &DAG) const;
 
   bool isFPImmLegal(const APFloat &Imm, EVT VT,
                     bool ForCodeSize) const override;
