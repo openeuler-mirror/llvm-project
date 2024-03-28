@@ -4694,6 +4694,11 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     CmdArgs.push_back("-Wno-error=deprecated-non-prototype");
     CmdArgs.push_back("-Wno-error=unsafe-buffer-usage");
     CmdArgs.push_back("-Wno-error=string-plus-int");
+    CmdArgs.push_back("-Wno-error=language-extension-token");
+    CmdArgs.push_back("-Wno-error=single-bit-bitfield-constant-conversion");
+    CmdArgs.push_back("-Wno-error=gnu-variable-sized-type-not-at-end");
+    CmdArgs.push_back("-Wno-error=header-guard");
+    CmdArgs.push_back("-Wno-error=return-type-c-linkage");
     // By default, clang reports errors, but gcc reports warnings.
     // when -Werror is passed don't add -Wno-error=*.
     if(!D.getDiags().getWarningsAsErrors()) {
@@ -4708,6 +4713,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     //other warnings
     CmdArgs.push_back("-Wno-error=cast-align");
     CmdArgs.push_back("-Wno-error=enum-conversion");
+    CmdArgs.push_back("-Wno-error=switch");
   }
 #endif
 
