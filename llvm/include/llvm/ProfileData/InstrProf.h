@@ -91,6 +91,9 @@ inline StringRef getInstrProfValueProfMemOpFuncName() {
 /// Return the name prefix of variables containing instrumented function names.
 inline StringRef getInstrProfNameVarPrefix() { return "__profn_"; }
 
+/// Return the name prefix of variables containing virtual table profile data.
+inline StringRef getInstrProfVTableVarPrefix() { return "__profvt_"; }
+
 /// Return the name prefix of variables containing per-function control data.
 inline StringRef getInstrProfDataVarPrefix() { return "__profd_"; }
 
@@ -108,9 +111,9 @@ inline StringRef getInstrProfVNodesVarName() { return "__llvm_prf_vnodes"; }
 
 /// Return the name of the variable holding the strings (possibly compressed)
 /// of all function's PGO names.
-inline StringRef getInstrProfNamesVarName() {
-  return "__llvm_prf_nm";
-}
+inline StringRef getInstrProfNamesVarName() { return "__llvm_prf_nm"; }
+
+inline StringRef getInstrProfVTableNamesVarName() { return "__llvm_prf_vnm"; }
 
 /// Return the name of a covarage mapping variable (internal linkage)
 /// for each instrumented source module. Such variables are allocated
@@ -142,7 +145,8 @@ inline StringRef getInstrProfRegFuncName() {
   return "__llvm_profile_register_function";
 }
 
-/// Return the name of the runtime interface that registers the PGO name strings.
+/// Return the name of the runtime interface that registers the PGO name
+/// strings.
 inline StringRef getInstrProfNamesRegFuncName() {
   return "__llvm_profile_register_names_function";
 }
@@ -254,12 +258,7 @@ Error collectPGOFuncNameStrings(ArrayRef<GlobalVariable *> NameVars,
                                 std::string &Result, bool doCompression = true);
 
 Error collectVTableStrings(ArrayRef<GlobalVariable *> VTables,
-			   std::string &Result, bool doCompression);
-
-/// \c NameStrings is a string composed of one of more sub-strings encoded in
-/// the format described above. The substrings are separated by 0 or more zero
-/// bytes. This method decodes the string and populates the \c Symtab.
-Error readPGOFuncNameStrings(StringRef NameStrings, InstrProfSymtab &Symtab);
+                           std::string &Result, bool doCompression);
 
 /// Check if INSTR_PROF_RAW_VERSION_VAR is defined. This global is only being
 /// set in IR PGO compilation.
@@ -314,7 +313,7 @@ void createPGOFuncNameMetadata(Function &F, StringRef PGOFuncName);
 
 /// Check if we can use Comdat for profile variables. This will eliminate
 /// the duplicated profile variables for Comdat functions.
-bool needsComdatForCounter(const Function &F, const Module &M);
+bool needsComdatForCounter(const GlobalObject &GV, const Module &M);
 
 /// An enum describing the attributes of an instrumented profile.
 enum class InstrProfKind {
@@ -457,13 +456,14 @@ private:
   // Unique name strings. Used to ensure entries in MD5NameMap (a vector that's
   // going to be sorted) has unique MD5 keys in the first place.
   StringSet<> NameTab;
-  // Record the unique virtual table names. This is used by InstrProfWriter to
+  // Records the unique virtual table names. This is used by InstrProfWriter to
   // write out an on-disk chained hash table of virtual table names.
   // InstrProfWriter stores per function profile data (keyed by function names)
   // so it doesn't use a StringSet for function names.
   StringSet<> VTableNames;
   // A map from MD5 keys to function name strings.
   std::vector<std::pair<uint64_t, StringRef>> MD5NameMap;
+
   // A map from MD5 keys to function define. We only populate this map
   // when build the Symtab from a Module.
   std::vector<std::pair<uint64_t, Function *>> MD5FuncMap;
@@ -529,7 +529,7 @@ public:
 
   /// \c NameStrings is a string composed of one of more sub-strings
   ///  encoded in the format described in \c collectPGOFuncNameStrings.
-  /// This method is a wrapper to \c readPGOFuncNameStrings method.
+  /// This method is a wrapper to \c readAndDecodeStrings method.
   Error create(StringRef NameStrings);
 
   /// Initialize symtab states with function names and vtable names. \c
@@ -554,18 +554,18 @@ public:
 
   /// Create InstrProfSymtab from a set of names iteratable from
   /// \p IterRange. This interface is used by IndexedProfReader.
-  template <typename NameIterRange> Error create(const NameIterRange &IterRange);
+  template <typename NameIterRange>
+  Error create(const NameIterRange &IterRange);
 
   /// Create InstrProfSymtab from a set of function names and vtable
   /// names iteratable from \p IterRange. This interface is used by
   /// IndexedProfReader.
   template <typename FuncNameIterRange, typename VTableNameIterRange>
   Error create(const FuncNameIterRange &FuncIterRange,
-	       const VTableNameIterRange &VTableIterRange);
+               const VTableNameIterRange &VTableIterRange);
 
-  // Map the MD5 of the symbol name to the name.
   Error addSymbolName(StringRef SymbolName) {
-    if (SymbolName.empty()) 
+    if (SymbolName.empty())
       return make_error<InstrProfError>(instrprof_error::malformed,
                                         "symbol name is empty");
 
@@ -589,7 +589,7 @@ public:
   Error addVTableName(StringRef VTableName) {
     if (Error E = addSymbolName(VTableName))
       return E;
- 
+
     // Record VTableName. InstrProfWriter uses this set. The comment around
     // class member explains why.
     VTableNames.insert(VTableName);
@@ -677,7 +677,7 @@ Error InstrProfSymtab::create(const NameIterRange &IterRange) {
 
 template <typename FuncNameIterRange, typename VTableNameIterRange>
 Error InstrProfSymtab::create(const FuncNameIterRange &FuncIterRange,
-			      const VTableNameIterRange &VTableIterRange) {
+                              const VTableNameIterRange &VTableIterRange) {
   // Iterate elements by StringRef rather than by const reference.
   // StringRef is small enough, so the loop is efficient whether
   // element in the range is std::string or StringRef.
@@ -1017,6 +1017,8 @@ private:
       return ValueData->IndirectCallSites;
     case IPVK_MemOPSize:
       return ValueData->MemOPSizes;
+    case IPVK_VTableTarget:
+      return ValueData->VTableTargets;
     default:
       llvm_unreachable("Unknown value kind!");
     }

@@ -59,6 +59,9 @@ using namespace llvm;
 #define DEBUG_TYPE "instrprof"
 
 namespace llvm {
+// Command line option to enable vtable value profiling. Defined in
+// ProfileData/InstrProf.cpp: -enable-vtable-value-profiling=
+extern cl::opt<bool> EnableVTableValueProfiling;
 // TODO: Remove -debug-info-correlate in next LLVM release, in favor of
 // -profile-correlate=debug-info.
 cl::opt<bool> DebugInfoCorrelate(
@@ -160,6 +163,190 @@ cl::opt<bool> IterativeCounterPromotion(
 cl::opt<bool> SkipRetExitBlock(
     "skip-ret-exit-block", cl::init(true),
     cl::desc("Suppress counter promotion if exit blocks contain ret."));
+
+using LoadStorePair = std::pair<Instruction *, Instruction *>;
+
+static uint64_t getIntModuleFlagOrZero(const Module &M, StringRef Flag) {
+  auto *MD = dyn_cast_or_null<ConstantAsMetadata>(M.getModuleFlag(Flag));
+  if (!MD)
+    return 0;
+
+  // If the flag is a ConstantAsMetadata, it should be an integer representable
+  // in 64-bits.
+  return cast<ConstantInt>(MD->getValue())->getZExtValue();
+}
+
+static bool enablesValueProfiling(const Module &M) {
+  return isIRPGOFlagSet(&M) ||
+         getIntModuleFlagOrZero(M, "EnableValueProfiling") != 0;
+}
+
+// Conservatively returns true if value profiling is enabled.
+static bool profDataReferencedByCode(const Module &M) {
+  return enablesValueProfiling(M);
+}
+
+class InstrLowerer final {
+public:
+  InstrLowerer(Module &M, const InstrProfOptions &Options,
+               std::function<const TargetLibraryInfo &(Function &F)> GetTLI,
+               bool IsCS)
+      : M(M), Options(Options), TT(Triple(M.getTargetTriple())), IsCS(IsCS),
+        GetTLI(GetTLI), DataReferencedByCode(profDataReferencedByCode(M)) {}
+
+  bool lower();
+
+private:
+  Module &M;
+  const InstrProfOptions Options;
+  const Triple TT;
+  // Is this lowering for the context-sensitive instrumentation.
+  const bool IsCS;
+
+  std::function<const TargetLibraryInfo &(Function &F)> GetTLI;
+
+  const bool DataReferencedByCode;
+
+  struct PerFunctionProfileData {
+    uint32_t NumValueSites[IPVK_Last + 1] = {};
+    GlobalVariable *RegionCounters = nullptr;
+    GlobalVariable *DataVar = nullptr;
+    GlobalVariable *RegionBitmaps = nullptr;
+    uint32_t NumBitmapBytes = 0;
+
+    PerFunctionProfileData() = default;
+  };
+  DenseMap<GlobalVariable *, PerFunctionProfileData> ProfileDataMap;
+  // Key is virtual table variable, value is 'VTableProfData' in the form of
+  // GlobalVariable.
+  DenseMap<GlobalVariable *, GlobalVariable *> VTableDataMap;
+  /// If runtime relocation is enabled, this maps functions to the load
+  /// instruction that produces the profile relocation bias.
+  DenseMap<const Function *, LoadInst *> FunctionToProfileBiasMap;
+  std::vector<GlobalValue *> CompilerUsedVars;
+  std::vector<GlobalValue *> UsedVars;
+  std::vector<GlobalVariable *> ReferencedNames;
+  // The list of virtual table variables of which the VTableProfData is
+  // collected.
+  std::vector<GlobalVariable *> ReferencedVTables;
+  GlobalVariable *NamesVar = nullptr;
+  size_t NamesSize = 0;
+
+  // vector of counter load/store pairs to be register promoted.
+  std::vector<LoadStorePair> PromotionCandidates;
+
+  int64_t TotalCountersPromoted = 0;
+
+  /// Lower instrumentation intrinsics in the function. Returns true if there
+  /// any lowering.
+  bool lowerIntrinsics(Function *F);
+
+  /// Register-promote counter loads and stores in loops.
+  void promoteCounterLoadStores(Function *F);
+
+  /// Returns true if relocating counters at runtime is enabled.
+  bool isRuntimeCounterRelocationEnabled() const;
+
+  /// Returns true if profile counter update register promotion is enabled.
+  bool isCounterPromotionEnabled() const;
+
+  /// Count the number of instrumented value sites for the function.
+  void computeNumValueSiteCounts(InstrProfValueProfileInst *Ins);
+
+  /// Replace instrprof.value.profile with a call to runtime library.
+  void lowerValueProfileInst(InstrProfValueProfileInst *Ins);
+
+  /// Replace instrprof.cover with a store instruction to the coverage byte.
+  void lowerCover(InstrProfCoverInst *Inc);
+
+  /// Replace instrprof.timestamp with a call to
+  /// INSTR_PROF_PROFILE_SET_TIMESTAMP.
+  void lowerTimestamp(InstrProfTimestampInst *TimestampInstruction);
+
+  /// Replace instrprof.increment with an increment of the appropriate value.
+  void lowerIncrement(InstrProfIncrementInst *Inc);
+
+  /// Force emitting of name vars for unused functions.
+  void lowerCoverageData(GlobalVariable *CoverageNamesVar);
+
+  /// Replace instrprof.mcdc.tvbitmask.update with a shift and or instruction
+  /// using the index represented by the a temp value into a bitmap.
+  void lowerMCDCTestVectorBitmapUpdate(InstrProfMCDCTVBitmapUpdate *Ins);
+
+  /// Replace instrprof.mcdc.temp.update with a shift and or instruction using
+  /// the corresponding condition ID.
+  void lowerMCDCCondBitmapUpdate(InstrProfMCDCCondBitmapUpdate *Ins);
+
+  /// Compute the address of the counter value that this profiling instruction
+  /// acts on.
+  Value *getCounterAddress(InstrProfCntrInstBase *I);
+
+  /// Get the region counters for an increment, creating them if necessary.
+  ///
+  /// If the counter array doesn't yet exist, the profile data variables
+  /// referring to them will also be created.
+  GlobalVariable *getOrCreateRegionCounters(InstrProfCntrInstBase *Inc);
+
+  /// Create the region counters.
+  GlobalVariable *createRegionCounters(InstrProfCntrInstBase *Inc,
+                                       StringRef Name,
+                                       GlobalValue::LinkageTypes Linkage);
+
+  /// Compute the address of the test vector bitmap that this profiling
+  /// instruction acts on.
+  Value *getBitmapAddress(InstrProfMCDCTVBitmapUpdate *I);
+
+  /// Get the region bitmaps for an increment, creating them if necessary.
+  ///
+  /// If the bitmap array doesn't yet exist, the profile data variables
+  /// referring to them will also be created.
+  GlobalVariable *getOrCreateRegionBitmaps(InstrProfMCDCBitmapInstBase *Inc);
+
+  /// Create the MC/DC bitmap as a byte-aligned array of bytes associated with
+  /// an MC/DC Decision region. The number of bytes required is indicated by
+  /// the intrinsic used (type InstrProfMCDCBitmapInstBase).  This is called
+  /// as part of setupProfileSection() and is conceptually very similar to
+  /// what is done for profile data counters in createRegionCounters().
+  GlobalVariable *createRegionBitmaps(InstrProfMCDCBitmapInstBase *Inc,
+                                      StringRef Name,
+                                      GlobalValue::LinkageTypes Linkage);
+
+  /// Set Comdat property of GV, if required.
+  void maybeSetComdat(GlobalVariable *GV, GlobalObject *GO, StringRef VarName);
+
+  /// Setup the sections into which counters and bitmaps are allocated.
+  GlobalVariable *setupProfileSection(InstrProfInstBase *Inc,
+                                      InstrProfSectKind IPSK);
+
+  /// Create INSTR_PROF_DATA variable for counters and bitmaps.
+  void createDataVariable(InstrProfCntrInstBase *Inc);
+
+  /// Get the counters for virtual table values, creating them if necessary.
+  void getOrCreateVTableProfData(GlobalVariable *GV);
+
+  /// Emit the section with compressed function names.
+  void emitNameData();
+
+  /// Emit the section with compressed vtable names.
+  void emitVTableNames();
+
+  /// Emit value nodes section for value profiling.
+  void emitVNodes();
+
+  /// Emit runtime registration functions for each profile data variable.
+  void emitRegistration();
+
+  /// Emit the necessary plumbing to pull in the runtime initialization.
+  /// Returns true if a change was made.
+  bool emitRuntimeHook();
+
+  /// Add uses of our data variables and runtime hook.
+  void emitUses();
+
+  /// Create a static initializer for our data, on platforms that need it,
+  /// and for any profile output file that was specified.
+  void emitInitialization();
+};
 
 ///
 /// A helper class to promote one counter RMW operation in the loop
@@ -596,6 +783,12 @@ bool InstrProfiling::run(
     }
   }
 
+  if (EnableVTableValueProfiling)
+    for (GlobalVariable &GV : M.globals())
+      // Global variables with type metadata are virtual table variables.
+      if (GV.hasMetadata(LLVMContext::MD_type))
+        getOrCreateVTableProfData(&GV);
+
   for (Function &F : M)
     MadeChange |= lowerIntrinsics(&F);
 
@@ -609,6 +802,7 @@ bool InstrProfiling::run(
 
   emitVNodes();
   emitNameData();
+  emitVTableNames();
 
   // Emit runtime hook for the cases where the target does not unconditionally
   // require pulling in profile runtime, and coverage is enabled on code that is
@@ -1060,10 +1254,13 @@ static bool needsRuntimeRegistrationOfSectionRange(const Triple &TT) {
   return true;
 }
 
-void InstrProfiling::maybeSetComdat(GlobalVariable *GV, Function *Fn,
-                                    StringRef VarName) {
-  bool DataReferencedByCode = profDataReferencedByCode(*M);
-  bool NeedComdat = needsComdatForCounter(*Fn, *M);
+void InstrLowerer::maybeSetComdat(GlobalVariable *GV, GlobalObject *GO,
+                                  StringRef CounterGroupName) {
+  // Place lowered global variables in a comdat group if the associated function
+  // or global variable is a COMDAT. This will make sure that only one copy of
+  // global variable (e.g. function counters) of the COMDAT function will be
+  // emitted after linking.
+  bool NeedComdat = needsComdatForCounter(*GO, M);
   bool UseComdat = (NeedComdat || TT.isOSBinFormatELF());
 
   if (!UseComdat)
@@ -1082,8 +1279,106 @@ void InstrProfiling::maybeSetComdat(GlobalVariable *GV, Function *Fn,
     GV->setLinkage(GlobalValue::InternalLinkage);
 }
 
-GlobalVariable *InstrProfiling::setupProfileSection(InstrProfInstBase *Inc,
-                                                    InstrProfSectKind IPSK) {
+static inline bool shouldRecordVTableAddr(GlobalVariable *GV) {
+  if (!profDataReferencedByCode(*GV->getParent()))
+    return false;
+
+  if (!GV->hasLinkOnceLinkage() && !GV->hasLocalLinkage() &&
+      !GV->hasAvailableExternallyLinkage())
+    return true;
+
+  // This avoids the profile data from referencing internal symbols in
+  // COMDAT.
+  if (GV->hasLocalLinkage() && GV->hasComdat())
+    return false;
+
+  return true;
+}
+
+// FIXME: Introduce an internal alias like what's done for functions to reduce
+// the number of relocation entries.
+static inline Constant *getVTableAddrForProfData(GlobalVariable *GV) {
+  auto *Int8PtrTy = PointerType::getUnqual(GV->getContext());
+
+  // Store a nullptr in __profvt_ if a real address shouldn't be used.
+  if (!shouldRecordVTableAddr(GV))
+    return ConstantPointerNull::get(Int8PtrTy);
+
+  return ConstantExpr::getBitCast(GV, Int8PtrTy);
+}
+
+void InstrLowerer::getOrCreateVTableProfData(GlobalVariable *GV) {
+  assert(!DebugInfoCorrelate &&
+         "Value profiling is not supported with lightweight instrumentation");
+  if (GV->isDeclaration() || GV->hasAvailableExternallyLinkage())
+    return;
+
+  // Skip llvm internal global variable or __prof variables.
+  if (GV->getName().starts_with("llvm.") ||
+      GV->getName().starts_with("__llvm") ||
+      GV->getName().starts_with("__prof"))
+    return;
+
+  // VTableProfData already created
+  auto It = VTableDataMap.find(GV);
+  if (It != VTableDataMap.end() && It->second)
+    return;
+
+  GlobalValue::LinkageTypes Linkage = GV->getLinkage();
+  GlobalValue::VisibilityTypes Visibility = GV->getVisibility();
+
+  // This is to keep consistent with per-function profile data
+  // for correctness.
+  if (TT.isOSBinFormatXCOFF()) {
+    Linkage = GlobalValue::InternalLinkage;
+    Visibility = GlobalValue::DefaultVisibility;
+  }
+
+  LLVMContext &Ctx = M.getContext();
+  Type *DataTypes[] = {
+#define INSTR_PROF_VTABLE_DATA(Type, LLVMType, Name, Init) LLVMType,
+#include "llvm/ProfileData/InstrProfData.inc"
+#undef INSTR_PROF_VTABLE_DATA
+  };
+
+  auto *DataTy = StructType::get(Ctx, ArrayRef(DataTypes));
+
+  // Used by INSTR_PROF_VTABLE_DATA MACRO
+  Constant *VTableAddr = getVTableAddrForProfData(GV);
+  const std::string PGOVTableName = getPGOName(*GV);
+  // Record the length of the vtable. This is needed since vtable pointers
+  // loaded from C++ objects might be from the middle of a vtable definition.
+  uint32_t VTableSizeVal =
+      M.getDataLayout().getTypeAllocSize(GV->getValueType());
+
+  Constant *DataVals[] = {
+#define INSTR_PROF_VTABLE_DATA(Type, LLVMType, Name, Init) Init,
+#include "llvm/ProfileData/InstrProfData.inc"
+#undef INSTR_PROF_VTABLE_DATA
+  };
+
+  auto *Data =
+      new GlobalVariable(M, DataTy, /*constant=*/false, Linkage,
+                         ConstantStruct::get(DataTy, DataVals),
+                         getInstrProfVTableVarPrefix() + PGOVTableName);
+
+  Data->setVisibility(Visibility);
+  Data->setSection(getInstrProfSectionName(IPSK_vtab, TT.getObjectFormat()));
+  Data->setAlignment(Align(8));
+
+  maybeSetComdat(Data, GV, Data->getName());
+
+  VTableDataMap[GV] = Data;
+
+  ReferencedVTables.push_back(GV);
+
+  // VTable <Hash, Addr> is used by runtime but not referenced by other
+  // sections. Conservatively mark it linker retained.
+  UsedVars.push_back(Data);
+}
+
+GlobalVariable *InstrLowerer::setupProfileSection(InstrProfInstBase *Inc,
+                                                  InstrProfSectKind IPSK) {
   GlobalVariable *NamePtr = Inc->getName();
 
   // Match the linkage and visibility of the name global.
@@ -1497,7 +1792,32 @@ void InstrProfiling::emitNameData() {
     NamePtr->eraseFromParent();
 }
 
-void InstrProfiling::emitRegistration() {
+void InstrLowerer::emitVTableNames() {
+  if (!EnableVTableValueProfiling || ReferencedVTables.empty())
+    return;
+
+  // Collect the PGO names of referenced vtables and compress them.
+  std::string CompressedVTableNames;
+  if (Error E = collectVTableStrings(ReferencedVTables, CompressedVTableNames,
+                                     DoInstrProfNameCompression)) {
+    report_fatal_error(Twine(toString(std::move(E))), false);
+  }
+
+  auto &Ctx = M.getContext();
+  auto *VTableNamesVal = ConstantDataArray::getString(
+      Ctx, StringRef(CompressedVTableNames), false /* AddNull */);
+  GlobalVariable *VTableNamesVar =
+      new GlobalVariable(M, VTableNamesVal->getType(), true /* constant */,
+                         GlobalValue::PrivateLinkage, VTableNamesVal,
+                         getInstrProfVTableNamesVarName());
+  VTableNamesVar->setSection(
+      getInstrProfSectionName(IPSK_vname, TT.getObjectFormat()));
+  VTableNamesVar->setAlignment(Align(1));
+  // Make VTableNames linker retained.
+  UsedVars.push_back(VTableNamesVar);
+}
+
+void InstrLowerer::emitRegistration() {
   if (!needsRuntimeRegistrationOfSectionRange(TT))
     return;
 

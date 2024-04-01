@@ -19,6 +19,7 @@
 #include "llvm/ProfileData/InstrProf.h"
 #include "llvm/ProfileData/MemProf.h"
 #include "llvm/ProfileData/ProfileCommon.h"
+#include "llvm/Support/Compression.h"
 #include "llvm/Support/Endian.h"
 #include "llvm/Support/EndianStream.h"
 #include "llvm/Support/Error.h"
@@ -601,13 +602,19 @@ Error InstrProfWriter::writeImpl(ProfOStream &OS) {
 
   uint64_t VTableNamesSectionStart = OS.tell();
 
-  // Use a dummy (and uncompressed) string as compressed vtable names and get
-  // the necessary profile format change in place for version 12.
-  // TODO: Store the list of vtable names in InstrProfWriter and use the
-  // real compressed name.
-  std::string CompressedVTableNames = "VTableNames";
+  if (!WritePrevVersion) {
+    std::vector<std::string> VTableNameStrs;
+    for (StringRef VTableName : VTableNames.keys())
+      VTableNameStrs.push_back(VTableName.str());
 
-  uint64_t CompressedStringLen = CompressedVTableNames.length();
+    std::string CompressedVTableNames;
+    if (!VTableNameStrs.empty())
+      if (Error E = collectGlobalObjectNameStrings(
+              VTableNameStrs, compression::zlib::isAvailable(),
+              CompressedVTableNames))
+        return E;
+
+    const uint64_t CompressedStringLen = CompressedVTableNames.length();
 
   // Record the length of compressed string.
   OS.write(CompressedStringLen);
@@ -616,12 +623,12 @@ Error InstrProfWriter::writeImpl(ProfOStream &OS) {
   for (auto &c : CompressedVTableNames)
     OS.writeByte(static_cast<uint8_t>(c));
 
-  // Pad up to a multiple of 8.
-  // InstrProfReader would read bytes according to 'CompressedStringLen'.
-  uint64_t PaddedLength = alignTo(CompressedStringLen, 8);
+    // Pad up to a multiple of 8.
+    // InstrProfReader could read bytes according to 'CompressedStringLen'.
+    const uint64_t PaddedLength = alignTo(CompressedStringLen, 8);
 
-  for (uint64_t K = CompressedStringLen; K < PaddedLength; K++) {
-    OS.writeByte(0);
+    for (uint64_t K = CompressedStringLen; K < PaddedLength; K++)
+      OS.writeByte(0);
   }
 
   uint64_t TemporalProfTracesSectionStart = 0;
@@ -807,6 +814,10 @@ Error InstrProfWriter::writeText(raw_fd_ostream &OS) {
         OrderedFuncData.push_back(std::make_pair(I.getKey(), Func));
     }
   }
+
+  for (const auto &VTableName : VTableNames)
+    if (Error E = Symtab.addVTableName(VTableName.getKey()))
+      return E;
 
   if (static_cast<bool>(ProfileKind & InstrProfKind::TemporalProfile))
     writeTextTemporalProfTraceData(OS, Symtab);

@@ -60,6 +60,8 @@
 
 using namespace llvm;
 
+#define DEBUG_TYPE "instrprof"
+
 static cl::opt<bool> StaticFuncFullModulePrefix(
     "static-func-full-module-prefix", cl::init(true), cl::Hidden,
     cl::desc("Use full module build paths in the profile counter names for "
@@ -221,6 +223,12 @@ namespace llvm {
 cl::opt<bool> DoInstrProfNameCompression(
     "enable-name-compression",
     cl::desc("Enable name/filename string compression"), cl::init(true));
+
+cl::opt<bool> EnableVTableValueProfiling(
+    "enable-vtable-value-profiling", cl::init(false),
+    cl::desc("If true, the virtual table address will be instrumented to know "
+             "the types of a C++ pointer. The information is used in indirect "
+             "call promotion to do selective vtable-based comparison."));
 
 std::string getInstrProfSectionName(InstrProfSectKind IPSK,
                                     Triple::ObjectFormatType OF,
@@ -412,13 +420,12 @@ std::string getPGOName(const GlobalVariable &V, bool InLTO) {
   return getIRPGOObjectName(V, InLTO, V.getMetadata(getPGONameMetadataName()));
 }
 
-// See getIRPGOFuncName() for a discription of the format.
-std::pair<StringRef, StringRef>
-getParsedIRPGOFuncName(StringRef IRPGOFuncName) {
-  auto [FileName, FuncName] = IRPGOFuncName.split(';');
-  if (FuncName.empty())
-    return std::make_pair(StringRef(), IRPGOFuncName);
-  return std::make_pair(FileName, FuncName);
+// See getIRPGOObjectName() for a discription of the format.
+std::pair<StringRef, StringRef> getParsedIRPGOFuncName(StringRef IRPGOName) {
+  auto [FileName, MangledName] = IRPGOFuncName.split(GlobalIdentifierDelimiter);
+  if (MangledName.empty())
+    return std::make_pair(StringRef(), IRPGOName);
+  return std::make_pair(FileName, MangledName);
 }
 
 StringRef getFuncNameWithoutPrefix(StringRef PGOFuncName, StringRef FileName) {
@@ -582,10 +589,10 @@ Error InstrProfSymtab::create(StringRef NameStrings) {
 }
 
 Error InstrProfSymtab::create(StringRef FuncNameStrings,
-			      StringRef VTableNameStrings) {
+                              StringRef VTableNameStrings) {
   if (Error E = readAndDecodeStrings(FuncNameStrings,
-			  	     std::bind(&InstrProfSymtab::addFuncName,
-					       this, std::placeholders::_1)))
+                                     std::bind(&InstrProfSymtab::addFuncName,
+                                               this, std::placeholders::_1)))
     return E;
 
   return readAndDecodeStrings(
@@ -772,48 +779,6 @@ Error collectVTableStrings(ArrayRef<GlobalVariable *> VTables,
   return collectGlobalObjectNameStrings(
       VTableNameStrs, compression::zlib::isAvailable() && DoCompression,
       Result);
-}
-
-Error readPGOFuncNameStrings(StringRef NameStrings, InstrProfSymtab &Symtab) {
-  const uint8_t *P = NameStrings.bytes_begin();
-  const uint8_t *EndP = NameStrings.bytes_end();
-  while (P < EndP) {
-    uint32_t N;
-    uint64_t UncompressedSize = decodeULEB128(P, &N);
-    P += N;
-    uint64_t CompressedSize = decodeULEB128(P, &N);
-    P += N;
-    bool isCompressed = (CompressedSize != 0);
-    SmallVector<uint8_t, 128> UncompressedNameStrings;
-    StringRef NameStrings;
-    if (isCompressed) {
-      if (!llvm::compression::zlib::isAvailable())
-        return make_error<InstrProfError>(instrprof_error::zlib_unavailable);
-
-      if (Error E = compression::zlib::decompress(ArrayRef(P, CompressedSize),
-                                                  UncompressedNameStrings,
-                                                  UncompressedSize)) {
-        consumeError(std::move(E));
-        return make_error<InstrProfError>(instrprof_error::uncompress_failed);
-      }
-      P += CompressedSize;
-      NameStrings = toStringRef(UncompressedNameStrings);
-    } else {
-      NameStrings =
-          StringRef(reinterpret_cast<const char *>(P), UncompressedSize);
-      P += UncompressedSize;
-    }
-    // Now parse the name strings.
-    SmallVector<StringRef, 0> Names;
-    NameStrings.split(Names, getInstrProfNameSeparator());
-    for (StringRef &Name : Names)
-      if (Error E = Symtab.addFuncName(Name))
-        return E;
-
-    while (P < EndP && *P == 0)
-      P++;
-  }
-  return Error::success();
 }
 
 void InstrProfRecord::accumulateCounts(CountSumOrPercent &Sum) const {
@@ -1472,8 +1437,8 @@ void createPGOFuncNameMetadata(Function &F, StringRef PGOFuncName) {
   F.setMetadata(getPGOFuncNameMetadataName(), N);
 }
 
-bool needsComdatForCounter(const Function &F, const Module &M) {
-  if (F.hasComdat())
+bool needsComdatForCounter(const GlobalObject &GO, const Module &M) {
+  if (GO.hasComdat())
     return true;
 
   if (!Triple(M.getTargetTriple()).supportsCOMDAT())
@@ -1489,7 +1454,7 @@ bool needsComdatForCounter(const Function &F, const Module &M) {
   // available_externally functions will end up being duplicated in raw profile
   // data. This can result in distorted profile as the counts of those dups
   // will be accumulated by the profile merger.
-  GlobalValue::LinkageTypes Linkage = F.getLinkage();
+  GlobalValue::LinkageTypes Linkage = GO.getLinkage();
   if (Linkage != GlobalValue::ExternalWeakLinkage &&
       Linkage != GlobalValue::AvailableExternallyLinkage)
     return false;
@@ -1645,13 +1610,16 @@ void OverlapStats::dump(raw_fd_ostream &OS) const {
   for (unsigned I = 0; I < IPVK_Last - IPVK_First + 1; I++) {
     if (Base.ValueCounts[I] < 1.0f && Test.ValueCounts[I] < 1.0f)
       continue;
-    char ProfileKindName[20];
+    char ProfileKindName[20] = {0};
     switch (I) {
     case IPVK_IndirectCallTarget:
       strncpy(ProfileKindName, "IndirectCall", 19);
       break;
     case IPVK_MemOPSize:
       strncpy(ProfileKindName, "MemOP", 19);
+      break;
+    case IPVK_VTableTarget:
+      strncpy(ProfileKindName, "VTable", 19);
       break;
     default:
       snprintf(ProfileKindName, 19, "VP[%d]", I);
