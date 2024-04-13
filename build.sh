@@ -49,7 +49,7 @@ Options:
   -b type  Specify CMake build type (default: $buildtype).
   -c       Use ccache (default: $use_ccache).
   -e       Build for embedded cross tool chain.
-  -E       Build for opeEuler.
+  -E       Build for openEuler.
   -h       Display this help message.
   -i       Install the build (default: $do_install).
   -I name  Specify install directory name (default: "$install_dir_name").
@@ -139,6 +139,25 @@ CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$install_prefix \
                -DCMAKE_CXX_COMPILER=$CXX_COMPILER_PATH \
                -DLLVM_TARGETS_TO_BUILD=$backends "
 
+gold=$(type -p ld.gold)
+if [ -z "$gold" -o ! -x "$gold" ]; then
+  echo "$0: no usable ld.gold"
+  exit 1
+fi
+
+# If the invocation does not force a particular binutils installation, check
+# that we are using an acceptable version.
+if [ -n "$BINUTILS_INCDIR" ]; then
+  llvm_binutils_incdir="-DLLVM_BINUTILS_INCDIR=$BINUTILS_INCDIR"
+else
+  incdir=$(realpath --canonicalize-existing $(dirname $gold)/../include)
+  if [ -z "$incdir" -o ! -f "$incdir/plugin-api.h" ]; then
+    echo "$0: plugin-api.h not found; required to build LLVMgold.so"
+    exit 1
+  fi
+  llvm_binutils_incdir="-DLLVM_BINUTILS_INCDIR=$incdir"
+fi
+
 # Warning: the -DLLVM_ENABLE_PROJECTS option is specified with cmake
 # to avoid issues with nested quotation marks
 if [ $use_ccache == "1" ]; then
@@ -160,7 +179,7 @@ if [ $install_toolchain_only == "1" ]; then
   CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON"
 fi
 
-if [ $build_for_openeuler == "1"]; then
+if [ $build_for_openeuler == "1" ]; then
   echo "Build for openEuler"
   CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_FOR_OPENEULER=ON"
 fi
@@ -183,8 +202,9 @@ cmake $CMAKE_OPTIONS \
       -DLLVM_USE_LINKER=gold \
       -DLLVM_LIT_ARGS="-sv -j$threads" \
       -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
-      -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib"\
+      -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
       -DCMAKE_EXE_LINKER_FLAGS_DEBUG="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
+      $llvm_binutils_incdir \
       $verbose \
       ../llvm
 
@@ -202,6 +222,7 @@ cd ..
 # When building official deliverables, minimize file permissions under the
 # installation directory.
 if [ "$install" = "install/strip" ]; then
+  find $install_prefix/bin/ -type f -exec strip {} \;
   find $install_prefix -type f -exec chmod a-w,o-rx {} \;
 fi
 
