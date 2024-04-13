@@ -4709,11 +4709,16 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back("-Wno-error=implicit-int");
       CmdArgs.push_back("-Wno-error=enum-constexpr-conversion");
       CmdArgs.push_back("-Wno-error=return-type");
+      CmdArgs.push_back("-Wno-error=reserved-user-defined-literal");
     }
     //other warnings
     CmdArgs.push_back("-Wno-error=cast-align");
     CmdArgs.push_back("-Wno-error=enum-conversion");
     CmdArgs.push_back("-Wno-error=switch");
+    CmdArgs.push_back("-Wno-error=cast-qual");
+    CmdArgs.push_back("-Wno-error=varargs");
+    CmdArgs.push_back("-Wno-error=unused-value");
+    CmdArgs.push_back("-Wno-error=format-nonliteral");
   }
 #endif
 
