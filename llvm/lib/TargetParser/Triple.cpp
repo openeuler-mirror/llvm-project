@@ -570,6 +570,9 @@ static Triple::VendorType parseVendor(StringRef VendorName) {
     .Case("mesa", Triple::Mesa)
     .Case("suse", Triple::SUSE)
     .Case("oe", Triple::OpenEmbedded)
+#ifdef BUILD_FOR_EMBEDDED
+    .Case("openeulersdk", Triple::OpenEmbedded)
+#endif
     .Default(Triple::UnknownVendor);
 }
 

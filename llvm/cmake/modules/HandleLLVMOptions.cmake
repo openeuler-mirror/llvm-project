@@ -97,6 +97,14 @@ else()
   set(LLVM_ENABLE_CLASSIC_FLANG 0)
 endif()
 
+option(LLVM_BUILD_FOR_EMBEDDED "Enable openEuler embedded features for LLVM toolchain" OFF)
+if(LLVM_BUILD_FOR_EMBEDDED)
+  set(LLVM_BUILD_FOR_EMBEDDED 1)
+  add_definitions( -DBUILD_FOR_EMBEDDED )
+else()
+  set(LLVM_BUILD_FOR_EMBEDDED 0)
+endif()
+
 if(LLVM_ENABLE_EXPENSIVE_CHECKS)
   add_compile_definitions(EXPENSIVE_CHECKS)
 

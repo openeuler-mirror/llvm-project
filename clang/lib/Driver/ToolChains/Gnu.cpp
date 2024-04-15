@@ -2280,6 +2280,13 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
     Prefixes.push_back("/opt/rh/devtoolset-2/root/usr");
   }
 
+#ifdef BUILD_FOR_EMBEDDED
+  // openEuler embedded nativesdk installs native packages under this path.
+  if (SysRoot.empty() && TargetTriple.getVendor() == llvm::Triple::OpenEmbedded &&
+      D.getVFS().exists("/opt/buildtools/nativesdk/sysroots"))
+    Prefixes.push_back("/opt/buildtools/nativesdk/sysroots/" + TargetTriple.getTriple());
+#endif
+
   // Fall back to /usr which is used by most non-Solaris systems.
   Prefixes.push_back(concat(SysRoot, "/usr"));
 }
@@ -2325,7 +2332,11 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
   static const char *const CSKYTriples[] = {
       "csky-linux-gnuabiv2", "csky-linux-uclibcabiv2", "csky-elf-noneabiv2"};
 
+#ifdef BUILD_FOR_EMBEDDED
+  static const char *const X86_64LibDirs[] = {"/lib64", "/lib", "/usr/lib"};
+#else
   static const char *const X86_64LibDirs[] = {"/lib64", "/lib"};
+#endif
   static const char *const X86_64Triples[] = {
       "x86_64-linux-gnu",       "x86_64-unknown-linux-gnu",
       "x86_64-pc-linux-gnu",    "x86_64-redhat-linux6E",

@@ -88,7 +88,7 @@ while getopts :b:ceEhiI:j:orstvfX: optchr; do
       ;;
     f)
       enable_classic_flang="1"
-      ;;    
+      ;;
     e)
       embedded_toolchain="1"
       ;;
@@ -181,6 +181,8 @@ fi
 if [ $embedded_toolchain == "1" ]; then
   echo "Build for embedded cross tool chain"
   enabled_projects="clang;lld;compiler-rt;"
+  CMAKE_OPTIONS="$CMAKE_OPTIONS \
+                -DLLVM_BUILD_FOR_EMBEDDED=ON"
 fi
 
 # When set LLVM_INSTALL_TOOLCHAIN_ONLY to On it removes many of the LLVM development
