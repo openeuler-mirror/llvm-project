@@ -871,14 +871,26 @@ static void initialize(TargetLibraryInfoImpl &TLI, const Triple &T,
   TLI.addVectorizableFunctionsFromVecLib(ClVectorLibrary, T);
 }
 
+#ifdef ENABLE_CLASSIC_FLANG
 TargetLibraryInfoImpl::TargetLibraryInfoImpl() : T(Triple()) {
+#else
+TargetLibraryInfoImpl::TargetLibraryInfoImpl() {
+#endif
   // Default to everything being available.
   memset(AvailableArray, -1, sizeof(AvailableArray));
 
+#ifdef ENABLE_CLASSIC_FLANG
   initialize(*this, T, StandardNames);
+#else
+  initialize(*this, Triple(), StandardNames);
+#endif
 }
 
+#ifdef ENABLE_CLASSIC_FLANG
 TargetLibraryInfoImpl::TargetLibraryInfoImpl(const Triple &T) : T(T) {
+#else
+TargetLibraryInfoImpl::TargetLibraryInfoImpl(const Triple &T) {
+#endif
   // Default to everything being available.
   memset(AvailableArray, -1, sizeof(AvailableArray));
 
@@ -890,7 +902,11 @@ TargetLibraryInfoImpl::TargetLibraryInfoImpl(const TargetLibraryInfoImpl &TLI)
       ShouldExtI32Return(TLI.ShouldExtI32Return),
       ShouldSignExtI32Param(TLI.ShouldSignExtI32Param),
       ShouldSignExtI32Return(TLI.ShouldSignExtI32Return),
+#ifdef ENABLE_CLASSIC_FLANG
       SizeOfInt(TLI.SizeOfInt), T(TLI.T) {
+#else
+      SizeOfInt(TLI.SizeOfInt) {
+#endif
   memcpy(AvailableArray, TLI.AvailableArray, sizeof(AvailableArray));
   VectorDescs = TLI.VectorDescs;
   ScalarDescs = TLI.ScalarDescs;
@@ -902,7 +918,11 @@ TargetLibraryInfoImpl::TargetLibraryInfoImpl(TargetLibraryInfoImpl &&TLI)
       ShouldExtI32Return(TLI.ShouldExtI32Return),
       ShouldSignExtI32Param(TLI.ShouldSignExtI32Param),
       ShouldSignExtI32Return(TLI.ShouldSignExtI32Return),
+#ifdef ENABLE_CLASSIC_FLANG
       SizeOfInt(TLI.SizeOfInt), T(TLI.T) {
+#else
+      SizeOfInt(TLI.SizeOfInt) {
+#endif
   std::move(std::begin(TLI.AvailableArray), std::end(TLI.AvailableArray),
             AvailableArray);
   VectorDescs = TLI.VectorDescs;
@@ -916,7 +936,9 @@ TargetLibraryInfoImpl &TargetLibraryInfoImpl::operator=(const TargetLibraryInfoI
   ShouldSignExtI32Param = TLI.ShouldSignExtI32Param;
   ShouldSignExtI32Return = TLI.ShouldSignExtI32Return;
   SizeOfInt = TLI.SizeOfInt;
+#ifdef ENABLE_CLASSIC_FLANG
   T = TLI.T;
+#endif
   memcpy(AvailableArray, TLI.AvailableArray, sizeof(AvailableArray));
   return *this;
 }
@@ -928,7 +950,9 @@ TargetLibraryInfoImpl &TargetLibraryInfoImpl::operator=(TargetLibraryInfoImpl &&
   ShouldSignExtI32Param = TLI.ShouldSignExtI32Param;
   ShouldSignExtI32Return = TLI.ShouldSignExtI32Return;
   SizeOfInt = TLI.SizeOfInt;
+#ifdef ENABLE_CLASSIC_FLANG
   T = TLI.T;
+#endif
   std::move(std::begin(TLI.AvailableArray), std::end(TLI.AvailableArray),
             AvailableArray);
   return *this;

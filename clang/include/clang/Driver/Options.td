@@ -5473,7 +5473,6 @@ defm stack_arrays : BoolOptionWithoutMarshalling<"f", "stack-arrays",
 defm loop_versioning : BoolOptionWithoutMarshalling<"f", "version-loops-for-stride",
   PosFlag<SetTrue, [], "Create unit-strided versions of loops">,
    NegFlag<SetFalse, [], "Do not create unit-strided loops (default)">>;
-
 } // let Flags = [FC1Option, FlangOption, FlangOnlyOption]
 
 #ifdef ENABLE_CLASSIC_FLANG

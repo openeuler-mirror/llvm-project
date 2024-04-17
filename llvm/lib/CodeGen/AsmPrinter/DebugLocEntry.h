@@ -115,6 +115,7 @@ class DbgValueLoc {
   SmallVector<DbgValueLocEntry, 2> ValueLocEntries;
 
   bool IsVariadic;
+#ifdef ENABLE_CLASSIC_FLANG
   /// Type of entry that this represents.
   enum EntryType {
     E_Location,
@@ -138,6 +139,7 @@ class DbgValueLoc {
     /// Or a location from target specific location.
     TargetIndexLocation TIL;
   };
+#endif
 
 public:
   DbgValueLoc(const DIExpression *Expr, ArrayRef<DbgValueLocEntry> Locs)
@@ -162,6 +164,7 @@ public:
     assert(((Expr && Expr->isValid()) || !Loc.isLocation()) &&
            "DBG_VALUE with a machine location must have a valid expression.");
   }
+#ifdef ENABLE_CLASSIC_FLANG
   DbgValueLoc(const DIExpression *Expr, int64_t i)
       : Expression(Expr), EntryKind(E_Integer) {
     Constant.Int = i;
@@ -193,6 +196,7 @@ public:
   const ConstantInt *getConstantInt() const { return Constant.CIP; }
   MachineLocation getLoc() const { return Loc; }
   TargetIndexLocation getTargetIndexLocation() const { return TIL; }
+#endif
 
   bool isFragment() const { return getExpression()->isFragment(); }
   bool isEntryVal() const { return getExpression()->isEntryValue(); }

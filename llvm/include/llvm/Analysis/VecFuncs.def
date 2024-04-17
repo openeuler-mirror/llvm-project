@@ -910,6 +910,8 @@ TLI_DEFINE_VECFUNC("tgamma", "armpl_svtgamma_f64_x",  SCALABLE(2), MASKED)
 TLI_DEFINE_VECFUNC("tgammaf", "armpl_svtgamma_f32_x", SCALABLE(4), MASKED)
 
 #elif defined(TLI_DEFINE_PGMATH_AARCH64_VECFUNCS)
+
+#ifdef ENABLE_CLASSIC_FLANG
 // Classic flang libpgmath library's Vector Functions for AArch64
 
 TLI_DEFINE_VECFUNC("__fd_sin_1", "__fd_sin_2", FIXED(2))
@@ -1079,8 +1081,11 @@ TLI_DEFINE_VECFUNC("__ps_exp_1", "__ps_exp_4", FIXED(4))
 
 TLI_DEFINE_VECFUNC("__rd_exp_1", "__rd_exp_2", FIXED(2))
 TLI_DEFINE_VECFUNC("__rs_exp_1", "__rs_exp_4", FIXED(4))
+#endif
 
 #elif defined(TLI_DEFINE_PGMATH_X86_VECFUNCS)
+
+#ifdef ENABLE_CLASSIC_FLANG
 // Classic flang libpgmath library's Vector Functions for X86
 
 TLI_DEFINE_VECFUNC("__fd_sin_1", "__fd_sin_2", FIXED(2))
@@ -1498,6 +1503,7 @@ TLI_DEFINE_VECFUNC("__rd_exp_1", "__rd_exp_8", FIXED(8))
 TLI_DEFINE_VECFUNC("__rs_exp_1", "__rs_exp_4", FIXED(4))
 TLI_DEFINE_VECFUNC("__rs_exp_1", "__rs_exp_8", FIXED(8))
 TLI_DEFINE_VECFUNC("__rs_exp_1", "__rs_exp_16", FIXED(16))
+#endif
 
 #else
 #error "Must choose which vector library functions are to be defined."
@@ -1519,5 +1525,7 @@ TLI_DEFINE_VECFUNC("__rs_exp_1", "__rs_exp_16", FIXED(16))
 #undef TLI_DEFINE_SLEEFGNUABI_SCALABLE_VECFUNCS
 #undef TLI_DEFINE_MASSV_VECFUNCS_NAMES
 #undef TLI_DEFINE_ARMPL_VECFUNCS
+#ifdef ENABLE_CLASSIC_FLANG
 #undef TLI_DEFINE_PGMATH_AARCH64_VECFUNCS
 #undef TLI_DEFINE_PGMATH_X86_VECFUNCS
+#endif

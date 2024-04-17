@@ -17,10 +17,12 @@
 #include "clang/Basic/LLVM.h"
 #include "clang/Driver/OptionUtils.h"
 #include "clang/Frontend/DependencyOutputOptions.h"
+#ifdef ENABLE_CLASSIC_FLANG
 #include "clang/Basic/TargetInfo.h"
+#include "llvm/ADT/StringExtras.h"
+#endif
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
-#include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/StringSet.h"
@@ -33,11 +35,13 @@
 #include <utility>
 #include <vector>
 
+#ifdef ENABLE_CLASSIC_FLANG
 namespace llvm {
 
 class StringRef;
 
 } // namespace llvm
+#endif
 
 namespace clang {
 
@@ -47,7 +51,9 @@ class CompilerInvocation;
 class DiagnosticsEngine;
 class ExternalSemaSource;
 class FrontendOptions;
+#ifdef ENABLE_CLASSIC_FLANG
 class MacroBuilder;
+#endif
 class PCHContainerReader;
 class Preprocessor;
 class PreprocessorOptions;
@@ -63,6 +69,7 @@ void InitializePreprocessor(Preprocessor &PP, const PreprocessorOptions &PPOpts,
 void DoPrintPreprocessedInput(Preprocessor &PP, raw_ostream *OS,
                               const PreprocessorOutputOptions &Opts);
 
+#ifdef ENABLE_CLASSIC_FLANG
 /// DefineTypeSize - Emit a macro to the predefines buffer that declares a macro
 /// named MacroName with the max value for a type with width 'TypeWidth' a
 /// signedness of 'isSigned' and with a value suffix of 'ValSuffix' (e.g. LL).
@@ -85,6 +92,7 @@ static void DefineTypeSize(const Twine &MacroName, TargetInfo::IntType Ty,
   DefineTypeSize(MacroName, TI.getTypeWidth(Ty), TI.getTypeConstantSuffix(Ty),
                  TI.isTypeSigned(Ty), Builder);
 }
+#endif
 
 /// An interface for collecting the dependencies of a compilation. Users should
 /// use \c attachToPreprocessor and \c attachToASTReader to get all of the

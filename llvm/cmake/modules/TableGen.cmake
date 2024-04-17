@@ -76,6 +76,10 @@ function(tablegen project ofn)
     set(tblgen_change_flag "--write-if-changed")
   endif()
 
+  if (LLVM_ENABLE_CLASSIC_FLANG)
+    list(APPEND tblgen_change_flag "-DENABLE_CLASSIC_FLANG")
+  endif()
+
   if (NOT LLVM_ENABLE_WARNINGS)
     list(APPEND LLVM_TABLEGEN_FLAGS "-no-warn-on-unused-template-args")
   endif()

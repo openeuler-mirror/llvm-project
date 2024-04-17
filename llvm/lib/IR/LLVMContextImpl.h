@@ -1055,7 +1055,9 @@ template <> struct MDNodeKeyImpl<DIGlobalVariable> {
   bool IsDefinition;
   Metadata *StaticDataMemberDeclaration;
   Metadata *TemplateParams;
+#ifdef ENABLE_CLASSIC_FLANG
   unsigned Flags;
+#endif
   uint32_t AlignInBits;
   Metadata *Annotations;
 
@@ -1063,13 +1065,18 @@ template <> struct MDNodeKeyImpl<DIGlobalVariable> {
                 Metadata *File, unsigned Line, Metadata *Type,
                 bool IsLocalToUnit, bool IsDefinition,
                 Metadata *StaticDataMemberDeclaration, Metadata *TemplateParams,
+#ifdef ENABLE_CLASSIC_FLANG
                 unsigned Flags,
+#endif
                 uint32_t AlignInBits, Metadata *Annotations)
       : Scope(Scope), Name(Name), LinkageName(LinkageName), File(File),
         Line(Line), Type(Type), IsLocalToUnit(IsLocalToUnit),
         IsDefinition(IsDefinition),
         StaticDataMemberDeclaration(StaticDataMemberDeclaration),
-        TemplateParams(TemplateParams), Flags(Flags),
+        TemplateParams(TemplateParams),
+#ifdef ENABLE_CLASSIC_FLANG
+        Flags(Flags),
+#endif
         AlignInBits(AlignInBits), Annotations(Annotations) {}
   MDNodeKeyImpl(const DIGlobalVariable *N)
       : Scope(N->getRawScope()), Name(N->getRawName()),
@@ -1077,7 +1084,10 @@ template <> struct MDNodeKeyImpl<DIGlobalVariable> {
         Line(N->getLine()), Type(N->getRawType()),
         IsLocalToUnit(N->isLocalToUnit()), IsDefinition(N->isDefinition()),
         StaticDataMemberDeclaration(N->getRawStaticDataMemberDeclaration()),
-        TemplateParams(N->getRawTemplateParams()), Flags(N->getFlags()),
+        TemplateParams(N->getRawTemplateParams()),
+#ifdef ENABLE_CLASSIC_FLANG
+        Flags(N->getFlags()),
+#endif
         AlignInBits(N->getAlignInBits()), Annotations(N->getRawAnnotations()) {}
 
   bool isKeyOf(const DIGlobalVariable *RHS) const {
@@ -1089,7 +1099,9 @@ template <> struct MDNodeKeyImpl<DIGlobalVariable> {
            StaticDataMemberDeclaration ==
                RHS->getRawStaticDataMemberDeclaration() &&
            TemplateParams == RHS->getRawTemplateParams() &&
+#ifdef ENABLE_CLASSIC_FLANG
            Flags == RHS->getFlags() &&
+#endif
            AlignInBits == RHS->getAlignInBits() &&
            Annotations == RHS->getRawAnnotations();
   }
@@ -1104,7 +1116,11 @@ template <> struct MDNodeKeyImpl<DIGlobalVariable> {
     // TODO: make hashing work fine with such situations
     return hash_combine(Scope, Name, LinkageName, File, Line, Type,
                         IsLocalToUnit, IsDefinition, /* AlignInBits, */
-                        StaticDataMemberDeclaration, Flags, Annotations);
+                        StaticDataMemberDeclaration,
+#ifdef ENABLE_CLASSIC_FLANG
+                        Flags,
+#endif
+                        Annotations);
   }
 };
 

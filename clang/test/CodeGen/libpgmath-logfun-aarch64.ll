@@ -1,3 +1,4 @@
+; REQUIRES: classic_flang
 ; REQUIRES: aarch64-registered-target
 
 ; RUN: %clang -target aarch64-unknown-linux-gnu -Ofast -S %s -o - | FileCheck %s

@@ -1,3 +1,5 @@
+! REQUIRES: classic_flang
+
 // RUN: %clang --driver-mode=flang -### -S --target=aarch64 -march=armv8-a+sve -msve-vector-bits=128 %s 2>&1 | FileCheck -check-prefix=CHECK-SVE-128 %s
 // RUN: %clang --driver-mode=flang -### -S --target=aarch64 -march=armv8-a+sve -msve-vector-bits=128+ %s 2>&1 | FileCheck -check-prefix=CHECK-SVE-128PLUS %s
 // RUN: %clang --driver-mode=flang -### -S --target=aarch64 -march=armv8-a+sve -msve-vector-bits=256 %s 2>&1 | FileCheck -check-prefix=CHECK-SVE-256 %s

@@ -1,3 +1,5 @@
+! REQUIRES: classic_flang
+
 // RUN: %clang --driver-mode=flang -### -S --target=aarch64 -march=armv8-a %s 2>&1 | FileCheck -check-prefix=CHECK-NEON %s
 // RUN: %clang --driver-mode=flang -### -S --target=aarch64 -march=armv8-a+sve %s 2>&1 | FileCheck -check-prefix=CHECK-SVE %s
 // RUN: %clang --driver-mode=flang -### -S --target=aarch64 -march=armv8-a+sve2 %s 2>&1 | FileCheck -check-prefix=CHECK-SVE2 %s
