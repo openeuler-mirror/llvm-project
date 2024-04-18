@@ -146,6 +146,20 @@ static bool shouldIgnoreUnsupportedTargetFeature(const Arg &TargetFeatureArg,
   return TargetFeatureArg.getOption().matches(options::OPT_mno_cumode);
 }
 
+#ifdef ENABLE_CLASSIC_FLANG
+/// \brief Determine if Fortran "main" object is needed
+bool tools::needFortranMain(const Driver &D, const ArgList &Args) {
+  return (needFortranLibs(D, Args) && !Args.hasArg(options::OPT_Mnomain) &&
+          !Args.hasArg(options::OPT_no_fortran_main));
+}
+
+/// \brief Determine if Fortran link libraies are needed
+bool tools::needFortranLibs(const Driver &D, const ArgList &Args) {
+  return (D.IsFlangMode() && !Args.hasArg(options::OPT_nostdlib) &&
+          !Args.hasArg(options::OPT_noFlangLibs));
+}
+#endif
+
 void tools::addPathIfExists(const Driver &D, const Twine &Path,
                             ToolChain::path_list &Paths) {
   if (D.getVFS().exists(Path))
@@ -256,6 +270,9 @@ void tools::AddLinkerInputs(const ToolChain &TC, const InputInfoList &Inputs,
                             const ArgList &Args, ArgStringList &CmdArgs,
                             const JobAction &JA) {
   const Driver &D = TC.getDriver();
+#ifdef ENABLE_CLASSIC_FLANG
+  bool SeenFirstLinkerInput = false;
+#endif
 
   // Add extra linker input arguments which are not treated as inputs
   // (constructed via -Xarch_).
@@ -289,6 +306,15 @@ void tools::AddLinkerInputs(const ToolChain &TC, const InputInfoList &Inputs,
     if (II.isNothing())
       continue;
 
+#ifdef ENABLE_CLASSIC_FLANG
+    // Add Fortan "main" before the first linker input
+    if (!SeenFirstLinkerInput) {
+      if (needFortranMain(D, Args)) {
+        CmdArgs.push_back("-lflangmain");
+      }
+      SeenFirstLinkerInput = true;
+    }
+#endif
     // Otherwise, this is a linker input argument.
     const Arg &A = II.getInputArg();
 
@@ -300,6 +326,16 @@ void tools::AddLinkerInputs(const ToolChain &TC, const InputInfoList &Inputs,
     else
       A.renderAsInput(Args, CmdArgs);
   }
+#ifdef ENABLE_CLASSIC_FLANG
+  if (!SeenFirstLinkerInput && needFortranMain(D, Args)) {
+    CmdArgs.push_back("-lflangmain");
+  }
+
+  // Claim "no Fortran main" arguments
+  for (auto Arg : Args.filtered(options::OPT_no_fortran_main, options::OPT_Mnomain)) {
+    Arg->claim();
+  }
+#endif
 }
 
 void tools::addLinkerCompressDebugSectionsOption(
@@ -489,10 +525,18 @@ static void getWebAssemblyTargetFeatures(const Driver &D,
                             options::OPT_m_wasm_Features_Group);
 }
 
+#ifndef ENABLE_CLASSIC_FLANG
 void tools::getTargetFeatures(const Driver &D, const llvm::Triple &Triple,
                               const ArgList &Args, ArgStringList &CmdArgs,
                               bool ForAS, bool IsAux) {
   std::vector<StringRef> Features;
+#else
+void tools::getTargetFeatureList(const Driver &D,
+                                 const llvm::Triple &Triple,
+                                 const ArgList &Args, ArgStringList &CmdArgs,
+                                 bool ForAS,
+                                 std::vector<StringRef> &Features) {
+#endif
   switch (Triple.getArch()) {
   default:
     break;
@@ -567,6 +611,15 @@ void tools::getTargetFeatures(const Driver &D, const llvm::Triple &Triple,
     loongarch::getLoongArchTargetFeatures(D, Triple, Args, Features);
     break;
   }
+#ifdef ENABLE_CLASSIC_FLANG
+}
+
+void tools::getTargetFeatures(const Driver &D, const llvm::Triple &Triple,
+                              const ArgList &Args, ArgStringList &CmdArgs,
+                              bool ForAS, bool IsAux) {
+  std::vector<StringRef> Features;
+  getTargetFeatureList(D, Triple, Args, CmdArgs, ForAS, Features);
+#endif
 
   for (auto Feature : unifyTargetFeatures(Features)) {
     CmdArgs.push_back(IsAux ? "-aux-target-feature" : "-target-feature");
@@ -889,7 +942,11 @@ bool tools::addOpenMPRuntime(ArgStringList &CmdArgs, const ToolChain &TC,
                              const ArgList &Args, bool ForceStaticHostRuntime,
                              bool IsOffloadingHost, bool GompNeedsRT) {
   if (!Args.hasFlag(options::OPT_fopenmp, options::OPT_fopenmp_EQ,
-                    options::OPT_fno_openmp, false))
+                    options::OPT_fno_openmp, false)
+#ifdef ENABLE_CLASSIC_FLANG
+      && !Args.hasFlag(options::OPT_mp, options::OPT_nomp, false)
+#endif
+     )
     return false;
 
   Driver::OpenMPRuntimeKind RTKind = TC.getDriver().getOpenMPRuntime(Args);
@@ -934,7 +991,16 @@ bool tools::addOpenMPRuntime(ArgStringList &CmdArgs, const ToolChain &TC,
 }
 
 void tools::addFortranRuntimeLibs(const ToolChain &TC,
+#ifdef ENABLE_CLASSIC_FLANG
+                                  const llvm::opt::ArgList &Args,
+#endif
                                   llvm::opt::ArgStringList &CmdArgs) {
+#ifdef ENABLE_CLASSIC_FLANG
+  if (needFortranLibs(TC.getDriver(), Args))
+    TC.AddFortranStdlibLibArgs(Args, CmdArgs);
+  else
+    Args.ClaimAllArgs(options::OPT_noFlangLibs);
+#else
   if (TC.getTriple().isKnownWindowsMSVCEnvironment()) {
     CmdArgs.push_back("Fortran_main.lib");
     CmdArgs.push_back("FortranRuntime.lib");
@@ -944,6 +1010,7 @@ void tools::addFortranRuntimeLibs(const ToolChain &TC,
     CmdArgs.push_back("-lFortranRuntime");
     CmdArgs.push_back("-lFortranDecimal");
   }
+#endif
 }
 
 void tools::addFortranRuntimeLibraryPath(const ToolChain &TC,

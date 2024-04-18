@@ -1148,7 +1148,11 @@ LLVMMetadataRef LLVMDIBuilderCreateGlobalVariableExpression(
     LLVMDIBuilderRef Builder, LLVMMetadataRef Scope, const char *Name,
     size_t NameLen, const char *Linkage, size_t LinkLen, LLVMMetadataRef File,
     unsigned LineNo, LLVMMetadataRef Ty, LLVMBool LocalToUnit,
-    LLVMMetadataRef Expr, LLVMMetadataRef Decl, uint32_t AlignInBits);
+    LLVMMetadataRef Expr, LLVMMetadataRef Decl,
+#ifdef ENABLE_CLASSIC_FLANG
+    LLVMDIFlags Flags,
+#endif
+    uint32_t AlignInBits);
 
 
 /**
@@ -1246,7 +1250,11 @@ LLVMMetadataRef LLVMDIBuilderCreateTempGlobalVariableFwdDecl(
     LLVMDIBuilderRef Builder, LLVMMetadataRef Scope, const char *Name,
     size_t NameLen, const char *Linkage, size_t LnkLen, LLVMMetadataRef File,
     unsigned LineNo, LLVMMetadataRef Ty, LLVMBool LocalToUnit,
-    LLVMMetadataRef Decl, uint32_t AlignInBits);
+    LLVMMetadataRef Decl,
+#ifdef ENABLE_CLASSIC_FLANG
+    LLVMDIFlags Flags,
+#endif
+    uint32_t AlignInBits);
 
 /**
  * Insert a new llvm.dbg.declare intrinsic call before the given instruction.

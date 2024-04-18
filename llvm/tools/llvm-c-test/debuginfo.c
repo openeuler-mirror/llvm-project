@@ -64,7 +64,11 @@ int llvm_test_dibuilder(void) {
       LLVMDIBuilderCreateConstantValueExpression(DIB, 0);
   LLVMDIBuilderCreateGlobalVariableExpression(
       DIB, Module, "globalClass", 11, "", 0, File, 1, ClassTy, true,
-      GlobalClassValueExpr, NULL, 0);
+      GlobalClassValueExpr, NULL,
+#ifdef ENABLE_CLASSIC_FLANG
+      LLVMDIFlagZero,
+#endif
+      0);
 
   LLVMMetadataRef Int64Ty =
       LLVMDIBuilderCreateBasicType(DIB, "Int64", 5, 64, 0, LLVMDIFlagZero);
@@ -75,7 +79,11 @@ int llvm_test_dibuilder(void) {
       LLVMDIBuilderCreateConstantValueExpression(DIB, 0);
   LLVMDIBuilderCreateGlobalVariableExpression(
       DIB, Module, "global", 6, "", 0, File, 1, Int64TypeDef, true,
-      GlobalVarValueExpr, NULL, 0);
+      GlobalVarValueExpr, NULL,
+#ifdef ENABLE_CLASSIC_FLANG
+      LLVMDIFlagZero,
+#endif
+      0);
 
   LLVMMetadataRef NameSpace =
       LLVMDIBuilderCreateNameSpace(DIB, Module, "NameSpace", 9, false);

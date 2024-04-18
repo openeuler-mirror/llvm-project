@@ -23,6 +23,12 @@ namespace clang {
 namespace driver {
 namespace tools {
 
+#ifdef ENABLE_CLASSIC_FLANG
+bool needFortranLibs(const Driver &D, const llvm::opt::ArgList &Args);
+
+bool needFortranMain(const Driver &D, const llvm::opt::ArgList &Args);
+#endif
+
 void addPathIfExists(const Driver &D, const Twine &Path,
                      ToolChain::path_list &Paths);
 
@@ -131,6 +137,9 @@ bool addOpenMPRuntime(llvm::opt::ArgStringList &CmdArgs, const ToolChain &TC,
 
 /// Adds Fortran runtime libraries to \p CmdArgs.
 void addFortranRuntimeLibs(const ToolChain &TC,
+#ifdef ENABLE_CLASSIC_FLANG
+                           const llvm::opt::ArgList &Args,
+#endif
                            llvm::opt::ArgStringList &CmdArgs);
 
 /// Adds the path for the Fortran runtime libraries to \p CmdArgs.
@@ -172,6 +181,17 @@ void AddTargetFeature(const llvm::opt::ArgList &Args,
 
 std::string getCPUName(const Driver &D, const llvm::opt::ArgList &Args,
                        const llvm::Triple &T, bool FromAs = false);
+
+#ifdef ENABLE_CLASSIC_FLANG
+// Helper function extracted from upstream getTargetFeatures. Classic Flang
+// uses this helper to render the target feature options for the Fortran
+// frontend.
+void getTargetFeatureList(const Driver &D,
+                          const llvm::Triple &Triple,
+                          const llvm::opt::ArgList &Args,
+                          llvm::opt::ArgStringList &CmdArgs,
+                          bool ForAS, std::vector<StringRef> &Features);
+#endif
 
 void getTargetFeatures(const Driver &D, const llvm::Triple &Triple,
                        const llvm::opt::ArgList &Args,

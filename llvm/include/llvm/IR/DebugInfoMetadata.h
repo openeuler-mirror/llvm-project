@@ -3062,12 +3062,23 @@ class DIGlobalVariable : public DIVariable {
 
   bool IsLocalToUnit;
   bool IsDefinition;
+#ifdef ENABLE_CLASSIC_FLANG
+  DIFlags Flags;
+#endif
 
   DIGlobalVariable(LLVMContext &C, StorageType Storage, unsigned Line,
-                   bool IsLocalToUnit, bool IsDefinition, uint32_t AlignInBits,
-                   ArrayRef<Metadata *> Ops)
+                   bool IsLocalToUnit, bool IsDefinition,
+#ifdef ENABLE_CLASSIC_FLANG
+                   DIFlags Flags,
+#endif
+                   uint32_t AlignInBits, ArrayRef<Metadata *> Ops)
       : DIVariable(C, DIGlobalVariableKind, Storage, Line, Ops, AlignInBits),
+#ifdef ENABLE_CLASSIC_FLANG
+        IsLocalToUnit(IsLocalToUnit), IsDefinition(IsDefinition), Flags(Flags) {}
+#else
         IsLocalToUnit(IsLocalToUnit), IsDefinition(IsDefinition) {}
+#endif
+
   ~DIGlobalVariable() = default;
 
   static DIGlobalVariable *
@@ -3075,28 +3086,40 @@ class DIGlobalVariable : public DIVariable {
           StringRef LinkageName, DIFile *File, unsigned Line, DIType *Type,
           bool IsLocalToUnit, bool IsDefinition,
           DIDerivedType *StaticDataMemberDeclaration, MDTuple *TemplateParams,
-          uint32_t AlignInBits, DINodeArray Annotations, StorageType Storage,
-          bool ShouldCreate = true) {
+#ifdef ENABLE_CLASSIC_FLANG
+          DIFlags Flags,
+#endif
+          uint32_t AlignInBits, DINodeArray Annotations,
+          StorageType Storage, bool ShouldCreate = true) {
     return getImpl(Context, Scope, getCanonicalMDString(Context, Name),
                    getCanonicalMDString(Context, LinkageName), File, Line, Type,
                    IsLocalToUnit, IsDefinition, StaticDataMemberDeclaration,
-                   cast_or_null<Metadata>(TemplateParams), AlignInBits,
-                   Annotations.get(), Storage, ShouldCreate);
+                   cast_or_null<Metadata>(TemplateParams),
+#ifdef ENABLE_CLASSIC_FLANG
+                   Flags,
+#endif
+                   AlignInBits, Annotations.get(), Storage, ShouldCreate);
   }
   static DIGlobalVariable *
   getImpl(LLVMContext &Context, Metadata *Scope, MDString *Name,
           MDString *LinkageName, Metadata *File, unsigned Line, Metadata *Type,
           bool IsLocalToUnit, bool IsDefinition,
           Metadata *StaticDataMemberDeclaration, Metadata *TemplateParams,
-          uint32_t AlignInBits, Metadata *Annotations, StorageType Storage,
-          bool ShouldCreate = true);
+#ifdef ENABLE_CLASSIC_FLANG
+          DIFlags Flags,
+#endif
+          uint32_t AlignInBits, Metadata *Annotations,
+          StorageType Storage, bool ShouldCreate = true);
 
   TempDIGlobalVariable cloneImpl() const {
     return getTemporary(getContext(), getScope(), getName(), getLinkageName(),
                         getFile(), getLine(), getType(), isLocalToUnit(),
                         isDefinition(), getStaticDataMemberDeclaration(),
-                        getTemplateParams(), getAlignInBits(),
-                        getAnnotations());
+                        getTemplateParams(),
+#ifdef ENABLE_CLASSIC_FLANG
+                        getFlags(),
+#endif
+                        getAlignInBits(), getAnnotations());
   }
 
 public:
@@ -3105,22 +3128,40 @@ public:
       (DIScope * Scope, StringRef Name, StringRef LinkageName, DIFile *File,
        unsigned Line, DIType *Type, bool IsLocalToUnit, bool IsDefinition,
        DIDerivedType *StaticDataMemberDeclaration, MDTuple *TemplateParams,
+#ifdef ENABLE_CLASSIC_FLANG
+       DIFlags Flags,
+#endif
        uint32_t AlignInBits, DINodeArray Annotations),
       (Scope, Name, LinkageName, File, Line, Type, IsLocalToUnit, IsDefinition,
-       StaticDataMemberDeclaration, TemplateParams, AlignInBits, Annotations))
+       StaticDataMemberDeclaration, TemplateParams,
+#ifdef ENABLE_CLASSIC_FLANG
+       Flags,
+#endif
+       AlignInBits, Annotations))
   DEFINE_MDNODE_GET(
       DIGlobalVariable,
       (Metadata * Scope, MDString *Name, MDString *LinkageName, Metadata *File,
        unsigned Line, Metadata *Type, bool IsLocalToUnit, bool IsDefinition,
        Metadata *StaticDataMemberDeclaration, Metadata *TemplateParams,
+#ifdef ENABLE_CLASSIC_FLANG
+       DIFlags Flags,
+#endif
        uint32_t AlignInBits, Metadata *Annotations),
       (Scope, Name, LinkageName, File, Line, Type, IsLocalToUnit, IsDefinition,
-       StaticDataMemberDeclaration, TemplateParams, AlignInBits, Annotations))
+       StaticDataMemberDeclaration, TemplateParams,
+#ifdef ENABLE_CLASSIC_FLANG
+       Flags,
+#endif
+       AlignInBits, Annotations))
 
   TempDIGlobalVariable clone() const { return cloneImpl(); }
 
   bool isLocalToUnit() const { return IsLocalToUnit; }
   bool isDefinition() const { return IsDefinition; }
+#ifdef ENABLE_CLASSIC_FLANG
+  DIFlags getFlags() const { return Flags; }
+  bool isArtificial() const { return getFlags() & FlagArtificial; }
+#endif
   StringRef getDisplayName() const { return getStringOperand(4); }
   StringRef getLinkageName() const { return getStringOperand(5); }
   DIDerivedType *getStaticDataMemberDeclaration() const {

@@ -22,7 +22,9 @@ namespace llvm {
 template <typename T> class ArrayRef;
 class Function;
 class Module;
+#ifndef ENABLE_CLASSIC_FLANG
 class Triple;
+#endif
 
 /// Describes a possible vectorization of a function.
 /// Function 'VectorFnName' is equivalent to 'ScalarFnName' vectorized
@@ -81,6 +83,10 @@ class TargetLibraryInfoImpl {
   bool isValidProtoForLibFunc(const FunctionType &FTy, LibFunc F,
                               const Module &M) const;
 
+#ifdef ENABLE_CLASSIC_FLANG
+  Triple T;
+#endif
+
 public:
   /// List of known vector-functions libraries.
   ///
@@ -95,6 +101,9 @@ public:
     DarwinLibSystemM, // Use Darwin's libsystem_m.
     LIBMVEC_X86,      // GLIBC Vector Math library.
     MASSV,            // IBM MASS vector library.
+#ifdef ENABLE_CLASSIC_FLANG
+    PGMATH,           // PGI math library.
+#endif
     SVML,             // Intel short vector math library.
     SLEEFGNUABI, // SLEEF - SIMD Library for Evaluating Elementary Functions.
     ArmPL        // Arm Performance Libraries.

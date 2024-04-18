@@ -2281,6 +2281,9 @@ static void writeDIGlobalVariable(raw_ostream &Out, const DIGlobalVariable *N,
   Printer.printBool("isDefinition", N->isDefinition());
   Printer.printMetadata("declaration", N->getRawStaticDataMemberDeclaration());
   Printer.printMetadata("templateParams", N->getRawTemplateParams());
+#ifdef ENABLE_CLASSIC_FLANG
+  Printer.printDIFlags("flags", N->getFlags());
+#endif
   Printer.printInt("align", N->getAlignInBits());
   Printer.printMetadata("annotations", N->getRawAnnotations());
   Out << ")";

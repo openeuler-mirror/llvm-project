@@ -161,7 +161,7 @@ static void DefineFloatMacros(MacroBuilder &Builder, StringRef Prefix,
   Builder.defineMacro(DefPrefix + "MIN__", Twine(Min)+Ext);
 }
 
-
+#ifndef ENABLE_CLASSIC_FLANG
 /// DefineTypeSize - Emit a macro to the predefines buffer that declares a macro
 /// named MacroName with the max value for a type with width 'TypeWidth' a
 /// signedness of 'isSigned' and with a value suffix of 'ValSuffix' (e.g. LL).
@@ -180,6 +180,7 @@ static void DefineTypeSize(const Twine &MacroName, TargetInfo::IntType Ty,
   DefineTypeSize(MacroName, TI.getTypeWidth(Ty), TI.getTypeConstantSuffix(Ty),
                  TI.isTypeSigned(Ty), Builder);
 }
+#endif
 
 static void DefineFmt(const Twine &Prefix, TargetInfo::IntType Ty,
                       const TargetInfo &TI, MacroBuilder &Builder) {

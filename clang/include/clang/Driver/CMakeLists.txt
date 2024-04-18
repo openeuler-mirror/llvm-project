@@ -1,7 +1,14 @@
 set(LLVM_TARGET_DEFINITIONS Options.td)
+
+set(CLANG_DRIVER_OPTIONS)
 if (BUILD_FOR_OPENEULER)
-tablegen(LLVM Options.inc -gen-opt-parser-defs -DBUILD_FOR_OPENEULER)
-else()
-tablegen(LLVM Options.inc -gen-opt-parser-defs)
+   list(APPEND CLANG_DRIVER_OPTIONS -DBUILD_FOR_OPENEULER )
 endif()
+
+if (LLVM_ENABLE_CLASSIC_FLANG)
+   list(APPEND CLANG_DRIVER_OPTIONS -DENABLE_CLASSIC_FLANG )
+endif()
+ 
+tablegen(LLVM Options.inc ${CLANG_DRIVER_OPTIONS} -gen-opt-parser-defs  )
+
 add_public_tablegen_target(ClangDriverOptions)

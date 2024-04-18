@@ -2014,7 +2014,11 @@ void ModuleBitcodeWriter::writeDITemplateValueParameter(
 void ModuleBitcodeWriter::writeDIGlobalVariable(
     const DIGlobalVariable *N, SmallVectorImpl<uint64_t> &Record,
     unsigned Abbrev) {
+#ifdef ENABLE_CLASSIC_FLANG
+  const uint64_t Version = 3 << 1;
+#else
   const uint64_t Version = 2 << 1;
+#endif
   Record.push_back((uint64_t)N->isDistinct() | Version);
   Record.push_back(VE.getMetadataOrNullID(N->getScope()));
   Record.push_back(VE.getMetadataOrNullID(N->getRawName()));
@@ -2026,6 +2030,9 @@ void ModuleBitcodeWriter::writeDIGlobalVariable(
   Record.push_back(N->isDefinition());
   Record.push_back(VE.getMetadataOrNullID(N->getStaticDataMemberDeclaration()));
   Record.push_back(VE.getMetadataOrNullID(N->getTemplateParams()));
+#ifdef ENABLE_CLASSIC_FLANG
+  Record.push_back(N->getFlags());
+#endif
   Record.push_back(N->getAlignInBits());
   Record.push_back(VE.getMetadataOrNullID(N->getAnnotations().get()));
 

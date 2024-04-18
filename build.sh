@@ -12,6 +12,7 @@ enabled_projects="clang;lld;compiler-rt;openmp;clang-tools-extra"
 embedded_toolchain="0"
 split_dwarf=on
 use_ccache="0"
+enable_classic_flang="0"
 do_install="0"
 clean=0
 unit_test=""
@@ -59,13 +60,14 @@ Options:
   -s       Strip binaries and minimize file permissions when (re-)installing.
   -t       Enable unit tests for components that support them (make check-all).
   -v       Enable verbose build output (default: quiet).
+  -f       Enable classic flang.
   -X archs Build only the specified semi-colon-delimited list of backends (default: "$backends").
 EOF
 }
 
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
-while getopts :b:ceEhiI:j:orstvX: optchr; do
+while getopts :b:ceEhiI:j:orstvfX: optchr; do
   case "$optchr" in
     b)
       buildtype="$OPTARG"
@@ -84,6 +86,9 @@ while getopts :b:ceEhiI:j:orstvX: optchr; do
     c)
       use_ccache="1"
       ;;
+    f)
+      enable_classic_flang="1"
+      ;;    
     e)
       embedded_toolchain="1"
       ;;
@@ -165,6 +170,12 @@ if [ $use_ccache == "1" ]; then
   CMAKE_OPTIONS="$CMAKE_OPTIONS \
                 -DCMAKE_C_COMPILER_LAUNCHER=ccache \
                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache "
+fi
+
+if [ $enable_classic_flang == "1" ]; then
+  echo "Enable classic flang"
+  CMAKE_OPTIONS="$CMAKE_OPTIONS \
+                -DLLVM_ENABLE_CLASSIC_FLANG=on"
 fi
 
 if [ $embedded_toolchain == "1" ]; then

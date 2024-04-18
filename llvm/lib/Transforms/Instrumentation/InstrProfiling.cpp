@@ -1052,8 +1052,11 @@ InstrProfiling::getOrCreateRegionCounters(InstrProfInstBase *Inc) {
           SP, CounterPtr->getName(), /*LinkageName=*/StringRef(), SP->getFile(),
           /*LineNo=*/0, DB.createUnspecifiedType("Profile Data Type"),
           CounterPtr->hasLocalLinkage(), /*IsDefined=*/true, /*Expr=*/nullptr,
-          /*Decl=*/nullptr, /*TemplateParams=*/nullptr, /*AlignInBits=*/0,
-          Annotations);
+          /*Decl=*/nullptr, /*TemplateParams=*/nullptr,
+#ifdef ENABLE_CLASSIC_FLANG
+          /*Flags=*/DINode::FlagZero,
+#endif
+          /*AlignInBits=*/0, Annotations);
       CounterPtr->addDebugInfo(DICounter);
       DB.finalize();
     } else {

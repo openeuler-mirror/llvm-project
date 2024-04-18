@@ -283,7 +283,9 @@ struct SymbolCU {
   const MCSymbol *Sym;
   DwarfCompileUnit *CU;
 };
-
+#ifdef ENABLE_CLASSIC_FLANG
+class DummyDwarfExpression;
+#endif
 /// The kind of accelerator tables we should emit.
 enum class AccelTableKind {
   Default, ///< Platform default.
@@ -436,7 +438,9 @@ private:
 
   /// Map for tracking Fortran deferred CHARACTER lengths.
   DenseMap<const DIStringType *, unsigned> StringTypeLocMap;
-
+#ifdef ENABLE_CLASSIC_FLANG
+  DenseMap<const DIVariable*,const DIType*> VariableInDependentType;
+#endif
   AddressPool AddrPool;
 
   /// Accelerator tables.

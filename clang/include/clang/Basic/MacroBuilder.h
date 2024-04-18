@@ -24,9 +24,15 @@ class MacroBuilder {
   raw_ostream &Out;
 public:
   MacroBuilder(raw_ostream &Output) : Out(Output) {}
-
+  #ifdef ENABLE_CLASSIC_FLANG
+  virtual ~MacroBuilder() {}
+  #endif
   /// Append a \#define line for macro of the form "\#define Name Value\n".
+  #ifdef ENABLE_CLASSIC_FLANG
+  virtual void defineMacro(const Twine &Name, const Twine &Value = "1") {
+  #else
   void defineMacro(const Twine &Name, const Twine &Value = "1") {
+  #endif
     Out << "#define " << Name << ' ' << Value << '\n';
   }
 

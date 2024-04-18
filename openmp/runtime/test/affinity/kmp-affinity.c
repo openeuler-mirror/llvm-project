@@ -3,6 +3,11 @@
 // RUN: env KMP_AFFINITY=granularity=core,compact %libomp-run
 // RUN: env KMP_AFFINITY=granularity=socket,compact %libomp-run
 // REQUIRES: linux
+// UNSUPPORTED: classic_flang
+
+// This test currently fails on GitHub runners. See:
+// https://github.com/flang-compiler/classic-flang-llvm-project/issues/171
+//
 
 #include <stdio.h>
 #include <stdlib.h>

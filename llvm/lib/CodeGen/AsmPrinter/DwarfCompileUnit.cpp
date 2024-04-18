@@ -184,7 +184,10 @@ DIE *DwarfCompileUnit::getOrCreateGlobalVariableDIE(
     addFlag(*VariableDIE, dwarf::DW_AT_declaration);
   else
     addGlobalName(GV->getName(), *VariableDIE, DeclContext);
-
+#ifdef ENABLE_CLASSIC_FLANG
+  if (GV->isArtificial())
+    addFlag(*VariableDIE, dwarf::DW_AT_artificial);
+#endif
   addAnnotation(*VariableDIE, GV->getAnnotations());
 
   if (uint32_t AlignInBytes = GV->getAlignInBytes())
