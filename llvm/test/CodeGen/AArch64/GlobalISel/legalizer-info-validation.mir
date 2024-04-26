@@ -652,6 +652,13 @@
 # DEBUG-NEXT: .. opcode {{[0-9]+}} is aliased to [[DYN_STACKALLOC]]
 # DEBUG-NEXT: .. type index coverage check SKIPPED: user-defined predicate detected
 # DEBUG-NEXT: .. imm index coverage check SKIPPED: user-defined predicate detected
+# DEBUG-NEXT: G_STACKSAVE (opcode [[STACKSAVE:[0-9]+]]): 1 type index, 0 imm indices
+# DEBUG-NEXT: .. type index coverage check SKIPPED: user-defined predicate detected
+# DEBUG-NEXT: .. imm index coverage check SKIPPED: user-defined predicate detected
+# DEBUG-NEXT: G_STACKRESTORE (opcode {{[0-9]+}}): 1 type index, 0 imm indices
+# DEBUG-NEXT: .. opcode {{[0-9]+}} is aliased to [[STACKSAVE]]
+# DEBUG-NEXT: .. type index coverage check SKIPPED: user-defined predicate detected
+# DEBUG-NEXT: .. imm index coverage check SKIPPED: user-defined predicate detected
 # DEBUG-NEXT: G_STRICT_FADD (opcode {{[0-9]+}}): 1 type index, 0 imm indices
 # DEBUG-NEXT: .. type index coverage check SKIPPED: no rules defined
 # DEBUG-NEXT: .. imm index coverage check SKIPPED: no rules defined
