@@ -334,6 +334,13 @@ Linux::Linux(const Driver &D, const llvm::Triple &Triple, const ArgList &Args)
 
   addPathIfExists(D, concat(SysRoot, "/lib"), Paths);
   addPathIfExists(D, concat(SysRoot, "/usr/lib"), Paths);
+
+#ifdef BUILD_FOR_EMBEDDED
+  // In openEuler embedded building system, target libraries
+  // may be installed in <sysroot>/lib64.
+  if (Triple.getVendor() == llvm::Triple::openEuler)
+    addPathIfExists(D, concat(SysRoot, "/lib64"), Paths);
+#endif
 }
 
 ToolChain::RuntimeLibType Linux::GetDefaultRuntimeLibType() const {
@@ -398,7 +405,8 @@ std::string Linux::computeSysRoot() const {
   // openEuler embedded building system needs to search
   // more pre-defined paths.
   if (GCCInstallation.isValid() &&
-      getTriple().getVendor() == llvm::Triple::OpenEmbedded) {
+      (getTriple().getVendor() == llvm::Triple::OpenEmbedded ||
+       isCrossCompiling())) {
     const StringRef InstallDir = GCCInstallation.getInstallPath();
     const StringRef TripleStr = GCCInstallation.getTriple().str();
 
@@ -409,7 +417,38 @@ std::string Linux::computeSysRoot() const {
     // scenarios where this path takes effect.
     std::string Path = (InstallDir + "/../../../../../" + TripleStr).str();
 
-    if (getVFS().exists(Path))
+    // Caution that we do native compilation and cross compilation
+    // in the same machine. We should skip this "Path" when cross
+    // compiling.
+    if (getTriple().getVendor() == llvm::Triple::OpenEmbedded &&
+        getVFS().exists(Path))
+      return Path;
+
+    // There are two scenarios that we try to search target sysroot
+    // path when cross compiling. One is that the "--gcc-toolchain="
+    // option is given, and openEuler embedded GCC cross toolchain's
+    // sysroot path could be
+    // "/path/to/gcc-toolchain/lib64/gcc/aarch64-openeuler-linux-gnu/12.3.1/../../../../aarch64-openeuler-linux-gnu/sysroot"
+
+    // Another is that we use openEuler embedded LLVM toolchain's
+    // integrated sysroot, that is
+    // "/path/to/llvm-toolchain/lib64/gcc/aarch64-openeuler-linux-gnu/12.3.1/../../../../aarch64-openeuler-linux-gnu/sysroot"
+
+    // Note we design openEuler embedded LLVM toolchain's integrated sysroot
+    // has the same directory structure as GCC. It consists of several parts,
+    //   - /path/to/llvm-toolchain/
+    //     - bin
+    //     - include
+    //     - lib
+    //     - lib64/gcc/{Triple}/{Version}  # includes gcc target runtime like libgcc.a
+    //     - {Triple}
+    //       - include                     # includes gcc target headers
+    //       - sysroot                     # includes target sysroot
+
+    // So we can use the same relative path for both scenarios.
+    Path = (InstallDir + "/../../../../" + TripleStr + "/sysroot").str();
+
+    if (isCrossCompiling() && getVFS().exists(Path))
       return Path;
   }
 #endif
@@ -499,10 +538,19 @@ std::string Linux::getDynamicLinker(const ArgList &Args) const {
   default:
     llvm_unreachable("unsupported architecture");
 
+#ifdef BUILD_FOR_EMBEDDED
+  case llvm::Triple::aarch64: {
+    bool IsopenEuler = (Triple.getVendor() == llvm::Triple::openEuler);
+    LibDir = IsopenEuler ? "lib64" : "lib";
+    Loader = "ld-linux-aarch64.so.1";
+    break;
+  }
+#else
   case llvm::Triple::aarch64:
     LibDir = "lib";
     Loader = "ld-linux-aarch64.so.1";
     break;
+#endif
   case llvm::Triple::aarch64_be:
     LibDir = "lib";
     Loader = "ld-linux-aarch64_be.so.1";
@@ -921,6 +969,11 @@ void Linux::addLibStdCxxIncludePaths(const llvm::opt::ArgList &DriverArgs,
       // Cray's gcc installation puts headers under "g++" without a
       // version suffix.
       LibDir.str() + "/../include/g++",
+#ifdef BUILD_FOR_EMBEDDED
+      // In openEuler embedded building system, if we use recipe-sysroot,
+      // C++ headers are in <sysroot>/usr/include/c++/<version>.
+      LibDir.str() + "/../usr/include/c++/" + Version.Text,
+#endif
   };
 
   for (const auto &IncludePath : LibStdCXXIncludePathCandidates) {

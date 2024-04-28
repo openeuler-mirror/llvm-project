@@ -406,6 +406,21 @@ void tools::gnutools::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (!D.SysRoot.empty())
     CmdArgs.push_back(Args.MakeArgString("--sysroot=" + D.SysRoot));
+#ifdef BUILD_FOR_EMBEDDED
+  else {
+    // In openEuler embedded cross building, it will have a default
+    // sysroot when sysroot is not given. So it need pass default
+    // sysroot to linker (especially for lld) to find correct path
+    // for dynamic linker and absolute path of linker script.
+    if (ToolChain.isCrossCompiling()) {
+      const StringRef ClangDir = D.getInstalledDir();
+      std::string Path =
+          (ClangDir + "/../" + D.getTargetTriple() + "/sysroot").str();
+      if (D.getVFS().exists(Path))
+        CmdArgs.push_back(Args.MakeArgString("--sysroot=" + Path));
+    }
+  }
+#endif
 
   if (IsPIE)
     CmdArgs.push_back("-pie");
@@ -2120,6 +2135,15 @@ void Generic_GCC::GCCInstallationDetector::init(
 
     Prefixes.push_back(std::string(GCCToolchainDir));
   } else {
+#ifdef BUILD_FOR_EMBEDDED
+    // In openEuler embedded building system, it may find gcc
+    // installation in recipe-sysroot. But gcc runtime libraries
+    // in there are stripped which causing some failures.
+    // So try to search integrated gcc first.
+    if (TargetTriple.getVendor() == llvm::Triple::openEuler)
+      Prefixes.push_back(D.InstalledDir + "/..");
+#endif
+
     // If we have a SysRoot, try that first.
     if (!D.SysRoot.empty()) {
       Prefixes.push_back(D.SysRoot);
