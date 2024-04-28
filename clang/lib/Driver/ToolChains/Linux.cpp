@@ -394,6 +394,26 @@ std::string Linux::computeSysRoot() const {
     return std::string();
   }
 
+#ifdef BUILD_FOR_EMBEDDED
+  // openEuler embedded building system needs to search
+  // more pre-defined paths.
+  if (GCCInstallation.isValid() &&
+      getTriple().getVendor() == llvm::Triple::OpenEmbedded) {
+    const StringRef InstallDir = GCCInstallation.getInstallPath();
+    const StringRef TripleStr = GCCInstallation.getTriple().str();
+
+    // openEuler embedded nativesdk's sysroot path could be
+    // "/opt/buildtools/nativesdk/sysroots/x86_64-openeulersdk-linux/usr/lib/x86_64-openeulersdk-linux/12.3.0/../../../../../x86_64-openeulersdk-linux"
+    // But (InstallDir + "/../../../../") already satisfies the path,
+    // we try to check additional "TripleStr" to narrow down the
+    // scenarios where this path takes effect.
+    std::string Path = (InstallDir + "/../../../../../" + TripleStr).str();
+
+    if (getVFS().exists(Path))
+      return Path;
+  }
+#endif
+
   if (!GCCInstallation.isValid() || !getTriple().isMIPS())
     return std::string();
 
@@ -590,6 +610,15 @@ std::string Linux::getDynamicLinker(const ArgList &Args) const {
 
     LibDir = X32 ? "libx32" : "lib64";
     Loader = X32 ? "ld-linux-x32.so.2" : "ld-linux-x86-64.so.2";
+
+#ifdef BUILD_FOR_EMBEDDED
+    bool OE = (Triple.getVendor() == llvm::Triple::OpenEmbedded);
+    // We use dynamic linker provided by openEuler embedded nativesdk's
+    // sysroot for native compilation.
+    if (OE && getVFS().exists("/opt/buildtools/nativesdk/sysroots"))
+      return "/opt/buildtools/nativesdk/sysroots/" + Triple.str() + "/lib/" + Loader;
+#endif
+
     break;
   }
   case llvm::Triple::ve:
