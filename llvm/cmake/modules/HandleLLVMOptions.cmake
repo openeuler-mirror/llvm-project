@@ -105,6 +105,13 @@ else()
   set(LLVM_BUILD_FOR_EMBEDDED 0)
 endif()
 
+option(BUILD_FOR_OPENEULER "Build support for openeuler" OFF)
+if(BUILD_FOR_OPENEULER)
+  set(BUILD_FOR_OPENEULER 1)
+else()
+  set(BUILD_FOR_OPENEULER 0)
+endif()
+
 if(LLVM_ENABLE_EXPENSIVE_CHECKS)
   add_compile_definitions(EXPENSIVE_CHECKS)
 
