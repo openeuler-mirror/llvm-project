@@ -8,7 +8,11 @@ endif()
 if (LLVM_ENABLE_CLASSIC_FLANG)
    list(APPEND CLANG_DRIVER_OPTIONS -DENABLE_CLASSIC_FLANG )
 endif()
- 
+
+if (LLVM_ENABLE_AUTOTUNER)
+   list(APPEND CLANG_DRIVER_OPTIONS "-DENABLE_AUTOTUNER" )
+endif()
+
 tablegen(LLVM Options.inc ${CLANG_DRIVER_OPTIONS} -gen-opt-parser-defs  )
 
 add_public_tablegen_target(ClangDriverOptions)

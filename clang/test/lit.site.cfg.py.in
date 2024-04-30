@@ -43,6 +43,7 @@ config.ppc_linux_default_ieeelongdouble = @PPC_LINUX_DEFAULT_IEEELONGDOUBLE@
 config.have_llvm_driver = @LLVM_TOOL_LLVM_DRIVER_BUILD@
 config.use_classic_flang = @LLVM_ENABLE_CLASSIC_FLANG@
 config.build_for_openeuler = @BUILD_FOR_OPENEULER@
+config.enable_enable_autotuner = @LLVM_ENABLE_AUTOTUNER@
 
 import lit.llvm
 lit.llvm.initialize(lit_config, config)
