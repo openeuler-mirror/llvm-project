@@ -179,6 +179,9 @@ public:
     AMD,
     Mesa,
     SUSE,
+#ifdef BUILD_FOR_EMBEDDED
+    openEuler,
+#endif
     OpenEmbedded,
     LastVendorType = OpenEmbedded
   };
