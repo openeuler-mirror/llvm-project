@@ -13,21 +13,25 @@ define void @test_scoped_alloca(i64 %n) {
 ; CHECK-NEXT:    .cfi_offset %rbp, -16
 ; CHECK-NEXT:    movq %rsp, %rbp
 ; CHECK-NEXT:    .cfi_def_cfa_register %rbp
+; CHECK-NEXT:    pushq %r14
 ; CHECK-NEXT:    pushq %rbx
-; CHECK-NEXT:    pushq %rax
-; CHECK-NEXT:    .cfi_offset %rbx, -24
-; CHECK-NEXT:    movq %rsp, %rbx
-; CHECK-NEXT:    movq %rsp, %rax
-; CHECK-NEXT:    imulq $1, %rdi, %rcx
-; CHECK-NEXT:    addq $15, %rcx
-; CHECK-NEXT:    andq $-16, %rcx
-; CHECK-NEXT:    subq %rcx, %rax
-; CHECK-NEXT:    movq %rax, %rsp
-; CHECK-NEXT:    movq %rax, %rdi
+; CHECK-NEXT:    .cfi_offset %rbx, -32
+; CHECK-NEXT:    .cfi_offset %r14, -24
+; CHECK-NEXT:    movq %rdi, %rbx
+; CHECK-NEXT:    callq llvm.stacksave.p0
+; CHECK-NEXT:    movq %rax, %r14
+; CHECK-NEXT:    movq %rsp, %rdi
+; CHECK-NEXT:    imulq $1, %rbx, %rax
+; CHECK-NEXT:    addq $15, %rax
+; CHECK-NEXT:    andq $-16, %rax
+; CHECK-NEXT:    subq %rax, %rdi
+; CHECK-NEXT:    movq %rdi, %rsp
 ; CHECK-NEXT:    callq use_addr
-; CHECK-NEXT:    movq %rbx, %rsp
-; CHECK-NEXT:    leaq -8(%rbp), %rsp
+; CHECK-NEXT:    movq %r14, %rdi
+; CHECK-NEXT:    callq llvm.stackrestore.p0
+; CHECK-NEXT:    leaq -16(%rbp), %rsp
 ; CHECK-NEXT:    popq %rbx
+; CHECK-NEXT:    popq %r14
 ; CHECK-NEXT:    popq %rbp
 ; CHECK-NEXT:    .cfi_def_cfa %rsp, 8
 ; CHECK-NEXT:    retq

@@ -59,10 +59,10 @@ define void @dynamic_fixed(i64 %size, ptr %out1, ptr %out2) #0 {
 ; CHECK-NEXT:    str xzr, [sp, #-64]!
 ; CHECK-NEXT:    add x9, x0, #15
 ; CHECK-NEXT:    mov x8, sp
-; CHECK-NEXT:    sub x10, x29, #64
 ; CHECK-NEXT:    and x9, x9, #0xfffffffffffffff0
-; CHECK-NEXT:    str x10, [x1]
+; CHECK-NEXT:    sub x10, x29, #64
 ; CHECK-NEXT:    sub x8, x8, x9
+; CHECK-NEXT:    str x10, [x1]
 ; CHECK-NEXT:  .LBB1_1: // =>This Inner Loop Header: Depth=1
 ; CHECK-NEXT:    sub sp, sp, #1, lsl #12 // =4096
 ; CHECK-NEXT:    cmp sp, x8
@@ -108,10 +108,10 @@ define void @dynamic_align_64(i64 %size, ptr %out) #0 {
 ; CHECK-NEXT:    and sp, x9, #0xffffffffffffffc0
 ; CHECK-NEXT:    add x9, x0, #15
 ; CHECK-NEXT:    mov x8, sp
-; CHECK-NEXT:    str xzr, [sp]
 ; CHECK-NEXT:    and x9, x9, #0xfffffffffffffff0
-; CHECK-NEXT:    mov x19, sp
+; CHECK-NEXT:    str xzr, [sp]
 ; CHECK-NEXT:    sub x8, x8, x9
+; CHECK-NEXT:    mov x19, sp
 ; CHECK-NEXT:    and x8, x8, #0xffffffffffffffc0
 ; CHECK-NEXT:  .LBB2_1: // =>This Inner Loop Header: Depth=1
 ; CHECK-NEXT:    sub sp, sp, #1, lsl #12 // =4096
@@ -167,10 +167,10 @@ define void @dynamic_align_8192(i64 %size, ptr %out) #0 {
 ; CHECK-NEXT:    mov sp, x9
 ; CHECK-NEXT:    add x9, x0, #15
 ; CHECK-NEXT:    mov x8, sp
-; CHECK-NEXT:    str xzr, [sp]
 ; CHECK-NEXT:    and x9, x9, #0xfffffffffffffff0
-; CHECK-NEXT:    mov x19, sp
+; CHECK-NEXT:    str xzr, [sp]
 ; CHECK-NEXT:    sub x8, x8, x9
+; CHECK-NEXT:    mov x19, sp
 ; CHECK-NEXT:    and x8, x8, #0xffffffffffffe000
 ; CHECK-NEXT:  .LBB3_4: // =>This Inner Loop Header: Depth=1
 ; CHECK-NEXT:    sub sp, sp, #1, lsl #12 // =4096
@@ -268,7 +268,9 @@ define void @no_reserved_call_frame(i64 %n) #0 {
 ; CHECK-NEXT:    str xzr, [sp]
 ; CHECK-NEXT:    sub sp, sp, #1104
 ; CHECK-NEXT:    str xzr, [sp]
+; CHECK-NEXT:    sub sp, sp, #1104
 ; CHECK-NEXT:    bl callee_stack_args
+; CHECK-NEXT:    add sp, sp, #1104
 ; CHECK-NEXT:    add sp, sp, #1104
 ; CHECK-NEXT:    mov sp, x29
 ; CHECK-NEXT:    .cfi_def_cfa wsp, 16
@@ -331,8 +333,8 @@ define void @dynamic_sve(i64 %size, ptr %out) #0 "target-features"="+sve" {
 ; CHECK-NEXT:    .cfi_offset w29, -32
 ; CHECK-NEXT:    rdvl x9, #1
 ; CHECK-NEXT:    mov x10, #15 // =0xf
-; CHECK-NEXT:    mov x8, sp
 ; CHECK-NEXT:    madd x9, x0, x9, x10
+; CHECK-NEXT:    mov x8, sp
 ; CHECK-NEXT:    and x9, x9, #0xfffffffffffffff0
 ; CHECK-NEXT:    sub x8, x8, x9
 ; CHECK-NEXT:  .LBB7_1: // =>This Inner Loop Header: Depth=1

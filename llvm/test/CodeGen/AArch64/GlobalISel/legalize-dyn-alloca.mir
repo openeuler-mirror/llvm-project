@@ -314,4 +314,3 @@ body:             |
     %8:_(p0) = G_DYN_STACKALLOC %7(s64), 1
     $x0 = COPY %8(p0)
     RET_ReallyLR implicit $x0
-...
