@@ -508,6 +508,13 @@ const unsigned RoundingBitsPos = 22;
 const ArrayRef<MCPhysReg> getGPRArgRegs();
 const ArrayRef<MCPhysReg> getFPRArgRegs();
 
+/// Maximum allowed number of unprobed bytes above SP at an ABI
+/// boundary.
+const unsigned StackProbeMaxUnprobedStack = 1024;
+
+/// Maximum number of iterations to unroll for a constant size probing loop.
+const unsigned StackProbeMaxLoopUnroll = 4;
+
 } // namespace AArch64
 
 class AArch64Subtarget;
@@ -941,6 +948,9 @@ public:
   // NEON vector. This changes when OverrideNEON is true, allowing SVE to be
   // used for 64bit and 128bit vectors as well.
   bool useSVEForFixedLengthVectorVT(EVT VT, bool OverrideNEON = false) const;
+
+  /// True if stack clash protection is enabled for this functions.
+  bool hasInlineStackProbe(const MachineFunction &MF) const override;
 
 private:
   /// Keep a pointer to the AArch64Subtarget around so that we can
