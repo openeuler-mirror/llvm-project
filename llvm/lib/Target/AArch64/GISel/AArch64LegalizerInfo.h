@@ -58,6 +58,7 @@ private:
   bool legalizeCTTZ(MachineInstr &MI, LegalizerHelper &Helper) const;
   bool legalizeMemOps(MachineInstr &MI, LegalizerHelper &Helper) const;
   bool legalizeFCopySign(MachineInstr &MI, LegalizerHelper &Helper) const;
+  bool legalizeDynStackAlloc(MachineInstr &MI, LegalizerHelper &Helper) const;
   const AArch64Subtarget *ST;
 };
 } // End llvm namespace.

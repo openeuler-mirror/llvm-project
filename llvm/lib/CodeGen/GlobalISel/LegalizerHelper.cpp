@@ -3503,6 +3503,10 @@ LegalizerHelper::lower(MachineInstr &MI, unsigned TypeIdx, LLT LowerHintTy) {
     return lowerShuffleVector(MI);
   case G_DYN_STACKALLOC:
     return lowerDynStackAlloc(MI);
+  case G_STACKSAVE:
+    return lowerStackSave(MI);
+  case G_STACKRESTORE:
+    return lowerStackRestore(MI);
   case G_EXTRACT:
     return lowerExtract(MI);
   case G_INSERT:
@@ -6773,21 +6777,12 @@ LegalizerHelper::lowerShuffleVector(MachineInstr &MI) {
   return Legalized;
 }
 
-LegalizerHelper::LegalizeResult
-LegalizerHelper::lowerDynStackAlloc(MachineInstr &MI) {
-  const auto &MF = *MI.getMF();
-  const auto &TFI = *MF.getSubtarget().getFrameLowering();
-  if (TFI.getStackGrowthDirection() == TargetFrameLowering::StackGrowsUp)
-    return UnableToLegalize;
-
-  Register Dst = MI.getOperand(0).getReg();
-  Register AllocSize = MI.getOperand(1).getReg();
-  Align Alignment = assumeAligned(MI.getOperand(2).getImm());
-
-  LLT PtrTy = MRI.getType(Dst);
+Register LegalizerHelper::getDynStackAllocTargetPtr(Register SPReg,
+                                                    Register AllocSize,
+                                                    Align Alignment,
+                                                    LLT PtrTy) {
   LLT IntPtrTy = LLT::scalar(PtrTy.getSizeInBits());
 
-  Register SPReg = TLI.getStackPointerRegisterToSaveRestore();
   auto SPTmp = MIRBuilder.buildCopy(PtrTy, SPReg);
   SPTmp = MIRBuilder.buildCast(IntPtrTy, SPTmp);
 
@@ -6802,10 +6797,50 @@ LegalizerHelper::lowerDynStackAlloc(MachineInstr &MI) {
     Alloc = MIRBuilder.buildAnd(IntPtrTy, Alloc, AlignCst);
   }
 
-  SPTmp = MIRBuilder.buildCast(PtrTy, Alloc);
+  return MIRBuilder.buildCast(PtrTy, Alloc).getReg(0);
+}
+
+LegalizerHelper::LegalizeResult
+LegalizerHelper::lowerDynStackAlloc(MachineInstr &MI) {
+  const auto &MF = *MI.getMF();
+  const auto &TFI = *MF.getSubtarget().getFrameLowering();
+  if (TFI.getStackGrowthDirection() == TargetFrameLowering::StackGrowsUp)
+    return UnableToLegalize;
+
+  Register Dst = MI.getOperand(0).getReg();
+  Register AllocSize = MI.getOperand(1).getReg();
+  Align Alignment = assumeAligned(MI.getOperand(2).getImm());
+
+  LLT PtrTy = MRI.getType(Dst);
+  Register SPReg = TLI.getStackPointerRegisterToSaveRestore();
+  Register SPTmp =
+      getDynStackAllocTargetPtr(SPReg, AllocSize, Alignment, PtrTy);
+
   MIRBuilder.buildCopy(SPReg, SPTmp);
   MIRBuilder.buildCopy(Dst, SPTmp);
 
+  MI.eraseFromParent();
+  return Legalized;
+}
+
+LegalizerHelper::LegalizeResult
+LegalizerHelper::lowerStackSave(MachineInstr &MI) {
+  Register StackPtr = TLI.getStackPointerRegisterToSaveRestore();
+  if (!StackPtr)
+    return UnableToLegalize;
+
+  MIRBuilder.buildCopy(MI.getOperand(0), StackPtr);
+  MI.eraseFromParent();
+  return Legalized;
+}
+
+LegalizerHelper::LegalizeResult
+LegalizerHelper::lowerStackRestore(MachineInstr &MI) {
+  Register StackPtr = TLI.getStackPointerRegisterToSaveRestore();
+  if (!StackPtr)
+    return UnableToLegalize;
+
+  MIRBuilder.buildCopy(StackPtr, MI.getOperand(0));
   MI.eraseFromParent();
   return Legalized;
 }
