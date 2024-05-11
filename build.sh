@@ -239,4 +239,10 @@ if [ "$install" = "install/strip" ]; then
   find $install_prefix -type f -exec chmod a-w,o-rx {} \;
 fi
 
+# In openEuler embedded building system, it need wrap llvm-readelf
+# to replace binutils-readelf.
+if [ -e "$install_prefix/bin/llvm-readobj" ]; then
+  ln -sf llvm-readobj $install_prefix/bin/llvm-readelf
+fi
+
 echo "$0: SUCCESS"
