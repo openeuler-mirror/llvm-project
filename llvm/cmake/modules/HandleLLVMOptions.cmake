@@ -120,6 +120,14 @@ else()
   set(LLVM_ENABLE_AUTOTUNER 0)
 endif()
 
+option(LLVM_BUILD_FOR_COMMON "" ON)
+if(LLVM_BUILD_FOR_COMMON)
+  set(LLVM_BUILD_FOR_COMMON 1)
+  add_definitions( -DBUILD_FOR_COMMON )
+else()
+  set(LLVM_BUILD_FOR_COMMON 0)
+endif()
+
 if(LLVM_ENABLE_EXPENSIVE_CHECKS)
   add_compile_definitions(EXPENSIVE_CHECKS)
 
