@@ -44,6 +44,9 @@
 #include "llvm/Analysis/AliasSetTracker.h"
 #include "llvm/Analysis/AssumptionCache.h"
 #include "llvm/Analysis/CaptureTracking.h"
+#ifdef BUILD_FOR_COMMON
+#include "llvm/Analysis/CFG.h"
+#endif // BUILD_FOR_COMMON
 #include "llvm/Analysis/GuardUtils.h"
 #include "llvm/Analysis/LazyBlockFrequencyInfo.h"
 #include "llvm/Analysis/Loads.h"
@@ -121,6 +124,13 @@ static cl::opt<bool> ControlFlowHoisting(
 static cl::opt<bool>
     SingleThread("licm-force-thread-model-single", cl::Hidden, cl::init(false),
                  cl::desc("Force thread model single in LICM pass"));
+
+#ifdef BUILD_FOR_COMMON
+static cl::opt<bool> DisableMovStoreInsOutsideOfLoopInSigFun(
+  "disable-move-store-ins-outside-of-loop",
+    cl::Hidden, cl::init(true), cl::desc("Disable move store instruction"
+    "outside of loop in signal function."));
+#endif // BUILD_FOR_COMMON
 
 static cl::opt<uint32_t> MaxNumUsesTraversed(
     "licm-max-num-uses-traversed", cl::Hidden, cl::init(8),
@@ -2075,8 +2085,45 @@ bool llvm::promoteLoopAccessesToScalars(
     for (Use &U : ASIV->uses()) {
       // Ignore instructions that are outside the loop.
       Instruction *UI = dyn_cast<Instruction>(U.getUser());
+ #if defined(BUILD_FOR_COMMON)
+      if (DisableMovStoreInsOutsideOfLoopInSigFun) {
+        if (!UI)
+          continue;
+
+        // In the following scenario, there will be a loop index store 
+        // instruction that is moved outside the loop and when the termination 
+        // loop is triggered by the signal function, the store instruction is not 
+        // executed.However, the function registered by the signal will read the
+        // data sored in the store instruction, so the data read is incorrect.
+        // Solution: Prevent the store instruction form going outside the loop.
+        // NOTE: The sys_signal function takes the same arguments and performs 
+        // the same task as signal. They all belong to glic.
+        if(StoreSafety == StoreSafe && !CurLoop->contains(UI)) {
+          if(LoadInst *NotCurLoopLoad = dyn_cast<LoadInst>(UI)) {
+            Function *NotCurLoopFun = UI->getParent()->getParent();
+            for (Use &UseFun : NotCurLoopFun->uses()) {
+            CallInst *Call = dyn_cast<CallInst>(UseFun.getUser());
+            if (Call && Call->getCalledFunction() &&
+                (Call->getCalledFunction()->getName() == "__sysv_signal" ||
+                 Call->getCalledFunction()->getName() == "signal") &&
+                isPotentiallyReachable(Call->getParent(),
+                                       CurLoop->getLoopPreheader(),NULL,DT,
+                                       LI))
+              return false;
+            }
+          }
+        }
+
+        if (!CurLoop->contains(UI))
+          continue;
+      } else {
+        if (!UI || !CurLoop->contains(UI))
+          continue;
+      }
+#else
       if (!UI || !CurLoop->contains(UI))
         continue;
+#endif // BUILD_FOR_COMMON
 
       // If there is an non-load/store instruction in the loop, we can't promote
       // it.
