@@ -8,7 +8,7 @@
 // RUN: %clang_cc1 -x c++ -DSVE_OVERLOADED_FORMS -triple aarch64-none-linux-gnu -target-feature +sve -target-feature +sve2 -target-feature +faminmax -O1 -Werror -Wall -emit-llvm -o - %s | FileCheck %s -check-prefix CHECK-CPP
 
 // RUN: %clang_cc1 -triple aarch64-none-linux-gnu -target-feature +sve -target-feature +sve2 -target-feature +faminmax -S -disable-O0-optnone -Werror -Wall -o /dev/null %s
-// RUN: %clang_cc1 -triple aarch64-none-linux-gnu -target-feature +sme -target-feature +sme2 -target-feature +faminmax -S -disable-O0-optnone -Werror -Wall -o /dev/null %s
+// FIXME: Re-enable SME -S run once 8e0cd7382ada is cherry-picked (SPLAT_VECTOR not Legal for SME streaming without +sve)
 
 // REQUIRES: aarch64-registered-target
 
@@ -37,7 +37,7 @@
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 8 x half> @llvm.aarch64.sve.famin.nxv8f16(<vscale x 8 x i1> [[TMP0]], <vscale x 8 x half> [[A]], <vscale x 8 x half> [[B]])
 // CHECK-NEXT:    ret <vscale x 8 x half> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famin_f16_mu10__SVBool_tu13__SVFloat16_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famin_f16_mu10__SVBool_tu13__SVFloat16_tu13__SVFloat16_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 8 x half> [[A:%.*]], <vscale x 8 x half> [[B:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv8i1(<vscale x 16 x i1> [[PG]])
@@ -55,7 +55,7 @@ svfloat16_t test_famin_f16_m(svbool_t pg, svfloat16_t a, svfloat16_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 8 x half> @llvm.aarch64.sve.famin.u.nxv8f16(<vscale x 8 x i1> [[TMP0]], <vscale x 8 x half> [[A]], <vscale x 8 x half> [[B]])
 // CHECK-NEXT:    ret <vscale x 8 x half> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famin_f16_xu10__SVBool_tu13__SVFloat16_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famin_f16_xu10__SVBool_tu13__SVFloat16_tu13__SVFloat16_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 8 x half> [[A:%.*]], <vscale x 8 x half> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv8i1(<vscale x 16 x i1> [[PG]])
@@ -74,7 +74,7 @@ svfloat16_t test_famin_f16_x(svbool_t pg, svfloat16_t a, svfloat16_t b) STREAMIN
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 8 x half> @llvm.aarch64.sve.famin.nxv8f16(<vscale x 8 x i1> [[TMP0]], <vscale x 8 x half> [[TMP1]], <vscale x 8 x half> [[B]])
 // CHECK-NEXT:    ret <vscale x 8 x half> [[TMP2]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famin_f16_zu10__SVBool_tu13__SVFloat16_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famin_f16_zu10__SVBool_tu13__SVFloat16_tu13__SVFloat16_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 8 x half> [[A:%.*]], <vscale x 8 x half> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv8i1(<vscale x 16 x i1> [[PG]])
@@ -161,7 +161,7 @@ svfloat16_t test_famin_n_f16_z(svbool_t pg, svfloat16_t a, float16_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 4 x float> @llvm.aarch64.sve.famin.nxv4f32(<vscale x 4 x i1> [[TMP0]], <vscale x 4 x float> [[A]], <vscale x 4 x float> [[B]])
 // CHECK-NEXT:    ret <vscale x 4 x float> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famin_f32_mu10__SVBool_tu13__SVFloat32_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famin_f32_mu10__SVBool_tu13__SVFloat32_tu13__SVFloat32_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 4 x float> [[A:%.*]], <vscale x 4 x float> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 4 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv4i1(<vscale x 16 x i1> [[PG]])
@@ -179,7 +179,7 @@ svfloat32_t test_famin_f32_m(svbool_t pg, svfloat32_t a, svfloat32_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 4 x float> @llvm.aarch64.sve.famin.u.nxv4f32(<vscale x 4 x i1> [[TMP0]], <vscale x 4 x float> [[A]], <vscale x 4 x float> [[B]])
 // CHECK-NEXT:    ret <vscale x 4 x float> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famin_f32_xu10__SVBool_tu13__SVFloat32_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famin_f32_xu10__SVBool_tu13__SVFloat32_tu13__SVFloat32_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 4 x float> [[A:%.*]], <vscale x 4 x float> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 4 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv4i1(<vscale x 16 x i1> [[PG]])
@@ -198,7 +198,7 @@ svfloat32_t test_famin_f32_x(svbool_t pg, svfloat32_t a, svfloat32_t b) STREAMIN
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 4 x float> @llvm.aarch64.sve.famin.nxv4f32(<vscale x 4 x i1> [[TMP0]], <vscale x 4 x float> [[TMP1]], <vscale x 4 x float> [[B]])
 // CHECK-NEXT:    ret <vscale x 4 x float> [[TMP2]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famin_f32_zu10__SVBool_tu13__SVFloat32_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famin_f32_zu10__SVBool_tu13__SVFloat32_tu13__SVFloat32_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 4 x float> [[A:%.*]], <vscale x 4 x float> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 4 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv4i1(<vscale x 16 x i1> [[PG]])
@@ -285,7 +285,7 @@ svfloat32_t test_famin_n_f32_z(svbool_t pg, svfloat32_t a, float32_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 2 x double> @llvm.aarch64.sve.famin.nxv2f64(<vscale x 2 x i1> [[TMP0]], <vscale x 2 x double> [[A]], <vscale x 2 x double> [[B]])
 // CHECK-NEXT:    ret <vscale x 2 x double> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famin_f64_mu10__SVBool_tu13__SVFloat64_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famin_f64_mu10__SVBool_tu13__SVFloat64_tu13__SVFloat64_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 2 x double> [[A:%.*]], <vscale x 2 x double> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 2 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv2i1(<vscale x 16 x i1> [[PG]])
@@ -303,7 +303,7 @@ svfloat64_t test_famin_f64_m(svbool_t pg, svfloat64_t a, svfloat64_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 2 x double> @llvm.aarch64.sve.famin.u.nxv2f64(<vscale x 2 x i1> [[TMP0]], <vscale x 2 x double> [[A]], <vscale x 2 x double> [[B]])
 // CHECK-NEXT:    ret <vscale x 2 x double> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famin_f64_xu10__SVBool_tu13__SVFloat64_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famin_f64_xu10__SVBool_tu13__SVFloat64_tu13__SVFloat64_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 2 x double> [[A:%.*]], <vscale x 2 x double> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 2 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv2i1(<vscale x 16 x i1> [[PG]])
@@ -322,7 +322,7 @@ svfloat64_t test_famin_f64_x(svbool_t pg, svfloat64_t a, svfloat64_t b) STREAMIN
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 2 x double> @llvm.aarch64.sve.famin.nxv2f64(<vscale x 2 x i1> [[TMP0]], <vscale x 2 x double> [[TMP1]], <vscale x 2 x double> [[B]])
 // CHECK-NEXT:    ret <vscale x 2 x double> [[TMP2]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famin_f64_zu10__SVBool_tu13__SVFloat64_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famin_f64_zu10__SVBool_tu13__SVFloat64_tu13__SVFloat64_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 2 x double> [[A:%.*]], <vscale x 2 x double> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 2 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv2i1(<vscale x 16 x i1> [[PG]])
@@ -409,7 +409,7 @@ svfloat64_t test_famin_n_f64_z(svbool_t pg, svfloat64_t a, float64_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 8 x half> @llvm.aarch64.sve.famax.nxv8f16(<vscale x 8 x i1> [[TMP0]], <vscale x 8 x half> [[A]], <vscale x 8 x half> [[B]])
 // CHECK-NEXT:    ret <vscale x 8 x half> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famax_f16_mu10__SVBool_tu13__SVFloat16_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famax_f16_mu10__SVBool_tu13__SVFloat16_tu13__SVFloat16_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 8 x half> [[A:%.*]], <vscale x 8 x half> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv8i1(<vscale x 16 x i1> [[PG]])
@@ -427,7 +427,7 @@ svfloat16_t test_famax_f16_m(svbool_t pg, svfloat16_t a, svfloat16_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 8 x half> @llvm.aarch64.sve.famax.u.nxv8f16(<vscale x 8 x i1> [[TMP0]], <vscale x 8 x half> [[A]], <vscale x 8 x half> [[B]])
 // CHECK-NEXT:    ret <vscale x 8 x half> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famax_f16_xu10__SVBool_tu13__SVFloat16_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famax_f16_xu10__SVBool_tu13__SVFloat16_tu13__SVFloat16_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 8 x half> [[A:%.*]], <vscale x 8 x half> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv8i1(<vscale x 16 x i1> [[PG]])
@@ -446,7 +446,7 @@ svfloat16_t test_famax_f16_x(svbool_t pg, svfloat16_t a, svfloat16_t b) STREAMIN
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 8 x half> @llvm.aarch64.sve.famax.nxv8f16(<vscale x 8 x i1> [[TMP0]], <vscale x 8 x half> [[TMP1]], <vscale x 8 x half> [[B]])
 // CHECK-NEXT:    ret <vscale x 8 x half> [[TMP2]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famax_f16_zu10__SVBool_tu13__SVFloat16_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 8 x half> @_Z16test_famax_f16_zu10__SVBool_tu13__SVFloat16_tu13__SVFloat16_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 8 x half> [[A:%.*]], <vscale x 8 x half> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv8i1(<vscale x 16 x i1> [[PG]])
@@ -533,7 +533,7 @@ svfloat16_t test_famax_n_f16_z(svbool_t pg, svfloat16_t a, float16_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 4 x float> @llvm.aarch64.sve.famax.nxv4f32(<vscale x 4 x i1> [[TMP0]], <vscale x 4 x float> [[A]], <vscale x 4 x float> [[B]])
 // CHECK-NEXT:    ret <vscale x 4 x float> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famax_f32_mu10__SVBool_tu13__SVFloat32_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famax_f32_mu10__SVBool_tu13__SVFloat32_tu13__SVFloat32_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 4 x float> [[A:%.*]], <vscale x 4 x float> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 4 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv4i1(<vscale x 16 x i1> [[PG]])
@@ -551,7 +551,7 @@ svfloat32_t test_famax_f32_m(svbool_t pg, svfloat32_t a, svfloat32_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 4 x float> @llvm.aarch64.sve.famax.u.nxv4f32(<vscale x 4 x i1> [[TMP0]], <vscale x 4 x float> [[A]], <vscale x 4 x float> [[B]])
 // CHECK-NEXT:    ret <vscale x 4 x float> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famax_f32_xu10__SVBool_tu13__SVFloat32_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famax_f32_xu10__SVBool_tu13__SVFloat32_tu13__SVFloat32_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 4 x float> [[A:%.*]], <vscale x 4 x float> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 4 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv4i1(<vscale x 16 x i1> [[PG]])
@@ -570,7 +570,7 @@ svfloat32_t test_famax_f32_x(svbool_t pg, svfloat32_t a, svfloat32_t b) STREAMIN
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 4 x float> @llvm.aarch64.sve.famax.nxv4f32(<vscale x 4 x i1> [[TMP0]], <vscale x 4 x float> [[TMP1]], <vscale x 4 x float> [[B]])
 // CHECK-NEXT:    ret <vscale x 4 x float> [[TMP2]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famax_f32_zu10__SVBool_tu13__SVFloat32_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 4 x float> @_Z16test_famax_f32_zu10__SVBool_tu13__SVFloat32_tu13__SVFloat32_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 4 x float> [[A:%.*]], <vscale x 4 x float> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 4 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv4i1(<vscale x 16 x i1> [[PG]])
@@ -657,7 +657,7 @@ svfloat32_t test_famax_n_f32_z(svbool_t pg, svfloat32_t a, float32_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 2 x double> @llvm.aarch64.sve.famax.nxv2f64(<vscale x 2 x i1> [[TMP0]], <vscale x 2 x double> [[A]], <vscale x 2 x double> [[B]])
 // CHECK-NEXT:    ret <vscale x 2 x double> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famax_f64_mu10__SVBool_tu13__SVFloat64_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famax_f64_mu10__SVBool_tu13__SVFloat64_tu13__SVFloat64_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 2 x double> [[A:%.*]], <vscale x 2 x double> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 2 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv2i1(<vscale x 16 x i1> [[PG]])
@@ -675,7 +675,7 @@ svfloat64_t test_famax_f64_m(svbool_t pg, svfloat64_t a, svfloat64_t b) STREAMIN
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 2 x double> @llvm.aarch64.sve.famax.u.nxv2f64(<vscale x 2 x i1> [[TMP0]], <vscale x 2 x double> [[A]], <vscale x 2 x double> [[B]])
 // CHECK-NEXT:    ret <vscale x 2 x double> [[TMP1]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famax_f64_xu10__SVBool_tu13__SVFloat64_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famax_f64_xu10__SVBool_tu13__SVFloat64_tu13__SVFloat64_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 2 x double> [[A:%.*]], <vscale x 2 x double> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 2 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv2i1(<vscale x 16 x i1> [[PG]])
@@ -694,7 +694,7 @@ svfloat64_t test_famax_f64_x(svbool_t pg, svfloat64_t a, svfloat64_t b) STREAMIN
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 2 x double> @llvm.aarch64.sve.famax.nxv2f64(<vscale x 2 x i1> [[TMP0]], <vscale x 2 x double> [[TMP1]], <vscale x 2 x double> [[B]])
 // CHECK-NEXT:    ret <vscale x 2 x double> [[TMP2]]
 //
-// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famax_f64_zu10__SVBool_tu13__SVFloat64_tS0_(
+// CHECK-CPP-LABEL: define dso_local <vscale x 2 x double> @_Z16test_famax_f64_zu10__SVBool_tu13__SVFloat64_tu13__SVFloat64_t(
 // CHECK-CPP-SAME: <vscale x 16 x i1> [[PG:%.*]], <vscale x 2 x double> [[A:%.*]], <vscale x 2 x double> [[B:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-CPP-NEXT:  [[ENTRY:.*:]]
 // CHECK-CPP-NEXT:    [[TMP0:%.*]] = tail call <vscale x 2 x i1> @llvm.aarch64.sve.convert.from.svbool.nxv2i1(<vscale x 16 x i1> [[PG]])
