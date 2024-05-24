@@ -236,7 +236,7 @@ cd ..
 # installation directory.
 if [ "$install" = "install/strip" ]; then
   find $install_prefix/bin/ -type f -exec strip {} \;
-  find $install_prefix -type f -exec chmod a-w,o-rx {} \;
+  find $install_prefix -type f -exec chmod a-w {} \;
 fi
 
 # In openEuler embedded building system, it need wrap llvm-readelf
