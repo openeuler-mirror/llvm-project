@@ -222,6 +222,12 @@ TargetTransformInfo::UnrollingPreferences llvm::gatherUnrollingPreferences(
                     (hasUnrollTransformation(L) != TM_ForcedByUser &&
                      llvm::shouldOptimizeForSize(L->getHeader(), PSI, BFI,
                                                  PGSOQueryType::IRPass));
+
+  //for code size
+#ifdef ENABLE_CODESIZE_OPT
+  if(EnableCodeSize) OptForSize = true;
+#endif
+
   if (OptForSize) {
     UP.Threshold = UP.OptSizeThreshold;
     UP.PartialThreshold = UP.PartialOptSizeThreshold;
@@ -403,6 +409,11 @@ static Optional<EstimatedUnrollCost> analyzeLoopUnrollCost(
       RootI.getFunction()->hasMinSize() ?
       TargetTransformInfo::TCK_CodeSize :
       TargetTransformInfo::TCK_SizeAndLatency;
+#ifdef ENABLE_CODESIZE_OPT
+    // ============ code size
+    if(EnableCodeSize) CostKind = TargetTransformInfo::TCK_CodeSize;
+    // ============ code size
+#endif
     for (;; --Iteration) {
       do {
         Instruction *I = CostWorklist.pop_back_val();
@@ -486,6 +497,13 @@ static Optional<EstimatedUnrollCost> analyzeLoopUnrollCost(
   TargetTransformInfo::TargetCostKind CostKind =
     L->getHeader()->getParent()->hasMinSize() ?
     TargetTransformInfo::TCK_CodeSize : TargetTransformInfo::TCK_SizeAndLatency;
+    
+#ifdef ENABLE_CODESIZE_OPT
+  // ============ code size
+  if(EnableCodeSize) CostKind = TargetTransformInfo::TCK_CodeSize;
+  // ============ code size
+#endif
+  
   // Simulate execution of each iteration of the loop counting instructions,
   // which would be simplified.
   // Since the same load will take different values on different iterations,
@@ -1172,6 +1190,12 @@ static LoopUnrollResult tryToUnrollLoop(
     return LoopUnrollResult::Unmodified;
 
   bool OptForSize = L->getHeader()->getParent()->hasOptSize();
+
+#ifdef ENABLE_CODESIZE_OPT
+  //for code size
+  if(EnableCodeSize) OptForSize = true;
+#endif
+
   unsigned NumInlineCandidates;
   bool NotDuplicatable;
   bool Convergent;

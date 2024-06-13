@@ -325,6 +325,12 @@ ModulePass *llvm::createMergeFunctionsPass() {
 PreservedAnalyses MergeFunctionsPass::run(Module &M,
                                           ModuleAnalysisManager &AM) {
   MergeFunctions MF;
+#ifdef ENABLE_CODESIZE_OPT
+  if(M.getName().find("/gold")!=std::string::npos
+  || M.getName().find("/binutils")!=std::string::npos){
+    return PreservedAnalyses::all();
+  }
+#endif
   if (!MF.runOnModule(M))
     return PreservedAnalyses::all();
   return PreservedAnalyses::none();

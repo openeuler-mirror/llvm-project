@@ -144,6 +144,7 @@ add_llvm_component_library(LLVMSupport
   Chrono.cpp
   COM.cpp
   CodeGenCoverage.cpp
+  CodeSizeOpt.cpp
   CommandLine.cpp
   Compression.cpp
   CRC.cpp

@@ -1268,6 +1268,12 @@ void TargetPassConfig::addMachinePasses() {
   addPass(&StackMapLivenessID);
   addPass(&LiveDebugValuesID);
 
+#ifdef ENABLE_CODESIZE_OPT
+  //======  code size ===
+  if(EnableCodeSize && TM->Options.SupportsDefaultOutlining){
+    addPass(createMachineOutlinerPass(true));
+  }else{
+  //====================
   if (TM->Options.EnableMachineOutliner && getOptLevel() != CodeGenOpt::None &&
       EnableMachineOutliner != RunOutliner::NeverOutline) {
     bool RunOnAllFunctions =
@@ -1277,6 +1283,18 @@ void TargetPassConfig::addMachinePasses() {
     if (AddOutliner)
       addPass(createMachineOutlinerPass(RunOnAllFunctions));
   }
+  }
+#else
+  if (TM->Options.EnableMachineOutliner && getOptLevel() != CodeGenOpt::None &&
+      EnableMachineOutliner != RunOutliner::NeverOutline) {
+    bool RunOnAllFunctions =
+        (EnableMachineOutliner == RunOutliner::AlwaysOutline);
+    bool AddOutliner =
+        RunOnAllFunctions || TM->Options.SupportsDefaultOutlining;
+    if (AddOutliner)
+      addPass(createMachineOutlinerPass(RunOnAllFunctions));
+  }
+#endif
 
   // Machine function splitter uses the basic block sections feature. Both
   // cannot be enabled at the same time. Basic block sections takes precedence.
