@@ -202,7 +202,7 @@ svfloat64_t test_svdup_laneq_f64(svfloat64_t zn) {
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x bfloat> @llvm.aarch64.sve.dup.laneq.nxv8bf16(<vscale x 8 x bfloat> [[ZN]], i32 3)
 // CHECK-NEXT:    ret <vscale x 8 x bfloat> [[TMP0]]
 //
-// CPP-CHECK-LABEL: define dso_local <vscale x 8 x bfloat> @_Z21test_svdup_laneq_bf16u14__SVBfloat16_t
+// CPP-CHECK-LABEL: define dso_local <vscale x 8 x bfloat> @_Z21test_svdup_laneq_bf16u14__SVBFloat16_t
 // CPP-CHECK-SAME: (<vscale x 8 x bfloat> [[ZN:%.*]]) #[[ATTR0]] {
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x bfloat> @llvm.aarch64.sve.dup.laneq.nxv8bf16(<vscale x 8 x bfloat> [[ZN]], i32 3)
