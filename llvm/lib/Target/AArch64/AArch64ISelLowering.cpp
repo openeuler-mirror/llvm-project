@@ -1279,7 +1279,7 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
     }
   }
 
-  if (Subtarget->hasSVE()) {
+  if (Subtarget->isSVEorStreamingSVEAvailable()) {
     for (auto VT : {MVT::nxv16i8, MVT::nxv8i16, MVT::nxv4i32, MVT::nxv2i64}) {
       setOperationAction(ISD::BITREVERSE, VT, Custom);
       setOperationAction(ISD::BSWAP, VT, Custom);
@@ -1291,8 +1291,6 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
       setOperationAction(ISD::SINT_TO_FP, VT, Custom);
       setOperationAction(ISD::FP_TO_UINT, VT, Custom);
       setOperationAction(ISD::FP_TO_SINT, VT, Custom);
-      setOperationAction(ISD::MGATHER, VT, Custom);
-      setOperationAction(ISD::MSCATTER, VT, Custom);
       setOperationAction(ISD::MLOAD, VT, Custom);
       setOperationAction(ISD::MUL, VT, Custom);
       setOperationAction(ISD::MULHS, VT, Custom);
@@ -1382,14 +1380,13 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
       }
     }
 
-    // NEON doesn't support masked loads/stores/gathers/scatters, but SVE does
-    for (auto VT : {MVT::v4f16, MVT::v8f16, MVT::v2f32, MVT::v4f32, MVT::v1f64,
-                    MVT::v2f64, MVT::v8i8, MVT::v16i8, MVT::v4i16, MVT::v8i16,
-                    MVT::v2i32, MVT::v4i32, MVT::v1i64, MVT::v2i64}) {
+    // NEON doesn't support masked loads/stores, but SME and SVE do.
+    for (auto VT :
+         {MVT::v4f16, MVT::v8f16, MVT::v2f32, MVT::v4f32, MVT::v1f64,
+          MVT::v2f64, MVT::v8i8, MVT::v16i8, MVT::v4i16, MVT::v8i16,
+          MVT::v2i32, MVT::v4i32, MVT::v1i64, MVT::v2i64}) {
       setOperationAction(ISD::MLOAD, VT, Custom);
       setOperationAction(ISD::MSTORE, VT, Custom);
-      setOperationAction(ISD::MGATHER, VT, Custom);
-      setOperationAction(ISD::MSCATTER, VT, Custom);
     }
 
     // Firstly, exclude all scalable vector extending loads/truncating stores,
@@ -1430,8 +1427,6 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
                     MVT::nxv4f32, MVT::nxv2f64}) {
       setOperationAction(ISD::CONCAT_VECTORS, VT, Custom);
       setOperationAction(ISD::INSERT_SUBVECTOR, VT, Custom);
-      setOperationAction(ISD::MGATHER, VT, Custom);
-      setOperationAction(ISD::MSCATTER, VT, Custom);
       setOperationAction(ISD::MLOAD, VT, Custom);
       setOperationAction(ISD::SPLAT_VECTOR, VT, Legal);
       setOperationAction(ISD::SELECT, VT, Custom);
@@ -1463,8 +1458,6 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
       setOperationAction(ISD::VECREDUCE_FMIN, VT, Custom);
       setOperationAction(ISD::VECREDUCE_FMAXIMUM, VT, Custom);
       setOperationAction(ISD::VECREDUCE_FMINIMUM, VT, Custom);
-      if (Subtarget->isSVEAvailable())
-        setOperationAction(ISD::VECREDUCE_SEQ_FADD, VT, Custom);
       setOperationAction(ISD::VECTOR_SPLICE, VT, Custom);
       setOperationAction(ISD::VECTOR_DEINTERLEAVE, VT, Custom);
       setOperationAction(ISD::VECTOR_INTERLEAVE, VT, Custom);
@@ -1497,8 +1490,6 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
 
     for (auto VT : {MVT::nxv2bf16, MVT::nxv4bf16, MVT::nxv8bf16}) {
       setOperationAction(ISD::CONCAT_VECTORS, VT, Custom);
-      setOperationAction(ISD::MGATHER, VT, Custom);
-      setOperationAction(ISD::MSCATTER, VT, Custom);
       setOperationAction(ISD::MLOAD, VT, Custom);
       setOperationAction(ISD::INSERT_SUBVECTOR, VT, Custom);
       setOperationAction(ISD::SPLAT_VECTOR, VT, Legal);
@@ -1517,13 +1508,6 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
     // NEON doesn't support 64-bit vector integer muls, but SVE does.
     setOperationAction(ISD::MUL, MVT::v1i64, Custom);
     setOperationAction(ISD::MUL, MVT::v2i64, Custom);
-
-    if (Subtarget->isSVEAvailable()) {
-      // NEON doesn't support across-vector reductions, but SVE does.
-      for (auto VT :
-           {MVT::v4f16, MVT::v8f16, MVT::v2f32, MVT::v4f32, MVT::v2f64})
-        setOperationAction(ISD::VECREDUCE_SEQ_FADD, VT, Custom);
-    }
 
     if (!Subtarget->isNeonAvailable()) {
       setTruncStoreAction(MVT::v2f32, MVT::v2f16, Custom);
@@ -1611,7 +1595,30 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
     setOperationPromotedToType(ISD::VECTOR_SPLICE, MVT::nxv16i1, MVT::nxv16i8);
 
     setOperationAction(ISD::VSCALE, MVT::i32, Custom);
+
+    for (auto VT : {MVT::v16i1, MVT::v8i1, MVT::v4i1, MVT::v2i1})
+      setOperationAction(ISD::INTRINSIC_WO_CHAIN, VT, Custom);
   }
+
+  // Handle operations that are only available in non-streaming SVE mode.
+  if (Subtarget->isSVEAvailable()) {
+    for (auto VT : {MVT::nxv16i8,  MVT::nxv8i16, MVT::nxv4i32,  MVT::nxv2i64,
+                    MVT::nxv2f16,  MVT::nxv4f16, MVT::nxv8f16,  MVT::nxv2f32,
+                    MVT::nxv4f32,  MVT::nxv2f64, MVT::nxv2bf16, MVT::nxv4bf16,
+                    MVT::nxv8bf16, MVT::v4f16,   MVT::v8f16,    MVT::v2f32,
+                    MVT::v4f32,    MVT::v1f64,   MVT::v2f64,    MVT::v8i8,
+                    MVT::v16i8,    MVT::v4i16,   MVT::v8i16,    MVT::v2i32,
+                    MVT::v4i32,    MVT::v1i64,   MVT::v2i64}) {
+      setOperationAction(ISD::MGATHER, VT, Custom);
+      setOperationAction(ISD::MSCATTER, VT, Custom);
+    }
+
+    for (auto VT : {MVT::nxv2f16, MVT::nxv4f16, MVT::nxv8f16, MVT::nxv2f32,
+                    MVT::nxv4f32, MVT::nxv2f64, MVT::v4f16, MVT::v8f16,
+                    MVT::v2f32, MVT::v4f32, MVT::v2f64})
+      setOperationAction(ISD::VECREDUCE_SEQ_FADD, VT, Custom);
+  }
+
 
   if (Subtarget->hasMOPS() && Subtarget->hasMTE()) {
     // Only required for llvm.aarch64.mops.memset.tag
@@ -6253,7 +6260,7 @@ bool AArch64TargetLowering::useSVEForFixedLengthVectorVT(
 
   // All SVE implementations support NEON sized vectors.
   if (OverrideNEON && (VT.is128BitVector() || VT.is64BitVector()))
-    return Subtarget->hasSVE();
+    return Subtarget->isSVEorStreamingSVEAvailable();
 
   // Ensure NEON MVTs only belong to a single register class.
   if (VT.getFixedSizeInBits() <= 128)
@@ -15084,14 +15091,13 @@ bool AArch64TargetLowering::isLegalInterleavedAccessType(
 
   UseScalable = false;
 
-  if (!VecTy->isScalableTy() && !Subtarget->hasNEON())
+  if (!VecTy->isScalableTy() && !Subtarget->isNeonAvailable() &&
+      (!Subtarget->useSVEForFixedLengthVectors() ||
+       !getSVEPredPatternFromNumElements(MinElts)))
     return false;
 
-  if (VecTy->isScalableTy() && !Subtarget->hasSVEorSME())
-    return false;
-
-  // Ensure that the predicate for this number of elements is available.
-  if (Subtarget->hasSVE() && !getSVEPredPatternFromNumElements(MinElts))
+  if (VecTy->isScalableTy() &&
+      !Subtarget->isSVEorStreamingSVEAvailable())
     return false;
 
   // Ensure the number of vector elements is greater than 1.

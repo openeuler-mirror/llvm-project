@@ -181,17 +181,21 @@ static cl::opt<unsigned> SVEVectorBitsMaxOpt(
              "with zero meaning no maximum size is assumed."),
     cl::init(0), cl::Hidden);
 
-static cl::opt<bool> ForceStreamingCompatible(
-    "force-streaming-compatible",
-    cl::desc(
-        "Force the use of streaming-compatible SVE code for all functions"),
-    cl::Hidden);
-
 static cl::opt<unsigned> SVEVectorBitsMinOpt(
     "aarch64-sve-vector-bits-min",
     cl::desc("Assume SVE vector registers are at least this big, "
              "with zero meaning no minimum size is assumed."),
     cl::init(0), cl::Hidden);
+
+static cl::opt<bool> ForceStreaming(
+    "force-streaming",
+    cl::desc("Force the use of streaming code for all functions"),
+    cl::init(false), cl::Hidden);
+
+static cl::opt<bool> ForceStreamingCompatible(
+    "force-streaming-compatible",
+    cl::desc("Force the use of streaming-compatible code for all functions"),
+    cl::init(false), cl::Hidden);
 
 extern cl::opt<bool> EnableHomogeneousPrologEpilog;
 
@@ -402,11 +406,11 @@ AArch64TargetMachine::getSubtargetImpl(const Function &F) const {
   StringRef TuneCPU = TuneAttr.isValid() ? TuneAttr.getValueAsString() : CPU;
   StringRef FS = FSAttr.isValid() ? FSAttr.getValueAsString() : TargetFS;
 
-  bool IsStreaming = F.hasFnAttribute("aarch64_pstate_sm_enabled") ||
-                          F.hasFnAttribute("aarch64_pstate_sm_body");
-  bool IsStreamingCompatible =
-      F.hasFnAttribute("aarch64_pstate_sm_compatible") ||
-      ForceStreamingCompatible;
+  bool IsStreaming = ForceStreaming ||
+                     F.hasFnAttribute("aarch64_pstate_sm_enabled") ||
+                     F.hasFnAttribute("aarch64_pstate_sm_body");
+  bool IsStreamingCompatible = ForceStreamingCompatible ||
+                               F.hasFnAttribute("aarch64_pstate_sm_compatible");
 
   unsigned MinSVEVectorSize = 0;
   unsigned MaxSVEVectorSize = 0;
