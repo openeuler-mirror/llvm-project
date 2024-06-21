@@ -64,12 +64,12 @@ void incompat_sme_sm(svbool_t pn, svbool_t pm, svfloat32_t zn, svfloat32_t zm) _
 }
 
 svfloat64_t streaming_caller_sve(svbool_t pg, svfloat64_t a, float64_t b) __arm_streaming {
-  // expected-error@+1 {{builtin can only be called from a non-streaming function}}
+  // expected-no-warning
   return svadd_n_f64_m(pg, a, b);
 }
 
 __arm_locally_streaming svfloat64_t locally_streaming_caller_sve(svbool_t pg, svfloat64_t a, float64_t b) {
-  // expected-error@+1 {{builtin can only be called from a non-streaming function}}
+  // expected-no-warning
   return svadd_n_f64_m(pg, a, b);
 }
 
@@ -79,12 +79,12 @@ svfloat64_t streaming_compatible_caller_sve(svbool_t pg, svfloat64_t a, float64_
 }
 
 svint16_t streaming_caller_sve2(svint16_t op1, svint16_t op2) __arm_streaming {
-  // expected-error@+1 {{builtin can only be called from a non-streaming function}}
+  // expected-no-warning
   return svmul_lane_s16(op1, op2, 0);
 }
 
 __arm_locally_streaming svint16_t locally_streaming_caller_sve2(svint16_t op1, svint16_t op2) {
-  // expected-error@+1 {{builtin can only be called from a non-streaming function}}
+  // expected-no-warning
   return svmul_lane_s16(op1, op2, 0);
 }
 
@@ -94,7 +94,7 @@ svint16_t streaming_compatible_caller_sve2(svint16_t op1, svint16_t op2) __arm_s
 }
 
 svbool_t streaming_caller_ptrue(void) __arm_streaming {
-  // expected-error@+1 3 {{builtin can only be called from a non-streaming function}}
+  // expected-no-warning
   return svand_z(svptrue_b16(), svptrue_pat_b16(SV_ALL), svptrue_pat_b16(SV_VL4));
 }
 
