@@ -285,6 +285,11 @@ cl::opt<bool> DropProfileSymbolList(
     cl::desc("Drop the profile symbol list when merging AutoFDO profiles "
              "(only meaningful for -sample)"));
 
+cl::opt<bool> KeepVTableSymbols(
+    "keep-vtable-symbols", cl::init(false), cl::Hidden,
+    cl::sub(MergeSubcommand),
+    cl::desc("If true, keep the vtable symbols in indexed profiles"));
+
 // Options specific to overlap subcommand.
 cl::opt<std::string> BaseFilename(cl::Positional, cl::Required,
                                   cl::desc("<base profile file>"),
@@ -711,11 +716,12 @@ static void loadInput(const WeightedFile &Input, SymbolRemapper *Remapper,
     });
   }
 
-  const InstrProfSymtab &symtab = Reader->getSymtab();
-  const auto &VTableNames = symtab.getVTableNames();
+  if (KeepVTableSymbols) {
+    const InstrProfSymtab &symtab = Reader->getSymtab();
+    const auto &VTableNames = symtab.getVTableNames();
 
-  for (const auto &kv : VTableNames) {
-    WC->Writer.addVTableName(kv.getKey());
+    for (const auto &kv : VTableNames)
+      WC->Writer.addVTableName(kv.getKey());
   }
 
   if (Reader->hasTemporalProfile()) {
