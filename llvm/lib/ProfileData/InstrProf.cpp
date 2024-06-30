@@ -230,6 +230,12 @@ cl::opt<bool> EnableVTableValueProfiling(
              "the types of a C++ pointer. The information is used in indirect "
              "call promotion to do selective vtable-based comparison."));
 
+cl::opt<bool> EnableVTableProfileUse(
+    "enable-vtable-profile-use", cl::init(false),
+    cl::desc("If ThinLTO and WPD is enabled and this option is true, vtable "
+             "profiles will be used by ICP pass for more efficient indirect "
+             "call sequence. If false, type profiles won't be used."));
+
 std::string getInstrProfSectionName(InstrProfSectKind IPSK,
                                     Triple::ObjectFormatType OF,
                                     bool AddSegmentInfo) {
@@ -1461,16 +1467,28 @@ MDNode *getPGOFuncNameMetadata(const Function &F) {
   return F.getMetadata(getPGOFuncNameMetadataName());
 }
 
-void createPGOFuncNameMetadata(Function &F, StringRef PGOFuncName) {
-  // Only for internal linkage functions.
-  if (PGOFuncName == F.getName())
-      return;
-  // Don't create duplicated meta-data.
-  if (getPGOFuncNameMetadata(F))
+static void createPGONameMetadata(GlobalObject &GO, StringRef MetadataName,
+                                  StringRef PGOName) {
+  // Only for internal linkage functions or global variables. The name is not
+  // the same as PGO name for these global objects.
+  if (GO.getName() == PGOName)
     return;
-  LLVMContext &C = F.getContext();
-  MDNode *N = MDNode::get(C, MDString::get(C, PGOFuncName));
-  F.setMetadata(getPGOFuncNameMetadataName(), N);
+
+  // Don't create duplicated metadata.
+  if (GO.getMetadata(MetadataName))
+    return;
+
+  LLVMContext &C = GO.getContext();
+  MDNode *N = MDNode::get(C, MDString::get(C, PGOName));
+  GO.setMetadata(MetadataName, N);
+}
+
+void createPGOFuncNameMetadata(Function &F, StringRef PGOFuncName) {
+  return createPGONameMetadata(F, getPGOFuncNameMetadataName(), PGOFuncName);
+}
+
+void createPGONameMetadata(GlobalObject &GO, StringRef PGOName) {
+  return createPGONameMetadata(GO, getPGONameMetadataName(), PGOName);
 }
 
 bool needsComdatForCounter(const GlobalObject &GO, const Module &M) {
