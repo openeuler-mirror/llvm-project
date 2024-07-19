@@ -4725,6 +4725,8 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     CmdArgs.push_back("-Wno-error=varargs");
     CmdArgs.push_back("-Wno-error=unused-value");
     CmdArgs.push_back("-Wno-error=format-nonliteral");
+
+    CmdArgs.push_back("-fgcc-compatible");
   }
 #endif
 
