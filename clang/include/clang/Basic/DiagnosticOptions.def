@@ -99,6 +99,10 @@ VALUE_DIAGOPT(MessageLength, 32, 0)
 
 DIAGOPT(ShowSafeBufferUsageSuggestions, 1, 0)
 
+#ifdef BUILD_FOR_OPENEULER
+DIAGOPT(GccCompatible, 1, 0) /// -fgcc-compatible
+#endif
+
 #undef DIAGOPT
 #undef ENUM_DIAGOPT
 #undef VALUE_DIAGOPT

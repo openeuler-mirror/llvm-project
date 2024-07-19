@@ -818,8 +818,9 @@ static void addDiagnosticArgs(ArgList &Args, OptSpecifier Group,
                               std::vector<std::string> &Diagnostics) {
   for (auto *A : Args.filtered(Group)) {
     if (A->getOption().getKind() == Option::FlagClass) {
-      // The argument is a pure flag (such as OPT_Wall or OPT_Wdeprecated). Add
-      // its name (minus the "W" or "R" at the beginning) to the diagnostics.
+      // The argument is a pure flag (such as OPT_Wall or
+      // OPT_Wdeprecated). Add its name (minus the "W" or "R" at the
+      // beginning) to the diagnostics.
       Diagnostics.push_back(
           std::string(A->getOption().getName().drop_front(1)));
     } else if (A->getOption().matches(GroupWithValue)) {
@@ -829,6 +830,7 @@ static void addDiagnosticArgs(ArgList &Args, OptSpecifier Group,
           std::string(A->getOption().getName().drop_front(1).rtrim("=-")));
     } else {
       // Otherwise, add its value (for OPT_W_Joined and similar).
+
       Diagnostics.push_back(A->getValue());
     }
   }
@@ -3522,6 +3524,11 @@ void CompilerInvocation::GenerateLangArgs(const LangOptions &Opts,
 
   if (!Opts.RandstructSeed.empty())
     GenerateArg(Args, OPT_frandomize_layout_seed_EQ, Opts.RandstructSeed, SA);
+
+#ifdef BUILD_FOR_OPENEULER
+  if (Opts.GccCompatible)
+    GenerateArg(Args, OPT_fgcc_compatible, SA);
+#endif
 }
 
 bool CompilerInvocation::ParseLangArgs(LangOptions &Opts, ArgList &Args,
@@ -4072,6 +4079,10 @@ bool CompilerInvocation::ParseLangArgs(LangOptions &Opts, ArgList &Args,
     if (!SupportedTarget)
       Diags.Report(diag::err_drv_hlsl_unsupported_target) << T.str();
   }
+
+#ifdef BUILD_FOR_OPENEULER
+  Opts.GccCompatible = Args.hasArg(options::OPT_fgcc_compatible);
+#endif
 
   return Diags.getNumErrors() == NumErrorsBefore;
 }
