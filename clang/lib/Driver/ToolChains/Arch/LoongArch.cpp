@@ -216,7 +216,7 @@ void loongarch::getLoongArchTargetFeatures(const Driver &D,
       // Option -msimd=lsx depends on 64-bit FPU.
       // -m*-float and -mfpu=none/0/32 conflict with -mlsx.
       if (llvm::find(Features, "-d") != Features.end())
-        D.Diag(diag::err_drv_loongarch_wrong_fpu_width) << /*LSX*/ 0;
+        D.Diag(diag::err_drv_loongarch_wrong_fpu_width_for_lsx);
       // The previous option does not contain feature -lsx.
       else if (llvm::find(Features, "-lsx") == Features.end())
         Features.push_back("+lsx");
@@ -224,7 +224,7 @@ void loongarch::getLoongArchTargetFeatures(const Driver &D,
       // Option -msimd=lasx depends on 64-bit FPU and LSX.
       // -m*-float and -mfpu=none/0/32 conflict with -mlsx.
       if (llvm::find(Features, "-d") != Features.end())
-        D.Diag(diag::err_drv_loongarch_wrong_fpu_width) << /*LASX*/ 1;
+        D.Diag(diag::err_drv_loongarch_wrong_fpu_width_for_lasx);
       else if (llvm::find(Features, "-lsx") != Features.end())
         D.Diag(diag::err_drv_loongarch_invalid_simd_option_combination);
       // The previous option does not contain feature -lasx.
