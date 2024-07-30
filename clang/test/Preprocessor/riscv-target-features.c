@@ -673,12 +673,10 @@
 // RUN: -o - | FileCheck --check-prefix=CHECK-ZVKT-EXT %s
 // CHECK-ZVKT-EXT: __riscv_zvkt 1000000{{$}}
 
-// RUN: %clang -target riscv32 -menable-experimental-extensions \
-// RUN: -march=rv32i_zicond1p0 -x c -E -dM %s \
-// RUN: -o - | FileCheck --check-prefix=CHECK-ZICOND-EXT %s
-// RUN: %clang -target riscv64 -menable-experimental-extensions \
-// RUN: -march=rv64i_zicond1p0 -x c -E -dM %s \
-// RUN: -o - | FileCheck --check-prefix=CHECK-ZICOND-EXT %s
+// RUN: %clang -target riscv32 -march=rv32i_zicond -x c -E -dM %s \
+// RUN:   -o - | FileCheck --check-prefix=CHECK-ZICOND-EXT %s
+// RUN: %clang -target riscv64 -march=rv64i_zicond -x c -E -dM %s \
+// RUN:   -o - | FileCheck --check-prefix=CHECK-ZICOND-EXT %s
 // CHECK-ZICOND-EXT: __riscv_zicond  1000000{{$}}
 
 // RUN: %clang -target riscv32 -menable-experimental-extensions \

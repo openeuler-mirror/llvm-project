@@ -118,6 +118,7 @@ on support follow.
      ``Zicbop``       Assembly Support
      ``Zicboz``       Assembly Support
      ``Zicntr``       (`See Note <#riscv-i2p1-note>`__)
+     ``Zicond``       Supported
      ``Zicsr``        (`See Note <#riscv-i2p1-note>`__)
      ``Zifencei``     (`See Note <#riscv-i2p1-note>`__)
      ``Zihintpause``  Assembly Support
@@ -200,9 +201,6 @@ The primary goal of experimental support is to assist in the process of ratifica
 
 ``experimental-zfbfmin``, ``experimental-zvfbfmin``, ``experimental-zvfbfwma``
   LLVM implements assembler support for the `0.6.9 draft specification <https://github.com/riscv/riscv-bfloat16/releases/tag/20230614>`_.
-
-``experimental-zicond``
-  LLVM implements the `1.0-rc1 draft specification <https://github.com/riscv/riscv-zicond/releases/tag/v1.0-rc1>`__.
 
 ``experimental-zihintntl``
   LLVM implements the `0.2 draft specification <https://github.com/riscv/riscv-isa-manual/releases/tag/draft-20220831-bf5a151>`__.
