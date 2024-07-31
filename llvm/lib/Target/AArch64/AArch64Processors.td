@@ -626,6 +626,18 @@ def TuneTSV110 : SubtargetFeature<"tsv110", "ARMProcFamily", "TSV110",
                                   FeatureStorePairSuppress,
                                   FeaturePostRAScheduler]>;
 
+
+def TuneHIP09 : SubtargetFeature<"hip09", "ARMProcFamily", "HIP09",
+                                 "HiSilicon HIP-09 processors", [
+                                 FeatureExperimentalZeroingPseudos,
+                                 FeatureFuseAES,
+                                 FeatureAddrLSLSlow14,
+                                 FeatureCmpBccFusion,
+                                 FeatureArithmeticBccFusion,
+                                 FeatureFuseLiterals,
+                                 FeatureFuseMvnClz,
+                                 FeaturePostRAScheduler]>;
+
 def TuneHIP12 : SubtargetFeature<"hip12", "ARMProcFamily", "HIP12",
                                  "HiSilicon HIP12 processors", [
                                  FeatureCmpBccFusion,
@@ -1044,6 +1056,15 @@ def ProcessorFeatures {
                                    FeatureFullFP16, FeatureFP16FML, FeatureDotProd,
                                    FeatureJS, FeatureComplxNum, FeatureCRC, FeatureLSE,
                                    FeatureRAS, FeatureRDM];
+  list<SubtargetFeature> HIP09 = [HasV8_5aOps, FeatureAES, FeatureBF16,
+                                  FeatureFPARMv8, FeatureMatMulInt8,
+                                  FeatureMatMulFP32, FeatureMatMulFP64,
+                                  FeatureNEON, FeatureSPE, FeatureFullFP16,
+                                  FeatureFP16FML, FeatureDotProd, FeatureJS,
+                                  FeatureComplxNum, FeatureSHA2, FeatureSHA3,
+                                  FeatureSM4, FeatureSVE, FeatureCRC,
+                                  FeatureLSE, FeaturePAuth, FeatureRAS,
+                                  FeatureRCPC, FeatureRDM];
   list<SubtargetFeature> HIP12 = [HasV9_2aOps, FeatureSVE, FeatureSVE2,
                                   FeatureSVEBitPerm, FeatureSVEAES,
                                   FeatureSVE2SM4, FeatureSVE2SHA3,
@@ -1224,6 +1245,8 @@ def : ProcessorModel<"thunderx3t110", ThunderX3T110Model,
                      ProcessorFeatures.ThunderX3T110, [TuneThunderX3T110]>;
 def : ProcessorModel<"tsv110", TSV110Model, ProcessorFeatures.TSV110,
                      [TuneTSV110]>;
+def : ProcessorModel<"hip09", HIP09Model, ProcessorFeatures.HIP09,
+                     [TuneHIP09]>;
 def : ProcessorModel<"hip12", HIP12Model, ProcessorFeatures.HIP12,
                      [TuneHIP12]>;
 

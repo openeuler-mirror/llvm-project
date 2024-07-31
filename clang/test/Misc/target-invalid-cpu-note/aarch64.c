@@ -70,6 +70,7 @@
 // CHECK-SAME: {{^}}, fujitsu-monaka
 // CHECK-SAME: {{^}}, generic
 // CHECK-SAME: {{^}}, grace
+// CHECK-SAME: {{^}}, hip09
 // CHECK-SAME: {{^}}, hip12
 // CHECK-SAME: {{^}}, kryo
 // CHECK-SAME: {{^}}, neoverse-512tvb

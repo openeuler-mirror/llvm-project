@@ -51,6 +51,10 @@ static bool isArithmeticBccPair(const MachineInstr *FirstMI,
   case AArch64::SUBSXrr:
   case AArch64::BICSWrr:
   case AArch64::BICSXrr:
+  case AArch64::ADCSWr:
+  case AArch64::ADCSXr:
+  case AArch64::SBCSWr:
+  case AArch64::SBCSXr:
     return true;
   case AArch64::ADDSWrs:
   case AArch64::ADDSXrs:
@@ -181,6 +185,18 @@ static bool isLiteralsPair(const MachineInstr *FirstMI,
   if((FirstMI == nullptr || FirstMI->getOpcode() == AArch64::MOVZXi) &&
      (SecondMI.getOpcode() == AArch64::MOVKXi &&
       SecondMI.getOperand(3).getImm() == 16))
+    return true;
+
+  // 32 bit immediate.
+  if ((FirstMI == nullptr || FirstMI->getOpcode() == AArch64::MOVNWi) &&
+      (SecondMI.getOpcode() == AArch64::MOVKWi &&
+       SecondMI.getOperand(3).getImm() == 16))
+    return true;
+
+  // Lower half of 64 bit immediate.
+  if ((FirstMI == nullptr || FirstMI->getOpcode() == AArch64::MOVNXi) &&
+      (SecondMI.getOpcode() == AArch64::MOVKWi &&
+       SecondMI.getOperand(3).getImm() == 16))
     return true;
 
   // Upper half of 64 bit immediate.
@@ -437,6 +453,35 @@ static bool isAddSub2RegAndConstOnePair(const MachineInstr *FirstMI,
   return false;
 }
 
+static bool isMvnClzPair(const MachineInstr *FirstMI,
+                         const MachineInstr &SecondMI) {
+  // HIP09 supports fusion of MVN + CLZ.
+  // The CLZ can be fused with MVN and make execution faster.
+  // And the fusion is not allowed for shifted forms.
+  //
+  // Instruction alias info:
+  // 1. MVN <Wd>, <Wm>{, <shift> #<amount>} is equivalent to
+  //    ORN <Wd>, WZR, <Wm>{, <shift> #<amount>}
+  // 2. MVN <Xd>, <Xm>{, <shift> #<amount>} is equivalent to
+  //    ORN <Xd>, XZR, <Xm>{, <shift> #<amount>}
+  // Assume the 1st instr to be a wildcard if it is unspecified.
+  if ((FirstMI == nullptr ||
+       ((FirstMI->getOpcode() == AArch64::ORNWrs) &&
+        (FirstMI->getOperand(1).getReg() == AArch64::WZR) &&
+        (!AArch64InstrInfo::hasShiftedReg(*FirstMI)))) &&
+      (SecondMI.getOpcode() == AArch64::CLZWr))
+    return true;
+
+  if ((FirstMI == nullptr ||
+       ((FirstMI->getOpcode() == AArch64::ORNXrs) &&
+        (FirstMI->getOperand(1).getReg() == AArch64::XZR) &&
+        (!AArch64InstrInfo::hasShiftedReg(*FirstMI)))) &&
+      (SecondMI.getOpcode() == AArch64::CLZXr))
+    return true;
+
+  return false;
+}
+
 /// \brief Check if the instr pair, FirstMI and SecondMI, should be fused
 /// together. Given SecondMI, when FirstMI is unspecified, then check if
 /// SecondMI may be part of a fused pair at all.
@@ -471,6 +516,8 @@ static bool shouldScheduleAdjacent(const TargetInstrInfo &TII,
     return true;
   if (ST.hasFuseAddSub2RegAndConstOne() &&
       isAddSub2RegAndConstOnePair(FirstMI, SecondMI))
+    return true;
+  if (ST.hasFuseMvnClz() && isMvnClzPair(FirstMI, SecondMI))
     return true;
 
   return false;

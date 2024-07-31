@@ -1157,6 +1157,7 @@ INSTANTIATE_TEST_SUITE_P(
                       AArch64CPUTestParams("thunderxt83", "armv8-a"),
                       AArch64CPUTestParams("thunderxt88", "armv8-a"),
                       AArch64CPUTestParams("tsv110", "armv8.2-a"),
+                      AArch64CPUTestParams("hip09", "armv8.5-a"),
                       AArch64CPUTestParams("hip12", "armv9.2-a"),
                       AArch64CPUTestParams("a64fx", "armv8.2-a"),
                       AArch64CPUTestParams("fujitsu-monaka", "armv9.3-a"),
@@ -1166,7 +1167,7 @@ INSTANTIATE_TEST_SUITE_P(
     AArch64CPUTestParams::PrintToStringParamName);
 
 // Note: number of CPUs includes aliases.
-static constexpr unsigned NumAArch64CPUArchs = 83;
+static constexpr unsigned NumAArch64CPUArchs = 84;
 
 TEST(TargetParserTest, testAArch64CPUArchList) {
   SmallVector<StringRef, NumAArch64CPUArchs> List;
