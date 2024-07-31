@@ -250,6 +250,11 @@ CPU part	: 0x0a1
   EXPECT_EQ(sys::detail::getHostCPUNameForARM("CPU implementer : 0x48\n"
                                               "CPU part        : 0xd01"),
             "tsv110");
+#if defined(ENABLE_AARCH64_HIP09)
+  EXPECT_EQ(sys::detail::getHostCPUNameForARM("CPU implementer : 0x48\n"
+                                              "CPU part        : 0xd02"),
+            "hip09");
+#endif
 
   // Verify A64FX.
   const std::string A64FXProcCpuInfo = R"(

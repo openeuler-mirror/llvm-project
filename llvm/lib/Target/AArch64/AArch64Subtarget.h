@@ -87,7 +87,10 @@ public:
     ThunderXT83,
     ThunderXT88,
     ThunderX3T110,
-    TSV110
+    TSV110,
+#if defined(ENABLE_AARCH64_HIP09)
+    HIP09
+#endif
   };
 
 protected:
@@ -239,7 +242,11 @@ public:
   bool hasFusion() const {
     return hasArithmeticBccFusion() || hasArithmeticCbzFusion() ||
            hasFuseAES() || hasFuseArithmeticLogic() || hasFuseCCSelect() ||
+#if defined(ENABLE_AARCH64_HIP09)
+           hasFuseAdrpAdd() || hasFuseLiterals() || hasFuseMvnClz();
+#else
            hasFuseAdrpAdd() || hasFuseLiterals();
+#endif
   }
 
   unsigned getMaxInterleaveFactor() const { return MaxInterleaveFactor; }
