@@ -937,6 +937,17 @@ def smullwithsignbits : PatFrag<(ops node:$l, node:$r), (mul node:$l, node:$r), 
          CurDAG->ComputeNumSignBits(N->getOperand(1)) > 32;
 }]>;
 
+// Match "nnan" flagged calls to fminnum and fmmaxnum. Then semantically equivalent
+// to fmaximum/fminimum.
+def fmaxnum_nnan : PatFrag<(ops node:$Rn, node:$Rm),
+                           (fmaxnum node:$Rn, node:$Rm), [{
+  return N->getFlags().hasNoNaNs();
+  }]>;
+def fminnum_nnan : PatFrag<(ops node:$Rn, node:$Rm),
+                           (fminnum node:$Rn, node:$Rm), [{
+  return N->getFlags().hasNoNaNs();
+  }]>;
+
 //===----------------------------------------------------------------------===//
 
 //===----------------------------------------------------------------------===//
@@ -9422,10 +9433,22 @@ let Uses = [FPMR, FPCR], Predicates = [HasFP8] in {
   defm FSCALE : SIMDThreeSameVectorFP<0b1, 0b1, 0b111, "fscale", null_frag>;
 } // End let Predicates = [HasFP8]
 
-let Predicates = [HasFAMINMAX] in {
- defm FAMAX : SIMDThreeSameVectorFP<0b0, 0b1, 0b011, "famax", null_frag>;
- defm FAMIN : SIMDThreeSameVectorFP<0b1, 0b1, 0b011, "famin", null_frag>;
-} // End let Predicates = [HasFAMAXMIN]
+// fminimum(abs(a), abs(b)) -> famin(a, b)
+// fminnum[nnan](abs(a), abs(b)) -> famin(a, b)
+def AArch64famin : PatFrags<(ops node:$Rn, node:$Rm),
+                             [(fminimum (fabs node:$Rn), (fabs node:$Rm)),
+                              (fminnum_nnan (fabs node:$Rn), (fabs node:$Rm))]>;
+
+// fmaximum(abs(a), abs(b)) -> famax(a, b)
+// fmaxnum[nnan](abs(a), abs(b)) -> famax(a, b)
+def AArch64famax : PatFrags<(ops node:$Rn, node:$Rm),
+                             [(fmaximum (fabs node:$Rn), (fabs node:$Rm)),
+                              (fmaxnum_nnan (fabs node:$Rn), (fabs node:$Rm))]>;
+
+let Predicates = [HasNEON, HasFAMINMAX] in {
+ defm FAMAX : SIMDThreeSameVectorFP<0b0, 0b1, 0b011, "famax", AArch64famax>;
+ defm FAMIN : SIMDThreeSameVectorFP<0b1, 0b1, 0b011, "famin", AArch64famin>;
+} // End let Predicates = [HasNEON, HasFAMINMAX]
 
 let Uses = [FPMR, FPCR], Predicates = [HasFP8FMA] in {
  defm FMLALBlane : SIMDThreeSameVectorMLAIndex<0b0, "fmlalb">;
