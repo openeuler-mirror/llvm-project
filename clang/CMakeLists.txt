@@ -322,6 +322,10 @@ if (BUILD_FOR_OPENEULER)
   add_definitions( -DBUILD_FOR_OPENEULER )
 endif()
 
+if (LLVM_ENABLE_AUTOTUNER)
+  add_definitions( -DENABLE_AUTOTUNER )
+endif()
+
 # Determine HOST_LINK_VERSION on Darwin.
 set(HOST_LINK_VERSION)
 if (APPLE AND NOT CMAKE_LINKER MATCHES ".*lld.*")
