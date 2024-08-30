@@ -64,9 +64,13 @@ config.have_llvm_driver = @LLVM_TOOL_LLVM_DRIVER_BUILD@
 config.use_classic_flang = @LLVM_ENABLE_CLASSIC_FLANG@
 config.enable_enable_autotuner = @LLVM_ENABLE_AUTOTUNER@
 config.enable_build_for_common = @LLVM_BUILD_FOR_COMMON@
+config.enable_enable_aarch64_hip09 = @LLVM_ENABLE_AARCH64_HIP09@
 
 import lit.llvm
 lit.llvm.initialize(lit_config, config)
+
+if config.enable_enable_aarch64_hip09:
+    config.available_features.add("enable_enable_aarch64_hip09")
 
 # Let the main config do the real work.
 lit_config.load_config(

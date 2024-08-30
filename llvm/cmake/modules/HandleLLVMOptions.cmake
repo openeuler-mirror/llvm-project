@@ -128,6 +128,14 @@ else()
   set(LLVM_BUILD_FOR_COMMON 0)
 endif()
 
+option(LLVM_ENABLE_AARCH64_HIP09 "Enable HIP09 Processor" ON)
+if(LLVM_ENABLE_AARCH64_HIP09)
+  set(LLVM_ENABLE_AARCH64_HIP09 1)
+  add_definitions( -DENABLE_AARCH64_HIP09 )
+else()
+  set(LLVM_ENABLE_AARCH64_HIP09 0)
+endif()
+
 if(LLVM_ENABLE_EXPENSIVE_CHECKS)
   add_compile_definitions(EXPENSIVE_CHECKS)
 

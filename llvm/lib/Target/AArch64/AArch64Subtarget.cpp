@@ -266,6 +266,15 @@ void AArch64Subtarget::initializeProperties() {
     PrefFunctionAlignment = Align(16);
     PrefLoopAlignment = Align(4);
     break;
+#if defined(ENABLE_AARCH64_HIP09)
+  case HIP09:
+    CacheLineSize = 64;
+    PrefFunctionAlignment = Align(16);
+    PrefLoopAlignment = Align(4);
+    VScaleForTuning = 2;
+    DefaultSVETFOpts = TailFoldingOpts::Simple;
+    break;
+#endif
   case ThunderX3T110:
     CacheLineSize = 64;
     PrefFunctionAlignment = Align(16);

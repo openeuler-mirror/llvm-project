@@ -257,6 +257,9 @@ StringRef sys::detail::getHostCPUNameForARM(StringRef ProcCpuinfoContent) {
     // contents are specified in the various processor manuals.
     return StringSwitch<const char *>(Part)
       .Case("0xd01", "tsv110")
+#if defined(ENABLE_AARCH64_HIP09)
+      .Case("0xd02", "hip09")
+#endif
       .Default("generic");
 
   if (Implementer == "0x51") // Qualcomm Technologies, Inc.

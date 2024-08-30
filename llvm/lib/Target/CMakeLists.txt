@@ -2,6 +2,10 @@ list(APPEND LLVM_COMMON_DEPENDS intrinsics_gen)
 
 list(APPEND LLVM_TABLEGEN_FLAGS -I ${LLVM_MAIN_SRC_DIR}/lib/Target)
 
+if(LLVM_ENABLE_AARCH64_HIP09)
+  list(APPEND LLVM_TABLEGEN_FLAGS "-DENABLE_AARCH64_HIP09")
+endif()
+
 add_llvm_component_library(LLVMTarget
   Target.cpp
   TargetIntrinsicInfo.cpp
