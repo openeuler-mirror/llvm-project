@@ -4572,9 +4572,7 @@ bool SROAPass::presplitLoadsAndStores(AllocaInst &AI, AllocaSlices &AS) {
 
   // Finally, don't try to promote any allocas that new require re-splitting.
   // They have already been added to the worklist above.
-  llvm::erase_if(PromotableAllocas, [&](AllocaInst *AI) {
-    return ResplitPromotableAllocas.count(AI);
-  });
+  PromotableAllocas.set_subtract(ResplitPromotableAllocas);
 
   return true;
 }
@@ -4736,7 +4734,7 @@ AllocaInst *SROAPass::rewritePartition(AllocaInst &AI, AllocaSlices &AS,
     }
     if (PHIUsers.empty() && SelectUsers.empty()) {
       // Promote the alloca.
-      PromotableAllocas.push_back(NewAI);
+      PromotableAllocas.insert(NewAI);
     } else {
       // If we have either PHIs or Selects to speculate, add them to those
       // worklists and re-queue the new alloca so that we promote in on the
@@ -5110,7 +5108,7 @@ bool SROAPass::promoteAllocas(Function &F) {
   NumPromoted += PromotableAllocas.size();
 
   LLVM_DEBUG(dbgs() << "Promoting allocas with mem2reg...\n");
-  PromoteMemToReg(PromotableAllocas, DTU->getDomTree(), AC);
+  PromoteMemToReg(PromotableAllocas.getArrayRef(), DTU->getDomTree(), AC);
   PromotableAllocas.clear();
   return true;
 }
@@ -5128,7 +5126,7 @@ PreservedAnalyses SROAPass::runImpl(Function &F, DomTreeUpdater &RunDTU,
     if (AllocaInst *AI = dyn_cast<AllocaInst>(I)) {
       if (isa<ScalableVectorType>(AI->getAllocatedType())) {
         if (isAllocaPromotable(AI))
-          PromotableAllocas.push_back(AI);
+          PromotableAllocas.insert(AI);
       } else {
         Worklist.insert(AI);
       }
@@ -5153,10 +5151,9 @@ PreservedAnalyses SROAPass::runImpl(Function &F, DomTreeUpdater &RunDTU,
       // Remove the deleted allocas from various lists so that we don't try to
       // continue processing them.
       if (!DeletedAllocas.empty()) {
-        auto IsInSet = [&](AllocaInst *AI) { return DeletedAllocas.count(AI); };
-        Worklist.remove_if(IsInSet);
-        PostPromotionWorklist.remove_if(IsInSet);
-        llvm::erase_if(PromotableAllocas, IsInSet);
+        Worklist.set_subtract(DeletedAllocas);
+        PostPromotionWorklist.set_subtract(DeletedAllocas);
+        PromotableAllocas.set_subtract(DeletedAllocas);
         DeletedAllocas.clear();
       }
     }
