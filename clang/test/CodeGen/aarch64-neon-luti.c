@@ -386,7 +386,7 @@ poly8x16_t test_vluti4q_laneq_p8(poly8x16_t vn, uint8x16_t vm) {
 }
 
 // CHECK-LABEL: define dso_local <8 x i16> @test_vluti4q_lane_u16_x2(
-// CHECK-SAME: [2 x <8 x i16>] alignstack(16) [[VN_COERCE:%.*]], <8 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: [2 x <8 x i16>] [[VN_COERCE:%.*]], <8 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[VN_COERCE_FCA_0_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 0
 // CHECK-NEXT:    [[VN_COERCE_FCA_1_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 1
@@ -398,7 +398,7 @@ uint16x8_t test_vluti4q_lane_u16_x2(uint16x8x2_t vn, uint8x8_t vm) {
 }
 
 // CHECK-LABEL: define dso_local <8 x i16> @test_vluti4q_laneq_u16_x2(
-// CHECK-SAME: [2 x <8 x i16>] alignstack(16) [[VN_COERCE:%.*]], <16 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: [2 x <8 x i16>] [[VN_COERCE:%.*]], <16 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[VN_COERCE_FCA_0_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 0
 // CHECK-NEXT:    [[VN_COERCE_FCA_1_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 1
@@ -410,7 +410,7 @@ uint16x8_t test_vluti4q_laneq_u16_x2(uint16x8x2_t vn, uint8x16_t vm) {
 }
 
 // CHECK-LABEL: define dso_local <8 x i16> @test_vluti4q_lane_s16_x2(
-// CHECK-SAME: [2 x <8 x i16>] alignstack(16) [[VN_COERCE:%.*]], <8 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: [2 x <8 x i16>] [[VN_COERCE:%.*]], <8 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[VN_COERCE_FCA_0_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 0
 // CHECK-NEXT:    [[VN_COERCE_FCA_1_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 1
@@ -422,7 +422,7 @@ int16x8_t test_vluti4q_lane_s16_x2(int16x8x2_t vn, uint8x8_t vm) {
 }
 
 // CHECK-LABEL: define dso_local <8 x i16> @test_vluti4q_laneq_s16_x2(
-// CHECK-SAME: [2 x <8 x i16>] alignstack(16) [[VN_COERCE:%.*]], <16 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: [2 x <8 x i16>] [[VN_COERCE:%.*]], <16 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[VN_COERCE_FCA_0_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 0
 // CHECK-NEXT:    [[VN_COERCE_FCA_1_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 1
@@ -434,7 +434,7 @@ int16x8_t test_vluti4q_laneq_s16_x2(int16x8x2_t vn, uint8x16_t vm) {
 }
 
 // CHECK-LABEL: define dso_local <8 x half> @test_vluti4q_lane_f16_x2(
-// CHECK-SAME: [2 x <8 x half>] alignstack(16) [[VN_COERCE:%.*]], <8 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: [2 x <8 x half>] [[VN_COERCE:%.*]], <8 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[VN_COERCE_FCA_0_EXTRACT:%.*]] = extractvalue [2 x <8 x half>] [[VN_COERCE]], 0
 // CHECK-NEXT:    [[VN_COERCE_FCA_1_EXTRACT:%.*]] = extractvalue [2 x <8 x half>] [[VN_COERCE]], 1
@@ -446,7 +446,7 @@ float16x8_t test_vluti4q_lane_f16_x2(float16x8x2_t vn, uint8x8_t vm) {
 }
 
 // CHECK-LABEL: define dso_local <8 x half> @test_vluti4q_laneq_f16_x2(
-// CHECK-SAME: [2 x <8 x half>] alignstack(16) [[VN_COERCE:%.*]], <16 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: [2 x <8 x half>] [[VN_COERCE:%.*]], <16 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[VN_COERCE_FCA_0_EXTRACT:%.*]] = extractvalue [2 x <8 x half>] [[VN_COERCE]], 0
 // CHECK-NEXT:    [[VN_COERCE_FCA_1_EXTRACT:%.*]] = extractvalue [2 x <8 x half>] [[VN_COERCE]], 1
@@ -458,7 +458,7 @@ float16x8_t test_vluti4q_laneq_f16_x2(float16x8x2_t vn, uint8x16_t vm) {
 }
 
 // CHECK-LABEL: define dso_local <8 x bfloat> @test_vluti4q_lane_bf16_x2(
-// CHECK-SAME: [2 x <8 x bfloat>] alignstack(16) [[VN_COERCE:%.*]], <8 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: [2 x <8 x bfloat>] [[VN_COERCE:%.*]], <8 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[VN_COERCE_FCA_0_EXTRACT:%.*]] = extractvalue [2 x <8 x bfloat>] [[VN_COERCE]], 0
 // CHECK-NEXT:    [[VN_COERCE_FCA_1_EXTRACT:%.*]] = extractvalue [2 x <8 x bfloat>] [[VN_COERCE]], 1
@@ -470,7 +470,7 @@ bfloat16x8_t test_vluti4q_lane_bf16_x2(bfloat16x8x2_t vn, uint8x8_t vm) {
 }
 
 // CHECK-LABEL: define dso_local <8 x bfloat> @test_vluti4q_laneq_bf16_x2(
-// CHECK-SAME: [2 x <8 x bfloat>] alignstack(16) [[VN_COERCE:%.*]], <16 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: [2 x <8 x bfloat>] [[VN_COERCE:%.*]], <16 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[VN_COERCE_FCA_0_EXTRACT:%.*]] = extractvalue [2 x <8 x bfloat>] [[VN_COERCE]], 0
 // CHECK-NEXT:    [[VN_COERCE_FCA_1_EXTRACT:%.*]] = extractvalue [2 x <8 x bfloat>] [[VN_COERCE]], 1
@@ -482,7 +482,7 @@ bfloat16x8_t test_vluti4q_laneq_bf16_x2(bfloat16x8x2_t vn, uint8x16_t vm) {
 }
 
 // CHECK-LABEL: define dso_local <8 x i16> @test_vluti4q_lane_p16_x2(
-// CHECK-SAME: [2 x <8 x i16>] alignstack(16) [[VN_COERCE:%.*]], <8 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: [2 x <8 x i16>] [[VN_COERCE:%.*]], <8 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[VN_COERCE_FCA_0_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 0
 // CHECK-NEXT:    [[VN_COERCE_FCA_1_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 1
@@ -494,7 +494,7 @@ poly16x8_t test_vluti4q_lane_p16_x2(poly16x8x2_t vn, uint8x8_t vm) {
 }
 
 // CHECK-LABEL: define dso_local <8 x i16> @test_vluti4q_laneq_p16_x2(
-// CHECK-SAME: [2 x <8 x i16>] alignstack(16) [[VN_COERCE:%.*]], <16 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: [2 x <8 x i16>] [[VN_COERCE:%.*]], <16 x i8> noundef [[VM:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[VN_COERCE_FCA_0_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 0
 // CHECK-NEXT:    [[VN_COERCE_FCA_1_EXTRACT:%.*]] = extractvalue [2 x <8 x i16>] [[VN_COERCE]], 1

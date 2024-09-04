@@ -2246,3 +2246,8 @@ let SVETargetGuard = "sve2p1", SMETargetGuard = "sme2" in {
   defm ST1   : MultiVecStore<"st1">;
   defm STNT1 : MultiVecStore<"stnt1">;
 }
+
+let SVETargetGuard = "sve2,faminmax", SMETargetGuard = "sme2,faminmax" in {
+  defm SVAMIN : SInstZPZZ<"svamin", "hfd", "aarch64_sve_famin", "aarch64_sve_famin_u">;
+  defm SVAMAX : SInstZPZZ<"svamax", "hfd", "aarch64_sve_famax", "aarch64_sve_famax_u">;
+}

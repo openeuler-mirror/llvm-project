@@ -3706,3 +3706,11 @@ def int_aarch64_sve_pmov_to_vector_lane_zeroing :
     DefaultAttrsIntrinsic<[llvm_anyvector_ty],
                           [LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>],
                           [IntrNoMem]>;
+
+// SVE2/SME2 - Floating point absolute maximum and minimum
+
+def int_aarch64_sve_famax   : AdvSIMD_Pred2VectorArg_Intrinsic;
+def int_aarch64_sve_famax_u : AdvSIMD_Pred2VectorArg_Intrinsic;
+
+def int_aarch64_sve_famin   : AdvSIMD_Pred2VectorArg_Intrinsic;
+def int_aarch64_sve_famin_u : AdvSIMD_Pred2VectorArg_Intrinsic;
