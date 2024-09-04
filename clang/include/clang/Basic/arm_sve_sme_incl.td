@@ -229,6 +229,7 @@ def IsOutZA                   : FlagType<0x40000000000>;
 def IsInOutZA                 : FlagType<0x80000000000>;
 def IsReductionQV             : FlagType<0x100000000000>;
 def VerifyRuntimeMode         : FlagType<0x200000000000>; // Use for intrinsics that are common between SVE and SME.
+def IsInZT0                   : FlagType<0x400000000000>;
 
 // These must be kept in sync with the flags in include/clang/Basic/TargetBuiltins.h
 class ImmCheckType<int val> {
