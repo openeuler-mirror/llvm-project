@@ -2063,6 +2063,13 @@ let SVETargetGuard = InvalidMode, SMETargetGuard = "sme2" in {
   def SVADD_SINGLE_X4 : SInst<"svadd[_single_{d}_x4]", "44d", "cUcsUsiUilUl", MergeNone, "aarch64_sve_add_single_x4", [IsStreaming], []>;
 }
 
+let SVETargetGuard = InvalidMode, SMETargetGuard = "sme2,faminmax" in {
+  def FAMIN_X2 : Inst<"svamin[_{d}_x2]", "222", "hfd", MergeNone, "aarch64_sme_famin_x2",  [IsStreaming], []>;
+  def FAMAX_X2 : Inst<"svamax[_{d}_x2]", "222", "hfd", MergeNone, "aarch64_sme_famax_x2",  [IsStreaming], []>;
+  def FAMIN_X4 : Inst<"svamin[_{d}_x4]", "444", "hfd", MergeNone, "aarch64_sme_famin_x4",  [IsStreaming], []>;
+  def FAMAX_X4 : Inst<"svamax[_{d}_x4]", "444", "hfd", MergeNone, "aarch64_sme_famax_x4",  [IsStreaming], []>;
+}
+
 let SVETargetGuard = "sve2p1", SMETargetGuard = "sme2" in {
   // SQRSHRN / UQRSHRN
   def SVQRSHRN_X2   : SInst<"svqrshrn[_n]_{0}[_{d}_x2]", "h2i", "i",    MergeNone, "aarch64_sve_sqrshrn_x2", [VerifyRuntimeMode], [ImmCheck<1, ImmCheck1_16>]>;
