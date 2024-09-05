@@ -7,7 +7,7 @@ CXX_COMPILER_PATH=g++
 # Initialize our own variables:
 enable_autotuner="1"
 buildtype=RelWithDebInfo
-backends="ARM;AArch64;X86"
+backends="all"
 build_for_openeuler="0"
 enabled_projects="clang;lld;compiler-rt;openmp;clang-tools-extra"
 embedded_toolchain="0"
@@ -69,7 +69,7 @@ EOF
 
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
-while getopts :ab:ceEhiI:j:orstvfX: optchr; do
+while getopts :aAb:ceEhiI:j:orstvfX: optchr; do
   case "$optchr" in
     a)
       enable_autotuner="0"
@@ -227,6 +227,36 @@ cmake $CMAKE_OPTIONS \
       -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
       -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
       -DCMAKE_EXE_LINKER_FLAGS_DEBUG="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DLLVM_ENABLE_LIBCXX=OFF \
+      -DLLVM_ENABLE_ZLIB=ON \
+      -DLLVM_BUILD_RUNTIME=ON \
+      -DLLVM_INCLUDE_TOOLS=ON \
+      -DLLVM_BUILD_TOOLS=ON \
+      -DLLVM_INCLUDE_TESTS=ON \
+      -DLLVM_BUILD_TESTS=ON \
+      -DLLVM_INCLUDE_EXAMPLES=ON \
+      -DLLVM_BUILD_EXAMPLES=OFF \
+      -DCLANG_DEFAULT_PIE_ON_LINUX=ON \
+      -DCLANG_ENABLE_ARCMT=ON \
+      -DCLANG_ENABLE_STATIC_ANALYZER=ON \
+      -DCLANG_PLUGIN_SUPPORT=ON \
+      -DLLVM_DYLIB_COMPONENTS="all" \
+      -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+      -DCMAKE_SKIP_RPATH=ON \
+      -DLLVM_ENABLE_FFI=ON \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_USE_PERF=ON \
+      -DLLVM_INSTALL_GTEST=ON \
+      -DLLVM_INCLUDE_UTILS=ON \
+      -DLLVM_INSTALL_UTILS=ON \
+      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DENABLE_LINKER_BUILD_ID=ON \
+      -DLLVM_ENABLE_EH=ON \
+      -DCLANG_DEFAULT_UNWINDLIB=libgcc \
+      -DLIBCXX_STATICALLY_LINK_ABI_IN_STATIC_LIBRARY=ON \
+      -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=ON \
+      -DLIBOMP_INSTALL_ALIASES=OFF \
       $llvm_binutils_incdir \
       $verbose \
       ../llvm
