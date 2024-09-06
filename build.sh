@@ -5,6 +5,7 @@ C_COMPILER_PATH=gcc
 CXX_COMPILER_PATH=g++
 
 # Initialize our own variables:
+enable_acpo="1"
 enable_autotuner="1"
 buildtype=RelWithDebInfo
 backends="all"
@@ -49,6 +50,7 @@ Build the compiler under $build_prefix, then install under $install_prefix.
 
 Options:
   -a       Disable BiSheng-Autotuner.
+  -A       Disable ACPO.
   -b type  Specify CMake build type (default: $buildtype).
   -c       Use ccache (default: $use_ccache).
   -e       Build for embedded cross tool chain.
@@ -73,6 +75,9 @@ while getopts :aAb:ceEhiI:j:orstvfX: optchr; do
   case "$optchr" in
     a)
       enable_autotuner="0"
+      ;;
+    A)
+      enable_acpo="0"
       ;;
     b)
       buildtype="$OPTARG"
@@ -205,6 +210,12 @@ fi
 if [ $enable_autotuner == "1" ]; then
   echo "enable BiSheng-Autotuner"
   CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_ENABLE_AUTOTUNER=ON"
+fi
+
+if [ $enable_acpo == "1" ]; then
+  echo "enable ACPO"
+  export CFLAGS="-Wp,-DENABLE_ACPO ${CFLAGS}"
+  export CXXFLAGS="-Wp,-DENABLE_ACPO ${CXXFLAGS}"
 fi
 
 # Build and install
