@@ -1429,8 +1429,12 @@ static const char *getEnvTempDir() {
   // variable.
   const char *EnvironmentVariables[] = {"TMPDIR", "TMP", "TEMP", "TEMPDIR"};
   for (const char *Env : EnvironmentVariables) {
-    if (const char *Dir = std::getenv(Env))
+    if (const char *Dir = std::getenv(Env)) {
+      if(std::strlen(Dir) > NAME_MAX) {
+        continue;
+      }
       return Dir;
+    }
   }
 
   return nullptr;
