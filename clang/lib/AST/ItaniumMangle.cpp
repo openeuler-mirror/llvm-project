@@ -3208,24 +3208,20 @@ void CXXNameMangler::mangleType(const BuiltinType *T) {
   // The SVE types are effectively target-specific.  The mangling scheme
   // is defined in the appendices to the Procedure Call Standard for the
   // Arm Architecture.
-#define SVE_VECTOR_TYPE(InternalName, MangledName, Id, SingletonId, NumEls,    \
-                        ElBits, IsSigned, IsFP, IsBF)                          \
+#define SVE_VECTOR_TYPE(Name, MangledName, Id, SingletonId)                    \
   case BuiltinType::Id:                                                        \
     type_name = MangledName;                                                   \
-    Out << (type_name == InternalName ? "u" : "") << type_name.size()          \
-        << type_name;                                                          \
+    Out << (type_name == Name ? "u" : "") << type_name.size() << type_name;    \
     break;
-#define SVE_PREDICATE_TYPE(InternalName, MangledName, Id, SingletonId, NumEls) \
+#define SVE_PREDICATE_TYPE(Name, MangledName, Id, SingletonId)                 \
   case BuiltinType::Id:                                                        \
     type_name = MangledName;                                                   \
-    Out << (type_name == InternalName ? "u" : "") << type_name.size()          \
-        << type_name;                                                          \
+    Out << (type_name == Name ? "u" : "") << type_name.size() << type_name;    \
     break;
-#define SVE_OPAQUE_TYPE(InternalName, MangledName, Id, SingletonId)            \
+#define SVE_OPAQUE_TYPE(Name, MangledName, Id, SingletonId)                    \
   case BuiltinType::Id:                                                        \
     type_name = MangledName;                                                   \
-    Out << (type_name == InternalName ? "u" : "") << type_name.size()          \
-        << type_name;                                                          \
+    Out << (type_name == Name ? "u" : "") << type_name.size() << type_name;    \
     break;
 #include "clang/Basic/AArch64SVEACLETypes.def"
 #define PPC_VECTOR_TYPE(Name, Id, Size) \

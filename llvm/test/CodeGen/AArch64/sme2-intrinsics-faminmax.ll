@@ -54,13 +54,13 @@ define { <vscale x 8 x half>, <vscale x 8 x half>, <vscale x 8 x half>, <vscale 
 ; CHECK-LABEL: multi_vec_max_multi_x4_f16:
 ; CHECK:       // %bb.0:
 ; CHECK-NEXT:    mov z30.d, z7.d
-; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    ptrue p0.h
 ; CHECK-NEXT:    mov z29.d, z6.d
-; CHECK-NEXT:    mov z26.d, z3.d
+; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    mov z28.d, z5.d
-; CHECK-NEXT:    mov z25.d, z2.d
+; CHECK-NEXT:    mov z26.d, z3.d
 ; CHECK-NEXT:    ld1h { z31.h }, p0/z, [x0]
+; CHECK-NEXT:    mov z25.d, z2.d
 ; CHECK-NEXT:    mov z24.d, z1.d
 ; CHECK-NEXT:    famax { z24.h - z27.h }, { z24.h - z27.h }, { z28.h - z31.h }
 ; CHECK-NEXT:    mov z0.d, z24.d
@@ -76,13 +76,13 @@ define { <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, <vsca
 ; CHECK-LABEL: multi_vec_max_multi_x4_f32:
 ; CHECK:       // %bb.0:
 ; CHECK-NEXT:    mov z30.d, z7.d
-; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    ptrue p0.s
 ; CHECK-NEXT:    mov z29.d, z6.d
-; CHECK-NEXT:    mov z26.d, z3.d
+; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    mov z28.d, z5.d
-; CHECK-NEXT:    mov z25.d, z2.d
+; CHECK-NEXT:    mov z26.d, z3.d
 ; CHECK-NEXT:    ld1w { z31.s }, p0/z, [x0]
+; CHECK-NEXT:    mov z25.d, z2.d
 ; CHECK-NEXT:    mov z24.d, z1.d
 ; CHECK-NEXT:    famax { z24.s - z27.s }, { z24.s - z27.s }, { z28.s - z31.s }
 ; CHECK-NEXT:    mov z0.d, z24.d
@@ -98,13 +98,13 @@ define { <vscale x 2 x double>, <vscale x 2 x double>, <vscale x 2 x double>, <v
 ; CHECK-LABEL: multi_vec_max_multi_x4_f64:
 ; CHECK:       // %bb.0:
 ; CHECK-NEXT:    mov z30.d, z7.d
-; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    ptrue p0.d
 ; CHECK-NEXT:    mov z29.d, z6.d
-; CHECK-NEXT:    mov z26.d, z3.d
+; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    mov z28.d, z5.d
-; CHECK-NEXT:    mov z25.d, z2.d
+; CHECK-NEXT:    mov z26.d, z3.d
 ; CHECK-NEXT:    ld1d { z31.d }, p0/z, [x0]
+; CHECK-NEXT:    mov z25.d, z2.d
 ; CHECK-NEXT:    mov z24.d, z1.d
 ; CHECK-NEXT:    famax { z24.d - z27.d }, { z24.d - z27.d }, { z28.d - z31.d }
 ; CHECK-NEXT:    mov z0.d, z24.d
@@ -172,13 +172,13 @@ define { <vscale x 8 x half>, <vscale x 8 x half>, <vscale x 8 x half>, <vscale 
 ; CHECK-LABEL: multi_vec_min_multi_x4_f16:
 ; CHECK:       // %bb.0:
 ; CHECK-NEXT:    mov z30.d, z7.d
-; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    ptrue p0.h
 ; CHECK-NEXT:    mov z29.d, z6.d
-; CHECK-NEXT:    mov z26.d, z3.d
+; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    mov z28.d, z5.d
-; CHECK-NEXT:    mov z25.d, z2.d
+; CHECK-NEXT:    mov z26.d, z3.d
 ; CHECK-NEXT:    ld1h { z31.h }, p0/z, [x0]
+; CHECK-NEXT:    mov z25.d, z2.d
 ; CHECK-NEXT:    mov z24.d, z1.d
 ; CHECK-NEXT:    famin { z24.h - z27.h }, { z24.h - z27.h }, { z28.h - z31.h }
 ; CHECK-NEXT:    mov z0.d, z24.d
@@ -196,13 +196,13 @@ define { <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, <vsca
 ; CHECK-LABEL: multi_vec_min_multi_x4_f32:
 ; CHECK:       // %bb.0:
 ; CHECK-NEXT:    mov z30.d, z7.d
-; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    ptrue p0.s
 ; CHECK-NEXT:    mov z29.d, z6.d
-; CHECK-NEXT:    mov z26.d, z3.d
+; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    mov z28.d, z5.d
-; CHECK-NEXT:    mov z25.d, z2.d
+; CHECK-NEXT:    mov z26.d, z3.d
 ; CHECK-NEXT:    ld1w { z31.s }, p0/z, [x0]
+; CHECK-NEXT:    mov z25.d, z2.d
 ; CHECK-NEXT:    mov z24.d, z1.d
 ; CHECK-NEXT:    famin { z24.s - z27.s }, { z24.s - z27.s }, { z28.s - z31.s }
 ; CHECK-NEXT:    mov z0.d, z24.d
@@ -220,13 +220,13 @@ define { <vscale x 2 x double>, <vscale x 2 x double>, <vscale x 2 x double>, <v
 ; CHECK-LABEL: multi_vec_min_multi_x4_f64:
 ; CHECK:       // %bb.0:
 ; CHECK-NEXT:    mov z30.d, z7.d
-; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    ptrue p0.d
 ; CHECK-NEXT:    mov z29.d, z6.d
-; CHECK-NEXT:    mov z26.d, z3.d
+; CHECK-NEXT:    mov z27.d, z4.d
 ; CHECK-NEXT:    mov z28.d, z5.d
-; CHECK-NEXT:    mov z25.d, z2.d
+; CHECK-NEXT:    mov z26.d, z3.d
 ; CHECK-NEXT:    ld1d { z31.d }, p0/z, [x0]
+; CHECK-NEXT:    mov z25.d, z2.d
 ; CHECK-NEXT:    mov z24.d, z1.d
 ; CHECK-NEXT:    famin { z24.d - z27.d }, { z24.d - z27.d }, { z28.d - z31.d }
 ; CHECK-NEXT:    mov z0.d, z24.d
