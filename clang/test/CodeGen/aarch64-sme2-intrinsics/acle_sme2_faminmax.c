@@ -30,7 +30,7 @@
 // CHECK-NEXT:    [[TMP8:%.*]] = tail call <vscale x 16 x half> @llvm.vector.insert.nxv16f16.nxv8f16(<vscale x 16 x half> [[TMP6]], <vscale x 8 x half> [[TMP7]], i64 8)
 // CHECK-NEXT:    ret <vscale x 16 x half> [[TMP8]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamax_f16_x213svfloat16x2_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamax_f16_x213svfloat16x2_t13svfloat16x2_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x half> @llvm.vector.extract.nxv8f16.nxv16f16(<vscale x 16 x half> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 8 x half> @llvm.vector.extract.nxv8f16.nxv16f16(<vscale x 16 x half> [[ZDN]], i64 8)
@@ -60,7 +60,7 @@ svfloat16x2_t test_svamax_f16_x2(svfloat16x2_t zdn, svfloat16x2_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP8:%.*]] = tail call <vscale x 8 x float> @llvm.vector.insert.nxv8f32.nxv4f32(<vscale x 8 x float> [[TMP6]], <vscale x 4 x float> [[TMP7]], i64 4)
 // CHECK-NEXT:    ret <vscale x 8 x float> [[TMP8]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamax_f32_x213svfloat32x2_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamax_f32_x213svfloat32x2_t13svfloat32x2_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 4 x float> @llvm.vector.extract.nxv4f32.nxv8f32(<vscale x 8 x float> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 4 x float> @llvm.vector.extract.nxv4f32.nxv8f32(<vscale x 8 x float> [[ZDN]], i64 4)
@@ -90,7 +90,7 @@ svfloat32x2_t test_svamax_f32_x2(svfloat32x2_t zdn, svfloat32x2_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP8:%.*]] = tail call <vscale x 4 x double> @llvm.vector.insert.nxv4f64.nxv2f64(<vscale x 4 x double> [[TMP6]], <vscale x 2 x double> [[TMP7]], i64 2)
 // CHECK-NEXT:    ret <vscale x 4 x double> [[TMP8]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamax_f64_x213svfloat64x2_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamax_f64_x213svfloat64x2_t13svfloat64x2_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 2 x double> @llvm.vector.extract.nxv2f64.nxv4f64(<vscale x 4 x double> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 2 x double> @llvm.vector.extract.nxv2f64.nxv4f64(<vscale x 4 x double> [[ZDN]], i64 2)
@@ -120,7 +120,7 @@ svfloat64x2_t test_svamax_f64_x2(svfloat64x2_t zdn, svfloat64x2_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP8:%.*]] = tail call <vscale x 16 x half> @llvm.vector.insert.nxv16f16.nxv8f16(<vscale x 16 x half> [[TMP6]], <vscale x 8 x half> [[TMP7]], i64 8)
 // CHECK-NEXT:    ret <vscale x 16 x half> [[TMP8]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamin_f16_x213svfloat16x2_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamin_f16_x213svfloat16x2_t13svfloat16x2_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x half> @llvm.vector.extract.nxv8f16.nxv16f16(<vscale x 16 x half> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 8 x half> @llvm.vector.extract.nxv8f16.nxv16f16(<vscale x 16 x half> [[ZDN]], i64 8)
@@ -150,7 +150,7 @@ svfloat16x2_t test_svamin_f16_x2(svfloat16x2_t zdn, svfloat16x2_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP8:%.*]] = tail call <vscale x 8 x float> @llvm.vector.insert.nxv8f32.nxv4f32(<vscale x 8 x float> [[TMP6]], <vscale x 4 x float> [[TMP7]], i64 4)
 // CHECK-NEXT:    ret <vscale x 8 x float> [[TMP8]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamin_f32_x213svfloat32x2_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamin_f32_x213svfloat32x2_t13svfloat32x2_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 4 x float> @llvm.vector.extract.nxv4f32.nxv8f32(<vscale x 8 x float> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 4 x float> @llvm.vector.extract.nxv4f32.nxv8f32(<vscale x 8 x float> [[ZDN]], i64 4)
@@ -180,7 +180,7 @@ svfloat32x2_t test_svamin_f32_x2(svfloat32x2_t zdn, svfloat32x2_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP8:%.*]] = tail call <vscale x 4 x double> @llvm.vector.insert.nxv4f64.nxv2f64(<vscale x 4 x double> [[TMP6]], <vscale x 2 x double> [[TMP7]], i64 2)
 // CHECK-NEXT:    ret <vscale x 4 x double> [[TMP8]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamin_f64_x213svfloat64x2_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamin_f64_x213svfloat64x2_t13svfloat64x2_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 2 x double> @llvm.vector.extract.nxv2f64.nxv4f64(<vscale x 4 x double> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 2 x double> @llvm.vector.extract.nxv2f64.nxv4f64(<vscale x 4 x double> [[ZDN]], i64 2)
@@ -220,7 +220,7 @@ svfloat64x2_t test_svamin_f64_x2(svfloat64x2_t zdn, svfloat64x2_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP16:%.*]] = tail call <vscale x 32 x half> @llvm.vector.insert.nxv32f16.nxv8f16(<vscale x 32 x half> [[TMP14]], <vscale x 8 x half> [[TMP15]], i64 24)
 // CHECK-NEXT:    ret <vscale x 32 x half> [[TMP16]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamax_f16_x413svfloat16x4_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamax_f16_x413svfloat16x4_t13svfloat16x4_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x half> @llvm.vector.extract.nxv8f16.nxv32f16(<vscale x 32 x half> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 8 x half> @llvm.vector.extract.nxv8f16.nxv32f16(<vscale x 32 x half> [[ZDN]], i64 8)
@@ -266,7 +266,7 @@ svfloat16x4_t test_svamax_f16_x4(svfloat16x4_t zdn, svfloat16x4_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP16:%.*]] = tail call <vscale x 16 x float> @llvm.vector.insert.nxv16f32.nxv4f32(<vscale x 16 x float> [[TMP14]], <vscale x 4 x float> [[TMP15]], i64 12)
 // CHECK-NEXT:    ret <vscale x 16 x float> [[TMP16]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamax_f32_x413svfloat32x4_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamax_f32_x413svfloat32x4_t13svfloat32x4_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 4 x float> @llvm.vector.extract.nxv4f32.nxv16f32(<vscale x 16 x float> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 4 x float> @llvm.vector.extract.nxv4f32.nxv16f32(<vscale x 16 x float> [[ZDN]], i64 4)
@@ -312,7 +312,7 @@ svfloat32x4_t test_svamax_f32_x4(svfloat32x4_t zdn, svfloat32x4_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP16:%.*]] = tail call <vscale x 8 x double> @llvm.vector.insert.nxv8f64.nxv2f64(<vscale x 8 x double> [[TMP14]], <vscale x 2 x double> [[TMP15]], i64 6)
 // CHECK-NEXT:    ret <vscale x 8 x double> [[TMP16]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamax_f64_x413svfloat64x4_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamax_f64_x413svfloat64x4_t13svfloat64x4_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 2 x double> @llvm.vector.extract.nxv2f64.nxv8f64(<vscale x 8 x double> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 2 x double> @llvm.vector.extract.nxv2f64.nxv8f64(<vscale x 8 x double> [[ZDN]], i64 2)
@@ -358,7 +358,7 @@ svfloat64x4_t test_svamax_f64_x4(svfloat64x4_t zdn, svfloat64x4_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP16:%.*]] = tail call <vscale x 32 x half> @llvm.vector.insert.nxv32f16.nxv8f16(<vscale x 32 x half> [[TMP14]], <vscale x 8 x half> [[TMP15]], i64 24)
 // CHECK-NEXT:    ret <vscale x 32 x half> [[TMP16]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamin_f16_x413svfloat16x4_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamin_f16_x413svfloat16x4_t13svfloat16x4_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 8 x half> @llvm.vector.extract.nxv8f16.nxv32f16(<vscale x 32 x half> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 8 x half> @llvm.vector.extract.nxv8f16.nxv32f16(<vscale x 32 x half> [[ZDN]], i64 8)
@@ -404,7 +404,7 @@ svfloat16x4_t test_svamin_f16_x4(svfloat16x4_t zdn, svfloat16x4_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP16:%.*]] = tail call <vscale x 16 x float> @llvm.vector.insert.nxv16f32.nxv4f32(<vscale x 16 x float> [[TMP14]], <vscale x 4 x float> [[TMP15]], i64 12)
 // CHECK-NEXT:    ret <vscale x 16 x float> [[TMP16]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamin_f32_x413svfloat32x4_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamin_f32_x413svfloat32x4_t13svfloat32x4_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 4 x float> @llvm.vector.extract.nxv4f32.nxv16f32(<vscale x 16 x float> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 4 x float> @llvm.vector.extract.nxv4f32.nxv16f32(<vscale x 16 x float> [[ZDN]], i64 4)
@@ -450,7 +450,7 @@ svfloat32x4_t test_svamin_f32_x4(svfloat32x4_t zdn, svfloat32x4_t zm) __arm_stre
 // CHECK-NEXT:    [[TMP16:%.*]] = tail call <vscale x 8 x double> @llvm.vector.insert.nxv8f64.nxv2f64(<vscale x 8 x double> [[TMP14]], <vscale x 2 x double> [[TMP15]], i64 6)
 // CHECK-NEXT:    ret <vscale x 8 x double> [[TMP16]]
 //
-// CPP-CHECK-LABEL: @_Z18test_svamin_f64_x413svfloat64x4_tS_(
+// CPP-CHECK-LABEL: @_Z18test_svamin_f64_x413svfloat64x4_t13svfloat64x4_t(
 // CPP-CHECK-NEXT:  entry:
 // CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 2 x double> @llvm.vector.extract.nxv2f64.nxv8f64(<vscale x 8 x double> [[ZDN:%.*]], i64 0)
 // CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 2 x double> @llvm.vector.extract.nxv2f64.nxv8f64(<vscale x 8 x double> [[ZDN]], i64 2)
