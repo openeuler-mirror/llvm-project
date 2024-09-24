@@ -1,4 +1,4 @@
-; REQUIRES: x86_64-registered-target
+; REQUIRES: x86-registered-target
 ; RUN: llvm-as %s -o %t.bc
 ; RUN: stackanalyzer --callgraph %t.bc --entry=main --anders --target=x86_64 | FileCheck %s
 
