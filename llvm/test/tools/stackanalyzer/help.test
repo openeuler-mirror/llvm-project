@@ -1,0 +1,21 @@
+; RUN: stackanalyzer --help | FileCheck %s
+; CHECK: USAGE: stackanalyzer [options] Input .bc file to be analyzed
+; CHECK-EMPTY:
+; CHECK: OPTIONS:
+; CHECK-EMPTY:
+; CHECK: Generic Options:
+; CHECK-EMPTY:
+; CHECK:   --help             - Display available options (--help-hidden for more)
+; CHECK:   --help-list        - Display list of available options (--help-list-hidden for more)
+; CHECK:   --version          - Display the version of this program
+; CHECK-EMPTY:
+; CHECK: StackAnalyzerCategory:
+; CHECK-EMPTY:
+; CHECK:   --analysis         - Output possible path of the callgraph which can possibly cause stack overflow
+; CHECK:   --anders           - Use Anders analysis to analyze the call graph
+; CHECK:   --callgraph        - Output the callgraph given the .bc file
+; CHECK:   --entry=<string>   - The name of the entry function for the callgraph
+; CHECK:   -o <string>        - Output callgraph in .dot format with stack cost information{{.*}}Should be used together with `analysis`.
+; CHECK:   --stacksize=<uint> - Max stack size of the limit of a path within the callgraph, given the .bc file. Should be used together with `analysis`.
+; CHECK-NOT: --sufile
+; CHECK-NOT: --debuginfo

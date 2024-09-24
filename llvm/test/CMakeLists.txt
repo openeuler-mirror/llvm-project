@@ -142,6 +142,7 @@ set(LLVM_TEST_DEPENDS
           sancov
           sanstats
           split-file
+          stackanalyzer
           verify-uselistorder
           yaml-bench
           yaml2obj

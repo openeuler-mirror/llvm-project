@@ -316,6 +316,7 @@ group("test") {
     "//llvm/tools/opt",
     "//llvm/tools/sancov",
     "//llvm/tools/sanstats",
+    "//llvm/tools/stackanalyzer",
     "//llvm/tools/verify-uselistorder",
     "//llvm/tools/yaml2obj",
     "//llvm/unittests",
