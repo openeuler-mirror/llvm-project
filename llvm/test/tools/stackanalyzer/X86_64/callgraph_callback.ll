@@ -1,5 +1,6 @@
+; REQUIRES: x86_64-registered-target
 ; RUN: llvm-as %s -o %t.bc
-; RUN: stackanalyzer --analysis %t.bc --entry=main --anders --target=x86_64 | FileCheck %s 
+; RUN: stackanalyzer --callgraph %t.bc --entry=main --anders --target=x86_64 | FileCheck %s
 
 @.str = private unnamed_addr constant [5 x i8] c"%hhu\00", align 1
 
@@ -56,10 +57,25 @@ define dso_local i32 @bar(i32 noundef %0) #0 {
   ret i32 %6
 }
 
-; CHECK: Potential stack overflow path found(limit:1024 bytes):
-; CHECK-NEXT: CallStack:
-; CHECK-NEXT:   main
-; CHECK-NEXT:   foo
-; CHECK-NEXT:   baz
-; CHECK-NEXT: Analysis:
-; CHECK-NEXT: - Stack usage exceeds the limit along the call stack.
+; CHECK: Call graph node <<null function>>{{.*}}  #uses=0
+; CHECK:   CS<None> calls function 'foo'
+; CHECK:   CS<None> calls function '__isoc99_scanf'
+; CHECK:   CS<None> calls function 'baz'
+; CHECK:   CS<None> calls function 'main'
+; CHECK:   CS<None> calls function 'bar'
+
+; CHECK: Call graph node for function: '__isoc99_scanf'{{.*}}  #uses=3
+; CHECK:   CS<None> calls external node
+
+; CHECK: Call graph node for function: 'bar'{{.*}}  #uses=2
+
+; CHECK: Call graph node for function: 'baz'{{.*}}  #uses=2
+
+; CHECK: Call graph node for function: 'foo'{{.*}}  #uses=2
+; CHECK:   CS{{.*}} calls function 'bar'
+; CHECK:   CS{{.*}} calls function '__isoc99_scanf'
+; CHECK:   CS{{.*}} calls function 'baz'
+
+; CHECK: Call graph node for function: 'main'{{.*}}  #uses=1
+; CHECK:   CS{{.*}} calls function '__isoc99_scanf'
+; CHECK:   CS{{.*}} calls function 'foo'

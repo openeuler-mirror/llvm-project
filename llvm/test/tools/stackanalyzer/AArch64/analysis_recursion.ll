@@ -1,3 +1,4 @@
+; REQUIRES: aarch64-registered-target
 ; RUN: llvm-as %s -o %t.bc
 ; RUN: stackanalyzer --analysis %t.bc --entry=recursive_function --target=aarch64 | FileCheck %s
 

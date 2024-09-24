@@ -1,3 +1,4 @@
+; REQUIRES: aarch64-registered-target
 ; RUN: llvm-as %s -o %t.bc
 ; RUN: stackanalyzer --analysis %t.bc --entry=main --stacksize=2048 --target=aarch64 | FileCheck %s --check-prefix=CHECK-2048
 ; RUN: stackanalyzer --analysis %t.bc --entry=main --stacksize=512 --target=aarch64 | FileCheck %s --check-prefix=CHECK-512
