@@ -3679,6 +3679,31 @@ let TargetPrefix = "aarch64" in {
                             [llvm_i32_ty, llvm_nxv16i8_ty, llvm_nxv16i8_ty],
                             [ImmArg<ArgIndex<0>>, IntrNoMem, IntrHasSideEffects]>;
 
+  
+  //
+  // Register scaling
+  //
+  def int_aarch64_sme_fp8_scale_single_x2
+    : DefaultAttrsIntrinsic<[llvm_anyvector_ty, LLVMMatchType<0>],
+                            [LLVMMatchType<0>, LLVMMatchType<0>, LLVMVectorOfBitcastsToInt<0>],
+                            [IntrNoMem]>;
+
+  def int_aarch64_sme_fp8_scale_single_x4
+    : DefaultAttrsIntrinsic<[llvm_anyvector_ty, LLVMMatchType<0>, LLVMMatchType<0>, LLVMMatchType<0>],
+                            [LLVMMatchType<0>, LLVMMatchType<0>, LLVMMatchType<0>, LLVMMatchType<0>, LLVMVectorOfBitcastsToInt<0>],
+                            [IntrNoMem]>;
+
+  def int_aarch64_sme_fp8_scale_x2
+    : DefaultAttrsIntrinsic<[llvm_anyvector_ty, LLVMMatchType<0>],
+                            [LLVMMatchType<0>, LLVMMatchType<0>,
+                             LLVMVectorOfBitcastsToInt<0>, LLVMVectorOfBitcastsToInt<0>],
+                            [IntrNoMem]>;
+
+  def int_aarch64_sme_fp8_scale_x4
+    : DefaultAttrsIntrinsic<[llvm_anyvector_ty, LLVMMatchType<0>, LLVMMatchType<0>, LLVMMatchType<0>],
+                            [LLVMMatchType<0>, LLVMMatchType<0>, LLVMMatchType<0>, LLVMMatchType<0>,
+                             LLVMVectorOfBitcastsToInt<0>, LLVMVectorOfBitcastsToInt<0>, LLVMVectorOfBitcastsToInt<0>, LLVMVectorOfBitcastsToInt<0>],
+                            [IntrNoMem]>;
 }
 
 // SVE2.1 - ZIPQ1, ZIPQ2, UZPQ1, UZPQ2

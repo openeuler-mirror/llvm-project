@@ -2224,6 +2224,16 @@ multiclass MultiVecLoad<string i> {
   def SV # NAME # D_VNUM_X4 : MInst<"sv" # i # "_vnum" # "[_{2}]_x4", "4}cl", "lUld",  [IsStructLoad, VerifyRuntimeMode], MemEltTyDefault, "aarch64_sve_" # i # "_pn_x4">;
 }
 
+//
+// Multi-vector scaling
+//
+let  SVETargetGuard = InvalidMode, SMETargetGuard = "sme2,fp8" in {
+  def FSCALE_SINGLE_X2 : Inst<"svscale[_single_{d}_x2]", "22x", "fhd", MergeNone, "aarch64_sme_fp8_scale_single_x2", [IsStreaming],[]>;
+  def FSCALE_SINGLE_X4 : Inst<"svscale[_single_{d}_x4]", "44x", "fhd", MergeNone, "aarch64_sme_fp8_scale_single_x4", [IsStreaming],[]>;
+  def FSCALE_X2 : Inst<"svscale[_{d}_x2]", "222.x", "fhd", MergeNone, "aarch64_sme_fp8_scale_x2", [IsStreaming],[]>;
+  def FSCALE_X4 : Inst<"svscale[_{d}_x4]", "444.x", "fhd", MergeNone, "aarch64_sme_fp8_scale_x4", [IsStreaming],[]>;
+}
+
 let SVETargetGuard = "sve2p1", SMETargetGuard = "sme2" in {
   defm LD1   : MultiVecLoad<"ld1">;
   defm LDNT1 : MultiVecLoad<"ldnt1">;
