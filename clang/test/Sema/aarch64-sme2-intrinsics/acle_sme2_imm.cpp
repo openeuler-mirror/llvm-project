@@ -168,3 +168,7 @@ void test_bfmlslb_bad_lane(svfloat32_t zda, svbfloat16_t zn, svbfloat16_t zm) __
   svbfmlslt_lane_f32(zda, zn, zm, 8); // expected-error {{argument value 8 is outside the valid range [0, 7]}}
 }
 
+void test_luti4_zt_x4(svuint8x2_t op) __arm_streaming __arm_in("zt0") {
+  // Check Zt tile 0
+  svluti4_zt_u8_x4(1, op);  // expected-error {{argument value 1 is outside the valid range [0, 0]}}
+}
