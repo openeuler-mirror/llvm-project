@@ -236,12 +236,14 @@ void StackOverflowDetector::printResults(
 
 bool StackOverflowDetector::evaluateCurrentPath() {
   unsigned CumulativeStackSize = 0;
-  for (auto &Entry : PathStack) {
+  for (const auto &Entry : PathStack) {
     CumulativeStackSize += Entry.second;
   }
+
   if (CumulativeStackSize > Threshold) {
     std::vector<const Function *> CallStack;
-    for (auto &Entry : PathStack) {
+    CallStack.reserve(PathStack.size());
+    for (const auto &Entry : PathStack) {
       CallStack.push_back(Entry.first);
     }
     OverflowPaths.push_back(Path({CallStack, CumulativeStackSize}));
@@ -250,52 +252,58 @@ bool StackOverflowDetector::evaluateCurrentPath() {
   return false;
 }
 
-bool StackOverflowDetector::traverse(
-    Function *F, const CallGraph &CG,
+void StackOverflowDetector::traverse(
+    const Function *F, const CallGraph &CG,
     const MapVector<const Function *, unsigned> &StackSizes) {
-  // Check for loop detection: if we revisit a node that is in the PathStack,
-  // it's a loop
-  if (PathStack.count(F)) {
+  // Detect cycle: if F is already in Visited, we've encountered a cycle
+  if (Visited.count(F)) {
     unsigned LoopStackSize = 0;
     for (auto PI = PathStack.find(F), PE = PathStack.end(); PI != PE; ++PI) {
       LoopStackSize += PI->second;
     }
-
-    // If the loop's stack cost is zero, treat it as a single node and evaluate
-    // current path
+    // If LoopStackSize is zero, simply evaluate the current path
     if (LoopStackSize == 0) {
-      return evaluateCurrentPath();
+      evaluateCurrentPath();
+    } else {
+      // Handle potential overflow path due to cycle
+      std::vector<const Function *> CallStack;
+      unsigned CumulativeStackSize = 0;
+      CallStack.reserve(PathStack.size() + 1);
+      for (const auto &Entry : PathStack) {
+        CallStack.push_back(Entry.first);
+        CumulativeStackSize += Entry.second;
+      }
+      CallStack.push_back(F); // Revisit F
+      // Optionally include F's stack size if necessary
+      unsigned FStackSize = StackSizes.lookup(F);
+      CumulativeStackSize += FStackSize;
+      OverflowPaths.push_back(Path({CallStack, CumulativeStackSize}));
     }
-    // Otherwise, consider it a potential overflow path
-    std::vector<const Function *> CallStack;
-    unsigned CumulativeStackSize = 0;
-    for (auto &Entry : PathStack) {
-      CallStack.push_back(Entry.first);
-      CumulativeStackSize += Entry.second;
-    }
-    // Add the called function to the call stack to give better diagnostics
-    CallStack.push_back(F);
-    OverflowPaths.push_back(Path({CallStack, CumulativeStackSize}));
-    return true;
+    // Since we've detected a cycle, we do not traverse further
+    return;
   }
 
   Visited.insert(F);
   unsigned CurrentStackSize = StackSizes.lookup(F);
   PathStack.insert({F, CurrentStackSize});
-  if (evaluateCurrentPath()) {
-    return true;
-  }
-  auto *CGNode = CG[F];
 
-  bool FindOverflowPath = false;
-  for (auto &Callee : *CGNode) {
-    Function *CalleeF = Callee.second->getFunction();
-    if (CalleeF && !CalleeF->isDeclaration()) {
-      FindOverflowPath = traverse(CalleeF, CG, StackSizes) || FindOverflowPath;
+  // Evaluate the current path; if it overflows, do not traverse further
+  if (!evaluateCurrentPath()) {
+    // Retrieve the call graph node for F
+    const auto *CGNode = CG[F];
+    if (CGNode) {
+      for (const auto &CalleePair : *CGNode) {
+        const Function *CalleeF = CalleePair.second->getFunction();
+        if (CalleeF && !CalleeF->isDeclaration()) {
+          traverse(CalleeF, CG, StackSizes);
+        }
+      }
     }
   }
 
+  // Backtrack: remove F from PathStack and Visited
   PathStack.pop_back();
-  return FindOverflowPath;
+  Visited.erase(F);
 }
+
 } // namespace llvm

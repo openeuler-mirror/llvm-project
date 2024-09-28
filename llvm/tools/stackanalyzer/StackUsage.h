@@ -70,11 +70,11 @@ class StackOverflowDetector {
 
   SmallVector<Path, 16> OverflowPaths;
   MapVector<const Function *, unsigned> PathStack;
-  std::set<Function *> Visited;
+  std::set<const Function *> Visited;
   unsigned Threshold;
   std::string EntryFunction;
 
-  bool traverse(Function *F, const CallGraph &CG,
+  void traverse(const Function *F, const CallGraph &CG,
                 const MapVector<const Function *, unsigned> &StackSizes);
   bool evaluateCurrentPath();
 
