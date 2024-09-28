@@ -43,7 +43,7 @@ static cl::opt<unsigned>
     LimitSize("stacksize",
               cl::desc("Max stack size of the limit of a path within the "
                        "callgraph, given the .bc file. "
-                       "Should be used together with `analysis`."),
+                       "Should be used together with `analysis`"),
               cl::init(1024), cl::cat(StackAnalyzerCategory));
 
 static cl::opt<bool>
@@ -54,7 +54,7 @@ static cl::opt<bool>
 static cl::opt<std::string> OutputFilename(
     "o",
     cl::desc("Output callgraph in .dot format with stack cost information"
-             "Should be used together with `analysis`."),
+             "Should be used together with `analysis`"),
     cl::init(""), cl::cat(StackAnalyzerCategory));
 
 static cl::opt<std::string>
@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
   if (UseAnalysis) {
     StackOverflowDetector Detector{LimitSize, EntryFunction};
     Detector.analyze(Graph, StackSize);
-    Detector.printResults(outs());
+    Detector.printResults(outs(), StackSize);
   }
   return 0;
 }

@@ -68,7 +68,7 @@ class StackOverflowDetector {
     unsigned StackSize;
   };
 
-  SmallVector<Path> OverflowPaths;
+  SmallVector<Path, 16> OverflowPaths;
   MapVector<const Function *, unsigned> PathStack;
   std::set<Function *> Visited;
   unsigned Threshold;
@@ -85,7 +85,9 @@ public:
   void analyze(const CallGraph &CG,
                const MapVector<const Function *, unsigned> &);
 
-  void printResults(raw_ostream &OS) const;
+  void
+  printResults(raw_ostream &OS,
+               const MapVector<const Function *, unsigned> &StackSizes) const;
 };
 } // namespace llvm
 

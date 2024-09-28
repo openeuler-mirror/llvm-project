@@ -207,7 +207,9 @@ void StackOverflowDetector::analyze(
   traverse(CGI->second->getFunction(), CG, StackSizes);
 }
 
-void StackOverflowDetector::printResults(raw_ostream &OS) const {
+void StackOverflowDetector::printResults(
+    raw_ostream &OS,
+    const MapVector<const Function *, unsigned> &StackSizes) const {
   if (OverflowPaths.empty()) {
     OS << "No potential stack overflow path found(limit:" << Threshold
        << " bytes).\n";
@@ -217,7 +219,8 @@ void StackOverflowDetector::printResults(raw_ostream &OS) const {
          << " bytes): \n";
       OS << "CallStack:\n";
       for (auto *F : Path.CallStack) {
-        OS << "  " << F->getName() << "\n";
+        OS << "  " << F->getName() << ": " << StackSizes.lookup(F)
+           << " bytes.\n";
       }
       OS << "Analysis:\n";
       if (Path.StackSize <= Threshold) {
@@ -225,6 +228,7 @@ void StackOverflowDetector::printResults(raw_ostream &OS) const {
         OS << "- Unbounded recursion may lead to stack overflow.\n";
       } else {
         OS << "- Stack usage exceeds the limit along the call stack.\n";
+        OS << "- Total stack usage: " << Path.StackSize << " bytes.\n";
       }
     }
   }

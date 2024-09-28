@@ -41,17 +41,19 @@ declare i32 @__isoc99_scanf(ptr noundef, ...)
 
 ; CHECK-MAIN: Potential stack overflow path found(limit:1024 bytes):
 ; CHECK-MAIN-NEXT: CallStack:
-; CHECK-MAIN-NEXT:   main
-; CHECK-MAIN-NEXT:   foo
-; CHECK-MAIN-NEXT:   baz
+; CHECK-MAIN-NEXT:   main: 8 bytes.
+; CHECK-MAIN-NEXT:   foo: 280 bytes.
+; CHECK-MAIN-NEXT:   baz: 920 bytes.
 ; CHECK-MAIN-NEXT: Analysis:
 ; CHECK-MAIN-NEXT: - Stack usage exceeds the limit along the call stack.
+; CHECK-MAIN-NEXT: - Total stack usage: 1208 bytes.
 
 ; CHECK-FOO: Potential stack overflow path found(limit:1024 bytes):
 ; CHECK-FOO-NEXT: CallStack:
-; CHECK-FOO-NEXT:   foo
-; CHECK-FOO-NEXT:   baz
+; CHECK-FOO-NEXT:   foo: 280 bytes.
+; CHECK-FOO-NEXT:   baz: 920 bytes.
 ; CHECK-FOO-NEXT: Analysis:
 ; CHECK-FOO-NEXT: - Stack usage exceeds the limit along the call stack.
+; CHECK_FOO-NEXT: - Total stack usage: 1200 bytes.
 
 ; CHECK-BAZ: No potential stack overflow path found(limit:1024 bytes).

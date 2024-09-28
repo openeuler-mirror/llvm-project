@@ -59,8 +59,9 @@ define dso_local i32 @bar(i32 noundef %0) #0 {
 
 ; CHECK: Potential stack overflow path found(limit:1024 bytes):
 ; CHECK-NEXT: CallStack:
-; CHECK-NEXT:   main
-; CHECK-NEXT:   foo
-; CHECK-NEXT:   baz
+; CHECK-NEXT:   main: 32 bytes.
+; CHECK-NEXT:   foo: 304 bytes.
+; CHECK-NEXT:   baz: 1040 bytes.
 ; CHECK-NEXT: Analysis:
 ; CHECK-NEXT: - Stack usage exceeds the limit along the call stack.
+; CHECK-NEXT: - Total stack usage: 1376 bytes.

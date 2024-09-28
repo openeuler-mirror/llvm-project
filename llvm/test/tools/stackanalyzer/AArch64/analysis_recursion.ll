@@ -17,8 +17,8 @@ recursive_case:
 
 ; CHECK: Potential stack overflow path found(limit:1024 bytes):
 ; CHECK-NEXT: CallStack:
-; CHECK-NEXT:   recursive_function
-; CHECK-NEXT:   recursive_function
+; CHECK-NEXT:   recursive_function: 16 bytes.
+; CHECK-NEXT:   recursive_function: 16 bytes.
 ; CHECK-NEXT: Analysis:
 ; CHECK-NEXT: - Recursive call without proper base case check.
 ; CHECK-NEXT: - Unbounded recursion may lead to stack overflow.

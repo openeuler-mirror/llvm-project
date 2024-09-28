@@ -22,12 +22,6 @@ ConstraintGraph::createInitialConstraintNode() {
 
 ConstraintGraph::ConstraintGraph(Module &Module) : M(Module) {
   InitialConstraintNode = createInitialConstraintNode().get();
-  for (auto &F : M) {
-    if (F.hasExternalLinkage())
-      continue;
-    if (F.isIntrinsic())
-      continue;
-  }
 }
 
 ConstraintGraphNode *ConstraintGraph::getOrInsertConstraintNode(Value *V) {
