@@ -543,7 +543,7 @@ def FeatureLUT: SubtargetFeature<"lut", "HasLUT", "true",
    "Enable Lookup Table instructions (FEAT_LUT)">;
 
 def FeatureSME_LUTv2 : SubtargetFeature<"sme-lutv2", "HasSME_LUTv2", "true",
-  "Enable Scalable Matrix Extension (SME) LUTv2 instructions (FEAT_SME_LUTv2)">;
+  "Enable Scalable Matrix Extension (SME) LUTv2 instructions (FEAT_SME_LUTv2)", [FeatureSME2]>;
 
 def FeatureSMEF8F16 : SubtargetFeature<"sme-f8f16", "HasSMEF8F16", "true",
   "Enable Scalable Matrix Extension (SME) F8F16 instructions(FEAT_SME_F8F16)", [FeatureSME2, FeatureFP8]>;
