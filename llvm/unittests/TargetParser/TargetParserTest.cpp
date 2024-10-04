@@ -24,22 +24,22 @@ using namespace llvm;
 
 namespace {
 const char *ARMArch[] = {
-    "armv4",        "armv4t",      "armv5",          "armv5t",      "armv5e",
-    "armv5te",      "armv5tej",    "armv6",          "armv6j",      "armv6k",
-    "armv6hl",      "armv6t2",     "armv6kz",        "armv6z",      "armv6zk",
-    "armv6-m",      "armv6m",      "armv6sm",        "armv6s-m",    "armv7-a",
-    "armv7",        "armv7a",      "armv7ve",        "armv7hl",     "armv7l",
-    "armv7-r",      "armv7r",      "armv7-m",        "armv7m",      "armv7k",
-    "armv7s",       "armv7e-m",    "armv7em",        "armv8-a",     "armv8",
-    "armv8a",       "armv8l",      "armv8.1-a",      "armv8.1a",    "armv8.2-a",
-    "armv8.2a",     "armv8.3-a",   "armv8.3a",       "armv8.4-a",   "armv8.4a",
-    "armv8.5-a",    "armv8.5a",    "armv8.6-a",      "armv8.6a",    "armv8.7-a",
-    "armv8.7a",     "armv8.8-a",   "armv8.8a",       "armv8.9-a",   "armv8.9a",
-    "armv8-r",      "armv8r",      "armv8-m.base",   "armv8m.base", "armv8-m.main",
-    "armv8m.main",  "iwmmxt",      "iwmmxt2",        "xscale",      "armv8.1-m.main",
-    "armv9-a",      "armv9",       "armv9a",         "armv9.1-a",   "armv9.1a",
-    "armv9.2-a",    "armv9.2a",    "armv9.3-a",      "armv9.3a",    "armv9.4-a",
-    "armv9.4a",     "armv9.5-a",   "armv9.5a",
+    "armv4",       "armv4t",    "armv5",        "armv5t",      "armv5e",
+    "armv5te",     "armv5tej",  "armv6",        "armv6j",      "armv6k",
+    "armv6hl",     "armv6t2",   "armv6kz",      "armv6z",      "armv6zk",
+    "armv6-m",     "armv6m",    "armv6sm",      "armv6s-m",    "armv7-a",
+    "armv7",       "armv7a",    "armv7ve",      "armv7hl",     "armv7l",
+    "armv7-r",     "armv7r",    "armv7-m",      "armv7m",      "armv7k",
+    "armv7s",      "armv7e-m",  "armv7em",      "armv8-a",     "armv8",
+    "armv8a",      "armv8l",    "armv8.1-a",    "armv8.1a",    "armv8.2-a",
+    "armv8.2a",    "armv8.3-a", "armv8.3a",     "armv8.4-a",   "armv8.4a",
+    "armv8.5-a",   "armv8.5a",  "armv8.6-a",    "armv8.6a",    "armv8.7-a",
+    "armv8.7a",    "armv8.8-a", "armv8.8a",     "armv8.9-a",   "armv8.9a",
+    "armv8-r",     "armv8r",    "armv8-m.base", "armv8m.base", "armv8-m.main",
+    "armv8m.main", "iwmmxt",    "iwmmxt2",      "xscale",      "armv8.1-m.main",
+    "armv9-a",     "armv9",     "armv9a",       "armv9.1-a",   "armv9.1a",
+    "armv9.2-a",   "armv9.2a",  "armv9.3-a",    "armv9.3a",    "armv9.4-a",
+    "armv9.4a",    "armv9.5-a", "armv9.5a",     "armv9.6a",    "armv9.6-a",
 };
 
 template <ARM::ISAKind ISAKind>
@@ -543,6 +543,8 @@ TEST(TargetParserTest, testARMArch) {
   EXPECT_TRUE(
       testARMArch("armv9.5-a", "generic", "v9.5a",
                           ARMBuildAttrs::CPUArch::v9_A));
+  EXPECT_TRUE(testARMArch("armv9.6-a", "generic", "v9.6a",
+                          ARMBuildAttrs::CPUArch::v9_A));
   EXPECT_TRUE(
       testARMArch("armv8-r", "cortex-r52", "v8r",
                           ARMBuildAttrs::CPUArch::v8_R));
@@ -879,6 +881,7 @@ TEST(TargetParserTest, ARMparseArchProfile) {
     case ARM::ArchKind::ARMV9_3A:
     case ARM::ArchKind::ARMV9_4A:
     case ARM::ArchKind::ARMV9_5A:
+    case ARM::ArchKind::ARMV9_6A:
       EXPECT_EQ(ARM::ProfileKind::A, ARM::parseArchProfile(ARMArch[i]));
       break;
     default:
@@ -1540,6 +1543,8 @@ TEST(TargetParserTest, testAArch64Arch) {
                               ARMBuildAttrs::CPUArch::v8_A));
   EXPECT_TRUE(testAArch64Arch("armv9.5-a", "generic", "v9.5a",
                               ARMBuildAttrs::CPUArch::v8_A));
+  EXPECT_TRUE(testAArch64Arch("armv9.6-a", "generic", "v9.6a",
+                              ARMBuildAttrs::CPUArch::v8_A));
 }
 
 bool testAArch64Extension(StringRef CPUName, StringRef ArchExt) {
@@ -1752,6 +1757,7 @@ TEST(TargetParserTest, AArch64ArchFeatures) {
   EXPECT_EQ(AArch64::ARMV9_3A.ArchFeature, "+v9.3a");
   EXPECT_EQ(AArch64::ARMV9_4A.ArchFeature, "+v9.4a");
   EXPECT_EQ(AArch64::ARMV9_5A.ArchFeature, "+v9.5a");
+  EXPECT_EQ(AArch64::ARMV9_6A.ArchFeature, "+v9.6a");
   EXPECT_EQ(AArch64::ARMV8R.ArchFeature, "+v8r");
 }
 
@@ -1781,7 +1787,7 @@ TEST(TargetParserTest, AArch64ArchPartialOrder) {
 
   for (const auto *A :
        {&AArch64::ARMV9_1A, &AArch64::ARMV9_2A, &AArch64::ARMV9_3A,
-        &AArch64::ARMV9_4A, &AArch64::ARMV9_5A})
+        &AArch64::ARMV9_4A, &AArch64::ARMV9_5A, &AArch64::ARMV9_6A})
     EXPECT_TRUE(A->implies(AArch64::ARMV9A));
 
   EXPECT_TRUE(AArch64::ARMV8_1A.implies(AArch64::ARMV8A));
@@ -1799,6 +1805,7 @@ TEST(TargetParserTest, AArch64ArchPartialOrder) {
   EXPECT_TRUE(AArch64::ARMV9_3A.implies(AArch64::ARMV9_2A));
   EXPECT_TRUE(AArch64::ARMV9_4A.implies(AArch64::ARMV9_3A));
   EXPECT_TRUE(AArch64::ARMV9_5A.implies(AArch64::ARMV9_4A));
+  EXPECT_TRUE(AArch64::ARMV9_6A.implies(AArch64::ARMV9_5A));
 
   EXPECT_TRUE(AArch64::ARMV9A.implies(AArch64::ARMV8_5A));
   EXPECT_TRUE(AArch64::ARMV9_1A.implies(AArch64::ARMV8_6A));

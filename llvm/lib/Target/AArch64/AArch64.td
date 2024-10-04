@@ -649,6 +649,10 @@ def HasV9_5aOps : SubtargetFeature<
   "v9.5a", "HasV9_5aOps", "true", "Support ARM v9.5a instructions",
   [HasV9_4aOps]>;
 
+def HasV9_6aOps : SubtargetFeature<
+  "v9.6a", "HasV9_6aOps", "true", "Support ARM v9.6a instructions",
+  [HasV9_5aOps]>;
+
 def HasV8_0rOps : SubtargetFeature<
   "v8r", "HasV8_0rOps", "true", "Support ARM v8r instructions",
   [//v8.1
