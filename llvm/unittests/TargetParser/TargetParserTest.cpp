@@ -1421,7 +1421,6 @@ INSTANTIATE_TEST_SUITE_P(
                              AArch64::AEK_PROFILE | AArch64::AEK_FP16 |
                              AArch64::AEK_FP16FML | AArch64::AEK_DOTPROD,
                          "8.2-A"),
-#if defined(ENABLE_AARCH64_HIP09)
         ARMCPUTestParams(
             "hip09", "armv8.5-a", "crypto-neon-fp-armv8",
             AArch64::AEK_CRC | AArch64::AEK_FP | AArch64::AEK_SIMD |
@@ -1432,7 +1431,6 @@ INSTANTIATE_TEST_SUITE_P(
                 AArch64::AEK_FP16FML | AArch64::AEK_SVE | AArch64::AEK_I8MM |
                 AArch64::AEK_F32MM | AArch64::AEK_F64MM | AArch64::AEK_BF16,
             "8.5-A"),
-#endif
         ARMCPUTestParams("a64fx", "armv8.2-a", "crypto-neon-fp-armv8",
                          AArch64::AEK_CRC | AArch64::AEK_AES |
                              AArch64::AEK_SHA2 | AArch64::AEK_FP |
@@ -1449,11 +1447,7 @@ INSTANTIATE_TEST_SUITE_P(
                          "8.2-A")));
 
 // Note: number of CPUs includes aliases.
-#if defined(ENABLE_AARCH64_HIP09)
 static constexpr unsigned NumAArch64CPUArchs = 63;
-#else
-static constexpr unsigned NumAArch64CPUArchs = 62;
-#endif
 
 TEST(TargetParserTest, testAArch64CPUArchList) {
   SmallVector<StringRef, NumAArch64CPUArchs> List;
