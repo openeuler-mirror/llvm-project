@@ -105,10 +105,13 @@ def FeatureUAL
 def FeatureRelax
     : SubtargetFeature<"relax", "HasLinkerRelax", "true",
                        "Enable Linker relaxation">;
-// Experimental auto vectorization
-def FeatureAutoVec
-    : SubtargetFeature<"auto-vec", "HasExpAutoVec", "true",
-                       "Experimental auto vectorization">;
+
+// Floating point approximation operation
+def FeatureFrecipe
+    : SubtargetFeature<"frecipe", "HasFrecipe", "true",
+                       "Support frecipe.{s/d} and frsqrte.{s/d} instructions.">;
+def HasFrecipe : Predicate<"Subtarget->hasFrecipe()">;
+
 
 //===----------------------------------------------------------------------===//
 // Registers, instruction descriptions ...
@@ -139,6 +142,13 @@ def : ProcessorModel<"la464", NoSchedModel, [Feature64Bit,
                                              FeatureExtLASX,
                                              FeatureExtLVZ,
                                              FeatureExtLBT]>;
+
+def : ProcessorModel<"la664", NoSchedModel, [Feature64Bit,
+                                             FeatureUAL,
+                                             FeatureExtLASX,
+                                             FeatureExtLVZ,
+                                             FeatureExtLBT,
+                                             FeatureFrecipe]>;
 
 //===----------------------------------------------------------------------===//
 // Define the LoongArch target.

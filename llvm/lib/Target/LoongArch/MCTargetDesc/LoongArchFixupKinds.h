@@ -111,6 +111,9 @@ enum Fixups {
   fixup_loongarch_relax = FirstLiteralRelocationKind + ELF::R_LARCH_RELAX,
   // Generate an R_LARCH_ALIGN which indicates the linker may fixup align here.
   fixup_loongarch_align = FirstLiteralRelocationKind + ELF::R_LARCH_ALIGN,
+  // 36-bit fixup corresponding to %call36(foo) for a pair instructions:
+  // pcaddu18i+jirl.
+  fixup_loongarch_call36 = FirstLiteralRelocationKind + ELF::R_LARCH_CALL36,
 };
 } // end namespace LoongArch
 } // end namespace llvm
