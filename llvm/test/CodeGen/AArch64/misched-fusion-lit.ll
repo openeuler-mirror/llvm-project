@@ -7,6 +7,7 @@
 ; RUN: llc %s -o - -mtriple=aarch64-unknown -mcpu=exynos-m4       | FileCheck %s --check-prefix=CHECK --check-prefix=CHECKFUSE
 ; RUN: llc %s -o - -mtriple=aarch64-unknown -mcpu=exynos-m5       | FileCheck %s --check-prefix=CHECK --check-prefix=CHECKFUSE
 ; RUN: llc %s -o - -mtriple=aarch64-unknown -mcpu=neoverse-n1     | FileCheck %s --check-prefix=CHECKFUSE-NEOVERSE
+; RUN: llc %s -o - -mtriple=aarch64-unknown -mcpu=hip09           | FileCheck %s --check-prefix=CHECK --check-prefix=CHECKFUSE-HIP09
 
 @g = common local_unnamed_addr global ptr null, align 8
 
@@ -59,6 +60,7 @@ entry:
 ; CHECK: mov [[R:w[0-9]+]], {{#[0-9]+}}
 ; CHECKDONT-NEXT: add {{w[0-9]+}}, {{w[0-9]+}}, {{w[0-9]+}}
 ; CHECKFUSE-NEXT: movk [[R]], {{#[0-9]+}}, lsl #16
+; CHECKFUSE-HIP09: movk [[R]], {{#[0-9]+}}, lsl #16
 }
 
 ; Function Attrs: norecurse nounwind readnone
@@ -89,4 +91,9 @@ entry:
 ; CHECK-FUSE:      movk [[R]], #8699, lsl #32
 ; CHECK-FUSE:      movk [[R]], #16393, lsl #48
 ; CHECK-FUSE:      fmov {{d[0-9]+}}, [[R]]
+; CHECKFUSE-HIP09:    mov  [[R:x[0-9]+]], #11544
+; CHECKFUSE-HIP09:    movk [[R]], #21572, lsl #16
+; CHECKFUSE-HIP09:    movk [[R]], #8699, lsl #32
+; CHECKFUSE-HIP09:    movk [[R]], #16393, lsl #48
+; CHECKFUSE-HIP09:    fmov {{d[0-9]+}}, [[R]]
 }

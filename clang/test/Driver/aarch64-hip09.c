@@ -1,4 +1,3 @@
-// REQUIRES: enable_enable_aarch64_hip09
 // RUN: %clang -target aarch64_be -mcpu=hip09 -### -c %s 2>&1 | FileCheck -check-prefix=hip09-BE %s
 // RUN: %clang -target aarch64 -mbig-endian -mcpu=hip09 -### -c %s 2>&1 | FileCheck -check-prefix=hip09-BE %s
 // RUN: %clang -target aarch64_be -mbig-endian -mcpu=hip09 -### -c %s 2>&1 | FileCheck -check-prefix=hip09-BE %s

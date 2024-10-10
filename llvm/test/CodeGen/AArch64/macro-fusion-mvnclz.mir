@@ -1,4 +1,3 @@
-# REQUIRES: enable_enable_aarch64_hip09
 # RUN: llc -o - %s -mtriple=aarch64-- -mattr=+fuse-mvn-clz -run-pass postmisched | FileCheck %s --check-prefixes=CHECK,FUSION
 # RUN: llc -o - %s -mtriple=aarch64-- -mattr=-fuse-mvn-clz -run-pass postmisched | FileCheck %s --check-prefixes=CHECK,NOFUSION
 ---
