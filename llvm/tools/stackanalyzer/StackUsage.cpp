@@ -126,13 +126,6 @@ void emitSUFile(StringRef SUFilename, Module &Module,
     TargetTriple = Triple::normalize(TargetTripleInput);
   }
 
-  if (TargetTripleInput.empty()) {
-    std::string DefaultTriple = sys::getDefaultTargetTriple();
-    TargetTriple = StringRef(DefaultTriple);
-  } else {
-    TargetTriple = TargetTripleInput;
-  }
-
   InitializeAllTargetInfos();
   InitializeAllTargets();
   InitializeAllTargetMCs();
