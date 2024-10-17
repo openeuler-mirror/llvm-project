@@ -338,7 +338,7 @@ inline constexpr ArchInfo ARMV9_2A  = { VersionTuple{9, 2}, AProfile, "armv9.2-a
 inline constexpr ArchInfo ARMV9_3A  = { VersionTuple{9, 3}, AProfile, "armv9.3-a", "+v9.3a", (ARMV9_2A.DefaultExts | AArch64::AEK_MOPS | AArch64::AEK_HBC)};
 inline constexpr ArchInfo ARMV9_4A  = { VersionTuple{9, 4}, AProfile, "armv9.4-a", "+v9.4a", (ARMV9_3A.DefaultExts | AArch64::AEK_SPECRES2 | AArch64::AEK_CSSC | AArch64::AEK_RASv2)};
 inline constexpr ArchInfo ARMV9_5A  = { VersionTuple{9, 5}, AProfile, "armv9.5-a", "+v9.5a", (ARMV9_4A.DefaultExts)};
-inline constexpr ArchInfo ARMV9_6A  = { VersionTuple{9, 6}, AProfile, "armv9.6-a", "+v9.6a", (ARMV9_4A.DefaultExts | AArch64::AEK_CMPBR)};
+inline constexpr ArchInfo ARMV9_6A  = { VersionTuple{9, 6}, AProfile, "armv9.6-a", "+v9.6a", (ARMV9_5A.DefaultExts | AArch64::AEK_CMPBR)};
 // For v8-R, we do not enable crypto and align with GCC that enables a more minimal set of optional architecture extensions.
 inline constexpr ArchInfo ARMV8R    = { VersionTuple{8, 0}, RProfile, "armv8-r", "+v8r", ((ARMV8_5A.DefaultExts ^ AArch64::AEK_LSE) | AArch64::AEK_SSBS | AArch64::AEK_FP16 | AArch64::AEK_FP16FML | AArch64::AEK_SB), };
 // clang-format on
