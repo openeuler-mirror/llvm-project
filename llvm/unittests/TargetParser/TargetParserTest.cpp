@@ -1767,7 +1767,10 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
       AArch64::AEK_FP8DOT4,     AArch64::AEK_SSVE_FP8DOT4, AArch64::AEK_LUT,
       AArch64::AEK_SME_LUTv2,   AArch64::AEK_SMEF8F16,     AArch64::AEK_SMEF8F32,
       AArch64::AEK_SMEFA64,     AArch64::AEK_FPAC,         AArch64::AEK_CMPBR,
-      AArch64::AEK_LSUI};
+      AArch64::AEK_LSUI,        AArch64::AEK_SVE2P2,       AArch64::AEK_SME2P2,
+      AArch64::AEK_SVE_BFSCALE, AArch64::AEK_SVE_F16F32MM, AArch64::AEK_SVE_AES2,
+      AArch64::AEK_SSVE_AES,    AArch64::AEK_F8F32MM,      AArch64::AEK_F8F16MM,
+      AArch64::AEK_LSFE,        AArch64::AEK_FPRCVT};
 
   std::vector<StringRef> Features;
 
@@ -1800,13 +1803,18 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+spe"));
   EXPECT_TRUE(llvm::is_contained(Features, "+ras"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sve-bfscale"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sve-f16f32mm"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2-aes"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2-sm4"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2-sha3"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2-bitperm"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sve-aes2"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+ssve-aes"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2p1"));
   EXPECT_TRUE(llvm::is_contained(Features, "+b16b16"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sve2p2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+rcpc"));
   EXPECT_TRUE(llvm::is_contained(Features, "+rand"));
   EXPECT_TRUE(llvm::is_contained(Features, "+mte"));
@@ -1828,6 +1836,7 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-f16f16"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme2p1"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sme2p2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+hbc"));
   EXPECT_TRUE(llvm::is_contained(Features, "+mops"));
   EXPECT_TRUE(llvm::is_contained(Features, "+perfmon"));
@@ -1848,6 +1857,8 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+ssve-fp8dot2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+fp8dot4"));
   EXPECT_TRUE(llvm::is_contained(Features, "+ssve-fp8dot4"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+f8f32mm"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+f8f16mm"));
   EXPECT_TRUE(llvm::is_contained(Features, "+lut"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-lutv2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-f8f16"));
@@ -1856,6 +1867,8 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+fpac"));
   EXPECT_TRUE(llvm::is_contained(Features, "+cmpbr"));
   EXPECT_TRUE(llvm::is_contained(Features, "+lsui"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+lsfe"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+fprcvt"));
 
   // Assuming we listed every extension above, this should produce the same
   // result. (note that AEK_NONE doesn't have a name so it won't be in the
@@ -1953,13 +1966,18 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"lse", "nolse", "+lse", "-lse"},
       {"rdm", "nordm", "+rdm", "-rdm"},
       {"sve", "nosve", "+sve", "-sve"},
+      {"sve-bfscale", "nosve-bfscale", "+sve-bfscale", "-sve-bfscale"},
+      {"sve-f16f32mm", "nosve-f16f32mm", "+sve-f16f32mm", "-sve-f16f32mm"},
       {"sve2", "nosve2", "+sve2", "-sve2"},
       {"sve2-aes", "nosve2-aes", "+sve2-aes", "-sve2-aes"},
       {"sve2-sm4", "nosve2-sm4", "+sve2-sm4", "-sve2-sm4"},
       {"sve2-sha3", "nosve2-sha3", "+sve2-sha3", "-sve2-sha3"},
       {"sve2p1", "nosve2p1", "+sve2p1", "-sve2p1"},
       {"b16b16", "nob16b16", "+b16b16", "-b16b16"},
+      {"sve2p2", "nosve2p2", "+sve2p2", "-sve2p2"},
       {"sve2-bitperm", "nosve2-bitperm", "+sve2-bitperm", "-sve2-bitperm"},
+      {"sve-aes2", "nosve-aes2", "+sve-aes2", "-sve-aes2"},
+      {"ssve-aes", "nossve-aes", "+ssve-aes", "-ssve-aes"},
       {"dotprod", "nodotprod", "+dotprod", "-dotprod"},
       {"rcpc", "norcpc", "+rcpc", "-rcpc"},
       {"rng", "norng", "+rand", "-rand"},
@@ -1972,6 +1990,8 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"i8mm", "noi8mm", "+i8mm", "-i8mm"},
       {"f32mm", "nof32mm", "+f32mm", "-f32mm"},
       {"f64mm", "nof64mm", "+f64mm", "-f64mm"},
+      {"f8f32mm", "nof8f32mm", "+f8f32mm", "-f8f32mm"},
+      {"f8f16mm", "nof8f16mm", "+f8f16mm", "-f8f16mm"},
       {"sme", "nosme", "+sme", "-sme"},
       {"sme-fa64", "nosme-fa64", "+sme-fa64", "-sme-fa64"},
       {"sme-f64f64", "nosme-f64f64", "+sme-f64f64", "-sme-f64f64"},
@@ -1979,6 +1999,7 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"sme-f16f16", "nosme-f16f16", "+sme-f16f16", "-sme-f16f16"},
       {"sme2", "nosme2", "+sme2", "-sme2"},
       {"sme2p1", "nosme2p1", "+sme2p1", "-sme2p1"},
+      {"sme2p2", "nosme2p2", "+sme2p2", "-sme2p2"},
       {"hbc", "nohbc", "+hbc", "-hbc"},
       {"mops", "nomops", "+mops", "-mops"},
       {"pmuv3", "nopmuv3", "+perfmon", "-perfmon"},
@@ -2000,7 +2021,8 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"sme-f8f32", "nosme-f8f32", "+sme-f8f32", "-sme-f8f32"},
       {"cmpbr", "nocmpbr", "+cmpbr", "-cmpbr"},
       {"lsui", "nolsui", "+lsui", "-lsui"},
-  };
+      {"lsfe", "nolsfe", "+lsfe", "-lsfe"},
+      {"fprcvt", "nofprcvt", "+fprcvt", "-fprcvt"}};
 
   for (unsigned i = 0; i < std::size(ArchExt); i++) {
     EXPECT_EQ(StringRef(ArchExt[i][2]),
@@ -2009,5 +2031,368 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
               AArch64::getArchExtFeature(ArchExt[i][1]));
   }
 }
+
+TEST(TargetParserTest, AArch64PrintSupportedExtensions) {
+  std::string expected = "All available -march extensions for AArch64\n\n"
+                         "    Name                Architecture Feature(s)      "
+                         "                          Description\n";
+
+  outs().flush();
+  testing::internal::CaptureStdout();
+  AArch64::PrintSupportedExtensions();
+  outs().flush();
+  std::string captured = testing::internal::GetCapturedStdout();
+
+  // Check that the start of the output is as expected.
+  EXPECT_EQ(0ULL, captured.find(expected));
+
+  // Should not include "none".
+  EXPECT_EQ(std::string::npos, captured.find("none"));
+  // Should not include anything that lacks a feature name. Checking a few here
+  // but not all as if one is hidden correctly the rest should be.
+  EXPECT_EQ(std::string::npos, captured.find("memtag3"));
+  EXPECT_EQ(std::string::npos, captured.find("sha1"));
+  EXPECT_EQ(std::string::npos, captured.find("ssbs2"));
+}
+
+struct AArch64ExtensionDependenciesBaseArchTestParams {
+  const llvm::AArch64::ArchInfo &Arch;
+  std::vector<StringRef> Modifiers;
+  std::vector<StringRef> ExpectedPos;
+  std::vector<StringRef> ExpectedNeg;
+};
+
+class AArch64ExtensionDependenciesBaseArchTestFixture
+    : public ::testing::TestWithParam<
+          AArch64ExtensionDependenciesBaseArchTestParams> {};
+
+struct AArch64ExtensionDependenciesBaseCPUTestParams {
+  StringRef CPUName;
+  std::vector<StringRef> Modifiers;
+  std::vector<StringRef> ExpectedPos;
+  std::vector<StringRef> ExpectedNeg;
+};
+
+class AArch64ExtensionDependenciesBaseCPUTestFixture
+    : public ::testing::TestWithParam<
+          AArch64ExtensionDependenciesBaseCPUTestParams> {};
+
+TEST_P(AArch64ExtensionDependenciesBaseArchTestFixture,
+       AArch64ExtensionDependenciesBaseArch) {
+  auto Params = GetParam();
+
+  llvm::AArch64::ExtensionSet Extensions;
+  Extensions.addArchDefaults(Params.Arch);
+  for (auto M : Params.Modifiers) {
+    bool success = Extensions.parseModifier(M);
+    EXPECT_TRUE(success);
+  }
+  std::vector<StringRef> Features;
+  Extensions.toLLVMFeatureList(Features);
+
+  for (auto E : Params.ExpectedPos) {
+    std::string PosString = "+";
+    PosString += E;
+    std::string NegString = "-";
+    NegString += E;
+    ASSERT_THAT(Features, Contains(StrEq(PosString)));
+    ASSERT_THAT(Features, Not(Contains(StrEq(NegString))));
+  }
+
+  for (auto E : Params.ExpectedNeg) {
+    std::string PosString = "+";
+    PosString += E;
+    ASSERT_THAT(Features, Not(Contains(StrEq(PosString))));
+    // Features default to off, so the negative string is not expected in many
+    // cases.
+  }
+}
+
+TEST_P(AArch64ExtensionDependenciesBaseCPUTestFixture,
+       AArch64ExtensionDependenciesBaseCPU) {
+  auto Params = GetParam();
+
+  llvm::AArch64::ExtensionSet Extensions;
+  const std::optional<llvm::AArch64::CpuInfo> CPU =
+      llvm::AArch64::parseCpu(Params.CPUName);
+  EXPECT_TRUE(CPU);
+  Extensions.addCPUDefaults(*CPU);
+  for (auto M : Params.Modifiers) {
+    bool success = Extensions.parseModifier(M);
+    EXPECT_TRUE(success);
+  }
+  std::vector<StringRef> Features;
+  Extensions.toLLVMFeatureList(Features);
+
+  for (auto E : Params.ExpectedPos) {
+    std::string PosString = "+";
+    PosString += E;
+    std::string NegString = "-";
+    NegString += E;
+    ASSERT_THAT(Features, Contains(StrEq(PosString)));
+    ASSERT_THAT(Features, Not(Contains(StrEq(NegString))));
+  }
+
+  for (auto E : Params.ExpectedNeg) {
+    std::string PosString = "+";
+    PosString += E;
+    ASSERT_THAT(Features, Not(Contains(StrEq(PosString))));
+    // Features default to off, so the negative string is not expected in many
+    // cases.
+  }
+}
+
+AArch64ExtensionDependenciesBaseArchTestParams
+    AArch64ExtensionDependenciesArchData[] = {
+        // Base architecture features
+        {AArch64::ARMV8A, {}, {"v8a", "fp-armv8", "neon"}, {}},
+        {AArch64::ARMV8_1A,
+         {},
+         {"v8.1a", "crc", "fp-armv8", "lse", "rdm", "neon"},
+         {}},
+        {AArch64::ARMV9_5A, {}, {"v9.5a", "mops", "cpa"}, {}},
+
+        // Positive modifiers
+        {AArch64::ARMV8A, {"fp16"}, {"fullfp16"}, {}},
+        {AArch64::ARMV8A, {"dotprod"}, {"dotprod"}, {}},
+
+        // Negative modifiers
+        {AArch64::ARMV8A, {"nofp"}, {"v8a"}, {"fp-armv8", "neon"}},
+
+        // Mixed modifiers
+        {AArch64::ARMV8A,
+         {"fp16", "nofp16"},
+         {"v8a", "fp-armv8", "neon"},
+         {"fullfp16"}},
+        {AArch64::ARMV8A,
+         {"fp16", "nofp"},
+         {"v8a"},
+         {"fp-armv8", "neon", "fullfp16"}},
+
+        // Long dependency chains: sve2-bitperm -> sve2 -> sve -> fp16 -> fp
+        {AArch64::ARMV8A,
+         {"nofp", "sve2-bitperm"},
+         {"fp-armv8", "fullfp16", "sve", "sve2", "sve2-bitperm"},
+         {}},
+        {AArch64::ARMV8A,
+         {"sve2-bitperm", "nofp16"},
+         {"fp-armv8"},
+         {"full-fp16", "sve", "sve2", "sve2-bitperm"}},
+
+        // Meaning of +crypto varies with base architecture.
+        {AArch64::ARMV8A, {"crypto"}, {"aes", "sha2"}, {}},
+        {AArch64::ARMV8_4A, {"crypto"}, {"aes", "sha2", "sha3", "sm4"}, {}},
+        {AArch64::ARMV9A, {"crypto"}, {"aes", "sha2", "sha3", "sm4"}, {}},
+
+        // -crypto always disables all crypto features, even if it wouldn't
+        // enable them.
+        {AArch64::ARMV8A,
+         {"aes", "sha2", "sha3", "sm4", "nocrypto"},
+         {},
+         {"aes", "sha2", "sha3", "sm4"}},
+        {AArch64::ARMV8_4A,
+         {"aes", "sha2", "sha3", "sm4", "nocrypto"},
+         {},
+         {"aes", "sha2", "sha3", "sm4"}},
+
+        // +fp16 implies +fp16fml for v8.4A+, but not v9.0-A+
+        {AArch64::ARMV8_3A, {"fp16"}, {"fullfp16"}, {"fp16fml"}},
+        {AArch64::ARMV9A, {"fp16"}, {"fullfp16"}, {"fp16fml"}},
+        {AArch64::ARMV8_4A, {"fp16"}, {"fullfp16", "fp16fml"}, {}},
+
+        // fp -> fp16
+        {AArch64::ARMV8A, {"nofp", "fp16"}, {"fp-armv8", "fullfp16"}, {}},
+        {AArch64::ARMV8A, {"fp16", "nofp"}, {}, {"fp-armv8", "fullfp16"}},
+
+        // fp -> simd
+        {AArch64::ARMV8A, {"nofp", "simd"}, {"fp-armv8", "neon"}, {}},
+        {AArch64::ARMV8A, {"simd", "nofp"}, {}, {"fp-armv8", "neon"}},
+
+        // fp -> jscvt
+        {AArch64::ARMV8A, {"nofp", "jscvt"}, {"fp-armv8", "jsconv"}, {}},
+        {AArch64::ARMV8A, {"jscvt", "nofp"}, {}, {"fp-armv8", "jsconv"}},
+
+        // simd -> {aes, sha2, sha3, sm4}
+        {AArch64::ARMV8A, {"nosimd", "aes"}, {"neon", "aes"}, {}},
+        {AArch64::ARMV8A, {"aes", "nosimd"}, {}, {"neon", "aes"}},
+        {AArch64::ARMV8A, {"nosimd", "sha2"}, {"neon", "sha2"}, {}},
+        {AArch64::ARMV8A, {"sha2", "nosimd"}, {}, {"neon", "sha2"}},
+        {AArch64::ARMV8A, {"nosimd", "sha3"}, {"neon", "sha3"}, {}},
+        {AArch64::ARMV8A, {"sha3", "nosimd"}, {}, {"neon", "sha3"}},
+        {AArch64::ARMV8A, {"nosimd", "sm4"}, {"neon", "sm4"}, {}},
+        {AArch64::ARMV8A, {"sm4", "nosimd"}, {}, {"neon", "sm4"}},
+
+        // simd -> {rdm, dotprod, fcma}
+        {AArch64::ARMV8A, {"nosimd", "rdm"}, {"neon", "rdm"}, {}},
+        {AArch64::ARMV8A, {"rdm", "nosimd"}, {}, {"neon", "rdm"}},
+        {AArch64::ARMV8A, {"nosimd", "dotprod"}, {"neon", "dotprod"}, {}},
+        {AArch64::ARMV8A, {"dotprod", "nosimd"}, {}, {"neon", "dotprod"}},
+        {AArch64::ARMV8A, {"nosimd", "fcma"}, {"neon", "complxnum"}, {}},
+        {AArch64::ARMV8A, {"fcma", "nosimd"}, {}, {"neon", "complxnum"}},
+
+        // fp16 -> {fp16fml, sve}
+        {AArch64::ARMV8A, {"nofp16", "fp16fml"}, {"fullfp16", "fp16fml"}, {}},
+        {AArch64::ARMV8A, {"fp16fml", "nofp16"}, {}, {"fullfp16", "fp16fml"}},
+        {AArch64::ARMV8A, {"nofp16", "sve"}, {"fullfp16", "sve"}, {}},
+        {AArch64::ARMV8A, {"sve", "nofp16"}, {}, {"fullfp16", "sve"}},
+
+        // bf16 -> {sme}
+        {AArch64::ARMV8A, {"nobf16", "sme"}, {"bf16", "sme"}, {}},
+        {AArch64::ARMV8A, {"sme", "nobf16"}, {}, {"bf16", "sme"}},
+
+        // sve -> {sve2, f32mm, f64mm}
+        {AArch64::ARMV8A, {"nosve", "sve2"}, {"sve", "sve2"}, {}},
+        {AArch64::ARMV8A, {"sve2", "nosve"}, {}, {"sve", "sve2"}},
+        {AArch64::ARMV8A, {"nosve", "f32mm"}, {"sve", "f32mm"}, {}},
+        {AArch64::ARMV8A, {"f32mm", "nosve"}, {}, {"sve", "f32mm"}},
+        {AArch64::ARMV8A, {"nosve", "f64mm"}, {"sve", "f64mm"}, {}},
+        {AArch64::ARMV8A, {"f64mm", "nosve"}, {}, {"sve", "f64mm"}},
+
+        // sve2 -> {sve2p1, sve2-bitperm, sve2-sha3, sve2-sm4}
+        {AArch64::ARMV8A, {"nosve2", "sve2p1"}, {"sve2", "sve2p1"}, {}},
+        {AArch64::ARMV8A, {"sve2p1", "nosve2"}, {}, {"sve2", "sve2p1"}},
+        {AArch64::ARMV8A,
+         {"nosve2", "sve2-bitperm"},
+         {"sve2", "sve2-bitperm"},
+         {}},
+        {AArch64::ARMV8A,
+         {"sve2-bitperm", "nosve2"},
+         {},
+         {"sve2", "sve2-bitperm"}},
+        {AArch64::ARMV8A, {"nosve2", "sve2-sha3"}, {"sve2", "sve2-sha3"}, {}},
+        {AArch64::ARMV8A, {"sve2-sha3", "nosve2"}, {}, {"sve2", "sve2-sha3"}},
+        {AArch64::ARMV8A, {"nosve2", "sve2-sm4"}, {"sve2", "sve2-sm4"}, {}},
+        {AArch64::ARMV8A, {"sve2-sm4", "nosve2"}, {}, {"sve2", "sve2-sm4"}},
+
+        // sve-b16b16 -> {sme-b16b16}
+        {AArch64::ARMV9_4A,
+         {"nosve-b16b16", "sme-b16b16"},
+         {"sve-b16b16", "sme-b16b16"},
+         {}},
+        {AArch64::ARMV9_4A,
+         {"sme-b16b16", "nosve-b16b16"},
+         {},
+         {"sve-b16b16", "sme-b16b16"}},
+
+        // sve2p1 -> {sve2p2}
+        {AArch64::ARMV9_6A, {"nosve2p1", "sve2p2"}, {"sve2p1", "sve2p2"}, {}},
+        {AArch64::ARMV9_6A, {"sve2p2", "nosve2p1"}, {}, {"sve2p1", "sve2p2"}},
+
+        // sme -> {sme2, sme-f16f16, sme-f64f64, sme-i16i64, sme-fa64}
+        {AArch64::ARMV8A, {"nosme", "sme2"}, {"sme", "sme2"}, {}},
+        {AArch64::ARMV8A, {"sme2", "nosme"}, {}, {"sme", "sme2"}},
+        {AArch64::ARMV8A, {"nosme", "sme-f16f16"}, {"sme", "sme-f16f16"}, {}},
+        {AArch64::ARMV8A, {"sme-f16f16", "nosme"}, {}, {"sme", "sme-f16f16"}},
+        {AArch64::ARMV8A, {"nosme", "sme-f64f64"}, {"sme", "sme-f64f64"}, {}},
+        {AArch64::ARMV8A, {"sme-f64f64", "nosme"}, {}, {"sme", "sme-f64f64"}},
+        {AArch64::ARMV8A, {"nosme", "sme-i16i64"}, {"sme", "sme-i16i64"}, {}},
+        {AArch64::ARMV8A, {"sme-i16i64", "nosme"}, {}, {"sme", "sme-i16i64"}},
+        {AArch64::ARMV8A, {"nosme", "sme-fa64"}, {"sme", "sme-fa64"}, {}},
+        {AArch64::ARMV8A, {"sme-fa64", "nosme"}, {}, {"sme", "sme-fa64"}},
+
+        // sme2 -> {sme2p1, ssve-fp8fma, ssve-fp8dot2, ssve-fp8dot4, sme-f8f16,
+        // sme-f8f32, sme-b16b16}
+        {AArch64::ARMV8A, {"nosme2", "sme2p1"}, {"sme2", "sme2p1"}, {}},
+        {AArch64::ARMV8A, {"sme2p1", "nosme2"}, {}, {"sme2", "sme2p1"}},
+        {AArch64::ARMV8A,
+         {"nosme2", "ssve-fp8fma"},
+         {"sme2", "ssve-fp8fma"},
+         {}},
+        {AArch64::ARMV8A,
+         {"ssve-fp8fma", "nosme2"},
+         {},
+         {"sme2", "ssve-fp8fma"}},
+        {AArch64::ARMV8A,
+         {"nosme2", "ssve-fp8dot2"},
+         {"sme2", "ssve-fp8dot2"},
+         {}},
+        {AArch64::ARMV8A,
+         {"ssve-fp8dot2", "nosme2"},
+         {},
+         {"sme2", "ssve-fp8dot2"}},
+        {AArch64::ARMV8A,
+         {"nosme2", "ssve-fp8dot4"},
+         {"sme2", "ssve-fp8dot4"},
+         {}},
+        {AArch64::ARMV8A,
+         {"ssve-fp8dot4", "nosme2"},
+         {},
+         {"sme2", "ssve-fp8dot4"}},
+        {AArch64::ARMV8A, {"nosme2", "sme-f8f16"}, {"sme2", "sme-f8f16"}, {}},
+        {AArch64::ARMV8A, {"sme-f8f16", "nosme2"}, {}, {"sme2", "sme-f8f16"}},
+        {AArch64::ARMV8A, {"nosme2", "sme-f8f32"}, {"sme2", "sme-f8f32"}, {}},
+        {AArch64::ARMV8A, {"sme-f8f32", "nosme2"}, {}, {"sme2", "sme-f8f32"}},
+        {AArch64::ARMV8A, {"nosme2", "sme-b16b16"}, {"sme2", "sme-b16b16"}, {}},
+        {AArch64::ARMV8A, {"sme-b16b16", "nosme2"}, {}, {"sme2", "sme-b16b16"}},
+
+        // sme2p1 -> {sme2p2}
+        {AArch64::ARMV9_6A, {"nosme2p1", "sme2p2"}, {"sme2p2", "sme2p1"}, {}},
+        {AArch64::ARMV9_6A, {"sme2p2", "nosme2p1"}, {}, {"sme2p1", "sme2p2"}},
+
+        // fp8 -> {sme-f8f16, sme-f8f32}
+        {AArch64::ARMV8A, {"nofp8", "sme-f8f16"}, {"fp8", "sme-f8f16"}, {}},
+        {AArch64::ARMV8A, {"sme-f8f16", "nofp8"}, {}, {"fp8", "sme-f8f16"}},
+        {AArch64::ARMV8A, {"nofp8", "sme-f8f32"}, {"fp8", "sme-f8f32"}, {}},
+        {AArch64::ARMV8A, {"sme-f8f32", "nofp8"}, {}, {"fp8", "sme-f8f32"}},
+
+        // lse -> lse128
+        {AArch64::ARMV8A, {"nolse", "lse128"}, {"lse", "lse128"}, {}},
+        {AArch64::ARMV8A, {"lse128", "nolse"}, {}, {"lse", "lse128"}},
+
+        // predres -> predres2
+        {AArch64::ARMV8A,
+         {"nopredres", "predres2"},
+         {"predres", "specres2"},
+         {}},
+        {AArch64::ARMV8A,
+         {"predres2", "nopredres"},
+         {},
+         {"predres", "specres2"}},
+
+        // ras -> ras2
+        {AArch64::ARMV8A, {"noras", "rasv2"}, {"ras", "rasv2"}, {}},
+        {AArch64::ARMV8A, {"rasv2", "noras"}, {}, {"ras", "rasv2"}},
+
+        // rcpc -> rcpc3
+        {AArch64::ARMV8A, {"norcpc", "rcpc3"}, {"rcpc", "rcpc3"}, {}},
+        {AArch64::ARMV8A, {"rcpc3", "norcpc"}, {}, {"rcpc", "rcpc3"}},
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    AArch64ExtensionDependenciesBaseArch,
+    AArch64ExtensionDependenciesBaseArchTestFixture,
+    ::testing::ValuesIn(AArch64ExtensionDependenciesArchData));
+
+AArch64ExtensionDependenciesBaseCPUTestParams
+    AArch64ExtensionDependenciesCPUData[] = {
+        // Base CPU features
+        {"cortex-a57",
+         {},
+         {"v8a", "aes", "crc", "fp-armv8", "sha2", "neon"},
+         {}},
+        {"cortex-r82",
+         {},
+         {"v8r", "crc", "dotprod", "fp-armv8", "fullfp16", "fp16fml", "lse",
+          "ras", "rcpc", "rdm", "sb", "neon", "ssbs"},
+         {}},
+        {"cortex-a520",
+         {},
+         {"v9.2a",    "bf16",    "crc",  "dotprod",      "flagm", "fp-armv8",
+          "fullfp16", "fp16fml", "i8mm", "lse",          "mte",   "pauth",
+          "perfmon",  "predres", "ras",  "rcpc",         "rdm",   "sb",
+          "neon",     "ssbs",    "sve",  "sve2-bitperm", "sve2"},
+         {}},
+
+        // Negative modifiers
+        {"cortex-r82",
+         {"nofp"},
+         {"v8r", "crc", "lse", "ras", "rcpc", "sb", "ssbs"},
+         {"fp-armv8", "neon", "fullfp16", "fp16fml", "dotprod", "rdm"}},
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    AArch64ExtensionDependenciesBaseCPU,
+    AArch64ExtensionDependenciesBaseCPUTestFixture,
+    ::testing::ValuesIn(AArch64ExtensionDependenciesCPUData));
 
 } // namespace
