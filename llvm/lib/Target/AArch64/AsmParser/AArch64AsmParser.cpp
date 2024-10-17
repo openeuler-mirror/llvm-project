@@ -3676,6 +3676,15 @@ static const struct Extension {
     {"sme-f8f32", {AArch64::FeatureSMEF8F32}},
     {"sme-fa64",  {AArch64::FeatureSMEFA64}},
     {"cmpbr", {AArch64::FeatureCMPBR}},
+    {"f8f32mm", {AArch64::FeatureF8F32MM}},
+    {"f8f16mm", {AArch64::FeatureF8F16MM}},
+    {"fprcvt", {AArch64::FeatureFPRCVT}},
+    {"lsfe", {AArch64::FeatureLSFE}},
+    {"sme2p2", {AArch64::FeatureSME2p2}},
+    {"ssve-aes", {AArch64::FeatureSSVE_AES}},
+    {"sve2p2", {AArch64::FeatureSVE2p2}},
+    {"sve-aes2", {AArch64::FeatureSVEAES2}},
+    {"sve-f16f32mm", {AArch64::FeatureSVE_F16F32MM}},
 };
 
 static void setRequiredFeatureString(FeatureBitset FBS, std::string &Str) {
