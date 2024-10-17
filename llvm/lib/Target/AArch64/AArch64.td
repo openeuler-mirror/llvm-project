@@ -577,6 +577,9 @@ def FeatureD128 : SubtargetFeature<"d128", "HasD128",
     "and Instructions (FEAT_D128, FEAT_LVA3, FEAT_SYSREG128, FEAT_SYSINSTR128)",
     [FeatureLSE128]>;
 
+def FeatureCMPBR : SubtargetFeature<"cmpbr", "HasCMPBR",
+    "true", "Enable Armv9.6-A base compare and branch instructions">;
+
 //===----------------------------------------------------------------------===//
 // Architectures.
 //
@@ -651,7 +654,7 @@ def HasV9_5aOps : SubtargetFeature<
 
 def HasV9_6aOps : SubtargetFeature<
   "v9.6a", "HasV9_6aOps", "true", "Support ARM v9.6a instructions",
-  [HasV9_5aOps]>;
+  [HasV9_5aOps, FeatureCMPBR]>;
 
 def HasV8_0rOps : SubtargetFeature<
   "v8r", "HasV8_0rOps", "true", "Support ARM v8r instructions",
