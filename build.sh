@@ -58,6 +58,7 @@ Options:
   -h       Display this help message.
   -i       Install the build (default: $do_install).
   -I name  Specify install directory name (default: "$install_dir_name").
+  -d dir   Specify the build directory (default: "$build_dir_name").
   -j N     Allow N jobs at once (default: $threads).
   -o       Enable LLVM_INSTALL_TOOLCHAIN_ONLY=ON.
   -r       Delete $install_prefix and perform a clean build (default: incremental).
@@ -71,7 +72,7 @@ EOF
 
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
-while getopts :aAb:ceEhiI:j:orstvfX: optchr; do
+while getopts :aAbd:ceEhiI:j:orstvfX: optchr; do
   case "$optchr" in
     a)
       enable_autotuner="0"
@@ -95,6 +96,9 @@ while getopts :aAb:ceEhiI:j:orstvfX: optchr; do
       ;;
     c)
       use_ccache="1"
+      ;;
+    d)
+      build_prefix="$OPTARG"
       ;;
     f)
       enable_classic_flang="1"
