@@ -120,6 +120,9 @@ def FeaturePsUAO : SubtargetFeature< "uaops", "HasPsUAO", "true",
 def FeatureCCPP : SubtargetFeature<"ccpp", "HasCCPP",
     "true", "Enable v8.2 data Cache Clean to Point of Persistence (FEAT_DPB)" >;
 
+def FeatureSVEBFSCALE : SubtargetFeature<"sve-bfscale", "HasSVEBFSCALE", "true",
+  "Enable Armv9.6-A SVE BFloat16 scaling instructions">;
+
 def FeatureSVE : SubtargetFeature<"sve", "HasSVE", "true",
   "Enable Scalable Vector Extension (SVE) instructions (FEAT_SVE)", [FeatureFullFP16]>;
 

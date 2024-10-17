@@ -46,6 +46,10 @@
 // RUN: %clang -target aarch64 -march=armv9.6-a+sve-aes2 -### -c %s 2>&1 | FileCheck -check-prefix=V96A-SVE-AES2 %s
 // V96A-SVE-AES2: "-cc1"{{.*}} "-triple" "aarch64{{.*}}" "-target-cpu" "generic{{.*}}" "-target-feature" "+v9.6a"{{.*}} "-target-feature" "+sve-aes2"
 
+// RUN: %clang -target aarch64 -march=armv9.6a+sve-bfscale -### -c %s 2>&1 | FileCheck -check-prefix=V96A-SVE-BFSCALE %s
+// RUN: %clang -target aarch64 -march=armv9.6-a+sve-bfscale -### -c %s 2>&1 | FileCheck -check-prefix=V96A-SVE-BFSCALE %s
+// V96A-SVE-BFSCALE: "-cc1"{{.*}} "-triple" "aarch64{{.*}}" "-target-cpu" "generic{{.*}}" "-target-feature" "+v9.6a"{{.*}} "-target-feature" "+sve-bfscale"
+
 // RUN: %clang -target aarch64 -march=armv9.6a+sve-f16f32mm -### -c %s 2>&1 | FileCheck -check-prefix=V96A-SVE-F16F32MM %s
 // RUN: %clang -target aarch64 -march=armv9.6-a+sve-f16f32mm -### -c %s 2>&1 | FileCheck -check-prefix=V96A-SVE-F16F32MM %s
 // V96A-SVE-F16F32MM: "-cc1"{{.*}} "-triple" "aarch64{{.*}}" "-target-cpu" "generic{{.*}}" "-target-feature" "+v9.6a"{{.*}} "-target-feature" "+sve-f16f32mm"

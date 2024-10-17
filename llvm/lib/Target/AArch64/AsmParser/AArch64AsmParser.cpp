@@ -3701,6 +3701,7 @@ static const struct Extension {
     {"ssve-aes", {AArch64::FeatureSSVE_AES}},
     {"sve2p2", {AArch64::FeatureSVE2p2}},
     {"sve-aes2", {AArch64::FeatureSVEAES2}},
+    {"sve-bfscale", {AArch64::FeatureSVEBFSCALE}},
     {"sve-f16f32mm", {AArch64::FeatureSVE_F16F32MM}},
     {"f16mm", {AArch64::FeatureF16MM}},
     {"f16f32mm", {AArch64::FeatureF16F32MM}},
