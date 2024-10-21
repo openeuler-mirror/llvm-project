@@ -227,37 +227,37 @@ define void @test_copysign_v16f16_v16f16(ptr %ap, ptr %bp) {
 ; NONEON-NOSVE-NEXT:    bsl v19.16b, v22.16b, v21.16b
 ; NONEON-NOSVE-NEXT:    mov h20, v4.h[1]
 ; NONEON-NOSVE-NEXT:    mov h21, v1.h[1]
-; NONEON-NOSVE-NEXT:    mov h22, v1.h[2]
+; NONEON-NOSVE-NEXT:    mov h22, v4.h[2]
 ; NONEON-NOSVE-NEXT:    bit v17.16b, v18.16b, v0.16b
-; NONEON-NOSVE-NEXT:    mov h18, v4.h[2]
+; NONEON-NOSVE-NEXT:    mov h18, v1.h[2]
 ; NONEON-NOSVE-NEXT:    mov v5.h[1], v6.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt s20, h20
 ; NONEON-NOSVE-NEXT:    fcvt s21, h21
-; NONEON-NOSVE-NEXT:    fcvt h6, s7
-; NONEON-NOSVE-NEXT:    fcvt s7, h18
-; NONEON-NOSVE-NEXT:    fcvt s18, h22
+; NONEON-NOSVE-NEXT:    fcvt h7, s7
+; NONEON-NOSVE-NEXT:    fcvt s6, h22
+; NONEON-NOSVE-NEXT:    fcvt s18, h18
 ; NONEON-NOSVE-NEXT:    fcvt h16, s16
 ; NONEON-NOSVE-NEXT:    bit v20.16b, v21.16b, v0.16b
-; NONEON-NOSVE-NEXT:    mov h21, v1.h[3]
-; NONEON-NOSVE-NEXT:    mov v5.h[2], v6.h[0]
-; NONEON-NOSVE-NEXT:    mov h6, v4.h[3]
-; NONEON-NOSVE-NEXT:    bit v7.16b, v18.16b, v0.16b
+; NONEON-NOSVE-NEXT:    mov h21, v4.h[3]
+; NONEON-NOSVE-NEXT:    mov v5.h[2], v7.h[0]
+; NONEON-NOSVE-NEXT:    mov h7, v1.h[3]
+; NONEON-NOSVE-NEXT:    bit v6.16b, v18.16b, v0.16b
 ; NONEON-NOSVE-NEXT:    fcvt h18, s19
 ; NONEON-NOSVE-NEXT:    fcvt h19, s20
 ; NONEON-NOSVE-NEXT:    fcvt s20, h21
 ; NONEON-NOSVE-NEXT:    mov h21, v2.h[6]
-; NONEON-NOSVE-NEXT:    fcvt s6, h6
-; NONEON-NOSVE-NEXT:    fcvt h7, s7
+; NONEON-NOSVE-NEXT:    fcvt s7, h7
+; NONEON-NOSVE-NEXT:    fcvt h6, s6
 ; NONEON-NOSVE-NEXT:    mov v18.h[1], v19.h[0]
 ; NONEON-NOSVE-NEXT:    mov h19, v1.h[4]
 ; NONEON-NOSVE-NEXT:    mov v5.h[3], v16.h[0]
-; NONEON-NOSVE-NEXT:    bit v6.16b, v20.16b, v0.16b
+; NONEON-NOSVE-NEXT:    bif v7.16b, v20.16b, v0.16b
 ; NONEON-NOSVE-NEXT:    fcvt h16, s17
 ; NONEON-NOSVE-NEXT:    mov h17, v4.h[4]
 ; NONEON-NOSVE-NEXT:    mov h20, v3.h[6]
-; NONEON-NOSVE-NEXT:    mov v18.h[2], v7.h[0]
+; NONEON-NOSVE-NEXT:    mov v18.h[2], v6.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt s21, h21
-; NONEON-NOSVE-NEXT:    fcvt h6, s6
+; NONEON-NOSVE-NEXT:    fcvt h6, s7
 ; NONEON-NOSVE-NEXT:    mov v5.h[4], v16.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt s16, h19
 ; NONEON-NOSVE-NEXT:    fcvt s7, h17
@@ -851,13 +851,13 @@ define void @test_copysign_v4f16_v4f64(ptr %ap, ptr %bp) {
 ; NONEON-NOSVE-NEXT:    mov h0, v0.h[3]
 ; NONEON-NOSVE-NEXT:    fcvt s4, h4
 ; NONEON-NOSVE-NEXT:    bit v1.16b, v5.16b, v6.16b
-; NONEON-NOSVE-NEXT:    fcvt s5, d2
-; NONEON-NOSVE-NEXT:    fcvt s7, h7
+; NONEON-NOSVE-NEXT:    fcvt s5, h7
+; NONEON-NOSVE-NEXT:    fcvt s7, d2
 ; NONEON-NOSVE-NEXT:    mov d2, v2.d[1]
 ; NONEON-NOSVE-NEXT:    fcvt s0, h0
 ; NONEON-NOSVE-NEXT:    bit v3.16b, v4.16b, v6.16b
 ; NONEON-NOSVE-NEXT:    mov v4.16b, v6.16b
-; NONEON-NOSVE-NEXT:    bsl v4.16b, v7.16b, v5.16b
+; NONEON-NOSVE-NEXT:    bsl v4.16b, v5.16b, v7.16b
 ; NONEON-NOSVE-NEXT:    fcvt h1, s1
 ; NONEON-NOSVE-NEXT:    fcvt h3, s3
 ; NONEON-NOSVE-NEXT:    fcvt s2, d2

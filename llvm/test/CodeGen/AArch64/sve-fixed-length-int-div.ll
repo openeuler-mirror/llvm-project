@@ -97,19 +97,20 @@ define <16 x i8> @sdiv_v16i8(<16 x i8> %op1, <16 x i8> %op2) #0 {
 ; VBITS_GE_128-NEXT:    sshll2 v2.8h, v1.16b, #0
 ; VBITS_GE_128-NEXT:    ptrue p0.s, vl4
 ; VBITS_GE_128-NEXT:    sshll2 v3.8h, v0.16b, #0
+; VBITS_GE_128-NEXT:    sshll v1.8h, v1.8b, #0
+; VBITS_GE_128-NEXT:    sshll v0.8h, v0.8b, #0
 ; VBITS_GE_128-NEXT:    sshll2 v4.4s, v2.8h, #0
 ; VBITS_GE_128-NEXT:    sshll2 v5.4s, v3.8h, #0
 ; VBITS_GE_128-NEXT:    sshll v2.4s, v2.4h, #0
 ; VBITS_GE_128-NEXT:    sshll v3.4s, v3.4h, #0
 ; VBITS_GE_128-NEXT:    sdivr z4.s, p0/m, z4.s, z5.s
-; VBITS_GE_128-NEXT:    sshll v1.8h, v1.8b, #0
-; VBITS_GE_128-NEXT:    sshll v0.8h, v0.8b, #0
+; VBITS_GE_128-NEXT:    sshll2 v5.4s, v1.8h, #0
+; VBITS_GE_128-NEXT:    sshll2 v6.4s, v0.8h, #0
 ; VBITS_GE_128-NEXT:    sdivr z2.s, p0/m, z2.s, z3.s
-; VBITS_GE_128-NEXT:    sshll2 v3.4s, v1.8h, #0
-; VBITS_GE_128-NEXT:    sshll2 v5.4s, v0.8h, #0
 ; VBITS_GE_128-NEXT:    sshll v1.4s, v1.4h, #0
+; VBITS_GE_128-NEXT:    movprfx z3, z6
+; VBITS_GE_128-NEXT:    sdiv z3.s, p0/m, z3.s, z5.s
 ; VBITS_GE_128-NEXT:    sshll v0.4s, v0.4h, #0
-; VBITS_GE_128-NEXT:    sdivr z3.s, p0/m, z3.s, z5.s
 ; VBITS_GE_128-NEXT:    uzp1 v2.8h, v2.8h, v4.8h
 ; VBITS_GE_128-NEXT:    sdiv z0.s, p0/m, z0.s, z1.s
 ; VBITS_GE_128-NEXT:    uzp1 v0.8h, v0.8h, v3.8h
@@ -560,7 +561,7 @@ define void @sdiv_v16i32(ptr %a, ptr %b) #0 {
 ;
 ; VBITS_GE_256-LABEL: sdiv_v16i32:
 ; VBITS_GE_256:       // %bb.0:
-; VBITS_GE_256-NEXT:    mov x8, #8
+; VBITS_GE_256-NEXT:    mov x8, #8 // =0x8
 ; VBITS_GE_256-NEXT:    ptrue p0.s, vl8
 ; VBITS_GE_256-NEXT:    ld1w { z0.s }, p0/z, [x0, x8, lsl #2]
 ; VBITS_GE_256-NEXT:    ld1w { z1.s }, p0/z, [x0]
@@ -683,7 +684,7 @@ define void @sdiv_v8i64(ptr %a, ptr %b) #0 {
 ;
 ; VBITS_GE_256-LABEL: sdiv_v8i64:
 ; VBITS_GE_256:       // %bb.0:
-; VBITS_GE_256-NEXT:    mov x8, #4
+; VBITS_GE_256-NEXT:    mov x8, #4 // =0x4
 ; VBITS_GE_256-NEXT:    ptrue p0.d, vl4
 ; VBITS_GE_256-NEXT:    ld1d { z0.d }, p0/z, [x0, x8, lsl #3]
 ; VBITS_GE_256-NEXT:    ld1d { z1.d }, p0/z, [x0]
@@ -833,19 +834,20 @@ define <16 x i8> @udiv_v16i8(<16 x i8> %op1, <16 x i8> %op2) #0 {
 ; VBITS_GE_128-NEXT:    ushll2 v2.8h, v1.16b, #0
 ; VBITS_GE_128-NEXT:    ptrue p0.s, vl4
 ; VBITS_GE_128-NEXT:    ushll2 v3.8h, v0.16b, #0
+; VBITS_GE_128-NEXT:    ushll v1.8h, v1.8b, #0
+; VBITS_GE_128-NEXT:    ushll v0.8h, v0.8b, #0
 ; VBITS_GE_128-NEXT:    ushll2 v4.4s, v2.8h, #0
 ; VBITS_GE_128-NEXT:    ushll2 v5.4s, v3.8h, #0
 ; VBITS_GE_128-NEXT:    ushll v2.4s, v2.4h, #0
 ; VBITS_GE_128-NEXT:    ushll v3.4s, v3.4h, #0
 ; VBITS_GE_128-NEXT:    udivr z4.s, p0/m, z4.s, z5.s
-; VBITS_GE_128-NEXT:    ushll v1.8h, v1.8b, #0
-; VBITS_GE_128-NEXT:    ushll v0.8h, v0.8b, #0
+; VBITS_GE_128-NEXT:    ushll2 v5.4s, v1.8h, #0
+; VBITS_GE_128-NEXT:    ushll2 v6.4s, v0.8h, #0
 ; VBITS_GE_128-NEXT:    udivr z2.s, p0/m, z2.s, z3.s
-; VBITS_GE_128-NEXT:    ushll2 v3.4s, v1.8h, #0
-; VBITS_GE_128-NEXT:    ushll2 v5.4s, v0.8h, #0
 ; VBITS_GE_128-NEXT:    ushll v1.4s, v1.4h, #0
+; VBITS_GE_128-NEXT:    movprfx z3, z6
+; VBITS_GE_128-NEXT:    udiv z3.s, p0/m, z3.s, z5.s
 ; VBITS_GE_128-NEXT:    ushll v0.4s, v0.4h, #0
-; VBITS_GE_128-NEXT:    udivr z3.s, p0/m, z3.s, z5.s
 ; VBITS_GE_128-NEXT:    uzp1 v2.8h, v2.8h, v4.8h
 ; VBITS_GE_128-NEXT:    udiv z0.s, p0/m, z0.s, z1.s
 ; VBITS_GE_128-NEXT:    uzp1 v0.8h, v0.8h, v3.8h
@@ -1274,7 +1276,7 @@ define void @udiv_v16i32(ptr %a, ptr %b) #0 {
 ;
 ; VBITS_GE_256-LABEL: udiv_v16i32:
 ; VBITS_GE_256:       // %bb.0:
-; VBITS_GE_256-NEXT:    mov x8, #8
+; VBITS_GE_256-NEXT:    mov x8, #8 // =0x8
 ; VBITS_GE_256-NEXT:    ptrue p0.s, vl8
 ; VBITS_GE_256-NEXT:    ld1w { z0.s }, p0/z, [x0, x8, lsl #2]
 ; VBITS_GE_256-NEXT:    ld1w { z1.s }, p0/z, [x0]
@@ -1397,7 +1399,7 @@ define void @udiv_v8i64(ptr %a, ptr %b) #0 {
 ;
 ; VBITS_GE_256-LABEL: udiv_v8i64:
 ; VBITS_GE_256:       // %bb.0:
-; VBITS_GE_256-NEXT:    mov x8, #4
+; VBITS_GE_256-NEXT:    mov x8, #4 // =0x4
 ; VBITS_GE_256-NEXT:    ptrue p0.d, vl4
 ; VBITS_GE_256-NEXT:    ld1d { z0.d }, p0/z, [x0, x8, lsl #3]
 ; VBITS_GE_256-NEXT:    ld1d { z1.d }, p0/z, [x0]

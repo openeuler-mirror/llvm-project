@@ -6,16 +6,16 @@ define <16 x i32> @no_existing_zext(<16 x i8> %a, <16 x i32> %op) {
 ; CHECK:       ; %bb.0: ; %entry
 ; CHECK-NEXT:    movi.16b v5, #10
 ; CHECK-NEXT:    cmhi.16b v0, v0, v5
-; CHECK-NEXT:    sshll.8h v5, v0, #0
-; CHECK-NEXT:    sshll2.8h v0, v0, #0
+; CHECK-NEXT:    sshll2.8h v5, v0, #0
+; CHECK-NEXT:    sshll.8h v0, v0, #0
 ; CHECK-NEXT:    sshll.4s v6, v5, #0
+; CHECK-NEXT:    sshll2.4s v5, v5, #0
 ; CHECK-NEXT:    sshll.4s v7, v0, #0
 ; CHECK-NEXT:    sshll2.4s v0, v0, #0
-; CHECK-NEXT:    sshll2.4s v5, v5, #0
-; CHECK-NEXT:    and.16b v4, v4, v0
-; CHECK-NEXT:    and.16b v5, v2, v5
-; CHECK-NEXT:    and.16b v2, v3, v7
-; CHECK-NEXT:    and.16b v0, v1, v6
+; CHECK-NEXT:    and.16b v4, v4, v5
+; CHECK-NEXT:    and.16b v5, v2, v0
+; CHECK-NEXT:    and.16b v2, v3, v6
+; CHECK-NEXT:    and.16b v0, v1, v7
 ; CHECK-NEXT:    mov.16b v1, v5
 ; CHECK-NEXT:    mov.16b v3, v4
 ; CHECK-NEXT:    ret
@@ -35,16 +35,16 @@ define <16 x i32> @second_compare_operand_not_splat(<16 x i8> %a, <16 x i8> %b) 
 ; CHECK-NEXT:    ushll.4s v5, v3, #0
 ; CHECK-NEXT:    ushll2.4s v1, v2, #0
 ; CHECK-NEXT:    ushll2.4s v2, v3, #0
-; CHECK-NEXT:    sshll.8h v3, v0, #0
-; CHECK-NEXT:    sshll2.8h v0, v0, #0
+; CHECK-NEXT:    sshll2.8h v3, v0, #0
+; CHECK-NEXT:    sshll.8h v0, v0, #0
 ; CHECK-NEXT:    sshll.4s v6, v3, #0
+; CHECK-NEXT:    sshll2.4s v3, v3, #0
 ; CHECK-NEXT:    sshll.4s v7, v0, #0
 ; CHECK-NEXT:    sshll2.4s v0, v0, #0
-; CHECK-NEXT:    sshll2.4s v16, v3, #0
-; CHECK-NEXT:    and.16b v3, v2, v0
-; CHECK-NEXT:    and.16b v1, v1, v16
-; CHECK-NEXT:    and.16b v2, v5, v7
-; CHECK-NEXT:    and.16b v0, v4, v6
+; CHECK-NEXT:    and.16b v3, v2, v3
+; CHECK-NEXT:    and.16b v1, v1, v0
+; CHECK-NEXT:    and.16b v2, v5, v6
+; CHECK-NEXT:    and.16b v0, v4, v7
 ; CHECK-NEXT:    ret
 entry:
   %ext = zext <16 x i8> %a to <16 x i32>
@@ -63,17 +63,17 @@ define <16 x i32> @same_zext_used_in_cmp_signed_pred_and_select(<16 x i8> %a) {
 ; CHECK-NEXT:    cmgt.16b v0, v0, v1
 ; CHECK-NEXT:    ushll.4s v5, v3, #0
 ; CHECK-NEXT:    ushll2.4s v1, v3, #0
-; CHECK-NEXT:    sshll.8h v3, v0, #0
-; CHECK-NEXT:    sshll2.8h v0, v0, #0
+; CHECK-NEXT:    sshll2.8h v3, v0, #0
+; CHECK-NEXT:    sshll.8h v0, v0, #0
 ; CHECK-NEXT:    ushll2.4s v2, v2, #0
 ; CHECK-NEXT:    sshll.4s v6, v3, #0
+; CHECK-NEXT:    sshll2.4s v3, v3, #0
 ; CHECK-NEXT:    sshll.4s v7, v0, #0
 ; CHECK-NEXT:    sshll2.4s v0, v0, #0
-; CHECK-NEXT:    sshll2.4s v16, v3, #0
-; CHECK-NEXT:    and.16b v3, v1, v0
-; CHECK-NEXT:    and.16b v1, v2, v16
-; CHECK-NEXT:    and.16b v2, v5, v7
-; CHECK-NEXT:    and.16b v0, v4, v6
+; CHECK-NEXT:    and.16b v3, v1, v3
+; CHECK-NEXT:    and.16b v1, v2, v0
+; CHECK-NEXT:    and.16b v2, v5, v6
+; CHECK-NEXT:    and.16b v0, v4, v7
 ; CHECK-NEXT:    ret
 entry:
   %ext = zext <16 x i8> %a to <16 x i32>
@@ -86,7 +86,7 @@ define <8 x i64> @same_zext_used_in_cmp_unsigned_pred_and_select_v8i64(<8 x i8> 
 ; CHECK-LABEL: same_zext_used_in_cmp_unsigned_pred_and_select_v8i64:
 ; CHECK:       ; %bb.0:
 ; CHECK-NEXT:    ushll.8h v0, v0, #0
-; CHECK-NEXT:    mov w8, #10
+; CHECK-NEXT:    mov w8, #10 ; =0xa
 ; CHECK-NEXT:    ushll2.4s v2, v0, #0
 ; CHECK-NEXT:    ushll.4s v0, v0, #0
 ; CHECK-NEXT:    dup.2d v1, x8
@@ -551,17 +551,17 @@ define <16 x i32> @same_zext_used_in_cmp_signed_pred_and_select_can_convert_to_u
 ; CHECK-NEXT:    cmgt.16b v0, v0, v1
 ; CHECK-NEXT:    ushll.4s v5, v3, #0
 ; CHECK-NEXT:    ushll2.4s v1, v3, #0
-; CHECK-NEXT:    sshll.8h v3, v0, #0
-; CHECK-NEXT:    sshll2.8h v0, v0, #0
+; CHECK-NEXT:    sshll2.8h v3, v0, #0
+; CHECK-NEXT:    sshll.8h v0, v0, #0
 ; CHECK-NEXT:    ushll2.4s v2, v2, #0
 ; CHECK-NEXT:    sshll.4s v6, v3, #0
+; CHECK-NEXT:    sshll2.4s v3, v3, #0
 ; CHECK-NEXT:    sshll.4s v7, v0, #0
 ; CHECK-NEXT:    sshll2.4s v0, v0, #0
-; CHECK-NEXT:    sshll2.4s v16, v3, #0
-; CHECK-NEXT:    and.16b v3, v1, v0
-; CHECK-NEXT:    and.16b v1, v2, v16
-; CHECK-NEXT:    and.16b v2, v5, v7
-; CHECK-NEXT:    and.16b v0, v4, v6
+; CHECK-NEXT:    and.16b v3, v1, v3
+; CHECK-NEXT:    and.16b v1, v2, v0
+; CHECK-NEXT:    and.16b v2, v5, v6
+; CHECK-NEXT:    and.16b v0, v4, v7
 ; CHECK-NEXT:    ret
 entry:
   %ext = zext <16 x i8> %a to <16 x i32>

@@ -254,8 +254,8 @@ define i32 @v2(ptr nocapture noundef readonly %p1, i32 noundef %i1, ptr nocaptur
 ; CHECK-NEXT:    mov v16.16b, v3.16b
 ; CHECK-NEXT:    zip2 v4.4s, v2.4s, v0.4s
 ; CHECK-NEXT:    zip2 v6.4s, v1.4s, v3.4s
-; CHECK-NEXT:    zip2 v18.4s, v3.4s, v1.4s
-; CHECK-NEXT:    ext v19.16b, v2.16b, v5.16b, #8
+; CHECK-NEXT:    ext v18.16b, v2.16b, v5.16b, #8
+; CHECK-NEXT:    zip2 v19.4s, v3.4s, v1.4s
 ; CHECK-NEXT:    mov v16.s[0], v1.s[1]
 ; CHECK-NEXT:    ext v17.16b, v1.16b, v17.16b, #12
 ; CHECK-NEXT:    uzp2 v7.4s, v7.4s, v3.4s
@@ -263,11 +263,11 @@ define i32 @v2(ptr nocapture noundef readonly %p1, i32 noundef %i1, ptr nocaptur
 ; CHECK-NEXT:    mov v1.s[1], v3.s[0]
 ; CHECK-NEXT:    mov v16.d[1], v5.d[1]
 ; CHECK-NEXT:    mov v7.d[1], v4.d[1]
-; CHECK-NEXT:    mov v18.d[1], v2.d[1]
-; CHECK-NEXT:    mov v1.d[1], v19.d[1]
+; CHECK-NEXT:    mov v19.d[1], v2.d[1]
+; CHECK-NEXT:    mov v1.d[1], v18.d[1]
 ; CHECK-NEXT:    mov v6.d[1], v2.d[1]
 ; CHECK-NEXT:    mov v17.d[1], v4.d[1]
-; CHECK-NEXT:    add v0.4s, v7.4s, v18.4s
+; CHECK-NEXT:    add v0.4s, v7.4s, v19.4s
 ; CHECK-NEXT:    add v2.4s, v16.4s, v1.4s
 ; CHECK-NEXT:    rev64 v3.4s, v0.4s
 ; CHECK-NEXT:    rev64 v4.4s, v2.4s

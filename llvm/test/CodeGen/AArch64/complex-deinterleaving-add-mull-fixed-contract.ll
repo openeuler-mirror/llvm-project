@@ -183,34 +183,34 @@ define <4 x double> @mul_add_rot_mull(<4 x double> %a, <4 x double> %b, <4 x dou
 ; CHECK-LABEL: mul_add_rot_mull:
 ; CHECK:       // %bb.0: // %entry
 ; CHECK-NEXT:    movi v16.2d, #0xffffffffffffffff
-; CHECK-NEXT:    zip2 v17.2d, v4.2d, v5.2d
-; CHECK-NEXT:    movi v18.2d, #0000000000000000
-; CHECK-NEXT:    zip1 v19.2d, v0.2d, v1.2d
+; CHECK-NEXT:    zip2 v18.2d, v4.2d, v5.2d
+; CHECK-NEXT:    movi v19.2d, #0000000000000000
+; CHECK-NEXT:    zip1 v17.2d, v0.2d, v1.2d
 ; CHECK-NEXT:    fneg v16.2d, v16.2d
 ; CHECK-NEXT:    zip2 v0.2d, v0.2d, v1.2d
 ; CHECK-NEXT:    zip1 v1.2d, v4.2d, v5.2d
-; CHECK-NEXT:    zip1 v5.2d, v2.2d, v3.2d
-; CHECK-NEXT:    mov v4.16b, v16.16b
-; CHECK-NEXT:    bsl v4.16b, v18.16b, v17.16b
+; CHECK-NEXT:    zip1 v4.2d, v2.2d, v3.2d
+; CHECK-NEXT:    mov v5.16b, v16.16b
+; CHECK-NEXT:    bsl v5.16b, v19.16b, v18.16b
 ; CHECK-NEXT:    zip2 v2.2d, v2.2d, v3.2d
 ; CHECK-NEXT:    mov v3.16b, v16.16b
-; CHECK-NEXT:    bsl v3.16b, v18.16b, v1.16b
-; CHECK-NEXT:    fadd v1.2d, v1.2d, v4.2d
-; CHECK-NEXT:    zip2 v4.2d, v6.2d, v7.2d
+; CHECK-NEXT:    bsl v3.16b, v19.16b, v1.16b
+; CHECK-NEXT:    zip2 v16.2d, v6.2d, v7.2d
+; CHECK-NEXT:    fadd v1.2d, v1.2d, v5.2d
+; CHECK-NEXT:    fmul v5.2d, v0.2d, v2.2d
 ; CHECK-NEXT:    zip1 v6.2d, v6.2d, v7.2d
-; CHECK-NEXT:    fmul v7.2d, v0.2d, v2.2d
-; CHECK-NEXT:    fsub v3.2d, v3.2d, v17.2d
-; CHECK-NEXT:    fmul v16.2d, v1.2d, v4.2d
-; CHECK-NEXT:    fmul v2.2d, v19.2d, v2.2d
+; CHECK-NEXT:    fsub v3.2d, v3.2d, v18.2d
+; CHECK-NEXT:    fmul v7.2d, v1.2d, v16.2d
+; CHECK-NEXT:    fneg v5.2d, v5.2d
+; CHECK-NEXT:    fmul v2.2d, v17.2d, v2.2d
+; CHECK-NEXT:    fmul v16.2d, v3.2d, v16.2d
 ; CHECK-NEXT:    fneg v7.2d, v7.2d
-; CHECK-NEXT:    fmul v4.2d, v3.2d, v4.2d
-; CHECK-NEXT:    fneg v16.2d, v16.2d
-; CHECK-NEXT:    fmla v2.2d, v5.2d, v0.2d
-; CHECK-NEXT:    fmla v7.2d, v5.2d, v19.2d
-; CHECK-NEXT:    fmla v4.2d, v1.2d, v6.2d
-; CHECK-NEXT:    fmla v16.2d, v6.2d, v3.2d
-; CHECK-NEXT:    fadd v1.2d, v2.2d, v4.2d
-; CHECK-NEXT:    fadd v2.2d, v7.2d, v16.2d
+; CHECK-NEXT:    fmla v5.2d, v4.2d, v17.2d
+; CHECK-NEXT:    fmla v2.2d, v4.2d, v0.2d
+; CHECK-NEXT:    fmla v16.2d, v1.2d, v6.2d
+; CHECK-NEXT:    fmla v7.2d, v6.2d, v3.2d
+; CHECK-NEXT:    fadd v1.2d, v2.2d, v16.2d
+; CHECK-NEXT:    fadd v2.2d, v5.2d, v7.2d
 ; CHECK-NEXT:    zip1 v0.2d, v2.2d, v1.2d
 ; CHECK-NEXT:    zip2 v1.2d, v2.2d, v1.2d
 ; CHECK-NEXT:    ret

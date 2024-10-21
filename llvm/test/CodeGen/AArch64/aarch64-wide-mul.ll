@@ -116,24 +116,24 @@ define <16 x i64> @mla_i64(<16 x i8> %a, <16 x i8> %b, <16 x i64> %c) {
 ; CHECK-NEXT:    ldp q6, q7, [sp]
 ; CHECK-NEXT:    ushll v18.8h, v0.8b, #0
 ; CHECK-NEXT:    ushll2 v0.8h, v0.16b, #0
-; CHECK-NEXT:    ushll v21.8h, v1.8b, #0
-; CHECK-NEXT:    ushll2 v1.8h, v1.16b, #0
+; CHECK-NEXT:    ushll2 v21.8h, v1.16b, #0
+; CHECK-NEXT:    ushll v1.8h, v1.8b, #0
 ; CHECK-NEXT:    ushll v19.4s, v18.4h, #0
 ; CHECK-NEXT:    ushll v20.4s, v0.4h, #0
 ; CHECK-NEXT:    ushll2 v18.4s, v18.8h, #0
 ; CHECK-NEXT:    ushll v22.4s, v21.4h, #0
 ; CHECK-NEXT:    ushll v23.4s, v1.4h, #0
-; CHECK-NEXT:    ushll2 v21.4s, v21.8h, #0
-; CHECK-NEXT:    ushll2 v0.4s, v0.8h, #0
 ; CHECK-NEXT:    ushll2 v1.4s, v1.8h, #0
-; CHECK-NEXT:    umlal2 v5.2d, v18.4s, v21.4s
-; CHECK-NEXT:    umlal2 v17.2d, v20.4s, v23.4s
-; CHECK-NEXT:    umlal2 v3.2d, v19.4s, v22.4s
-; CHECK-NEXT:    umlal v2.2d, v19.2s, v22.2s
-; CHECK-NEXT:    umlal v4.2d, v18.2s, v21.2s
-; CHECK-NEXT:    umlal v16.2d, v20.2s, v23.2s
-; CHECK-NEXT:    umlal2 v7.2d, v0.4s, v1.4s
-; CHECK-NEXT:    umlal v6.2d, v0.2s, v1.2s
+; CHECK-NEXT:    ushll2 v0.4s, v0.8h, #0
+; CHECK-NEXT:    ushll2 v21.4s, v21.8h, #0
+; CHECK-NEXT:    umlal2 v5.2d, v18.4s, v1.4s
+; CHECK-NEXT:    umlal2 v17.2d, v20.4s, v22.4s
+; CHECK-NEXT:    umlal2 v3.2d, v19.4s, v23.4s
+; CHECK-NEXT:    umlal v2.2d, v19.2s, v23.2s
+; CHECK-NEXT:    umlal v4.2d, v18.2s, v1.2s
+; CHECK-NEXT:    umlal v16.2d, v20.2s, v22.2s
+; CHECK-NEXT:    umlal2 v7.2d, v0.4s, v21.4s
+; CHECK-NEXT:    umlal v6.2d, v0.2s, v21.2s
 ; CHECK-NEXT:    mov v0.16b, v2.16b
 ; CHECK-NEXT:    mov v1.16b, v3.16b
 ; CHECK-NEXT:    mov v2.16b, v4.16b

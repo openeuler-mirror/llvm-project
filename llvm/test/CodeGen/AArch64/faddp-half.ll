@@ -225,72 +225,72 @@ define <16 x half> @addp_v16f16(<16 x half> %a) {
 ; CHECKNOFP16-NEXT:    mov h2, v0.h[1]
 ; CHECKNOFP16-NEXT:    fcvt s6, h0
 ; CHECKNOFP16-NEXT:    rev32 v5.8h, v1.8h
-; CHECKNOFP16-NEXT:    mov h17, v0.h[2]
-; CHECKNOFP16-NEXT:    mov h18, v0.h[3]
+; CHECKNOFP16-NEXT:    fcvt s17, h1
+; CHECKNOFP16-NEXT:    mov h20, v1.h[2]
 ; CHECKNOFP16-NEXT:    mov h3, v4.h[1]
 ; CHECKNOFP16-NEXT:    fcvt s2, h2
 ; CHECKNOFP16-NEXT:    fcvt s7, h4
-; CHECKNOFP16-NEXT:    mov h20, v4.h[2]
+; CHECKNOFP16-NEXT:    mov h18, v4.h[2]
 ; CHECKNOFP16-NEXT:    mov h16, v5.h[1]
 ; CHECKNOFP16-NEXT:    fcvt s19, h5
 ; CHECKNOFP16-NEXT:    mov h21, v4.h[3]
-; CHECKNOFP16-NEXT:    mov h22, v0.h[4]
+; CHECKNOFP16-NEXT:    fcvt s20, h20
 ; CHECKNOFP16-NEXT:    fcvt s3, h3
 ; CHECKNOFP16-NEXT:    fadd s6, s7, s6
 ; CHECKNOFP16-NEXT:    mov h7, v1.h[1]
 ; CHECKNOFP16-NEXT:    fcvt s16, h16
+; CHECKNOFP16-NEXT:    fadd s17, s19, s17
+; CHECKNOFP16-NEXT:    mov h19, v5.h[2]
+; CHECKNOFP16-NEXT:    fcvt s21, h21
 ; CHECKNOFP16-NEXT:    fadd s3, s3, s2
 ; CHECKNOFP16-NEXT:    fcvt h2, s6
-; CHECKNOFP16-NEXT:    fcvt s6, h1
+; CHECKNOFP16-NEXT:    mov h6, v0.h[2]
 ; CHECKNOFP16-NEXT:    fcvt s7, h7
 ; CHECKNOFP16-NEXT:    fcvt h3, s3
-; CHECKNOFP16-NEXT:    mov v2.h[1], v3.h[0]
-; CHECKNOFP16-NEXT:    fadd s3, s19, s6
-; CHECKNOFP16-NEXT:    fadd s6, s16, s7
-; CHECKNOFP16-NEXT:    fcvt s7, h17
-; CHECKNOFP16-NEXT:    fcvt s16, h20
-; CHECKNOFP16-NEXT:    fcvt s17, h18
-; CHECKNOFP16-NEXT:    fcvt s18, h21
-; CHECKNOFP16-NEXT:    mov h19, v1.h[2]
-; CHECKNOFP16-NEXT:    mov h20, v5.h[2]
-; CHECKNOFP16-NEXT:    fcvt h3, s3
-; CHECKNOFP16-NEXT:    fcvt h6, s6
-; CHECKNOFP16-NEXT:    fadd s7, s16, s7
-; CHECKNOFP16-NEXT:    mov h16, v1.h[3]
-; CHECKNOFP16-NEXT:    fadd s17, s18, s17
-; CHECKNOFP16-NEXT:    mov h18, v4.h[4]
-; CHECKNOFP16-NEXT:    fcvt s19, h19
-; CHECKNOFP16-NEXT:    fcvt s20, h20
-; CHECKNOFP16-NEXT:    mov v3.h[1], v6.h[0]
-; CHECKNOFP16-NEXT:    mov h6, v5.h[3]
-; CHECKNOFP16-NEXT:    fcvt h7, s7
-; CHECKNOFP16-NEXT:    fcvt s21, h22
-; CHECKNOFP16-NEXT:    fcvt s18, h18
-; CHECKNOFP16-NEXT:    fadd s19, s20, s19
-; CHECKNOFP16-NEXT:    fcvt s16, h16
 ; CHECKNOFP16-NEXT:    fcvt s6, h6
-; CHECKNOFP16-NEXT:    fcvt h17, s17
-; CHECKNOFP16-NEXT:    mov v2.h[2], v7.h[0]
-; CHECKNOFP16-NEXT:    mov h20, v5.h[4]
-; CHECKNOFP16-NEXT:    fadd s7, s18, s21
-; CHECKNOFP16-NEXT:    mov h18, v1.h[4]
-; CHECKNOFP16-NEXT:    fadd s6, s6, s16
-; CHECKNOFP16-NEXT:    fcvt h16, s19
-; CHECKNOFP16-NEXT:    mov v2.h[3], v17.h[0]
-; CHECKNOFP16-NEXT:    mov h19, v5.h[5]
+; CHECKNOFP16-NEXT:    fadd s7, s16, s7
+; CHECKNOFP16-NEXT:    fcvt s16, h18
+; CHECKNOFP16-NEXT:    mov v2.h[1], v3.h[0]
+; CHECKNOFP16-NEXT:    mov h3, v0.h[3]
 ; CHECKNOFP16-NEXT:    fcvt h7, s7
-; CHECKNOFP16-NEXT:    fcvt s17, h18
-; CHECKNOFP16-NEXT:    fcvt s18, h20
+; CHECKNOFP16-NEXT:    fadd s6, s16, s6
+; CHECKNOFP16-NEXT:    fcvt s16, h19
+; CHECKNOFP16-NEXT:    mov h19, v4.h[4]
+; CHECKNOFP16-NEXT:    fcvt s18, h3
+; CHECKNOFP16-NEXT:    fcvt h3, s17
+; CHECKNOFP16-NEXT:    mov h17, v0.h[4]
 ; CHECKNOFP16-NEXT:    fcvt h6, s6
+; CHECKNOFP16-NEXT:    fcvt s19, h19
+; CHECKNOFP16-NEXT:    fadd s16, s16, s20
+; CHECKNOFP16-NEXT:    fadd s18, s21, s18
+; CHECKNOFP16-NEXT:    mov h21, v1.h[3]
+; CHECKNOFP16-NEXT:    mov v3.h[1], v7.h[0]
+; CHECKNOFP16-NEXT:    mov h7, v5.h[3]
+; CHECKNOFP16-NEXT:    fcvt s17, h17
+; CHECKNOFP16-NEXT:    mov v2.h[2], v6.h[0]
+; CHECKNOFP16-NEXT:    fcvt h16, s16
+; CHECKNOFP16-NEXT:    fcvt s20, h21
+; CHECKNOFP16-NEXT:    fcvt s7, h7
+; CHECKNOFP16-NEXT:    fcvt h18, s18
+; CHECKNOFP16-NEXT:    fadd s6, s19, s17
+; CHECKNOFP16-NEXT:    mov h17, v1.h[4]
+; CHECKNOFP16-NEXT:    mov h19, v5.h[4]
 ; CHECKNOFP16-NEXT:    mov v3.h[2], v16.h[0]
 ; CHECKNOFP16-NEXT:    mov h16, v0.h[5]
-; CHECKNOFP16-NEXT:    mov v2.h[4], v7.h[0]
-; CHECKNOFP16-NEXT:    fadd s7, s18, s17
+; CHECKNOFP16-NEXT:    fadd s7, s7, s20
+; CHECKNOFP16-NEXT:    mov v2.h[3], v18.h[0]
+; CHECKNOFP16-NEXT:    fcvt h6, s6
+; CHECKNOFP16-NEXT:    fcvt s17, h17
+; CHECKNOFP16-NEXT:    fcvt s18, h19
+; CHECKNOFP16-NEXT:    mov h19, v5.h[5]
+; CHECKNOFP16-NEXT:    fcvt h7, s7
+; CHECKNOFP16-NEXT:    mov v2.h[4], v6.h[0]
+; CHECKNOFP16-NEXT:    fadd s6, s18, s17
 ; CHECKNOFP16-NEXT:    mov h17, v4.h[5]
 ; CHECKNOFP16-NEXT:    mov h18, v1.h[5]
-; CHECKNOFP16-NEXT:    mov v3.h[3], v6.h[0]
-; CHECKNOFP16-NEXT:    fcvt h6, s7
+; CHECKNOFP16-NEXT:    mov v3.h[3], v7.h[0]
 ; CHECKNOFP16-NEXT:    fcvt s7, h16
+; CHECKNOFP16-NEXT:    fcvt h6, s6
 ; CHECKNOFP16-NEXT:    fcvt s16, h17
 ; CHECKNOFP16-NEXT:    fcvt s17, h18
 ; CHECKNOFP16-NEXT:    fcvt s18, h19
