@@ -1,0 +1,15 @@
+executable("stackanalyzer") {
+  deps = [
+    "//llvm/lib/Analysis",
+    "//llvm/lib/Core",
+    "//llvm/lib/Passes",
+    "//llvm/lib/Bitcode/Reader",
+    "//llvm/lib/Support",
+    "//llvm/lib/Target:TargetsToBuild",
+  ]
+  sources = [
+    "CallGraphGen.cpp",
+    "StackUsage.cpp",
+    "stackanalyzer.cpp",
+  ]
+}

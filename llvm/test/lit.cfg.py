@@ -241,6 +241,7 @@ tools.extend(
         "opt",
         "sancov",
         "sanstats",
+        "stackanalyzer",
         "llvm-remarkutil",
     ]
 )

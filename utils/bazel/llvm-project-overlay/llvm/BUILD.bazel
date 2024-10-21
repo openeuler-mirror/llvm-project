@@ -4711,6 +4711,24 @@ cc_binary(
 )
 
 cc_binary(
+    name = "stackanalyzer",
+    srcs = glob([
+        "tools/stackanalyzer/*.cpp",
+        "tools/stackanalyzer/*.h",
+    ]),
+    copts = llvm_copts,
+    stamp = 0,
+    deps = [
+        ":AllTargetsCodeGens",
+        ":Analysis",
+        ":BitcodeReader",
+        ":Core",
+        ":Passes",
+        ":Support",
+    ],
+)
+
+cc_binary(
     name = "split-file",
     srcs = glob([
         "utils/split-file/*.cpp",
