@@ -1658,7 +1658,7 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
       AArch64::AEK_RCPC3,   AArch64::AEK_THE,       AArch64::AEK_D128,
       AArch64::AEK_LSE128,  AArch64::AEK_SPECRES2,  AArch64::AEK_RASv2,
       AArch64::AEK_ITE,     AArch64::AEK_GCS,       AArch64::AEK_SMEFA64,
-      AArch64::AEK_FPAC,    AArch64::AEK_CMPBR,
+      AArch64::AEK_FPAC,    AArch64::AEK_CMPBR,     AArch64::AEK_LSUI,
   };
 
   std::vector<StringRef> Features;
@@ -1733,6 +1733,7 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-fa64"));
   EXPECT_TRUE(llvm::is_contained(Features, "+fpac"));
   EXPECT_TRUE(llvm::is_contained(Features, "+cmpbr"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+lsui"));
 
   // Assuming we listed every extension above, this should produce the same
   // result. (note that AEK_NONE doesn't have a name so it won't be in the
@@ -1862,7 +1863,8 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"predres2", "nopredres2", "+specres2", "-specres2"},
       {"rasv2", "norasv2", "+rasv2", "-rasv2"},
       {"gcs", "nogcs", "+gcs", "-gcs"},
-      {"cmpbr", "nocmpbr", "+cmpbr", "-cmpbr"}
+      {"cmpbr", "nocmpbr", "+cmpbr", "-cmpbr"},
+      {"lsui", "nolsui", "+lsui", "-lsui"},
   };
 
   for (unsigned i = 0; i < std::size(ArchExt); i++) {

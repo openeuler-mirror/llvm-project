@@ -474,7 +474,6 @@ private:
     unsigned Length;
     unsigned Val;
   };
-
   struct BTIHintOp {
     const char *Data;
     unsigned Length;
@@ -3653,6 +3652,7 @@ static const struct Extension {
     {"tme", {AArch64::FeatureTME}},
     {"sme-fa64",  {AArch64::FeatureSMEFA64}},
     {"cmpbr", {AArch64::FeatureCMPBR}},
+    {"lsui", {AArch64::FeatureLSUI}},
 };
 
 static void setRequiredFeatureString(FeatureBitset FBS, std::string &Str) {

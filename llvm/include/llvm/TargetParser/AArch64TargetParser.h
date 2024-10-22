@@ -87,8 +87,9 @@ enum CPUFeatures {
   FEAT_SME_F64,
   FEAT_SME_I64,
   FEAT_SME2,
-  FEAT_MAX,
-  FEAT_CMPBR
+  FEAT_CMPBR,
+  FEAT_LSUI,
+  FEAT_MAX
 };
 
 static_assert(FEAT_MAX <= 64,
@@ -158,6 +159,7 @@ enum ArchExtKind : uint64_t {
   AEK_SMEFA64 =     1ULL << 57, // FEAT_SME_FA64
   AEK_FPAC =        1ULL << 58, // FEAT_FPAC
   AEK_CMPBR =       1ULL << 59, // FEAT_CMPBR
+  AEK_LSUI =        1ULL << 60, // FEAT_LSUI
 };
 // clang-format on
 
@@ -267,6 +269,7 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"sme-fa64",  AArch64::AEK_SMEFA64,  "+sme-fa64", "-sme-fa64",  FEAT_MAX, "", 0},
     {"fpac",  AArch64::AEK_FPAC,  "+fpac", "-fpac",  FEAT_MAX, "", 0},
     {"cmpbr", AArch64::AEK_CMPBR, "+cmpbr", "-cmpbr", FEAT_CMPBR, "", 0},
+    {"lsui", AArch64::AEK_LSUI, "+lsui", "-lsui", FEAT_LSUI, "", 0},
     // Special cases
     {"none", AArch64::AEK_NONE, {}, {}, FEAT_MAX, "", ExtensionInfo::MaxFMVPriority},
 };
@@ -338,7 +341,7 @@ inline constexpr ArchInfo ARMV9_2A  = { VersionTuple{9, 2}, AProfile, "armv9.2-a
 inline constexpr ArchInfo ARMV9_3A  = { VersionTuple{9, 3}, AProfile, "armv9.3-a", "+v9.3a", (ARMV9_2A.DefaultExts | AArch64::AEK_MOPS | AArch64::AEK_HBC)};
 inline constexpr ArchInfo ARMV9_4A  = { VersionTuple{9, 4}, AProfile, "armv9.4-a", "+v9.4a", (ARMV9_3A.DefaultExts | AArch64::AEK_SPECRES2 | AArch64::AEK_CSSC | AArch64::AEK_RASv2)};
 inline constexpr ArchInfo ARMV9_5A  = { VersionTuple{9, 5}, AProfile, "armv9.5-a", "+v9.5a", (ARMV9_4A.DefaultExts)};
-inline constexpr ArchInfo ARMV9_6A  = { VersionTuple{9, 6}, AProfile, "armv9.6-a", "+v9.6a", (ARMV9_5A.DefaultExts | AArch64::AEK_CMPBR)};
+inline constexpr ArchInfo ARMV9_6A  = { VersionTuple{9, 6}, AProfile, "armv9.6-a", "+v9.6a", (ARMV9_5A.DefaultExts | AArch64::AEK_CMPBR | AArch64::AEK_LSUI)};
 // For v8-R, we do not enable crypto and align with GCC that enables a more minimal set of optional architecture extensions.
 inline constexpr ArchInfo ARMV8R    = { VersionTuple{8, 0}, RProfile, "armv8-r", "+v8r", ((ARMV8_5A.DefaultExts ^ AArch64::AEK_LSE) | AArch64::AEK_SSBS | AArch64::AEK_FP16 | AArch64::AEK_FP16FML | AArch64::AEK_SB), };
 // clang-format on
