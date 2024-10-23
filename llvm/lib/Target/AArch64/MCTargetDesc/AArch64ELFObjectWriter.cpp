@@ -184,6 +184,11 @@ unsigned AArch64ELFObjectWriter::getRelocType(MCContext &Ctx,
       return R_CLS(LD_PREL_LO19);
     case AArch64::fixup_aarch64_pcrel_branch14:
       return R_CLS(TSTBR14);
+    case AArch64::fixup_aarch64_pcrel_branch9:
+      Ctx.reportError(
+          Fixup.getLoc(),
+          "relocation of compare-and-branch instructions not supported");
+      return ELF::R_AARCH64_NONE;
     case AArch64::fixup_aarch64_pcrel_branch19:
       return R_CLS(CONDBR19);
     default:
