@@ -2349,6 +2349,8 @@ bool Type::isIncompleteType(NamedDecl **Def) const {
 
 bool Type::isSizelessBuiltinType() const {
   if (const BuiltinType *BT = getAs<BuiltinType>()) {
+    if (BT->getKind() == BuiltinType::MFloat8)
+      return false;
     switch (BT->getKind()) {
       // SVE Types
 #define SVE_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
@@ -2389,9 +2391,19 @@ bool Type::isSVESizelessBuiltinType() const {
   if (const BuiltinType *BT = getAs<BuiltinType>()) {
     switch (BT->getKind()) {
       // SVE Types
-#define SVE_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#define SVE_VECTOR_TYPE(Name, MangledName, Id, SingletonId)                    \
+  case BuiltinType::Id:                                                        \
+    return true;
+#define SVE_OPAQUE_TYPE(Name, MangledName, Id, SingletonId)                    \
+  case BuiltinType::Id:                                                        \
+    return true;
+#define SVE_PREDICATE_TYPE(Name, MangledName, Id, SingletonId)                 \
+  case BuiltinType::Id:                                                        \
+    return true;
+#define AARCH64_VECTOR_TYPE(Name, MangledName, Id, SingletonId)                \
+  case BuiltinType::Id:                                                        \
+    return false;
 #include "clang/Basic/AArch64SVEACLETypes.def"
-      return true;
     default:
       return false;
     }
