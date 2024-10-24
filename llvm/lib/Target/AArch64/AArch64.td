@@ -768,6 +768,7 @@ include "AArch64SchedThunderX2T99.td"
 include "AArch64SchedA64FX.td"
 include "AArch64SchedThunderX3T110.td"
 include "AArch64SchedTSV110.td"
+include "AArch64SchedHIP09.td"
 include "AArch64SchedAmpere1.td"
 include "AArch64SchedNeoverseN1.td"
 include "AArch64SchedNeoverseN2.td"
@@ -1491,8 +1492,7 @@ def : ProcessorModel<"thunderx3t110", ThunderX3T110Model,
 // HiSilicon Processors.
 def : ProcessorModel<"tsv110", TSV110Model, ProcessorFeatures.TSV110,
                      [TuneTSV110]>;
-// FIXME: HiSilicon HIP09 is currently modeled as a Cortex-A57.
-def : ProcessorModel<"hip09", CortexA57Model, ProcessorFeatures.HIP09,
+def : ProcessorModel<"hip09", HIP09Model, ProcessorFeatures.HIP09,
                      [TuneHIP09]>;
 
 // Support cyclone as an alias for apple-a7 so we can still LTO old bitcode.
