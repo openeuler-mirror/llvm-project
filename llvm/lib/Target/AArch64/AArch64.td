@@ -71,7 +71,7 @@ def SVEUnsupported : AArch64Unsupported {
                       SVE2Unsupported.F);
 }
 
-let F = [HasSME2p1, HasSVE2p1_or_HasSME2p1] in
+let F = [HasSME2p1, HasSME2p2, HasSVE2p1_or_HasSME2p1] in
 def SME2p1Unsupported : AArch64Unsupported;
 
 def SME2Unsupported : AArch64Unsupported {
