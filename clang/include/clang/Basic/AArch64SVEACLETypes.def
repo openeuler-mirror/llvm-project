@@ -182,6 +182,8 @@ SVE_PREDICATE_TYPE_ALL("__clang_svboolx4_t", "svboolx4_t", SveBoolx4, SveBoolx4T
 
 SVE_OPAQUE_TYPE("__SVCount_t", "__SVCount_t", SveCount, SveCountTy)
 
+SVE_OPAQUE_TYPE("__MFloat8_t", "__MFloat8_t", MFloat8, MFloat8Ty)
+
 #undef SVE_VECTOR_TYPE
 #undef SVE_VECTOR_TYPE_BFLOAT
 #undef SVE_VECTOR_TYPE_FLOAT
