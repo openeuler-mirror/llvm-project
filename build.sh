@@ -72,7 +72,7 @@ EOF
 
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
-while getopts :aAbd:ceEhiI:j:orstvfX: optchr; do
+while getopts :aAb:d:ceEhiI:j:orstvfX: optchr; do
   case "$optchr" in
     a)
       enable_autotuner="0"
