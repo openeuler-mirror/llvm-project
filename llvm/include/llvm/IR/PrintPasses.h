@@ -43,6 +43,11 @@ bool shouldPrintAfterPass(StringRef PassID);
 bool shouldPrintBeforeAll();
 bool shouldPrintAfterAll();
 
+// Returns true if we should dump the module IR to a file when
+// shouldPrintBeforeAll/ shouldPrintAfterAll/ shouldPrintBeforeSomePass/
+// shouldPrintAfterSomePass is enabled.
+bool shouldDumpFile();
+
 // The list of passes to print before/after, if we only want to print
 // before/after specific passes.
 std::vector<std::string> printBeforePasses();

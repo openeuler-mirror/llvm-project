@@ -37,6 +37,7 @@
 #include "llvm/Support/Regex.h"
 #include "llvm/Support/Signals.h"
 #include "llvm/Support/raw_ostream.h"
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -338,6 +339,31 @@ bool isInteresting(Any IR, StringRef PassID, StringRef PassName) {
   return true;
 }
 
+// print the IR to a file named according to the pass number and pass ID.
+void dumpIRToFile(Any IR, const std::string outputFilename) {
+  std::string outputFilenameCopy = outputFilename;
+  outputFilenameCopy.erase(
+      std::remove(outputFilenameCopy.begin(), outputFilenameCopy.end(), ' '),
+      outputFilenameCopy.end());
+  std::string InvalidChars = "/\\:*?\"<>|()[],";
+  for (size_t i = 0; i < InvalidChars.size(); i++) {
+    outputFilenameCopy.erase(std::remove(outputFilenameCopy.begin(),
+                                         outputFilenameCopy.end(),
+                                         InvalidChars[i]),
+                             outputFilenameCopy.end());
+  }
+
+  const Module *M = unwrapModule(IR);
+  std::error_code EC;
+  raw_fd_ostream OS(outputFilenameCopy, EC);
+  if (EC) {
+    errs() << "Error opening file: " << EC.message() << "\n";
+    return;
+  }
+  assert(M && "should have unwrapped module");
+  M->print(OS, nullptr);
+}
+
 } // namespace
 
 template <typename T> ChangeReporter<T>::~ChangeReporter() {
@@ -353,6 +379,8 @@ void ChangeReporter<T>::saveIRBeforePass(Any IR, StringRef PassID,
     if (VerboseMode)
       handleInitialIR(IR);
   }
+
+  ++CurrentPassNumber;
 
   // Always need to place something on the stack because invalidated passes
   // are not given the IR so it cannot be determined whether the pass was for
@@ -436,8 +464,18 @@ template <typename T> void TextChangeReporter<T>::handleInitialIR(Any IR) {
   // Unwrap and print directly to avoid filtering problems in general routines.
   auto *M = unwrapModule(IR, /*Force=*/true);
   assert(M && "Expected module to be unwrapped when forced.");
-  Out << "*** IR Dump At Start ***\n";
-  M->print(Out, nullptr);
+  if (!shouldDumpFile()) {
+    Out << "*** IR Dump At Start ***\n";
+    M->print(Out, nullptr);
+  } else {
+    const Module *M = unwrapModule(IR);
+    std::string ModuleName = M->getName().str();
+    std::string OutputFilename = std::to_string(this->CurrentPassNumber) +
+                                 "_InitialIR" + "_on_module_" + ModuleName;
+    Out << "*** IR Dump At Start to file at index - " << this->CurrentPassNumber
+        << " ***\n";
+    dumpIRToFile(IR, OutputFilename);
+  }
 }
 
 template <typename T>
@@ -481,11 +519,23 @@ void IRChangedPrinter::generateIRRepresentation(Any IR, StringRef PassID,
 
 void IRChangedPrinter::handleAfter(StringRef PassID, std::string &Name,
                                    const std::string &Before,
-                                   const std::string &After, Any) {
+                                   const std::string &After, Any IR) {
   // Report the IR before the changes when requested.
-  if (PrintChangedBefore)
-    Out << "*** IR Dump Before " << PassID << " on " << Name << " ***\n"
-        << Before;
+  if (PrintChangedBefore) {
+    if (!shouldDumpFile()) {
+      Out << "*** IR Dump Before " << PassID << " on " << Name << " ***\n"
+          << Before;
+    } else {
+      Out << "*** IR Dump Before " << PassID << " on " << Name
+          << " to file at index - " << this->CurrentPassNumber << " ***\n";
+      const Module *M = unwrapModule(IR);
+      std::string ModuleName = M->getName().str();
+      const std::string OutputFilename =
+          std::to_string(this->CurrentPassNumber) + "_before_" + PassID.str() +
+          "_on_" + Name + "_" + ModuleName;
+      dumpIRToFile(IR, OutputFilename);
+    }
+  }
 
   // We might not get anything to print if we only want to print a specific
   // function but it gets deleted.
@@ -494,7 +544,19 @@ void IRChangedPrinter::handleAfter(StringRef PassID, std::string &Name,
     return;
   }
 
-  Out << "*** IR Dump After " << PassID << " on " << Name << " ***\n" << After;
+  if (!shouldDumpFile()) {
+    Out << "*** IR Dump After " << PassID << " on " << Name << " ***\n" 
+        << After;
+  } else {
+    Out << "*** IR Dump After " << PassID << " on " << Name
+        << " to file at index - " << this->CurrentPassNumber << " ***\n";
+    const Module *M = unwrapModule(IR);
+    std::string ModuleName = M->getName().str();
+    const std::string OutputFilename = std::to_string(this->CurrentPassNumber) +
+                                       "_after_" + PassID.str() + "_on_" +
+                                       Name + "_" + ModuleName;
+    dumpIRToFile(IR, OutputFilename);
+  }
 }
 
 IRChangedTester::~IRChangedTester() {}
@@ -758,6 +820,35 @@ void PrintIRInstrumentation::printAfterPass(StringRef PassID, Any IR) {
   unwrapAndPrint(dbgs(), IR);
 }
 
+void PrintIRInstrumentation::dumpFileAfterPass(StringRef PassID, Any IR) {
+  if (isIgnored(PassID))
+    return;
+
+  if (!shouldPrintAfterPass(PassID) && !shouldPrintPassNumbers() &&
+      !shouldPrintAtPassNumber())
+    return;
+
+  const Module *M = unwrapModule(IR);
+  std::string IRName;
+  StringRef StoredPassID;
+  std::tie(M, IRName, StoredPassID) = popModuleDesc(PassID);
+  assert(StoredPassID == PassID && "mismatched PassID");
+
+  if (!shouldPrintIR(IR) || !shouldPrintAfterPass(PassID))
+    return;
+
+  std::string ModuleName = M->getName().str();
+
+  const std::string OutputFilename = std::to_string(this->CurrentPassNumber) +
+                                     "_after_" + PassID.str() + "_on_" +
+                                     IRName + "_" + ModuleName;
+  llvm::dbgs() << "*** IR Dump After " << PassID << " on " << IRName
+               << " to file at index - " << this->CurrentPassNumber << " ***\n";
+  dumpIRToFile(IR, OutputFilename);
+
+  return;
+}
+
 void PrintIRInstrumentation::printAfterPassInvalidated(StringRef PassID) {
   if (isIgnored(PassID))
     return;
@@ -829,7 +920,11 @@ void PrintIRInstrumentation::registerCallbacks(
       shouldPrintAfterSomePass()) {
     PIC.registerAfterPassCallback(
         [this](StringRef P, Any IR, const PreservedAnalyses &) {
-          this->printAfterPass(P, IR);
+          if (shouldDumpFile()) {
+            this->dumpFileAfterPass(P, IR);
+          } else {
+            this->printAfterPass(P, IR);
+          }
         });
     PIC.registerAfterPassInvalidatedCallback(
         [this](StringRef P, const PreservedAnalyses &) {
