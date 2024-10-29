@@ -981,3 +981,8 @@ defm FMLALL_VG4_M4Z4Z_BtoS : sme2_mla_ll_array_vg4_multi<"fmlall", 0b01000, Matr
 defm FMOPA_MPPZZ_BtoS : sme2_fp8_fmopa_za32<"fmopa", int_aarch64_sme_fp8_fmopa_za32>;
 } //[HasSMEF8F32]
 
+let Predicates = [HasSME2p2, HasSMEF16F16] in {
+  defm FMOP4A : sme2_fmop4as_fp16_non_widening<0, "fmop4a">;
+  defm FMOP4S : sme2_fmop4as_fp16_non_widening<1, "fmop4s">;
+} // [HasSME2p2, HasSMEF16F16]
+
