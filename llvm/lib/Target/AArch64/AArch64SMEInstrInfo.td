@@ -1023,6 +1023,13 @@ let Predicates = [HasSME_MOP4, HasSMEF16F16] in {
   defm FMOP4S : sme2_fmop4as_fp16_non_widening<1, "fmop4s", "int_aarch64_sme_mop4s">;
 } // [HasSME_MOP4, HasSMEF16F16]
 
+let Predicates = [HasSME2p2] in {
+  defm FMUL_2ZZ  : sme2_multi2_fmul_sm<"fmul">;
+  defm FMUL_2Z2Z : sme2_multi2_fmul_mm< "fmul">;
+  defm FMUL_4ZZ  : sme2_multi4_fmul_sm<"fmul">;
+  defm FMUL_4Z4Z : sme2_multi4_fmul_mm< "fmul">;
+} // [HasSME2p2]
+
 let Predicates = [HasSME_MOP4, HasSMEB16B16] in {
   defm BFMOP4A : sme2_bfmop4as_non_widening<0, "bfmop4a", "int_aarch64_sme_mop4a">;
   defm BFMOP4S : sme2_bfmop4as_non_widening<1, "bfmop4s", "int_aarch64_sme_mop4s">;
@@ -1037,9 +1044,6 @@ let Predicates = [HasSME_MOP4, HasSMEF8F32] in {
   defm FMOP4A : sme2_fmop4a_fp8_fp32_4way<"fmop4a", "int_aarch64_sme_fp8_fmop4a_za32">;
 }
 
-//===----------------------------------------------------------------------===//
-// SME2.3 instructions
-//===----------------------------------------------------------------------===//
 let Predicates = [HasSME2p3] in {
   def LUTI6_ZTZ       : sme2_lut_single<"luti6">;
   def LUTI6_4ZT3Z     : sme2_luti6_zt_consecutive<"luti6">;
@@ -1047,3 +1051,8 @@ let Predicates = [HasSME2p3] in {
   def LUTI6_4Z2Z2ZI   : sme2_luti6_vector_vg4_consecutive<"luti6">;
   def LUTI6_S_4Z2Z2ZI : sme2_luti6_vector_vg4_strided<"luti6">;
 } // [HasSME2p3]
+
+let Predicates = [HasSME2, HasSVEBFSCALE] in {
+  defm BFMUL : sme2_bfmul_single<"bfmul">;
+  defm BFMUL : sme2_bfmul_multi<"bfmul">;
+} //[HasSME2, HasSVEBFSCALE]
