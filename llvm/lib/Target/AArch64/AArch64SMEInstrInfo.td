@@ -1033,3 +1033,9 @@ let Predicates = [HasSME2p2, HasSMEF64F64] in {
   defm FMOP4A : sme2_fmop4as_fp64_non_widening<0, "fmop4a">;
   defm FMOP4S : sme2_fmop4as_fp64_non_widening<1, "fmop4s">;
 }
+
+let Uses = [FPMR, FPCR] in {
+let Predicates = [HasSME2p2, HasSMEF8F32] in {
+  defm FMOP4A : sme2_fmop4a_fp8_fp32_4way<"fmop4a">;
+}
+}
