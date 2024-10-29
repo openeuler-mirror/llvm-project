@@ -1018,6 +1018,11 @@ let Predicates = [HasSME_MOP4, HasSMEF8F16] in {
   defm FMOP4A : sme2_fmop4a_fp8_fp16_2way<"fmop4a", "int_aarch64_sme_fp8_fmop4a_za16">;
 } // [HasSME_MOP4, HasSMEF8F16]
 
+let Predicates = [HasSME2, HasSVEBFSCALE] in {
+  defm BFSCALE : sme2_bfscale_single<"bfscale">;
+  defm BFSCALE : sme2_bfscale_multi<"bfscale">;
+}
+
 let Predicates = [HasSME_MOP4, HasSMEF16F16] in {
   defm FMOP4A : sme2_fmop4as_fp16_non_widening<0, "fmop4a", "int_aarch64_sme_mop4a">;
   defm FMOP4S : sme2_fmop4as_fp16_non_widening<1, "fmop4s", "int_aarch64_sme_mop4s">;
