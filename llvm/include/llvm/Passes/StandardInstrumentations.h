@@ -48,6 +48,7 @@ public:
 private:
   void printBeforePass(StringRef PassID, Any IR);
   void printAfterPass(StringRef PassID, Any IR);
+  void dumpFileAfterPass(StringRef PassID, Any IR);
   void printAfterPassInvalidated(StringRef PassID);
 
   bool shouldPrintBeforePass(StringRef PassID);
@@ -178,6 +179,8 @@ public:
 // 8.  To compare two IR representations (of type \p T).
 template <typename IRUnitT> class ChangeReporter {
 protected:
+  unsigned CurrentPassNumber = 0;
+
   ChangeReporter(bool RunInVerboseMode) : VerboseMode(RunInVerboseMode) {}
 
 public:

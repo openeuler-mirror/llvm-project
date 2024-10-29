@@ -33,6 +33,10 @@ static cl::opt<bool> PrintAfterAll("print-after-all",
                                    llvm::cl::desc("Print IR after each pass"),
                                    cl::init(false), cl::Hidden);
 
+static cl::opt<bool> DumpFile("dump-file",
+                              llvm::cl::desc("Dump IR to a file after passes"),
+                              cl::init(false), cl::Hidden);
+
 // Print out the IR after passes, similar to -print-after-all except that it
 // only prints the IR after passes that change the IR. Those passes that do not
 // make changes to the IR are reported as not making any changes. In addition,
@@ -122,6 +126,8 @@ static bool shouldPrintBeforeOrAfterPass(StringRef PassID,
 bool llvm::shouldPrintBeforeAll() { return PrintBeforeAll; }
 
 bool llvm::shouldPrintAfterAll() { return PrintAfterAll; }
+
+bool llvm::shouldDumpFile() { return DumpFile; }
 
 bool llvm::shouldPrintBeforePass(StringRef PassID) {
   return PrintBeforeAll || shouldPrintBeforeOrAfterPass(PassID, PrintBefore);
