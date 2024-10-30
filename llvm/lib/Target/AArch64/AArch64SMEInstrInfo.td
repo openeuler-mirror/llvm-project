@@ -963,6 +963,10 @@ defm FVDOTT_VG4_M2ZZI_BtoS : sme2_fp8_fdotv_index_za32_vg1x4<"fvdott", 0b1, int_
 let Predicates = [HasSME2p2] in {
   defm BFMOP4A : sme2_bfmop4as_widening<0, "bfmop4a">;
   defm BFMOP4S : sme2_bfmop4as_widening<1, "bfmop4s">;
+let Predicates = [HasSME2p2] in {
+  defm FMOP4A : sme2_fmop4as_fp32_non_widening<0, "fmop4a">;
+  defm FMOP4S : sme2_fmop4as_fp32_non_widening<1, "fmop4s">;
+} // [HasSME2p2]
 } // [HasSME2p2]
 
 defm FMLALL_MZZI_BtoS      : sme2_mla_ll_array_index_32b<"fmlall",     0b01, 0b000,  int_aarch64_sme_fp8_fmlall_lane_za32_vg4x1, [FPMR, FPCR]>;
