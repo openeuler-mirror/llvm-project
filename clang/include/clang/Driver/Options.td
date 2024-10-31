@@ -886,8 +886,13 @@ def Xopenmp_target : Separate<["-"], "Xopenmp-target">, Group<CompileOnly_Group>
 def Xopenmp_target_EQ : JoinedAndSeparate<["-"], "Xopenmp-target=">, Group<CompileOnly_Group>,
   HelpText<"Pass <arg> to the target offloading toolchain identified by <triple>.">,
   MetaVarName<"<triple> <arg>">;
+#ifdef BUILD_FOR_OPENEULER
+def z : JoinedOrSeparate<["-"], "z">, Flags<[LinkerInput]>,
+  HelpText<"Pass -z<arg> or -z <arg> to the linker">, MetaVarName<"<arg>">,
+#else
 def z : Separate<["-"], "z">, Flags<[LinkerInput]>,
   HelpText<"Pass -z <arg> to the linker">, MetaVarName<"<arg>">,
+#endif
   Group<Link_Group>;
 def offload_link : Flag<["--"], "offload-link">, Group<Link_Group>,
   HelpText<"Use the new offloading linker to perform the link job.">;

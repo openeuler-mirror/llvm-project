@@ -2597,6 +2597,16 @@ void Driver::BuildUniversalActions(Compilation &C, const ToolChain &TC,
   }
 }
 
+#ifdef BUILD_FOR_OPENEULER
+llvm::DenseSet<StringRef> ZArgsList{
+  "defs", "muldefs", "execstack", "noexecstack", "globalaudit", "combreloc",
+  "nocombreloc", "global", "initfirst", "interpose", "lazy", "loadfltr",
+  "nocopyreloc", "nodefaultlib", "nodelete", "nodlopen", "nodump", "now",
+  "origin", "relro", "norelro", "separate-code", "noseparate-code", "common",
+  "nocommon", "text", "notext", "textoff"
+};
+#endif
+
 bool Driver::DiagnoseInputExistence(const DerivedArgList &Args, StringRef Value,
                                     types::ID Ty, bool TypoCorrect) const {
   if (!getCheckInputsExist())
@@ -2672,6 +2682,14 @@ bool Driver::DiagnoseInputExistence(const DerivedArgList &Args, StringRef Value,
   // unknown flags.)
   if (IsCLMode() && Ty == types::TY_Object && !Value.startswith("/"))
     return true;
+
+#ifdef BUILD_FOR_OPENEULER
+  if (ZArgsList.find(Value) != ZArgsList.end() ||
+      Value.starts_with("common-page-size=") ||
+      Value.starts_with("max-page-size=") ||
+      Value.starts_with("stack-size="))
+    return true;
+#endif
 
   Diag(clang::diag::err_drv_no_such_file) << Value;
   return false;
