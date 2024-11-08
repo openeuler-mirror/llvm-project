@@ -750,11 +750,14 @@ let TargetPrefix = "aarch64" in {
     : DefaultAttrsIntrinsic<[], [llvm_i64_ty], [IntrNoMem, IntrHasSideEffects]>;
   class RNDR_Intrinsic
     : DefaultAttrsIntrinsic<[llvm_i64_ty, llvm_i1_ty], [], [IntrNoMem, IntrHasSideEffects]>;
+  class FPMR_Set_Intrinsic
+    : DefaultAttrsIntrinsic<[], [llvm_i64_ty], [IntrInaccessibleMemOnly]>; 
 }
 
 // FPCR
 def int_aarch64_get_fpcr : FPCR_Get_Intrinsic;
 def int_aarch64_set_fpcr : FPCR_Set_Intrinsic;
+def int_aarch64_set_fpmr : FPMR_Set_Intrinsic;
 
 // Armv8.5-A Random number generation intrinsics
 def int_aarch64_rndr : RNDR_Intrinsic;
