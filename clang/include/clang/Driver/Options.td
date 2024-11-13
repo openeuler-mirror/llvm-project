@@ -1819,6 +1819,9 @@ def fgcc_compatible : Flag<["-"], "fgcc-compatible">,
   Flags<[CC1Option]>,
   MarshallingInfoFlag<DiagnosticOpts<"GccCompatible">>,
   HelpText<"Enable gcc compatibility for openEuler.">;
+def : Flag["-"], "fGNU-compatibility">,
+  Flags<[CC1Option]>, Alias<fgcc_compatible>,
+  HelpText<"Alias for -fgcc_compatible">;
 def fno_gcc_compatible : Flag<["-"], "fno-gcc-compatible">, Flags<[CC1Option]>;
 #endif
 
