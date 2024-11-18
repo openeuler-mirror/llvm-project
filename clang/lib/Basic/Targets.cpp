@@ -805,8 +805,17 @@ TargetInfo::CreateTargetInfo(DiagnosticsEngine &Diags,
 
   // Set the target ABI if specified.
   if (!Opts->ABI.empty() && !Target->setABI(Opts->ABI)) {
+#if defined(BUILD_FOR_OPENEULER)
+    if (Diags.getDiagnosticOptions().GccCompatible && Target->isDefaultABI(Opts->ABI)) {
+      Diags.Report(diag::warning_target_default_abi) << Opts->ABI;
+    } else {
+      Diags.Report(diag::err_target_unknown_abi) << Opts->ABI;
+      return nullptr;
+    }
+#else
     Diags.Report(diag::err_target_unknown_abi) << Opts->ABI;
     return nullptr;
+#endif
   }
 
   // Set the fp math unit.
