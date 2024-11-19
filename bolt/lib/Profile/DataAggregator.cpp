@@ -90,6 +90,11 @@ cl::opt<bool> ReadPreAggregated(
     "pa", cl::desc("skip perf and read data from a pre-aggregated file format"),
     cl::cat(AggregatorCategory));
 
+cl::opt<bool> ReadLibkperfFile(
+    "libkperf", cl::desc("skip perf and read data from a libkperf file format, "
+                   "only for continuous optimizing with BAT"),
+    cl::cat(AggregatorCategory));
+
 static cl::opt<bool>
 TimeAggregator("time-aggr",
   cl::desc("time BOLT aggregator"),
@@ -162,8 +167,8 @@ void DataAggregator::findPerfExecutable() {
 void DataAggregator::start() {
   outs() << "PERF2BOLT: Starting data aggregation job for " << Filename << "\n";
 
-  // Don't launch perf for pre-aggregated files
-  if (opts::ReadPreAggregated)
+  // Don't launch perf for pre-aggregated files and libkperf files
+  if (opts::ReadPreAggregated || opts::ReadLibkperfFile)
     return;
 
   findPerfExecutable();
@@ -205,7 +210,7 @@ void DataAggregator::start() {
 }
 
 void DataAggregator::abort() {
-  if (opts::ReadPreAggregated)
+  if (opts::ReadPreAggregated || opts::ReadLibkperfFile)
     return;
 
   std::string Error;
@@ -325,6 +330,8 @@ void DataAggregator::processFileBuildID(StringRef FileBuildID) {
 bool DataAggregator::checkPerfDataMagic(StringRef FileName) {
   if (opts::ReadPreAggregated)
     return true;
+  if (opts::ReadLibkperfFile)
+    return true;
 
   Expected<sys::fs::file_t> FD = sys::fs::openNativeFileForRead(FileName);
   if (!FD) {
@@ -367,6 +374,27 @@ void DataAggregator::parsePreAggregated() {
   Line = 1;
   if (parsePreAggregatedLBRSamples()) {
     errs() << "PERF2BOLT: failed to parse samples\n";
+    exit(1);
+  }
+}
+
+void DataAggregator::parseLibkperfFile() {
+  std::string Error;
+
+  ErrorOr<std::unique_ptr<MemoryBuffer>> MB =
+      MemoryBuffer::getFileOrSTDIN(Filename);
+  if (std::error_code EC = MB.getError()) {
+    errs() << "PERF2BOLT-ERROR: cannot open " << Filename << ": "
+           << EC.message() << "\n";
+    exit(1);
+  }
+
+  FileBuf = std::move(*MB);
+  ParsingBuf = FileBuf->getBuffer();
+  Col = 0;
+  Line = 0;
+  if (parseLibkperfSamples()) {
+    errs() << "PERF2BOLT: failed to parse libkperf samples\n";
     exit(1);
   }
 }
@@ -514,6 +542,11 @@ Error DataAggregator::preprocessProfile(BinaryContext &BC) {
     return Error::success();
   }
 
+  if (opts::ReadLibkperfFile) {
+    parseLibkperfFile();
+    return Error::success();
+  }
+
   if (std::optional<StringRef> FileBuildID = BC.getFileBuildID()) {
     outs() << "BOLT-INFO: binary build-id is:     " << *FileBuildID << "\n";
     processFileBuildID(*FileBuildID);
@@ -620,7 +653,7 @@ bool DataAggregator::mayHaveProfileData(const BinaryFunction &Function) {
 void DataAggregator::processProfile(BinaryContext &BC) {
   if (opts::ReadPreAggregated)
     processPreAggregated();
-  else if (opts::BasicAggregation)
+  else if (opts::BasicAggregation || opts::ReadLibkperfFile)
     processBasicEvents();
   else
     processBranchEvents();
@@ -1218,6 +1251,28 @@ ErrorOr<Location> DataAggregator::parseLocationOrOffset() {
   return Location(true, BuildID.get(), Offset.get());
 }
 
+ErrorOr<DataAggregator::LibkperfDataEntry>
+DataAggregator::parseLibkperfDataEntry() {
+  // <hex addr> <count>
+  while (checkAndConsumeFS()) {
+  }
+  ErrorOr<uint64_t> Addr = parseHexField(FieldSeparator);
+  if (std::error_code EC = Addr.getError())
+    return EC;
+  while (checkAndConsumeFS()) {
+  }
+  ErrorOr<uint64_t> Count = parseNumberField(FieldSeparator, true);
+  if (std::error_code EC = Count.getError())
+    return EC;
+
+  if (!checkAndConsumeNewLine()) {
+    reportError("expected end of line");
+    return make_error_code(llvm::errc::io_error);
+  }
+
+  return LibkperfDataEntry{Addr.get(), Count.get()};
+}
+
 ErrorOr<DataAggregator::AggregatedLBREntry>
 DataAggregator::parseAggregatedLBREntry() {
   while (checkAndConsumeFS()) {
@@ -1719,6 +1774,29 @@ void DataAggregator::processMemEvents() {
     MemData->update(FuncLoc, AddrLoc);
     LLVM_DEBUG(dbgs() << "Mem event: " << FuncLoc << " = " << AddrLoc << "\n");
   }
+}
+
+std::error_code DataAggregator::parseLibkperfSamples() {
+  outs() << "PERF2BOLT: parsing libkperf data...\n";
+  NamedRegionTimer T("parseLibkperfData", "Parsing libkperf data",
+                     TimerGroupName, TimerGroupDesc, opts::TimeAggregator);
+  bool FirstLine = true;
+  while (hasData()) {
+    if (FirstLine) {
+      ErrorOr<StringRef> Event = parseString('\n');
+      if (std::error_code EC = Event.getError())
+        return EC;
+      EventNames.insert(Event.get());
+      FirstLine = false;
+    }
+    ErrorOr<LibkperfDataEntry> KperfEntry = parseLibkperfDataEntry();
+    if (std::error_code EC = KperfEntry.getError())
+      return EC;
+
+    BasicSamples[KperfEntry->Addr] += KperfEntry->Count;
+  }
+
+  return std::error_code();
 }
 
 std::error_code DataAggregator::parsePreAggregatedLBRSamples() {
