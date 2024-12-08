@@ -15,6 +15,102 @@
 #define SVE_ACLE_FUNC(A1,A2,A3) A1##A2##A3
 #endif
 
+// CHECK-LABEL: @test_cvt1_f16_x2(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    tail call void @llvm.aarch64.set.fpmr(i64 [[FPMR:%.*]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <vscale x 8 x half>, <vscale x 8 x half> } @llvm.aarch64.sve.fp8.cvt1.x2.nxv8f16(<vscale x 16 x i8> [[ZN:%.*]])
+// CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <vscale x 8 x half>, <vscale x 8 x half> } [[TMP0]], 0
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 16 x half> @llvm.vector.insert.nxv16f16.nxv8f16(<vscale x 16 x half> poison, <vscale x 8 x half> [[TMP1]], i64 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <vscale x 8 x half>, <vscale x 8 x half> } [[TMP0]], 1
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call <vscale x 16 x half> @llvm.vector.insert.nxv16f16.nxv8f16(<vscale x 16 x half> [[TMP2]], <vscale x 8 x half> [[TMP3]], i64 8)
+// CHECK-NEXT:    ret <vscale x 16 x half> [[TMP4]]
+//
+// CPP-CHECK-LABEL: @_Z16test_cvt1_f16_x2u13__SVMfloat8_tm(
+// CPP-CHECK-NEXT:  entry:
+// CPP-CHECK-NEXT:    tail call void @llvm.aarch64.set.fpmr(i64 [[FPMR:%.*]])
+// CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call { <vscale x 8 x half>, <vscale x 8 x half> } @llvm.aarch64.sve.fp8.cvt1.x2.nxv8f16(<vscale x 16 x i8> [[ZN:%.*]])
+// CPP-CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <vscale x 8 x half>, <vscale x 8 x half> } [[TMP0]], 0
+// CPP-CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 16 x half> @llvm.vector.insert.nxv16f16.nxv8f16(<vscale x 16 x half> poison, <vscale x 8 x half> [[TMP1]], i64 0)
+// CPP-CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <vscale x 8 x half>, <vscale x 8 x half> } [[TMP0]], 1
+// CPP-CHECK-NEXT:    [[TMP4:%.*]] = tail call <vscale x 16 x half> @llvm.vector.insert.nxv16f16.nxv8f16(<vscale x 16 x half> [[TMP2]], <vscale x 8 x half> [[TMP3]], i64 8)
+// CPP-CHECK-NEXT:    ret <vscale x 16 x half> [[TMP4]]
+//
+svfloat16x2_t test_cvt1_f16_x2(svmfloat8_t zn, fpm_t fpmr)  __arm_streaming {
+  return SVE_ACLE_FUNC(svcvt1_f16,_mf8,_x2_fpm)(zn, fpmr);
+}
+
+// CHECK-LABEL: @test_cvt2_f16_x2(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    tail call void @llvm.aarch64.set.fpmr(i64 [[FPMR:%.*]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <vscale x 8 x half>, <vscale x 8 x half> } @llvm.aarch64.sve.fp8.cvt2.x2.nxv8f16(<vscale x 16 x i8> [[ZN:%.*]])
+// CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <vscale x 8 x half>, <vscale x 8 x half> } [[TMP0]], 0
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 16 x half> @llvm.vector.insert.nxv16f16.nxv8f16(<vscale x 16 x half> poison, <vscale x 8 x half> [[TMP1]], i64 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <vscale x 8 x half>, <vscale x 8 x half> } [[TMP0]], 1
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call <vscale x 16 x half> @llvm.vector.insert.nxv16f16.nxv8f16(<vscale x 16 x half> [[TMP2]], <vscale x 8 x half> [[TMP3]], i64 8)
+// CHECK-NEXT:    ret <vscale x 16 x half> [[TMP4]]
+//
+// CPP-CHECK-LABEL: @_Z16test_cvt2_f16_x2u13__SVMfloat8_tm(
+// CPP-CHECK-NEXT:  entry:
+// CPP-CHECK-NEXT:    tail call void @llvm.aarch64.set.fpmr(i64 [[FPMR:%.*]])
+// CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call { <vscale x 8 x half>, <vscale x 8 x half> } @llvm.aarch64.sve.fp8.cvt2.x2.nxv8f16(<vscale x 16 x i8> [[ZN:%.*]])
+// CPP-CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <vscale x 8 x half>, <vscale x 8 x half> } [[TMP0]], 0
+// CPP-CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 16 x half> @llvm.vector.insert.nxv16f16.nxv8f16(<vscale x 16 x half> poison, <vscale x 8 x half> [[TMP1]], i64 0)
+// CPP-CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <vscale x 8 x half>, <vscale x 8 x half> } [[TMP0]], 1
+// CPP-CHECK-NEXT:    [[TMP4:%.*]] = tail call <vscale x 16 x half> @llvm.vector.insert.nxv16f16.nxv8f16(<vscale x 16 x half> [[TMP2]], <vscale x 8 x half> [[TMP3]], i64 8)
+// CPP-CHECK-NEXT:    ret <vscale x 16 x half> [[TMP4]]
+//
+svfloat16x2_t test_cvt2_f16_x2(svmfloat8_t zn, fpm_t fpmr)  __arm_streaming {
+  return SVE_ACLE_FUNC(svcvt2_f16,_mf8,_x2_fpm)(zn, fpmr);
+}
+
+// CHECK-LABEL: @test_cvt1_bf16_x2(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    tail call void @llvm.aarch64.set.fpmr(i64 [[FPMR:%.*]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } @llvm.aarch64.sve.fp8.cvt1.x2.nxv8bf16(<vscale x 16 x i8> [[ZN:%.*]])
+// CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } [[TMP0]], 0
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 16 x bfloat> @llvm.vector.insert.nxv16bf16.nxv8bf16(<vscale x 16 x bfloat> poison, <vscale x 8 x bfloat> [[TMP1]], i64 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } [[TMP0]], 1
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call <vscale x 16 x bfloat> @llvm.vector.insert.nxv16bf16.nxv8bf16(<vscale x 16 x bfloat> [[TMP2]], <vscale x 8 x bfloat> [[TMP3]], i64 8)
+// CHECK-NEXT:    ret <vscale x 16 x bfloat> [[TMP4]]
+//
+// CPP-CHECK-LABEL: @_Z17test_cvt1_bf16_x2u13__SVMfloat8_tm(
+// CPP-CHECK-NEXT:  entry:
+// CPP-CHECK-NEXT:    tail call void @llvm.aarch64.set.fpmr(i64 [[FPMR:%.*]])
+// CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } @llvm.aarch64.sve.fp8.cvt1.x2.nxv8bf16(<vscale x 16 x i8> [[ZN:%.*]])
+// CPP-CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } [[TMP0]], 0
+// CPP-CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 16 x bfloat> @llvm.vector.insert.nxv16bf16.nxv8bf16(<vscale x 16 x bfloat> poison, <vscale x 8 x bfloat> [[TMP1]], i64 0)
+// CPP-CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } [[TMP0]], 1
+// CPP-CHECK-NEXT:    [[TMP4:%.*]] = tail call <vscale x 16 x bfloat> @llvm.vector.insert.nxv16bf16.nxv8bf16(<vscale x 16 x bfloat> [[TMP2]], <vscale x 8 x bfloat> [[TMP3]], i64 8)
+// CPP-CHECK-NEXT:    ret <vscale x 16 x bfloat> [[TMP4]]
+//
+svbfloat16x2_t test_cvt1_bf16_x2(svmfloat8_t zn, fpm_t fpmr)  __arm_streaming {
+  return SVE_ACLE_FUNC(svcvt1_bf16,_mf8,_x2_fpm)(zn, fpmr);
+}
+
+// CHECK-LABEL: @test_cvt2_bf16_x2(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    tail call void @llvm.aarch64.set.fpmr(i64 [[FPMR:%.*]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } @llvm.aarch64.sve.fp8.cvt2.x2.nxv8bf16(<vscale x 16 x i8> [[ZN:%.*]])
+// CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } [[TMP0]], 0
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 16 x bfloat> @llvm.vector.insert.nxv16bf16.nxv8bf16(<vscale x 16 x bfloat> poison, <vscale x 8 x bfloat> [[TMP1]], i64 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } [[TMP0]], 1
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call <vscale x 16 x bfloat> @llvm.vector.insert.nxv16bf16.nxv8bf16(<vscale x 16 x bfloat> [[TMP2]], <vscale x 8 x bfloat> [[TMP3]], i64 8)
+// CHECK-NEXT:    ret <vscale x 16 x bfloat> [[TMP4]]
+//
+// CPP-CHECK-LABEL: @_Z17test_cvt2_bf16_x2u13__SVMfloat8_tm(
+// CPP-CHECK-NEXT:  entry:
+// CPP-CHECK-NEXT:    tail call void @llvm.aarch64.set.fpmr(i64 [[FPMR:%.*]])
+// CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } @llvm.aarch64.sve.fp8.cvt2.x2.nxv8bf16(<vscale x 16 x i8> [[ZN:%.*]])
+// CPP-CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } [[TMP0]], 0
+// CPP-CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 16 x bfloat> @llvm.vector.insert.nxv16bf16.nxv8bf16(<vscale x 16 x bfloat> poison, <vscale x 8 x bfloat> [[TMP1]], i64 0)
+// CPP-CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <vscale x 8 x bfloat>, <vscale x 8 x bfloat> } [[TMP0]], 1
+// CPP-CHECK-NEXT:    [[TMP4:%.*]] = tail call <vscale x 16 x bfloat> @llvm.vector.insert.nxv16bf16.nxv8bf16(<vscale x 16 x bfloat> [[TMP2]], <vscale x 8 x bfloat> [[TMP3]], i64 8)
+// CPP-CHECK-NEXT:    ret <vscale x 16 x bfloat> [[TMP4]]
+//
+svbfloat16x2_t test_cvt2_bf16_x2(svmfloat8_t zn, fpm_t fpmr)  __arm_streaming {
+  return SVE_ACLE_FUNC(svcvt2_bf16,_mf8,_x2_fpm)(zn, fpmr);
+}
+
 // CHECK-LABEL: @test_cvtl1_f16_x2(
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    tail call void @llvm.aarch64.set.fpmr(i64 [[FPMR:%.*]])
