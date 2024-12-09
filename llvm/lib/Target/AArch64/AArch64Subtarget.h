@@ -91,7 +91,8 @@ public:
     HIP09,
     HIP10C,
     HIP11,
-    HIP12
+    HIP12,
+    MONAKA
   };
 
 protected:

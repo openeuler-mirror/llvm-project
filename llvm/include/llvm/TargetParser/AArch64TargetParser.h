@@ -702,6 +702,13 @@ inline constexpr CpuInfo CpuInfos[] = {
                                            AArch64::AEK_FP16,
                                            AArch64::AEK_SVE,
                                            AArch64::AEK_LSE}))},
+    {"fujitsu-monaka", ARMV9_3A,
+     (AArch64::ExtensionBitset(
+         {AArch64::AEK_PERFMON, AArch64::AEK_FPAC, AArch64::AEK_FP16FML,
+          AArch64::AEK_RAND, AArch64::AEK_SSBS, AArch64::AEK_LS64,
+          AArch64::AEK_SPECRES2, AArch64::AEK_SVE2AES, AArch64::AEK_SVE2SM4,
+          AArch64::AEK_SVE2SHA3, AArch64::AEK_SVE2BITPERM,
+          AArch64::AEK_FAMINMAX, AArch64::AEK_FP8DOT2, AArch64::AEK_LUT}))},
     {"carmel", ARMV8_2A,
      (AArch64::ExtensionBitset(
          {AArch64::AEK_AES, AArch64::AEK_SHA2, AArch64::AEK_FP16,
