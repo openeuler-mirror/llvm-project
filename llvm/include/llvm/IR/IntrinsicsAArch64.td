@@ -3723,6 +3723,17 @@ let TargetPrefix = "aarch64" in {
   //
   def int_aarch64_sve_fp8_cvtl1_x2 : SME2_FP8_CVT_X2_Single_Intrinsic;
   def int_aarch64_sve_fp8_cvtl2_x2 : SME2_FP8_CVT_X2_Single_Intrinsic;
+
+  class SME_FP8_OuterProduct_Intrinsic
+      : DefaultAttrsIntrinsic<[],
+          [llvm_i32_ty,
+          llvm_nxv16i1_ty, llvm_nxv16i1_ty,
+          llvm_nxv16i8_ty, llvm_nxv16i8_ty],
+          [ImmArg<ArgIndex<0>>, IntrInaccessibleMemOnly, IntrHasSideEffects]>;
+
+  // FP8 outer product
+  def int_aarch64_sme_fp8_fmopa_za16 : SME_FP8_OuterProduct_Intrinsic;
+  def int_aarch64_sme_fp8_fmopa_za32 : SME_FP8_OuterProduct_Intrinsic;
 }
 
 // SVE2.1 - ZIPQ1, ZIPQ2, UZPQ1, UZPQ2
