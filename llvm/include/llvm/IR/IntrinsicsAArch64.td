@@ -3712,6 +3712,18 @@ let TargetPrefix = "aarch64" in {
     : DefaultAttrsIntrinsic<[llvm_anyvector_ty, LLVMMatchType<0>],
                             [llvm_nxv16i8_ty],
                             [IntrReadMem, IntrInaccessibleMemOnly]>;
+
+  // SVE Widening Conversions
+  class SVE2_FP8_Cvt
+    : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                            [llvm_nxv16i8_ty],
+                            [IntrReadMem, IntrInaccessibleMemOnly]>;
+
+  def int_aarch64_sve_fp8_cvt1   : SVE2_FP8_Cvt;
+  def int_aarch64_sve_fp8_cvt2   : SVE2_FP8_Cvt;
+  def int_aarch64_sve_fp8_cvtlt1 : SVE2_FP8_Cvt;
+  def int_aarch64_sve_fp8_cvtlt2 : SVE2_FP8_Cvt;
+
   //
   // CVT from FP8 to half-precision/BFloat16 multi-vector
   //
