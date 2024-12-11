@@ -3736,6 +3736,22 @@ let TargetPrefix = "aarch64" in {
   def int_aarch64_sve_fp8_cvtl1_x2 : SME2_FP8_CVT_X2_Single_Intrinsic;
   def int_aarch64_sve_fp8_cvtl2_x2 : SME2_FP8_CVT_X2_Single_Intrinsic;
 
+  class SME2_FP8_CVT_Single_X4_Intrinsic
+    : DefaultAttrsIntrinsic<[llvm_nxv16i8_ty],
+                            [llvm_nxv4f32_ty, llvm_nxv4f32_ty, llvm_nxv4f32_ty, llvm_nxv4f32_ty],
+                            [IntrReadMem, IntrInaccessibleMemOnly]>;
+
+  //
+  // CVT to FP8 from half-precision/BFloat16/single-precision multi-vector
+  //
+  def int_aarch64_sve_fp8_cvt_x2
+    : DefaultAttrsIntrinsic<[llvm_nxv16i8_ty],
+                            [llvm_anyvector_ty, LLVMMatchType<0>],
+                            [IntrReadMem, IntrInaccessibleMemOnly]>;
+
+  def int_aarch64_sve_fp8_cvt_x4  : SME2_FP8_CVT_Single_X4_Intrinsic;
+  def int_aarch64_sve_fp8_cvtn_x4 : SME2_FP8_CVT_Single_X4_Intrinsic;
+
   class SME_FP8_OuterProduct_Intrinsic
       : DefaultAttrsIntrinsic<[],
           [llvm_i32_ty,
