@@ -3778,6 +3778,25 @@ class SME2_FP8_FDOT_LANE_VG1x4 :
   def int_aarch64_sve_fp8_fdot      : SVE2_FP8_FMLA_FDOT;
   def int_aarch64_sve_fp8_fdot_lane : SVE2_FP8_FMLA_FDOT_Lane;
 
+  // Fused multiply-add
+  def int_aarch64_sve_fp8_fmlalb      : SVE2_FP8_FMLA_FDOT;
+  def int_aarch64_sve_fp8_fmlalb_lane : SVE2_FP8_FMLA_FDOT_Lane;
+  
+  def int_aarch64_sve_fp8_fmlalt      : SVE2_FP8_FMLA_FDOT;
+  def int_aarch64_sve_fp8_fmlalt_lane : SVE2_FP8_FMLA_FDOT_Lane;
+  
+  def int_aarch64_sve_fp8_fmlallbb      : SVE2_FP8_FMLA_FDOT;
+  def int_aarch64_sve_fp8_fmlallbb_lane : SVE2_FP8_FMLA_FDOT_Lane;
+  
+  def int_aarch64_sve_fp8_fmlallbt      : SVE2_FP8_FMLA_FDOT;
+  def int_aarch64_sve_fp8_fmlallbt_lane : SVE2_FP8_FMLA_FDOT_Lane;
+  
+  def int_aarch64_sve_fp8_fmlalltb      : SVE2_FP8_FMLA_FDOT;
+  def int_aarch64_sve_fp8_fmlalltb_lane : SVE2_FP8_FMLA_FDOT_Lane;
+  
+  def int_aarch64_sve_fp8_fmlalltt      : SVE2_FP8_FMLA_FDOT;
+  def int_aarch64_sve_fp8_fmlalltt_lane : SVE2_FP8_FMLA_FDOT_Lane;
+
   //
   // CVT from FP8 to half-precision/BFloat16 multi-vector
   //
