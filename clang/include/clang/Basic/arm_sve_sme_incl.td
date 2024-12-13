@@ -50,6 +50,7 @@
 // h: half-float
 // d: double
 // b: bfloat
+// m: mfloat8
 
 // Typespec modifiers
 // ------------------
