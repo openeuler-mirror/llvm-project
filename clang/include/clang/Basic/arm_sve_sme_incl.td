@@ -87,6 +87,7 @@
 // j: element type promoted to 64bits (splat to vector type)
 // K: element type bitcast to a signed integer (splat to vector type)
 // L: element type bitcast to an unsigned integer (splat to vector type)
+// !: mfloat8_t (splat to svmfloat8_t)
 //
 // i: constant uint64_t
 // k: int32_t

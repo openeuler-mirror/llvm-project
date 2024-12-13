@@ -2591,6 +2591,7 @@ void NeonEmitter::runVectorTypes(raw_ostream &OS) {
 
   OS << "#ifdef __aarch64__\n";
   OS << "typedef __MFloat8_t __mfp8;\n";
+  OS << "typedef __mfp8 mfloat8_t;\n";
   OS << "typedef __MFloat8x8_t mfloat8x8_t;\n";
   OS << "typedef __MFloat8x16_t mfloat8x16_t;\n";
   OS << "typedef double float64_t;\n";

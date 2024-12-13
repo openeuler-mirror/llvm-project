@@ -9632,7 +9632,16 @@ Value *CodeGenFunction::EmitSVEDupX(Value *Scalar, llvm::Type *Ty) {
       cast<llvm::VectorType>(Ty)->getElementCount(), Scalar);
 }
 
-Value *CodeGenFunction::EmitSVEDupX(Value* Scalar) {
+Value *CodeGenFunction::EmitSVEDupX(Value *Scalar) {
+  if (auto *Ty = Scalar->getType(); Ty->isVectorTy()) {
+#ifndef NDEBUG
+    auto *VecTy = cast<llvm::VectorType>(Ty);
+    ElementCount EC = VecTy->getElementCount();
+    assert(EC.isScalar() && VecTy->getElementType() == Int8Ty &&
+           "Only <1 x i8> expected");
+#endif
+    Scalar = Builder.CreateExtractElement(Scalar, uint64_t(0));
+  }
   return EmitSVEDupX(Scalar, getSVEVectorForElementType(Scalar->getType()));
 }
 
@@ -10184,6 +10193,12 @@ Value *CodeGenFunction::EmitAArch64SMEBuiltinExpr(unsigned BuiltinID,
                        Ops.pop_back_val());
   // Handle builtins which require their multi-vector operands to be swapped
   swapCommutativeSMEOperands(BuiltinID, Ops);
+
+  // Splat scalar operand to vector (intrinsics with _n infix)
+  if (TypeFlags.hasSplatOperand()) {
+    unsigned OpNo = TypeFlags.getSplatOperand();
+    Ops[OpNo] = EmitSVEDupX(Ops[OpNo]);
+  }
 
   // Should not happen!
   if (Builtin->LLVMIntrinsic == 0)
