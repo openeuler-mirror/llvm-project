@@ -154,6 +154,7 @@ enum ArchExtKind : uint64_t {
   AEK_RASv2 =       1ULL << 54, // FEAT_RASv2
   AEK_ITE =         1ULL << 55, // FEAT_ITE
   AEK_GCS =         1ULL << 56, // FEAT_GCS
+  AEK_SMEFA64 =     1ULL << 57, // FEAT_SME_FA64
 };
 // clang-format on
 
@@ -260,6 +261,7 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"tme", AArch64::AEK_TME, "+tme", "-tme", FEAT_MAX, "", 0},
     {"wfxt", AArch64::AEK_NONE, {}, {}, FEAT_WFXT, "+wfxt", 550},
     {"gcs", AArch64::AEK_GCS, "+gcs", "-gcs", FEAT_MAX, "", 0},
+    {"sme-fa64",  AArch64::AEK_SMEFA64,  "+sme-fa64", "-sme-fa64",  FEAT_MAX, "", 0},
     // Special cases
     {"none", AArch64::AEK_NONE, {}, {}, FEAT_MAX, "", ExtensionInfo::MaxFMVPriority},
 };
