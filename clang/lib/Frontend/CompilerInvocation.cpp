@@ -3622,8 +3622,19 @@ bool CompilerInvocation::ParseLangArgs(LangOptions &Opts, ArgList &Args,
       // compatible.
       const LangStandard &Std = LangStandard::getLangStandardForKind(LangStd);
       if (!IsInputCompatibleWithStandard(IK, Std)) {
+#if defined(BUILD_FOR_OPENEULER)
+        if (Args.hasArg(OPT_fgcc_compatible)) {
+          LangStd = LangStandard::lang_unspecified;
+          Diags.Report(diag::warning_not_valid_std)
+              << A->getAsString(Args) << GetInputKindName(IK);
+        } else {
+          Diags.Report(diag::err_drv_argument_not_allowed_with)
+              << A->getAsString(Args) << GetInputKindName(IK);
+        }
+#else
         Diags.Report(diag::err_drv_argument_not_allowed_with)
           << A->getAsString(Args) << GetInputKindName(IK);
+#endif
       }
     }
   }

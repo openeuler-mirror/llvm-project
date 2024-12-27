@@ -94,6 +94,9 @@ public:
 
   StringRef getABI() const override;
   bool setABI(const std::string &Name) override;
+#if defined(BUILD_FOR_OPENEULER)
+  bool isDefaultABI(const std::string &Name) override;
+#endif
 
   bool validateBranchProtection(StringRef Spec, StringRef Arch,
                                 BranchProtectionInfo &BPI,

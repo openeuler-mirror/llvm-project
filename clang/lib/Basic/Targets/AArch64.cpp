@@ -206,6 +206,12 @@ bool AArch64TargetInfo::setABI(const std::string &Name) {
   return true;
 }
 
+#if defined(BUILD_FOR_OPENEULER)
+bool AArch64TargetInfo::isDefaultABI(const std::string &Name) {
+  return Name == "lp64";
+}
+#endif
+
 bool AArch64TargetInfo::validateBranchProtection(StringRef Spec, StringRef,
                                                  BranchProtectionInfo &BPI,
                                                  StringRef &Err) const {
