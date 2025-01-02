@@ -1226,6 +1226,16 @@ def TuneHIP09 : SubtargetFeature<"hip09", "ARMProcFamily", "HIP09",
                                    FeatureFuseMvnClz,
                                    FeaturePostRAScheduler]>;
 
+def TuneHIP10C : SubtargetFeature<"hip10c", "ARMProcFamily", "HIP10C",
+                                   "HiSilicon HIP10C processors", [
+                                   FeatureCustomCheapAsMoveHandling,
+                                   FeatureCmpBccFusion,
+                                   FeatureExperimentalZeroingPseudos,
+                                   FeatureFuseAES,
+                                   FeatureLSLFast,
+                                   FeatureAscendStoreAddress,
+                                   FeaturePostRAScheduler]>;
+
 def TuneAmpere1 : SubtargetFeature<"ampere1", "ARMProcFamily", "Ampere1",
                                    "Ampere Computing Ampere-1 processors", [
                                    FeaturePostRAScheduler,
@@ -1386,6 +1396,10 @@ def ProcessorFeatures {
                                   FeatureFullFP16, FeatureFP16FML, FeatureDotProd,
                                   FeatureJS, FeatureComplxNum, FeatureSHA3, FeatureSM4,
                                   FeatureSVE];
+  list<SubtargetFeature> HIP10C = [HasV8_5aOps, FeatureAES, FeatureFP16FML, FeatureFullFP16,
+                                   FeatureMatMulFP32, FeatureMatMulFP64, FeatureMTE, FeaturePerfMon,
+                                   FeatureRandGen, FeatureSHA2, FeatureSHA3, FeatureSM4, FeatureWFxT,
+                                   FeatureBF16, FeatureMatMulInt8];
   list<SubtargetFeature> Ampere1 = [HasV8_6aOps, FeatureNEON, FeaturePerfMon,
                                     FeatureSSBS, FeatureRandGen, FeatureSB,
                                     FeatureSHA2, FeatureSHA3, FeatureAES];
@@ -1497,6 +1511,9 @@ def : ProcessorModel<"tsv110", TSV110Model, ProcessorFeatures.TSV110,
                      [TuneTSV110]>;
 def : ProcessorModel<"hip09", HIP09Model, ProcessorFeatures.HIP09,
                      [TuneHIP09]>;
+// FIXME: Hisilicon HIP10C is currently modeled as a Cortex-A57
+def : ProcessorModel<"hip10c", CortexA57Model, ProcessorFeatures.HIP10C,
+                     [TuneHIP10C]>;
 
 // Support cyclone as an alias for apple-a7 so we can still LTO old bitcode.
 def : ProcessorModel<"cyclone", CycloneModel, ProcessorFeatures.AppleA7,
