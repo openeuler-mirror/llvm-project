@@ -7,6 +7,7 @@ set(LLVM_LINK_COMPONENTS
 add_llvm_library(LLVMBOLTTargetAArch64
   AArch64MCPlusBuilder.cpp
 
+  NO_EXPORT
   DISABLE_LLVM_LINK_LLVM_DYLIB
 
   DEPENDS
