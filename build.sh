@@ -17,6 +17,9 @@ use_ccache="0"
 enable_classic_flang="0"
 do_install="0"
 clean=0
+containerize=0
+docker=$(type -p docker)
+host_arch="$(uname -m)"
 unit_test=""
 install="install"
 install_toolchain_only="0"
@@ -53,6 +56,7 @@ Options:
   -A       Disable ACPO.
   -b type  Specify CMake build type (default: $buildtype).
   -c       Use ccache (default: $use_ccache).
+  -C       Containerize the build for openEuler compatibility.
   -e       Build for embedded cross tool chain.
   -E       Build for openEuler.
   -h       Display this help message.
@@ -72,13 +76,16 @@ EOF
 
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
-while getopts :aAb:d:ceEhiI:j:orstvfX: optchr; do
+containerized_opts=()
+while getopts :aAb:d:cCeEhiI:j:orstvfX: optchr; do
   case "$optchr" in
     a)
       enable_autotuner="0"
+      containerized_opts+=(-$optchr)
       ;;
     A)
       enable_acpo="0"
+      containerized_opts+=(-$optchr)
       ;;
     b)
       buildtype="$OPTARG"
@@ -93,21 +100,34 @@ while getopts :aAb:d:ceEhiI:j:orstvfX: optchr; do
           exit 1
           ;;
       esac
+      containerized_opts+=(-$optchr "$OPTARG")
       ;;
     c)
       use_ccache="1"
+      containerized_opts+=(-$optchr)
+      ;;
+    C)
+      if [ -z "$docker" -o ! -x "$docker" ]; then
+        echo "$0: no usable Docker"
+        exit 1
+      fi
+      containerize=1
       ;;
     d)
       build_prefix="$OPTARG"
+      containerized_opts+=(-$optchr "$OPTARG")
       ;;
     f)
       enable_classic_flang="1"
+      containerized_opts+=(-$optchr)
       ;;
     e)
       embedded_toolchain="1"
+      containerized_opts+=(-$optchr)
       ;;
     E)
       build_for_openeuler="1"
+      containerized_opts+=(-$optchr)
       ;;
     h)
       usage
@@ -115,31 +135,40 @@ while getopts :aAb:d:ceEhiI:j:orstvfX: optchr; do
       ;;
     i)
       do_install="1"
+      containerized_opts+=(-$optchr)
       ;;
     I)
       install_dir_name="$OPTARG"
       install_prefix="$dir/$install_dir_name"
+      containerized_opts+=(-$optchr "$OPTARG")
       ;;
     j)
       threads="$OPTARG"
+      containerized_opts+=(-$optchr "$OPTARG")
       ;;
     o)
       install_toolchain_only=1
+      containerized_opts+=(-$optchr)
       ;;
     r)
       clean=1
+      containerized_opts+=(-$optchr)
       ;;
     s)
       install="install/strip"
+      containerized_opts+=(-$optchr)
       ;;
     t)
       unit_test=check-all
+      containerized_opts+=(-$optchr)
       ;;
     v)
       verbose="VERBOSE=1"
+      containerized_opts+=(-$optchr)
       ;;
     X)
       backends="$OPTARG"
+      containerized_opts+=(-$optchr "$OPTARG")
       ;;
     :)
       echo "$0: missing argument for option '-$OPTARG'"
@@ -151,6 +180,105 @@ while getopts :aAb:d:ceEhiI:j:orstvfX: optchr; do
       ;;
   esac
 done
+
+# Make sure that all files under the build directory can be deleted; when some
+# LLVM tests are interrupted, they can leave behind inaccessible directories.
+build_cleanup() {
+  chmod -R u+rwX,go+rX $build_prefix > /dev/null 2>&1
+}
+
+# Handle interrupts. When not running a containerized build, we have to enable
+# job control (-m), and make sure to delete our own long-running child
+# processes. In particular, ninja and python (llvm-lit) refuse to terminate
+# when Jenkins aborts the parent process and disconnects.
+set -m
+handle_abort() {
+  local rc=$1 sig=$2
+  build_cleanup
+  trap - EXIT SIGHUP SIGINT SIGTERM
+  local children="$(jobs -p)"
+  for cgrp in $children ; do
+    kill -$sig -${cgrp} > /dev/null 2>&1
+  done
+  if [ -n "$sig" ]; then
+    kill -$sig 0
+  else
+    exit $rc
+  fi
+}
+
+if [ $containerize -eq 0 ]; then
+  trap - SIGCHLD
+  trap 'handle_abort $?' EXIT
+  trap 'handle_abort 129 HUP' SIGHUP
+  trap 'handle_abort 130 INT' SIGINT
+  trap 'handle_abort 143 TERM' SIGTERM
+else
+  cmd=$(readlink --canonicalize-existing $0)
+
+  # Generate passwd/group files for the container.
+  # lit.py depends on correct results from getpwent.
+  homedir=$(realpath $HOME)
+  passwd=$(mktemp /tmp/passwd.XXXXXX)
+  echo "root:x:0:0::/root:/bin/bash" > $passwd
+  echo "user:x:$(id -u):$(id -g)::$homedir:/bin/bash" >> $passwd
+
+  group=$(mktemp /tmp/group.XXXXXX)
+  echo "root:x:0:" > $group
+  echo "users:x:$(id -g):" >> $group
+
+  # Re-run myself in a openEuler container. The --cap-add option is needed
+  # to pacify llvm-exegesis unit tests. Make sure that the container is
+  # stopped if the child process is interrupted (e.g. by Jenkins).
+  # Note that the container ID file is created with `mktemp -u` because
+  # `docker run` refuses to overwrite an existing ID file.
+  echo "Re-launching in container."
+  containerid=$(mktemp -u /tmp/docker-cid.$$.XXXXXX)
+  docker_cleanup() {
+    local rc=$1 sig=$2
+    docker container stop $(cat $containerid) > /dev/null 2>&1
+    rm $passwd $group $containerid
+    build_cleanup
+    trap - EXIT SIGHUP SIGINT SIGTERM # avoid infinite recursion
+    if [ -n "$sig" ]; then
+      kill -$sig 0
+    else
+      exit $rc
+    fi
+  }
+  trap 'docker_cleanup $?' EXIT
+  trap 'docker_cleanup 129 HUP' SIGHUP
+  trap 'docker_cleanup 130 INT' SIGINT
+  trap 'docker_cleanup 143 TERM' SIGTERM
+
+  DOCKER_IMAGE="llvm-build-deps:latest"
+  docker_opts="--rm
+    --cap-add=SYS_ADMIN
+    --cap-add=SYS_PTRACE
+    --security-opt seccomp=unconfined
+    --user $(id -u):$(id -g)
+    --workdir=$(realpath $PWD)
+    --ulimit core=0
+    --ulimit stack=-1
+    --cidfile $containerid
+    -v $homedir:$homedir
+    -v $passwd:/etc/passwd
+    -v $group:/etc/group
+    -e BINUTILS_INCDIR=/usr/local/include
+    hub.oepkgs.net/openeuler/${DOCKER_IMAGE}"
+
+  if [ -t 1 ]; then
+    $docker run -it $docker_opts ${cmd} ${containerized_opts[@]}
+    exit $?
+  else
+    set -x
+    $docker run $docker_opts ${cmd} ${containerized_opts[@]} &
+    wait $! || exit $?
+    exit 0
+  fi
+fi
+
+echo "Using $threads threads."
 
 CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$install_prefix \
                -DCMAKE_BUILD_TYPE=$buildtype \
