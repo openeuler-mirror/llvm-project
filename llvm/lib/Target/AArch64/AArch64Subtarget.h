@@ -89,7 +89,8 @@ public:
     ThunderX3T110,
     TSV110,
     HIP09,
-    HIP10C
+    HIP10C,
+    HIP11
   };
 
 protected:
