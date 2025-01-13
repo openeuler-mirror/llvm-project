@@ -3976,6 +3976,12 @@ QualType ASTContext::getScalableVectorType(QualType EltTy, unsigned NumElts,
       EltTySize == ElBits && NumElts == (NumEls * NF) && NumFields == 1) {     \
     return SingletonId;                                                        \
   }
+#define SVE_VECTOR_TYPE_MFLOAT(Name, MangledName, Id, SingletonId, NumEls,     \
+                               ElBits, NF)                                     \
+  if (EltTy->isMFloat8Type() && EltTySize == ElBits &&                         \
+      NumElts == (NumEls * NF) && NumFields == 1) {                            \
+    return SingletonId;                                                        \
+  }
 #define SVE_PREDICATE_TYPE_ALL(Name, MangledName, Id, SingletonId, NumEls, NF) \
   if (EltTy->isBooleanType() && NumElts == (NumEls * NF) && NumFields == 1)    \
     return SingletonId;
@@ -11499,6 +11505,9 @@ static QualType DecodeTypeFromStr(const char *&Str, const ASTContext &Context,
     break;
   case 'p':
     Type = Context.getProcessIDType();
+    break;
+  case 'm':
+    Type = Context.MFloat8Ty;
     break;
   }
 

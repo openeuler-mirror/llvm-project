@@ -298,7 +298,7 @@ private:
     const char *Suffix;
   };
 
-  static const std::array<ReinterpretTypeInfo, 12> Reinterprets;
+  static const std::array<ReinterpretTypeInfo, 13> Reinterprets;
 
   RecordKeeper &Records;
   llvm::StringMap<uint64_t> EltTypes;
@@ -418,9 +418,10 @@ public:
                        SmallVectorImpl<std::unique_ptr<Intrinsic>> &Out);
 };
 
-const std::array<SVEEmitter::ReinterpretTypeInfo, 12> SVEEmitter::Reinterprets =
+const std::array<SVEEmitter::ReinterpretTypeInfo, 13> SVEEmitter::Reinterprets =
     {{{SVEType("c", 'd'), "s8"},
       {SVEType("Uc", 'd'), "u8"},
+      {SVEType("m", 'd'), "mf8"},
       {SVEType("s", 'd'), "s16"},
       {SVEType("Us", 'd'), "u16"},
       {SVEType("i", 'd'), "s32"},
@@ -474,7 +475,7 @@ std::string SVEType::builtin_str() const {
     S += "y";
   } else if (isMFloat()) {
     assert(ElementBitwidth == 8 && "Not a valid MFloat.");
-    S += "c";
+    S += "m";
   }
 
   if (!isFloatingPoint()) {
@@ -1458,17 +1459,14 @@ void SVEEmitter::createHeader(raw_ostream &OS) {
         SVEType ToV(To.BaseType, N);
         for (const ReinterpretTypeInfo &From : Reinterprets) {
           SVEType FromV(From.BaseType, N);
-          if (ShortForm) {
-            OS << "__aio __attribute__((target(\"sve\"))) " << ToV.str()
-               << " svreinterpret_" << To.Suffix;
-            OS << "(" << FromV.str() << " op) __arm_streaming_compatible {\n";
-            OS << "  return __builtin_sve_reinterpret_" << To.Suffix << "_"
-               << From.Suffix << Suffix << "(op);\n";
-            OS << "}\n\n";
-          } else
-            OS << "#define svreinterpret_" << To.Suffix << "_" << From.Suffix
-               << Suffix << "(...) __builtin_sve_reinterpret_" << To.Suffix
-               << "_" << From.Suffix << Suffix << "(__VA_ARGS__)\n";
+          OS << "__aio "
+                "__attribute__((__clang_arm_builtin_alias(__builtin_sve_"
+                "reinterpret_"
+             << To.Suffix << "_" << From.Suffix << Suffix << "))) "
+             << ToV.str() << " svreinterpret_" << To.Suffix;
+          if (!ShortForm)
+            OS << "_" << From.Suffix << Suffix;
+          OS << "(" << FromV.str() << " op) __arm_streaming_compatible;\n";
         }
       }
   }
@@ -1528,7 +1526,7 @@ void SVEEmitter::createBuiltins(raw_ostream &OS) {
         SVEType FromV(From.BaseType, N);
         OS << "TARGET_BUILTIN(__builtin_sve_reinterpret_" << To.Suffix << "_"
            << From.Suffix << Suffix << +", \"" << ToV.builtin_str()
-           << FromV.builtin_str() << "\", \"n\", \"sve\")\n";
+           << FromV.builtin_str() << "\", \"n\", \"sme|sve\")\n";
       }
     }
   }
