@@ -120,12 +120,26 @@ bool operator==(const Replacement &LHS, const Replacement &RHS) {
 void Replacement::setFromSourceLocation(const SourceManager &Sources,
                                         SourceLocation Start, unsigned Length,
                                         StringRef ReplacementText) {
-  const std::pair<FileID, unsigned> DecomposedLocation =
-      Sources.getDecomposedLoc(Start);
-  const FileEntry *Entry = Sources.getFileEntryForID(DecomposedLocation.first);
+  auto [FID, offset] = Sources.getDecomposedLoc(Start);
+  OptionalFileEntryRef Entry = Sources.getFileEntryRefForID(FID);
   this->FilePath = std::string(Entry ? Entry->getName() : InvalidLocation);
-  this->ReplacementRange = Range(DecomposedLocation.second, Length);
+  this->ReplacementRange = Range(offset, Length);
   this->ReplacementText = std::string(ReplacementText);
+  const char* OriginalPtr = Sources.getCharacterData(Start);
+  this->OriginalText = std::string(OriginalPtr, Length);
+  this->FileLine = Sources.getLineNumber(FID, offset);
+  this->FileCol = Sources.getColumnNumber(FID, offset);
+  SourceLocation start = Sources.translateLineCol(FID, this->FileLine, 1);
+  SourceLocation end = Sources.translateLineCol(FID, this->FileLine + 1, 1);
+  if (end.isInvalid())
+      end = Sources.getLocForEndOfFile(FID);
+  if (Sources.getFileOffset(end) < Sources.getFileOffset(start)) {
+      this->WholeLineText = "// New line in the end of file.";
+      return;
+  }
+  unsigned len = Sources.getFileOffset(end) - Sources.getFileOffset(start);
+  const char* LinePtr = Sources.getCharacterData(start);
+  this->WholeLineText = std::string(LinePtr, len);
 }
 
 // FIXME: This should go into the Lexer, but we need to figure out how

@@ -32,6 +32,13 @@ template <> struct MappingTraits<clang::tooling::FileByteRange> {
     Io.mapRequired("FilePath", R.FilePath);
     Io.mapRequired("FileOffset", R.FileOffset);
     Io.mapRequired("Length", R.Length);
+    if (R.isDetail) {
+      Io.mapOptional("FileLine", R.FileLine);
+      Io.mapOptional("FileCol", R.FileCol);
+      Io.mapOptional("Text", R.Text);
+      Io.mapOptional("WholeText", R.WholeText);
+      Io.mapOptional("MainLine", R.MainLine);
+    }
   }
 };
 
@@ -40,9 +47,19 @@ template <> struct MappingTraits<clang::tooling::DiagnosticMessage> {
     Io.mapRequired("Message", M.Message);
     Io.mapOptional("FilePath", M.FilePath);
     Io.mapOptional("FileOffset", M.FileOffset);
+    if (M.isDetail) {
+      Io.mapOptional("FileLine", M.FileLine);
+      Io.mapOptional("FileCol", M.FileCol);
+      Io.mapOptional("WholeText", M.WholeText);
+      Io.mapOptional("MainLine", M.MainLine);
+    }
     std::vector<clang::tooling::Replacement> Fixes;
     for (auto &Replacements : M.Fix) {
       llvm::append_range(Fixes, Replacements.second);
+    }
+    for (auto &Fix : Fixes) {
+      if (M.isDetail)
+        Fix.setDetail(true);
     }
     Io.mapRequired("Replacements", Fixes);
     for (auto &Fix : Fixes) {
