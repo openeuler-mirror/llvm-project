@@ -34,7 +34,10 @@ template <> struct MappingTraits<clang::tooling::Replacement> {
 
     NormalizedReplacement(const IO &, const clang::tooling::Replacement &R)
         : FilePath(R.getFilePath()), Offset(R.getOffset()),
-          Length(R.getLength()), ReplacementText(R.getReplacementText()) {}
+          FileLine(R.getFileLine()), FileCol(R.getFileCol()),
+          Length(R.getLength()), ReplacementText(R.getReplacementText()),
+          OriginalText(R.getOriginalText()), WholeLineText(R.getWholeLineText()),
+          isDetail(R.isDetail()) {}
 
     clang::tooling::Replacement denormalize(const IO &) {
       return clang::tooling::Replacement(FilePath, Offset, Length,
@@ -43,8 +46,13 @@ template <> struct MappingTraits<clang::tooling::Replacement> {
 
     std::string FilePath;
     unsigned int Offset;
+    unsigned int FileLine;
+    unsigned int FileCol;
     unsigned int Length;
     std::string ReplacementText;
+    std::string OriginalText;
+    std::string WholeLineText;
+    bool isDetail;
   };
 
   static void mapping(IO &Io, clang::tooling::Replacement &R) {
@@ -52,8 +60,16 @@ template <> struct MappingTraits<clang::tooling::Replacement> {
     Keys(Io, R);
     Io.mapRequired("FilePath", Keys->FilePath);
     Io.mapRequired("Offset", Keys->Offset);
+    if (Keys->isDetail) {
+      Io.mapOptional("FileLine", Keys->FileLine);
+      Io.mapOptional("FileCol", Keys->FileCol);
+    }
     Io.mapRequired("Length", Keys->Length);
     Io.mapRequired("ReplacementText", Keys->ReplacementText);
+    if (Keys->isDetail) {
+      Io.mapOptional("OriginalText", Keys->OriginalText);
+      Io.mapOptional("WholeLineText", Keys->WholeLineText);
+    }
   }
 };
 

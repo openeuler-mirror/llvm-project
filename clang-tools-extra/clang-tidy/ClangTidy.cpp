@@ -646,6 +646,25 @@ void exportReplacements(const llvm::StringRef MainFilePath,
   YAML << TUD;
 }
 
+void exportDetails(const llvm::StringRef MainFilePath,
+                   const std::vector<ClangTidyError> &Errors,
+                   raw_ostream &OS) {
+  TranslationUnitDiagnostics TUD;
+  TUD.MainSourceFile = std::string(MainFilePath);
+  for (auto &Error : Errors) {
+    tooling::Diagnostic Diag = Error;
+    if (Error.IsWarningAsError)
+      Diag.DiagLevel = tooling::Diagnostic::Error;
+    Diag.Message.isDetail = true;
+    for (auto &range : Diag.Message.Ranges)
+      range.isDetail = true;
+    TUD.Diagnostics.insert(TUD.Diagnostics.end(), Diag);
+  }
+
+  yaml::Output YAML(OS);
+  YAML << TUD;
+}
+
 NamesAndOptions
 getAllChecksAndOptions(bool AllowEnablingAnalyzerAlphaCheckers) {
   NamesAndOptions Result;

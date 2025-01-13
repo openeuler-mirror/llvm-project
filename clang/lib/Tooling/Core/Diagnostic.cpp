@@ -31,8 +31,26 @@ DiagnosticMessage::DiagnosticMessage(llvm::StringRef Message,
   // Don't store offset in the scratch space. It doesn't tell anything to the
   // user. Moreover, it depends on the history of macro expansions and thus
   // prevents deduplication of warnings in headers.
-  if (!FilePath.empty())
+  if (!FilePath.empty()) {
     FileOffset = Sources.getFileOffset(Loc);
+    FileID FID = Sources.getFileID(Loc);
+    FileLine = Sources.getLineNumber(FID, FileOffset);
+    FileCol = Sources.getColumnNumber(FID, FileOffset);
+    SourceLocation start;
+    if (FileLine < 4) {
+      start = Sources.getLocForStartOfFile(FID);
+      MainLine = FileLine;
+    } else {
+      start = Sources.translateLineCol(FID, FileLine - 3, 1);
+      MainLine = 4;
+    }
+    SourceLocation end = Sources.translateLineCol(FID, FileLine + 4, 1);
+    if (end.isInvalid())
+      end = Sources.getLocForEndOfFile(FID);
+    unsigned len = Sources.getFileOffset(end) - Sources.getFileOffset(start);
+    const char* ptr = Sources.getCharacterData(start);
+    WholeText = std::string(ptr, len);
+  }
 }
 
 FileByteRange::FileByteRange(
@@ -41,7 +59,28 @@ FileByteRange::FileByteRange(
   FilePath = std::string(Sources.getFilename(Range.getBegin()));
   if (!FilePath.empty()) {
     FileOffset = Sources.getFileOffset(Range.getBegin());
+    SourceLocation Start = Range.getBegin();
+    FileOffset = Sources.getFileOffset(Start);
+    FileID FID = Sources.getFileID(Start);
+    FileLine = Sources.getLineNumber(FID, FileOffset);
+    FileCol = Sources.getColumnNumber(FID, FileOffset);
     Length = Sources.getFileOffset(Range.getEnd()) - FileOffset;
+    const char* TextPtr = Sources.getCharacterData(Start);
+    Text = std::string(TextPtr, Length);
+    SourceLocation start;
+    if (FileLine < 4) {
+      start = Sources.getLocForStartOfFile(FID);
+      MainLine = FileLine;
+    } else {
+      start = Sources.translateLineCol(FID, FileLine - 3, 1);
+      MainLine = 4;
+    }
+    SourceLocation end = Sources.translateLineCol(FID, FileLine + 4, 1);
+    if (end.isInvalid())
+      end = Sources.getLocForEndOfFile(FID);
+    unsigned len = Sources.getFileOffset(end) - Sources.getFileOffset(start);
+    const char* ptr = Sources.getCharacterData(start);
+    WholeText = std::string(ptr, len);
   }
 }
 
