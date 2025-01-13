@@ -12,6 +12,7 @@ Clang-Tidy Checks
    android/*
    boost/*
    bugprone/*
+   BSCompatibility/*
    cert/*
    clang-analyzer/*
    concurrency/*
@@ -75,6 +76,7 @@ Clang-Tidy Checks
    :doc:`android-cloexec-pipe2 <android/cloexec-pipe2>`, "Yes"
    :doc:`android-cloexec-socket <android/cloexec-socket>`, "Yes"
    :doc:`android-comparison-in-temp-failure-retry <android/comparison-in-temp-failure-retry>`,
+   :doc:`BSCompatibility-non-void-function-return-void <BSCompatibility/non-void-function-return-void.html>`_, "Yes"
    :doc:`boost-use-ranges <boost/use-ranges>`, "Yes"
    :doc:`boost-use-to-string <boost/use-to-string>`, "Yes"
    :doc:`bugprone-argument-comment <bugprone/argument-comment>`, "Yes"

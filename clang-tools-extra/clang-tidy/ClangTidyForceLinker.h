@@ -39,6 +39,11 @@ extern volatile int BugproneModuleAnchorSource;
 static int LLVM_ATTRIBUTE_UNUSED BugproneModuleAnchorDestination =
     BugproneModuleAnchorSource;
 
+// This anchor is used to force the linker to link the BSCompatibilityModule.
+extern volatile int BSCompatibilityModuleAnchorSource;
+static int LLVM_ATTRIBUTE_UNUSED BSCompatibilityModuleAnchorDestination =
+    BSCompatibilityModuleAnchorSource;
+
 // This anchor is used to force the linker to link the CERTModule.
 extern volatile int CERTModuleAnchorSource;
 static int LLVM_ATTRIBUTE_UNUSED CERTModuleAnchorDestination =

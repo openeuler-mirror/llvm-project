@@ -172,6 +172,11 @@ Improvements to clang-tidy
 New checks
 ^^^^^^^^^^
 
+- New :doc:`BSCompatibility-non-void-function-return-void
+  <clang-tidy/checks/BSCompatibility/non-void-function-return-void>` check.
+
+  Check if a non-void function hasn't return statement.
+
 - New :doc:`boost-use-ranges
   <clang-tidy/checks/boost/use-ranges>` check.
 
