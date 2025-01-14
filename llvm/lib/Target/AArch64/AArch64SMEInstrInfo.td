@@ -102,7 +102,7 @@ defm USMOPA_MPPZZ_D : sme_int_outer_product_i64<0b100, "usmopa", int_aarch64_sme
 defm USMOPS_MPPZZ_D : sme_int_outer_product_i64<0b101, "usmops", int_aarch64_sme_usmops_wide>;
 }
 
-let Predicates = [HasSME2p2] in {
+let Predicates = [HasSME_MOP4] in {
   defm SMOP4A  : sme_quarter_outer_product_i8_i32<0b0, 0b0, 0b0, "smop4a">;
   defm SMOP4S  : sme_quarter_outer_product_i8_i32<0b0, 0b0, 0b1, "smop4s">;
   defm SUMOP4A : sme_quarter_outer_product_i8_i32<0b0, 0b1, 0b0, "sumop4a">;
@@ -118,7 +118,7 @@ let Predicates = [HasSME2p2] in {
   defm UMOP4S : sme_quarter_outer_product_i16_i32<0b1, 0b1, "umop4s">;
 }
 
-let Predicates = [HasSME2p2, HasSMEI16I64] in {
+let Predicates = [HasSME_MOP4, HasSMEI16I64] in {
   defm SMOP4A : sme_quarter_outer_product_i64<0b0, 0b0, 0b0, "smop4a">;
   defm SMOP4S : sme_quarter_outer_product_i64<0b0, 0b0, 0b1, "smop4s">;
   defm SUMOP4A : sme_quarter_outer_product_i64<0b0, 0b1, 0b0, "sumop4a">;
@@ -987,17 +987,16 @@ defm FDOT_VG4_M4Z4Z_BtoS : sme2_fp8_fdot_multi_vg1x4 <"fdot", 0b0100110, MatrixO
 defm FVDOTB_VG4_M2ZZI_BtoS : sme2_fp8_fdotv_index_za32_vg1x4<"fvdotb", 0b0, int_aarch64_sme_fp8_fvdotb_lane_za32_vg1x4>;
 defm FVDOTT_VG4_M2ZZI_BtoS : sme2_fp8_fdotv_index_za32_vg1x4<"fvdott", 0b1, int_aarch64_sme_fp8_fvdott_lane_za32_vg1x4>;
 
-let Predicates = [HasSME2p2] in {
+let Predicates = [HasSME_MOP4] in {
   defm BFMOP4A : sme2_bfmop4as_widening<0, "bfmop4a">;
   defm BFMOP4S : sme2_bfmop4as_widening<1, "bfmop4s">;
-let Predicates = [HasSME2p2] in {
+
   defm FMOP4A : sme2_fmop4as_fp32_non_widening<0, "fmop4a">;
   defm FMOP4S : sme2_fmop4as_fp32_non_widening<1, "fmop4s">;
 
   defm FMOP4A : sme2_fmop4as_fp16_fp32_widening<0, "fmop4a">;
   defm FMOP4S : sme2_fmop4as_fp16_fp32_widening<1, "fmop4s">;
-} // [HasSME2p2]
-} // [HasSME2p2]
+} // [HasSME_MOP4]
 
 defm FMLALL_MZZI_BtoS      : sme2_mla_ll_array_index_32b<"fmlall",     0b01, 0b000,  int_aarch64_sme_fp8_fmlall_lane_za32_vg4x1, [FPMR, FPCR]>;
 defm FMLALL_VG2_M2ZZI_BtoS : sme2_mla_ll_array_vg2_index_32b<"fmlall", 0b10, 0b100,  int_aarch64_sme_fp8_fmlall_lane_za32_vg4x2, [FPMR, FPCR]>;
@@ -1015,27 +1014,27 @@ defm FMLALL_VG4_M4Z4Z_BtoS : sme2_mla_ll_array_vg4_multi<"fmlall", 0b01000, Matr
 defm FMOPA_MPPZZ_BtoS : sme2_fp8_fmopa_za32<"fmopa", int_aarch64_sme_fp8_fmopa_za32>;
 } //[HasSMEF8F32]
 
-let Predicates = [HasSME2p2, HasSMEF8F16], Uses = [FPMR, FPCR] in {
+let Predicates = [HasSME_MOP4, HasSMEF8F16], Uses = [FPMR, FPCR] in {
   defm FMOP4A : sme2_fmop4a_fp8_fp16_2way<"fmop4a">;
-} // [HasSME2p2, HasSMEF8F16],  Uses = [FPMR, FPCR]
+} // [HasSME_MOP4, HasSMEF8F16],  Uses = [FPMR, FPCR]
 
-let Predicates = [HasSME2p2, HasSMEF16F16] in {
+let Predicates = [HasSME_MOP4, HasSMEF16F16] in {
   defm FMOP4A : sme2_fmop4as_fp16_non_widening<0, "fmop4a">;
   defm FMOP4S : sme2_fmop4as_fp16_non_widening<1, "fmop4s">;
-} // [HasSME2p2, HasSMEF16F16]
+} // [HasSME_MOP4, HasSMEF16F16]
 
-let Predicates = [HasSME2p2, HasSMEB16B16] in {
+let Predicates = [HasSME_MOP4, HasSMEB16B16] in {
   defm BFMOP4A : sme2_bfmop4as_non_widening<0, "bfmop4a">;
   defm BFMOP4S : sme2_bfmop4as_non_widening<1, "bfmop4s">;
 }
 
-let Predicates = [HasSME2p2, HasSMEF64F64] in {
+let Predicates = [HasSME_MOP4, HasSMEF64F64] in {
   defm FMOP4A : sme2_fmop4as_fp64_non_widening<0, "fmop4a">;
   defm FMOP4S : sme2_fmop4as_fp64_non_widening<1, "fmop4s">;
 }
 
 let Uses = [FPMR, FPCR] in {
-let Predicates = [HasSME2p2, HasSMEF8F32] in {
+let Predicates = [HasSME_MOP4, HasSMEF8F32] in {
   defm FMOP4A : sme2_fmop4a_fp8_fp32_4way<"fmop4a">;
 }
 }

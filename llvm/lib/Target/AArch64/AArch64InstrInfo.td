@@ -204,6 +204,11 @@ def HasSMEF8F16     : Predicate<"Subtarget->hasSMEF8F16()">,
                                  AssemblerPredicateWithAll<(all_of FeatureSMEF8F16), "sme-f8f16">;
 def HasSMEF8F32     : Predicate<"Subtarget->hasSMEF8F32()">,
                                  AssemblerPredicateWithAll<(all_of FeatureSMEF8F32), "sme-f8f32">;
+def HasSME_MOP4     : Predicate<"(Subtarget->isStreaming() && Subtarget->hasSME_MOP4())">,
+                                 AssemblerPredicateWithAll<(all_of FeatureSME_MOP4), "sme-mop4">;
+def HasSME_TMOP     : Predicate<"(Subtarget->isStreaming() && Subtarget->hasSME_TMOP())">,
+                                 AssemblerPredicateWithAll<(all_of FeatureSME_TMOP), "sme-tmop">;
+
 def HasCMPBR         : Predicate<"Subtarget->hasCMPBR()">,
                                  AssemblerPredicateWithAll<(all_of FeatureCMPBR), "cmpbr">;
 def HasLSUI          : Predicate<"Subtarget->hasLSUI()">,

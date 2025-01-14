@@ -1771,7 +1771,7 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
       AArch64::AEK_SME2P2,      AArch64::AEK_SVE_F16F32MM, AArch64::AEK_SVE_AES2,
       AArch64::AEK_SSVE_AES,    AArch64::AEK_F8F32MM,      AArch64::AEK_F8F16MM,
       AArch64::AEK_LSFE,        AArch64::AEK_FPRCVT,       AArch64::AEK_F16MM,
-      AArch64::AEK_F16F32MM};
+      AArch64::AEK_F16F32MM,    AArch64::AEK_SME_MOP4,     AArch64::AEK_SME_TMOP};
 
   std::vector<StringRef> Features;
 
@@ -1872,6 +1872,8 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+fprcvt"));
   EXPECT_TRUE(llvm::is_contained(Features, "+f16mm"));
   EXPECT_TRUE(llvm::is_contained(Features, "+f16f32mm"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sme-mop4"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sme-tmop"));
 
   // Assuming we listed every extension above, this should produce the same
   // result. (note that AEK_NONE doesn't have a name so it won't be in the
@@ -2026,7 +2028,9 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"lsfe", "nolsfe", "+lsfe", "-lsfe"},
       {"fprcvt", "nofprcvt", "+fprcvt", "-fprcvt"},
       {"f16mm", "nof16mm", "+f16mm", "-f16mm"},
-      {"f16f32mm", "nof16f32mm", "+f16f32mm", "-f16f32mm"}};
+      {"f16f32mm", "nof16f32mm", "+f16f32mm", "-f16f32mm"},
+      {"sme-mop4", "nosme-mop4", "+sme-mop4", "-sme-mop4"},
+      {"sme-tmop", "nosme-tmop", "+sme-tmop", "-sme-tmop"}};
 
   for (unsigned i = 0; i < std::size(ArchExt); i++) {
     EXPECT_EQ(StringRef(ArchExt[i][2]),

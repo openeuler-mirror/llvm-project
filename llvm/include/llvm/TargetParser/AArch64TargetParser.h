@@ -187,6 +187,8 @@ enum ArchExtKind : uint64_t {
   AEK_FPRCVT =       84, // FEAT_FPRCVT
   AEK_F16MM =        85, // FEAT_F16MM
   AEK_F16F32MM =     86, // FEAT_F16F32MM
+  AEK_SME_MOP4 =     87, // FEAT_SME_MOP4
+  AEK_SME_TMOP =     88, // FEAT_SME_TMOP
   AEK_NUM_EXTENSIONS
 };
 using ExtensionBitset = Bitset<AEK_NUM_EXTENSIONS>;
@@ -324,6 +326,8 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"fprcvt", AArch64::AEK_FPRCVT, "+fprcvt", "-fprcvt", FEAT_INIT, "+fprcvt", 0},
     {"f16mm", AArch64::AEK_F16MM, "+f16mm", "-f16mm", FEAT_INIT, "+f16mm", 0},
     {"f16f32mm", AArch64::AEK_F16F32MM, "+f16f32mm", "-f16f32mm", FEAT_INIT, "+f16f32mm", 0},
+    {"sme-mop4", AArch64::AEK_SME_MOP4, "+sme-mop4", "-sme-mop4", FEAT_INIT, "+sme-mop4", 0},
+    {"sme-tmop", AArch64::AEK_SME_TMOP, "+sme-tmop", "-sme-tmop", FEAT_INIT, "+sme-tmop", 0},
     // Special cases
     {"none", AArch64::AEK_NONE, {}, {}, FEAT_MAX, "", ExtensionInfo::MaxFMVPriority},
 };

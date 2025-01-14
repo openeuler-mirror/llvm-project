@@ -516,6 +516,12 @@ def FeatureSMEFA64 : SubtargetFeature<"sme-fa64", "HasSMEFA64", "true",
 def FeatureSME2 : SubtargetFeature<"sme2", "HasSME2", "true",
   "Enable Scalable Matrix Extension 2 (SME2) instructions", [FeatureSME]>;
 
+def FeatureSME_MOP4 : SubtargetFeature<"sme-mop4", "HasSME_MOP4", "true",
+  "Enable SME Quarter-tile outer product instructions (FEAT_SME_MOP4)", [FeatureSME2]>;
+
+def FeatureSME_TMOP : SubtargetFeature<"sme-tmop", "HasSME_TMOP", "true",
+  "Enable SME Structured sparsity outer product instructions (FEAT_SME_TMOP)", [FeatureSME2]>;
+
 def FeatureSMEB16B16 : SubtargetFeature<"sme-b16b16", "HasSMEB16B16", "true",
   "Enable SME2.1 ZA-targeting non-widening BFloat16 instructions (FEAT_SME_B16B16)", [FeatureSME2, FeatureB16B16]>;
 
