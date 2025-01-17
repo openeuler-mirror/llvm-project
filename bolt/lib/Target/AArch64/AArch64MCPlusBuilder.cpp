@@ -132,6 +132,36 @@ public:
                        const MCRegisterInfo *RegInfo)
       : MCPlusBuilder(Analysis, Info, RegInfo) {}
 
+  MCPhysReg getStackPointer() const override { return AArch64::SP; }
+
+  bool isPush(const MCInst &Inst) const override { return false; }
+
+  bool isPop(const MCInst &Inst) const override { return false; }
+
+  bool createCall(MCInst &Inst, const MCSymbol *Target,
+                  MCContext *Ctx) override {
+    return createDirectCall(Inst, Target, Ctx, false);
+  }
+
+  bool convertTailCallToCall(MCInst &Inst) override {
+    int NewOpcode;
+    switch (Inst.getOpcode()) {
+    default:
+      return false;
+    case AArch64::B:
+      NewOpcode = AArch64::BL;
+      break;
+    case AArch64::BR:
+      NewOpcode = AArch64::BLR;
+      break;
+    }
+
+    Inst.setOpcode(NewOpcode);
+    removeAnnotation(Inst, MCPlus::MCAnnotation::kTailCall);
+    clearOffset(Inst);
+    return true;
+  }
+
   bool equals(const MCTargetExpr &A, const MCTargetExpr &B,
               CompFuncTy Comp) const override {
     const auto &AArch64ExprA = cast<AArch64MCExpr>(A);
