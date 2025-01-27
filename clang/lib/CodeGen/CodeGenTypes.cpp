@@ -451,9 +451,15 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
       {
         ASTContext::BuiltinVectorTypeInfo Info =
             Context.getBuiltinVectorTypeInfo(cast<BuiltinType>(Ty));
-        return llvm::ScalableVectorType::get(ConvertType(Info.ElementType),
-                                             Info.EC.getKnownMinValue() *
-                                                 Info.NumVectors);
+        // Types with a fixed element count (e.g. __mfp8, described as a
+        // one-element vector) map to fixed LLVM vector types.
+        if (Info.EC.isScalable())
+          return llvm::ScalableVectorType::get(
+              ConvertType(Info.ElementType),
+              Info.EC.getKnownMinValue() * Info.NumVectors);
+        return llvm::FixedVectorType::get(
+            ConvertType(Info.ElementType),
+            Info.EC.getKnownMinValue() * Info.NumVectors);
       }
     case BuiltinType::SveCount:
       return llvm::TargetExtType::get(getLLVMContext(), "aarch64.svcount");
@@ -565,7 +571,9 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
     // An ext_vector_type of Bool is really a vector of bits.
     llvm::Type *IRElemTy = VT->isExtVectorBoolType()
                                ? llvm::Type::getInt1Ty(getLLVMContext())
-                               : ConvertType(VT->getElementType());
+                               : (VT->getElementType()->isMFloat8Type()
+                                      ? llvm::Type::getInt8Ty(getLLVMContext())
+                                      : ConvertType(VT->getElementType()));
     ResultType = llvm::FixedVectorType::get(IRElemTy, VT->getNumElements());
     break;
   }
