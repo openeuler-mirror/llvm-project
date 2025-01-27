@@ -3294,6 +3294,24 @@ bool Sema::CheckNeonBuiltinFunctionCall(const TargetInfo &TI,
   // For NEON intrinsics which take an immediate value as part of the
   // instruction, range check them here.
   unsigned i = 0, l = 0, u = 0;
+  // Range checks for the Neon FP8 dot-product lane intrinsics, which
+  // index the destination element lanes of the fp8 vector operand.
+  switch (BuiltinID) {
+  default:
+    break;
+  case NEON::BI__builtin_neon_vdot_lane_f16_mf8_fpm:
+  case NEON::BI__builtin_neon_vdotq_lane_f16_mf8_fpm:
+    return SemaBuiltinConstantArgRange(TheCall, 3, 0, 3);
+  case NEON::BI__builtin_neon_vdot_laneq_f16_mf8_fpm:
+  case NEON::BI__builtin_neon_vdotq_laneq_f16_mf8_fpm:
+    return SemaBuiltinConstantArgRange(TheCall, 3, 0, 7);
+  case NEON::BI__builtin_neon_vdot_lane_f32_mf8_fpm:
+  case NEON::BI__builtin_neon_vdotq_lane_f32_mf8_fpm:
+    return SemaBuiltinConstantArgRange(TheCall, 3, 0, 1);
+  case NEON::BI__builtin_neon_vdot_laneq_f32_mf8_fpm:
+  case NEON::BI__builtin_neon_vdotq_laneq_f32_mf8_fpm:
+    return SemaBuiltinConstantArgRange(TheCall, 3, 0, 3);
+  }
   switch (BuiltinID) {
   default:
     return false;
