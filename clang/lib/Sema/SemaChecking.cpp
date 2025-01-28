@@ -3311,6 +3311,20 @@ bool Sema::CheckNeonBuiltinFunctionCall(const TargetInfo &TI,
   case NEON::BI__builtin_neon_vdot_laneq_f32_mf8_fpm:
   case NEON::BI__builtin_neon_vdotq_laneq_f32_mf8_fpm:
     return SemaBuiltinConstantArgRange(TheCall, 3, 0, 3);
+  case NEON::BI__builtin_neon_vmlalbq_lane_f16_mf8_fpm:
+  case NEON::BI__builtin_neon_vmlaltq_lane_f16_mf8_fpm:
+  case NEON::BI__builtin_neon_vmlallbbq_lane_f32_mf8_fpm:
+  case NEON::BI__builtin_neon_vmlallbtq_lane_f32_mf8_fpm:
+  case NEON::BI__builtin_neon_vmlalltbq_lane_f32_mf8_fpm:
+  case NEON::BI__builtin_neon_vmlallttq_lane_f32_mf8_fpm:
+    return SemaBuiltinConstantArgRange(TheCall, 3, 0, 7);
+  case NEON::BI__builtin_neon_vmlalbq_laneq_f16_mf8_fpm:
+  case NEON::BI__builtin_neon_vmlaltq_laneq_f16_mf8_fpm:
+  case NEON::BI__builtin_neon_vmlallbbq_laneq_f32_mf8_fpm:
+  case NEON::BI__builtin_neon_vmlallbtq_laneq_f32_mf8_fpm:
+  case NEON::BI__builtin_neon_vmlalltbq_laneq_f32_mf8_fpm:
+  case NEON::BI__builtin_neon_vmlallttq_laneq_f32_mf8_fpm:
+    return SemaBuiltinConstantArgRange(TheCall, 3, 0, 15);
   }
   switch (BuiltinID) {
   default:

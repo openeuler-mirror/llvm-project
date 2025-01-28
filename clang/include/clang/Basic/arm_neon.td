@@ -2149,3 +2149,27 @@ let ArchGuard = "defined(__aarch64__)", TargetGuard = "fp8dot4,neon" in {
   def VDOTQ_LANE_F32_MF8  : VInst<"vdot_lane_f32_mf8_fpm",  "(>>F)(>>F).qIV", "Qm">;
   def VDOTQ_LANEQ_F32_MF8 : VInst<"vdot_laneq_f32_mf8_fpm", "(>>F)(>>F)..IV", "Qm">;
 }
+
+let ArchGuard = "defined(__aarch64__)", TargetGuard = "fp8fma,neon" in {
+  def VMLALB_F16_F8 : VInst<"vmlalb_f16_mf8_fpm", "(>F)(>F)..V", "Qm">;
+  def VMLALT_F16_F8 : VInst<"vmlalt_f16_mf8_fpm", "(>F)(>F)..V", "Qm">;
+
+  def VMLALLBB_F32_F8 : VInst<"vmlallbb_f32_mf8_fpm", "(>>F)(>>F)..V", "Qm">;
+  def VMLALLBT_F32_F8 : VInst<"vmlallbt_f32_mf8_fpm", "(>>F)(>>F)..V", "Qm">;
+  def VMLALLTB_F32_F8 : VInst<"vmlalltb_f32_mf8_fpm", "(>>F)(>>F)..V", "Qm">;
+  def VMLALLTT_F32_F8 : VInst<"vmlalltt_f32_mf8_fpm", "(>>F)(>>F)..V", "Qm">;
+
+  def VMLALB_F16_F8_LANE  : VInst<"vmlalb_lane_f16_mf8_fpm",  "(>F)(>F).qIV", "Qm">;
+  def VMLALB_F16_F8_LANEQ : VInst<"vmlalb_laneq_f16_mf8_fpm", "(>F)(>F)..IV", "Qm">;
+  def VMLALT_F16_F8_LANE  : VInst<"vmlalt_lane_f16_mf8_fpm",  "(>F)(>F).qIV", "Qm">;
+  def VMLALT_F16_F8_LANEQ : VInst<"vmlalt_laneq_f16_mf8_fpm", "(>F)(>F)..IV", "Qm">;
+
+  def VMLALLBB_F32_F8_LANE  : VInst<"vmlallbb_lane_f32_mf8_fpm",  "(>>F)(>>F).qIV", "Qm">;
+  def VMLALLBB_F32_F8_LANEQ : VInst<"vmlallbb_laneq_f32_mf8_fpm", "(>>F)(>>F)..IV", "Qm">;
+  def VMLALLBT_F32_F8_LANE  : VInst<"vmlallbt_lane_f32_mf8_fpm",  "(>>F)(>>F).qIV", "Qm">;
+  def VMLALLBT_F32_F8_LANEQ : VInst<"vmlallbt_laneq_f32_mf8_fpm", "(>>F)(>>F)..IV", "Qm">;
+  def VMLALLTB_F32_F8_LANE  : VInst<"vmlalltb_lane_f32_mf8_fpm",  "(>>F)(>>F).qIV", "Qm">;
+  def VMLALLTB_F32_F8_LANEQ : VInst<"vmlalltb_laneq_f32_mf8_fpm", "(>>F)(>>F)..IV", "Qm">;
+  def VMLALLTT_F32_F8_LANE  : VInst<"vmlalltt_lane_f32_mf8_fpm",  "(>>F)(>>F).qIV", "Qm">;
+  def VMLALLTT_F32_F8_LANEQ : VInst<"vmlalltt_laneq_f32_mf8_fpm", "(>>F)(>>F)..IV", "Qm">;
+}
