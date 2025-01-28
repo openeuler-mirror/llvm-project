@@ -1001,6 +1001,9 @@ std::string Intrinsic::getInstTypeCode(Type T, ClassKind CK) const {
   if (this->CK == ClassV)
     return "";
 
+  if (T.isMFloat8())
+    return "mf8";
+
   if (T.isBFloat16())
     return "bf16";
 
