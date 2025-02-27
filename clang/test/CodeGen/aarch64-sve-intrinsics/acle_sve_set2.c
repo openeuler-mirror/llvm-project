@@ -181,3 +181,18 @@ svfloat64x2_t test_svset2_f64(svfloat64x2_t tuple, svfloat64_t x) ATTR
 {
   return SVE_ACLE_FUNC(svset2,_f64,,)(tuple, 1, x);
 }
+
+// CHECK-LABEL: @test_svset2_mf8(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 32 x i8> @llvm.vector.insert.nxv32i8.nxv16i8(<vscale x 32 x i8> [[TUPLE:%.*]], <vscale x 16 x i8> [[X:%.*]], i64 16)
+// CHECK-NEXT:    ret <vscale x 32 x i8> [[TMP0]]
+//
+// CPP-CHECK-LABEL: @_Z15test_svset2_mf813svmfloat8x2_tu13__SVMfloat8_t(
+// CPP-CHECK-NEXT:  entry:
+// CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 32 x i8> @llvm.vector.insert.nxv32i8.nxv16i8(<vscale x 32 x i8> [[TUPLE:%.*]], <vscale x 16 x i8> [[X:%.*]], i64 16)
+// CPP-CHECK-NEXT:    ret <vscale x 32 x i8> [[TMP0]]
+//
+svmfloat8x2_t test_svset2_mf8(svmfloat8x2_t tuple, svmfloat8_t x) ATTR
+{
+  return SVE_ACLE_FUNC(svset2,_mf8,,)(tuple, 1, x);
+}
