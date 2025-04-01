@@ -103,30 +103,30 @@ defm USMOPS_MPPZZ_D : sme_int_outer_product_i64<0b101, "usmops", int_aarch64_sme
 }
 
 let Predicates = [HasSME_MOP4] in {
-  defm SMOP4A  : sme_quarter_outer_product_i8_i32<0b0, 0b0, 0b0, "smop4a">;
-  defm SMOP4S  : sme_quarter_outer_product_i8_i32<0b0, 0b0, 0b1, "smop4s">;
-  defm SUMOP4A : sme_quarter_outer_product_i8_i32<0b0, 0b1, 0b0, "sumop4a">;
-  defm SUMOP4S : sme_quarter_outer_product_i8_i32<0b0, 0b1, 0b1, "sumop4s">;
-  defm USMOP4A : sme_quarter_outer_product_i8_i32<0b1, 0b0, 0b0, "usmop4a">;
-  defm USMOP4S : sme_quarter_outer_product_i8_i32<0b1, 0b0, 0b1, "usmop4s">;
-  defm UMOP4A  : sme_quarter_outer_product_i8_i32<0b1, 0b1, 0b0, "umop4a">;
-  defm UMOP4S  : sme_quarter_outer_product_i8_i32<0b1, 0b1, 0b1, "umop4s">;
+  defm SMOP4A  : sme_quarter_outer_product_i8_i32<0b0, 0b0, 0b0, "smop4a", "int_aarch64_sme_smop4a_wide">;
+  defm SMOP4S  : sme_quarter_outer_product_i8_i32<0b0, 0b0, 0b1, "smop4s", "int_aarch64_sme_smop4s_wide">;
+  defm SUMOP4A : sme_quarter_outer_product_i8_i32<0b0, 0b1, 0b0, "sumop4a", "int_aarch64_sme_sumop4a_wide">;
+  defm SUMOP4S : sme_quarter_outer_product_i8_i32<0b0, 0b1, 0b1, "sumop4s", "int_aarch64_sme_sumop4s_wide">;
+  defm USMOP4A : sme_quarter_outer_product_i8_i32<0b1, 0b0, 0b0, "usmop4a", "int_aarch64_sme_usmop4a_wide">;
+  defm USMOP4S : sme_quarter_outer_product_i8_i32<0b1, 0b0, 0b1, "usmop4s", "int_aarch64_sme_usmop4s_wide">;
+  defm UMOP4A  : sme_quarter_outer_product_i8_i32<0b1, 0b1, 0b0, "umop4a", "int_aarch64_sme_umop4a_wide">;
+  defm UMOP4S  : sme_quarter_outer_product_i8_i32<0b1, 0b1, 0b1, "umop4s", "int_aarch64_sme_umop4s_wide">;
 
-  defm SMOP4A : sme_quarter_outer_product_i16_i32<0b0, 0b0, "smop4a">;
-  defm SMOP4S : sme_quarter_outer_product_i16_i32<0b0, 0b1, "smop4s">;
-  defm UMOP4A : sme_quarter_outer_product_i16_i32<0b1, 0b0, "umop4a">;
-  defm UMOP4S : sme_quarter_outer_product_i16_i32<0b1, 0b1, "umop4s">;
+  defm SMOP4A : sme_quarter_outer_product_i16_i32<0b0, 0b0, "smop4a", "int_aarch64_sme_smop4a_wide">;
+  defm SMOP4S : sme_quarter_outer_product_i16_i32<0b0, 0b1, "smop4s", "int_aarch64_sme_smop4s_wide">;
+  defm UMOP4A : sme_quarter_outer_product_i16_i32<0b1, 0b0, "umop4a", "int_aarch64_sme_umop4a_wide">;
+  defm UMOP4S : sme_quarter_outer_product_i16_i32<0b1, 0b1, "umop4s", "int_aarch64_sme_umop4s_wide">;
 }
 
 let Predicates = [HasSME_MOP4, HasSMEI16I64] in {
-  defm SMOP4A : sme_quarter_outer_product_i64<0b0, 0b0, 0b0, "smop4a">;
-  defm SMOP4S : sme_quarter_outer_product_i64<0b0, 0b0, 0b1, "smop4s">;
-  defm SUMOP4A : sme_quarter_outer_product_i64<0b0, 0b1, 0b0, "sumop4a">;
-  defm SUMOP4S : sme_quarter_outer_product_i64<0b0, 0b1, 0b1, "sumop4s">;
-  defm UMOP4A : sme_quarter_outer_product_i64<0b1, 0b1, 0b0, "umop4a">;
-  defm UMOP4S : sme_quarter_outer_product_i64<0b1, 0b1, 0b1, "umop4s">;
-  defm USMOP4A : sme_quarter_outer_product_i64<0b1, 0b0, 0b0, "usmop4a">;
-  defm USMOP4S : sme_quarter_outer_product_i64<0b1, 0b0, 0b1, "usmop4s">;
+  defm SMOP4A : sme_quarter_outer_product_i64<0b0, 0b0, 0b0, "smop4a", "int_aarch64_sme_smop4a_za64_wide">;
+  defm SMOP4S : sme_quarter_outer_product_i64<0b0, 0b0, 0b1, "smop4s", "int_aarch64_sme_smop4s_za64_wide">;
+  defm SUMOP4A : sme_quarter_outer_product_i64<0b0, 0b1, 0b0, "sumop4a", "int_aarch64_sme_sumop4a_za64_wide">;
+  defm SUMOP4S : sme_quarter_outer_product_i64<0b0, 0b1, 0b1, "sumop4s", "int_aarch64_sme_sumop4s_za64_wide">;
+  defm UMOP4A : sme_quarter_outer_product_i64<0b1, 0b1, 0b0, "umop4a", "int_aarch64_sme_umop4a_za64_wide">;
+  defm UMOP4S : sme_quarter_outer_product_i64<0b1, 0b1, 0b1, "umop4s", "int_aarch64_sme_umop4s_za64_wide">;
+  defm USMOP4A : sme_quarter_outer_product_i64<0b1, 0b0, 0b0, "usmop4a", "int_aarch64_sme_usmop4a_za64_wide">;
+  defm USMOP4S : sme_quarter_outer_product_i64<0b1, 0b0, 0b1, "usmop4s", "int_aarch64_sme_usmop4s_za64_wide">;
 }
 
 let Predicates = [HasSME] in {
@@ -988,14 +988,14 @@ defm FVDOTB_VG4_M2ZZI_BtoS : sme2_fp8_fdotv_index_za32_vg1x4<"fvdotb", 0b0, int_
 defm FVDOTT_VG4_M2ZZI_BtoS : sme2_fp8_fdotv_index_za32_vg1x4<"fvdott", 0b1, int_aarch64_sme_fp8_fvdott_lane_za32_vg1x4>;
 
 let Predicates = [HasSME_MOP4] in {
-  defm BFMOP4A : sme2_bfmop4as_widening<0, "bfmop4a">;
-  defm BFMOP4S : sme2_bfmop4as_widening<1, "bfmop4s">;
+  defm BFMOP4A : sme2_bfmop4as_widening<0, "bfmop4a", "int_aarch64_sme_mop4a_wide">;
+  defm BFMOP4S : sme2_bfmop4as_widening<1, "bfmop4s", "int_aarch64_sme_mop4s_wide">;
 
-  defm FMOP4A : sme2_fmop4as_fp32_non_widening<0, "fmop4a">;
-  defm FMOP4S : sme2_fmop4as_fp32_non_widening<1, "fmop4s">;
+  defm FMOP4A : sme2_fmop4as_fp32_non_widening<0, "fmop4a", "int_aarch64_sme_mop4a">;
+  defm FMOP4S : sme2_fmop4as_fp32_non_widening<1, "fmop4s", "int_aarch64_sme_mop4s">;
 
-  defm FMOP4A : sme2_fmop4as_fp16_fp32_widening<0, "fmop4a">;
-  defm FMOP4S : sme2_fmop4as_fp16_fp32_widening<1, "fmop4s">;
+  defm FMOP4A : sme2_fmop4as_fp16_fp32_widening<0, "fmop4a", "int_aarch64_sme_mop4a_wide">;
+  defm FMOP4S : sme2_fmop4as_fp16_fp32_widening<1, "fmop4s", "int_aarch64_sme_mop4s_wide">;
 } // [HasSME_MOP4]
 
 defm FMLALL_MZZI_BtoS      : sme2_mla_ll_array_index_32b<"fmlall",     0b01, 0b000,  int_aarch64_sme_fp8_fmlall_lane_za32_vg4x1, [FPMR, FPCR]>;
@@ -1019,18 +1019,18 @@ let Predicates = [HasSME_MOP4, HasSMEF8F16], Uses = [FPMR, FPCR] in {
 } // [HasSME_MOP4, HasSMEF8F16],  Uses = [FPMR, FPCR]
 
 let Predicates = [HasSME_MOP4, HasSMEF16F16] in {
-  defm FMOP4A : sme2_fmop4as_fp16_non_widening<0, "fmop4a">;
-  defm FMOP4S : sme2_fmop4as_fp16_non_widening<1, "fmop4s">;
+  defm FMOP4A : sme2_fmop4as_fp16_non_widening<0, "fmop4a", "int_aarch64_sme_mop4a">;
+  defm FMOP4S : sme2_fmop4as_fp16_non_widening<1, "fmop4s", "int_aarch64_sme_mop4s">;
 } // [HasSME_MOP4, HasSMEF16F16]
 
 let Predicates = [HasSME_MOP4, HasSMEB16B16] in {
-  defm BFMOP4A : sme2_bfmop4as_non_widening<0, "bfmop4a">;
-  defm BFMOP4S : sme2_bfmop4as_non_widening<1, "bfmop4s">;
+  defm BFMOP4A : sme2_bfmop4as_non_widening<0, "bfmop4a", "int_aarch64_sme_mop4a">;
+  defm BFMOP4S : sme2_bfmop4as_non_widening<1, "bfmop4s", "int_aarch64_sme_mop4s">;
 }
 
 let Predicates = [HasSME_MOP4, HasSMEF64F64] in {
-  defm FMOP4A : sme2_fmop4as_fp64_non_widening<0, "fmop4a">;
-  defm FMOP4S : sme2_fmop4as_fp64_non_widening<1, "fmop4s">;
+  defm FMOP4A : sme2_fmop4as_fp64_non_widening<0, "fmop4a", "int_aarch64_sme_mop4a">;
+  defm FMOP4S : sme2_fmop4as_fp64_non_widening<1, "fmop4s", "int_aarch64_sme_mop4s">;
 }
 
 let Uses = [FPMR, FPCR] in {
