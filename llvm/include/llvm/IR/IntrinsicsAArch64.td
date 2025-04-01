@@ -3000,6 +3000,7 @@ let TargetPrefix = "aarch64" in {
       foreach ty = ["s", "u", "su", "us"] in {
         def int_aarch64_sme_ # ty # "mop4" # mode # za # "_wide_1x1" : SME_OuterProduct_QuarterTile_Single_Single;
         def int_aarch64_sme_ # ty # "mop4" # mode # za # "_wide_1x2" : SME_OuterProduct_QuarterTile_Single_Multi;
+        def int_aarch64_sme_ # ty # "mop4" # mode # za # "_wide_2x1" : SME_OuterProduct_QuarterTile_Single_Multi;
       }
     }
   }
@@ -3009,9 +3010,10 @@ let TargetPrefix = "aarch64" in {
     foreach wide = ["", "_wide"] in {
       def int_aarch64_sme_mop4 # mode # wide # "_1x1" : SME_OuterProduct_QuarterTile_Single_Single;
       def int_aarch64_sme_mop4 # mode # wide # "_1x2" : SME_OuterProduct_QuarterTile_Single_Multi;
+      def int_aarch64_sme_mop4 # mode # wide # "_2x1" : SME_OuterProduct_QuarterTile_Single_Multi;
     }
   }
-  
+
   class SME_AddVectorToTile_Intrinsic
       : DefaultAttrsIntrinsic<[],
           [llvm_i32_ty,
