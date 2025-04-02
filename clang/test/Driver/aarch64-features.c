@@ -27,13 +27,13 @@
 
 // Check for AArch64 out-of-line atomics default settings.
 // RUN: %clang --target=aarch64-linux-android -rtlib=compiler-rt \
-// RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-ON %s
+// RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-OFF %s
 
 // RUN: %clang --target=aarch64-linux-gnu -rtlib=compiler-rt \
-// RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-ON %s
+// RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-OFF %s
 
 // RUN: %clang --target=arm64-unknown-linux -rtlib=compiler-rt \
-// RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-ON %s
+// RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-OFF %s
 
 // RUN: %clang --target=aarch64 -rtlib=compiler-rt \
 // RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-OFF %s
@@ -49,7 +49,7 @@
 
 // RUN: %clang --target=aarch64-linux-gnu -rtlib=libgcc \
 // RUN: --gcc-toolchain=%S/Inputs/aarch64-linux-gnu-tree/gcc-10 \
-// RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-ON %s
+// RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-OFF %s
 
 // RUN: %clang --target=aarch64-linux-gnu -rtlib=libgcc \
 // RUN: --gcc-toolchain=%S/Inputs/aarch64-linux-gnu-tree/gcc-7.5.0 \
@@ -57,7 +57,7 @@
 
 // RUN: %clang --target=aarch64-linux-gnu -rtlib=libgcc \
 // RUN: --gcc-toolchain=%S/Inputs/aarch64-linux-gnu-tree/gcc-9.3.1 \
-// RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-ON %s
+// RUN: -### -c %s 2>&1 | FileCheck -check-prefix=CHECK-OUTLINE-ATOMICS-OFF %s
 
 // RUN: %clang --target=aarch64-linux-gnu -rtlib=libgcc \
 // RUN: --gcc-toolchain=%S/Inputs/aarch64-linux-gnu-tree/gcc-9.3.0 \

@@ -890,7 +890,7 @@ def ProcessorFeatures {
                                    FeatureSPECRES2, FeatureSVEAES, FeatureSVE2SM4,
                                    FeatureSVE2SHA3, FeatureSVE2, FeatureSVEBitPerm, FeatureETE,
                                    FeatureMEC, FeatureFAMINMAX, FeatureFP8DOT2, FeatureFP8DOT4,
-                                   FeatureFP8FMA, FeatureLUT];
+                                   FeatureFP8FMA, FeatureLUT, FeatureLSE];
   list<SubtargetFeature> Carmel   = [HasV8_2aOps, FeatureNEON, FeatureSHA2, FeatureAES,
                                      FeatureFullFP16, FeatureCRC, FeatureLSE, FeatureRAS, FeatureRDM,
                                      FeatureFPARMv8];
@@ -1054,7 +1054,7 @@ def ProcessorFeatures {
   list<SubtargetFeature> TSV110 = [HasV8_2aOps, FeatureSHA2, FeatureAES, FeatureFPARMv8,
                                    FeatureNEON, FeaturePerfMon, FeatureSPE,
                                    FeatureFullFP16, FeatureFP16FML, FeatureDotProd,
-                                   FeatureJS, FeatureComplxNum, FeatureCRC, FeatureLSE,
+                                   FeatureJS, FeatureComplxNum, FeatureCRC,
                                    FeatureRAS, FeatureRDM];
   list<SubtargetFeature> HIP09 = [HasV8_5aOps, FeatureAES, FeatureBF16,
                                   FeatureFPARMv8, FeatureMatMulInt8,
@@ -1063,7 +1063,7 @@ def ProcessorFeatures {
                                   FeatureFP16FML, FeatureDotProd, FeatureJS,
                                   FeatureComplxNum, FeatureSHA2, FeatureSHA3,
                                   FeatureSM4, FeatureSVE, FeatureCRC,
-                                  FeatureLSE, FeaturePAuth, FeatureRAS,
+                                  FeaturePAuth, FeatureRAS,
                                   FeatureRCPC, FeatureRDM];
   list<SubtargetFeature> HIP12 = [HasV9_2aOps, FeatureSVE, FeatureSVE2,
                                   FeatureSVEBitPerm, FeatureSVEAES,

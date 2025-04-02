@@ -842,9 +842,9 @@ def HasV8_0aOps : Architecture64<8, 0, "a", "v8a",
   [FeatureEL2VMSA, FeatureEL3],
   [FeatureFPARMv8, FeatureNEON]>;
 def HasV8_1aOps : Architecture64<8, 1, "a", "v8.1a",
-  [HasV8_0aOps, FeatureCRC, FeatureLSE, FeatureRDM, FeaturePAN, FeatureLOR,
+  [HasV8_0aOps, FeatureCRC, FeatureRDM, FeaturePAN, FeatureLOR,
    FeatureVH],
-  !listconcat(HasV8_0aOps.DefaultExts, [FeatureCRC, FeatureLSE, FeatureRDM])>;
+  !listconcat(HasV8_0aOps.DefaultExts, [FeatureCRC, FeatureRDM])>;
 def HasV8_2aOps : Architecture64<8, 2, "a", "v8.2a",
   [HasV8_1aOps, FeaturePsUAO, FeaturePAN_RWV, FeatureRAS, FeatureCCPP],
   !listconcat(HasV8_1aOps.DefaultExts, [FeatureRAS])>;
@@ -905,7 +905,7 @@ def HasV9_6aOps : Architecture64<9, 6, "a", "v9.6a",
     FeatureLSUI, FeatureOCCMO])>;
 def HasV8_0rOps : Architecture64<8, 0, "r", "v8r",
   [ //v8.1
-    FeatureCRC, FeaturePAN, FeatureLSE, FeatureCONTEXTIDREL2,
+    FeatureCRC, FeaturePAN, FeatureCONTEXTIDREL2,
     //v8.2
     FeatureRAS, FeaturePsUAO, FeatureCCPP, FeaturePAN_RWV,
     //v8.3
