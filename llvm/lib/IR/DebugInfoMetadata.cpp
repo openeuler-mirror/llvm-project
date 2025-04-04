@@ -20,6 +20,7 @@
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
+#include "llvm/Support/CommandLine.h"
 
 #include <numeric>
 #include <optional>
@@ -32,6 +33,12 @@ cl::opt<bool> EnableFSDiscriminator(
     "enable-fs-discriminator", cl::Hidden,
     cl::desc("Enable adding flow sensitive discriminators"));
 } // namespace llvm
+
+// When true, preserves line and column number by picking one of the merged
+// location info in a deterministic manner to assist sample based PGO.
+static cl::opt<bool> PickMergedSourceLocations(
+    "pick-merged-source-locations", cl::init(false), cl::Hidden,
+    cl::desc("Preserve line and column number when merging locations."));
 
 const DIExpression::FragmentInfo DebugVariable::DefaultFragment = {
     std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::min()};
@@ -112,6 +119,20 @@ const DILocation *DILocation::getMergedLocation(const DILocation *LocA,
 
   if (LocA == LocB)
     return LocA;
+
+  // For some use cases (SamplePGO), it is important to retain distinct source
+  // locations. When this flag is set, we choose arbitrarily between A and B,
+  // rather than computing a merged location using line 0, which is typically
+  // not useful for PGO.
+  if (PickMergedSourceLocations) {
+    auto A = std::make_tuple(LocA->getLine(), LocA->getColumn(),
+                             LocA->getDiscriminator(), LocA->getFilename(),
+                             LocA->getDirectory());
+    auto B = std::make_tuple(LocB->getLine(), LocB->getColumn(),
+                             LocB->getDiscriminator(), LocB->getFilename(),
+                             LocB->getDirectory());
+    return A < B ? LocA : LocB;
+  }
 
   LLVMContext &C = LocA->getContext();
   SmallDenseMap<std::pair<DILocalScope *, DILocation *>,
