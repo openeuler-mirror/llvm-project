@@ -9,7 +9,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-
 class AArch64Reg<bits<16> enc, string n, list<Register> subregs = [],
                list<string> altNames = []>
         : Register<n, altNames> {
@@ -517,7 +516,6 @@ def QQQQ : RegisterClass<"AArch64", [untyped], 128, (add QSeqQuads)> {
   let Size = 512;
 }
 
-
 // Vector operand versions of the FP registers. Alternate name printing and
 // assembler matching.
 def VectorReg64AsmOperand : AsmOperandClass {
@@ -668,7 +666,6 @@ multiclass VectorList<int count, RegisterClass Reg64, RegisterClass Reg128> {
     let ParserMatchClass = !cast<AsmOperandClass>(NAME # "_dAsmOperand");
   }
 
-
 }
 
 defm VecListOne   : VectorList<1, FPR64, FPR128>;
@@ -710,7 +707,6 @@ def FPR128Op : RegisterOperand<FPR128, "printOperand"> {
 //===----------------------------------------------------------------------===//
 // ARMv8.1a atomic CASP register operands
 
-
 def WSeqPairs : RegisterTuples<[sube32, subo32],
                                [(decimate (rotl GPR32, 0), 2),
                                 (decimate (rotl GPR32, 1), 2)]>;
@@ -726,7 +722,6 @@ def XSeqPairsClass   : RegisterClass<"AArch64", [untyped], 64,
                                      (add XSeqPairs)>{
   let Size = 128;
 }
-
 
 let RenderMethod = "addRegOperands", ParserMethod="tryParseGPRSeqPair" in {
   def WSeqPairsAsmOperandClass : AsmOperandClass { let Name = "WSeqPair"; }
@@ -755,8 +750,6 @@ def SyspXzrPairOperand :
     RegisterOperand<GPR64, "printSyspXzrPair"> { // needed to allow alias with XZR operand
   let ParserMatchClass = SyspXzrPairOperandMatcherClass;
 }
-
-
 
 //===----- END: v8.1a atomic CASP register operands -----------------------===//
 
@@ -939,7 +932,6 @@ def PPR    : PPRClass<0, 15>;
 def PPR_3b : PPRClass<0, 7>; // Restricted 3 bit SVE predicate register class.
 def PPR_p8to15 : PPRClass<8, 15>;
 
-
 class PPRAsmOperand <string name, string RegClass, int Width>: AsmOperandClass {
   let Name = "SVE" # name # "Reg";
   let PredicateMethod = "isSVEPredicateVectorRegOfWidth<"
@@ -1103,7 +1095,6 @@ let EncoderMethod = "EncodeRegMul_MinMax<2, 0, 14>",
   }
 }  // end let EncoderMethod/DecoderMethod
 
-
 //******************************************************************************
 
 // SVE vector register classes
@@ -1116,7 +1107,6 @@ class ZPRClass<int firstreg, int lastreg, int step = 1> : RegisterClass<"AArch64
                                             128, (sequence "Z%u", firstreg, lastreg, step)> {
   let Size = 128;
 }
-
 
 def ZPR    : ZPRClass<0, 31>;
 def ZPR_4b : ZPRClass<0, 15>; // Restricted 4 bit SVE vector register class.
@@ -1165,7 +1155,6 @@ def ZPR4b8  : ZPRRegOp<"b", ZPRAsmOp4b8,  ElementSizeB, ZPR_4b>;
 def ZPR4b16 : ZPRRegOp<"h", ZPRAsmOp4b16, ElementSizeH, ZPR_4b>;
 def ZPR4b32 : ZPRRegOp<"s", ZPRAsmOp4b32, ElementSizeS, ZPR_4b>;
 def ZPR4b64 : ZPRRegOp<"d", ZPRAsmOp4b64, ElementSizeD, ZPR_4b>;
-
 
 class FPRasZPR<int Width> : AsmOperandClass{
   let Name = "FPR" # Width # "asZPR";
@@ -1372,7 +1361,6 @@ let EncoderMethod = "EncodeRegMul_MinMax<4, 0, 28>",
   }
 } // end let EncoderMethod/DecoderMethod
 
-
 // SME2 strided multi-vector operands
 
 // ZStridedPairs
@@ -1418,7 +1406,6 @@ def ZPR4Strided : RegisterClass<"AArch64", [untyped], 512,
                                 (add ZStridedQuadsLo, ZStridedQuadsHi)>  {
   let Size = 512;
 }
-
 
 class ZPRVectorListStrided<int ElementWidth, int NumRegs, int Stride>
     : ZPRVectorList<ElementWidth, NumRegs> {
@@ -1840,8 +1827,10 @@ def ZPRMul2AsmOp32_Hi : ZPRAsmOperand<"VectorS_Hi", 32, "Mul2_Hi">;
 def ZPRMul2AsmOp64_Lo : ZPRAsmOperand<"VectorD_Lo", 64, "Mul2_Lo">;
 def ZPRMul2AsmOp64_Hi : ZPRAsmOperand<"VectorD_Hi", 64, "Mul2_Hi">;
 
-def ZPR_K : RegisterClass<"AArch64", [untyped], 128,
-                          (add Z20, Z21, Z22, Z23, Z28, Z29, Z30, Z31)>;
+def ZPR_K : RegisterClass<"AArch64", [nxv16i8], 128,
+                          (add Z20, Z21, Z22, Z23, Z28, Z29, Z30, Z31)>{
+                             let Size = 128;
+}
 
 def ZK : RegisterOperand<ZPR_K, "printSVERegOp<>">{
   let EncoderMethod = "EncodeZK";

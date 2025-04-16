@@ -66,6 +66,16 @@ class sme_outer_product_pseudo<ZPRRegOp zpr_ty, SMEMatrixTypeEnum za_flag>
   let usesCustomInserter = 1;
 }
 
+class sme_sparse_outer_product_pseudo<RegisterOperand zn_ty, RegisterOperand zm_ty, SMEMatrixTypeEnum za_flag>
+    : Pseudo<(outs), (ins i32imm:$tile, zn_ty:$zn, zm_ty:$zm, ZK:$zk, i32imm:$idx), []>,
+      Sched<[]> {
+  // Translated to the actual instructions in AArch64ISelLowering.cpp
+  let SMEMatrixType = za_flag;
+  let usesCustomInserter = 1;
+  let mayLoad = 1;
+  let mayStore = 1;
+}
+
 class sme2_quarter_tile_outer_product_pseudo<RegisterOperand zn_ty, RegisterOperand zm_ty, SMEMatrixTypeEnum za_flag>
     : Pseudo<(outs), (ins i32imm:$tile,
                           zn_ty:$zn, zm_ty:$zm), []>,
@@ -214,6 +224,12 @@ class SME2_ZA_Tile_Vec_Multi_Single_Pat<string name, SDPatternOperator intrinsic
 class SME2_ZA_Tile_Vec_Multi_Multi_Pat<string name, SDPatternOperator intrinsic, Operand imm_ty, ValueType vt>
     : Pat<(intrinsic imm_ty:$tile, vt:$Zn1, vt:$Zn2, vt:$Zm1, vt:$Zm2),
           (!cast<Instruction>(name # _PSEUDO) $tile, (REG_SEQUENCE ZPR2Mul2, vt:$Zn1, zsub0, vt:$Zn2, zsub1), (REG_SEQUENCE ZPR2Mul2, vt:$Zm1, zsub0, vt:$Zm2, zsub1))>;
+
+class SME2_ZA_TMOP_Pat<string name, SDPatternOperator intrinsic, Operand tile_imm, ValueType vt>
+    : Pat<(intrinsic tile_imm:$tile, vt:$Zn1, vt:$Zn2, vt:$Zm, nxv16i8:$Zk, timm32_0_3:$idx),
+          (!cast<Instruction>(name # _PSEUDO) $tile, (REG_SEQUENCE ZPR2Mul2, vt:$Zn1, zsub0, vt:$Zn2, zsub1), $Zm, $Zk, $idx)>;
+
+
 //===----------------------------------------------------------------------===//
 // SME pattern match helpers.
 //===----------------------------------------------------------------------===//
@@ -3407,7 +3423,7 @@ multiclass  sme2_int_bmopx_tile<string mnemonic, bits<3> op, SDPatternOperator i
 //===----------------------------------------------------------------------===//
 // SME2 Sparse Outer Product and Accumulate
 
-class sme_tmopa_16b<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, string mnemonic>
+class sme_int_sparse_outer_product_i16<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, string mnemonic>
     : I<(outs TileOp16:$ZAda),
         (ins  TileOp16:$_ZAda, zn_ty:$Zn, zm_ty:$Zm, ZK:$Zk, VectorIndexS32b:$imm),
         mnemonic, "\t$ZAda, $Zn, $Zm, $Zk$imm",
@@ -3436,7 +3452,7 @@ class sme_tmopa_16b<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, s
   let Constraints = "$ZAda = $_ZAda";
 }
 
-class sme_tmopa_32b<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, string mnemonic>
+class sme_int_sparse_outer_product_i32<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, string mnemonic>
     : I<(outs TileOp32:$ZAda),
         (ins  TileOp32:$_ZAda, zn_ty:$Zn, zm_ty:$Zm, ZK:$Zk, VectorIndexS32b:$imm),
         mnemonic, "\t$ZAda, $Zn, $Zm, $Zk$imm",
@@ -3465,6 +3481,25 @@ class sme_tmopa_32b<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, s
   let Constraints = "$ZAda = $_ZAda";
 }
 
+multiclass sme_tmopa_16b<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, ValueType vt, string mnemonic, SDPatternOperator intrinsic, list<Register> uses=[]> {
+  def NAME : sme_int_sparse_outer_product_i16<opc, zn_ty, zm_ty, mnemonic>, SMEPseudo2Instr<NAME, 1> {
+    let Uses = uses;
+  }
+
+  def NAME # _PSEUDO : sme_sparse_outer_product_pseudo<zn_ty, zm_ty, SMEMatrixTileH>, SMEPseudo2Instr<NAME, 0>;
+
+  def : SME2_ZA_TMOP_Pat<NAME, intrinsic, timm32_0_1, vt>;
+}
+
+multiclass sme_tmopa_32b<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, ValueType vt, string mnemonic, SDPatternOperator intrinsic, list<Register> uses=[]> {
+  def NAME : sme_int_sparse_outer_product_i32<opc, zn_ty, zm_ty, mnemonic>, SMEPseudo2Instr<NAME, 1> {
+    let Uses = uses;
+  }
+
+  def NAME # _PSEUDO : sme_sparse_outer_product_pseudo<zn_ty, zm_ty, SMEMatrixTileS>, SMEPseudo2Instr<NAME, 0>;
+
+  def : SME2_ZA_TMOP_Pat<NAME, intrinsic, timm32_0_3, vt>;
+}
 
 //===----------------------------------------------------------------------===///
 // SME2 Zero Lookup Table.

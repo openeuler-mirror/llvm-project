@@ -3036,6 +3036,23 @@ let TargetPrefix = "aarch64" in {
     }
   }
 
+  class SME_OuterProduct_TMOP_Intrinsic
+     : DefaultAttrsIntrinsic<[],
+         [llvm_i32_ty,
+          llvm_anyvector_ty,
+          LLVMMatchType<0>,
+          LLVMMatchType<0>,
+          llvm_nxv16i8_ty,
+          llvm_i32_ty],
+         [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<5>>,
+          IntrInaccessibleMemOnly]>;
+
+  def int_aarch64_sme_ftmopa_za16 : SME_OuterProduct_TMOP_Intrinsic;
+  def int_aarch64_sme_ftmopa_za32 : SME_OuterProduct_TMOP_Intrinsic;
+  def int_aarch64_sme_stmopa_za32 : SME_OuterProduct_TMOP_Intrinsic;
+  def int_aarch64_sme_utmopa_za32 : SME_OuterProduct_TMOP_Intrinsic;
+  def int_aarch64_sme_sutmopa_za32 : SME_OuterProduct_TMOP_Intrinsic;
+  def int_aarch64_sme_ustmopa_za32 : SME_OuterProduct_TMOP_Intrinsic;
 
   // 16 and 32 bit multi-vector floating point 8 Quarter Tile Quarter Product
   foreach za = ["za16", "za32"] in {
@@ -3044,6 +3061,7 @@ let TargetPrefix = "aarch64" in {
     def int_aarch64_sme_fp8_fmop4a_ # za # "_2x1" : SME_OuterProduct_QuarterTile_Single_Multi;
     def int_aarch64_sme_fp8_fmop4a_ # za # "_2x2" : SME_OuterProduct_QuarterTile_Multi_Multi;
   }
+
   class SME_AddVectorToTile_Intrinsic
       : DefaultAttrsIntrinsic<[],
           [llvm_i32_ty,
