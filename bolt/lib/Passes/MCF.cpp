@@ -31,7 +31,7 @@ extern cl::OptionCategory BoltOptCategory;
 
 extern cl::opt<bool> TimeOpts;
 
-static cl::opt<bool> IterativeGuess(
+cl::opt<bool> IterativeGuess(
     "iterative-guess",
     cl::desc("in non-LBR mode, guess edge counts using iterative technique"),
     cl::Hidden, cl::cat(BoltOptCategory));

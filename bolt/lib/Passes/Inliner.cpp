@@ -50,7 +50,7 @@ ForceInlineFunctions("force-inline",
   cl::Hidden,
   cl::cat(BoltOptCategory));
 
-static cl::opt<bool> InlineAll("inline-all", cl::desc("inline all functions"),
+cl::opt<bool> InlineAll("inline-all", cl::desc("inline all functions"),
                                cl::cat(BoltOptCategory));
 
 static cl::opt<bool> InlineIgnoreLeafCFI(

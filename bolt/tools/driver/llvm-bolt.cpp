@@ -26,6 +26,10 @@
 #include "llvm/Support/PrettyStackTrace.h"
 #include "llvm/Support/Signals.h"
 #include "llvm/Support/TargetSelect.h"
+#include "bolt/Passes/BinaryPasses.h"
+#include "bolt/Passes/ReorderFunctions.h"
+#include "bolt/Passes/SplitFunctions.h"
+#include "bolt/Passes/TailDuplication.h"
 
 #define DEBUG_TYPE "bolt"
 
@@ -34,6 +38,28 @@ using namespace object;
 using namespace bolt;
 
 namespace opts {
+
+extern cl::opt<ReorderBasicBlocks::LayoutType> ReorderBlocks;
+extern cl::opt<ReorderFunctions::ReorderType> ReorderFunctions;
+extern cl::opt<bool, false, DeprecatedSplitFunctionOptionParser> SplitFunctions;
+extern cl::opt<bool> AggressiveSplitting;
+extern cl::opt<bool> ICF;
+extern cl::opt<bool> UseGnuStack;
+extern cl::opt<bool> InlineAll;
+extern cl::opt<bool> InferFallThroughs;
+extern cl::opt<bool> SimplifyConditionalTailCalls;
+extern cl::opt<bool> SimplifyRODataLoads;
+extern cl::opt<bool> ICPUseMispredicts;
+extern cl::opt<bool> EliminateVeneers;
+extern cl::opt<bool> EliminateUnreachable;
+extern cl::opt<bool> FixBlockCounts;
+extern cl::opt<bool> FixFuncCounts;
+extern cl::opt<SctcModes> SctcMode;
+extern cl::opt<bool> AlignBlocks;
+extern cl::opt<bool> CgUseSplitHotSize;
+extern cl::opt<TailDuplication::DuplicationMode> TailDuplicationMode;
+extern cl::opt<bool> IterativeGuess;
+extern cl::opt<bool> AssumeABI;
 
 static cl::OptionCategory *BoltCategories[] = {&BoltCategory,
                                                &BoltOptCategory,
@@ -68,6 +94,12 @@ InputDataFilename2("data2",
   cl::desc("<data file>"),
   cl::Optional,
   cl::cat(BoltCategory));
+
+static cl::opt<bool>
+Om("Om",
+  cl::desc("Kunpeng optimization"),
+  cl::ZeroOrMore,
+  cl::cat(BoltOptCategory));
 
 static cl::opt<std::string>
 InputFilename2(
@@ -152,6 +184,34 @@ void boltDiffMode(int argc, char **argv) {
   opts::DiffOnly = true;
 }
 
+void handleOptionOm() {
+  if (!opts::Om) {
+    return;
+  }
+
+  opts::ReorderBlocks = ReorderBasicBlocks::LT_OPTIMIZE_EXT_TSP; // -reorder-blocks=ext-tsp
+  opts::ReorderFunctions = ReorderFunctions::RT_HFSORT_PLUS;     // -reorder-functions=hfsort+
+  opts::SplitFunctions = true;                                   // -split-functions
+  opts::AggressiveSplitting = true;                              // -split-all-cold
+  opts::ICF = true;                                              // -icf=1
+  opts::UseGnuStack = true;                                      // -use-gnu-stack
+  opts::InlineAll = true;                                        // --inline-all
+  opts::InferFallThroughs = true;                                // --infer-fall-throughs
+  opts::SimplifyConditionalTailCalls = true;                     // --simplify-conditional-tail-calls
+  opts::SimplifyRODataLoads = true;                              // --simplify-rodata-loads
+  opts::ICPUseMispredicts = true;                                // --indirect-call-promotion-use-mispredicts
+  opts::EliminateVeneers = true;                                 // --elim-link-veneers
+  opts::EliminateUnreachable = true;                             // --eliminate-unreachable
+  opts::FixBlockCounts = true;                                   // --fix-block-counts
+  opts::FixFuncCounts = true;                                    // --fix-func-counts
+  opts::SctcMode = opts::SctcModes::SctcPreserveDirection;       // --sctc-mode=preserve
+  opts::AlignBlocks = true;                                      // --align-blocks
+  opts::CgUseSplitHotSize = true;                                // --cg-use-split-hot-size
+  opts::TailDuplicationMode = TailDuplication::TD_AGGRESSIVE;    // --tail-duplication=aggressive
+  opts::IterativeGuess = true;                                   // --iterative-guess
+  opts::AssumeABI = true;                                        // --assume-abi
+}
+
 void boltMode(int argc, char **argv) {
   cl::HideUnrelatedOptions(ArrayRef(opts::BoltCategories));
   // Register the target printer for --version.
@@ -160,6 +220,7 @@ void boltMode(int argc, char **argv) {
 
   cl::ParseCommandLineOptions(argc, argv,
                               "BOLT - Binary Optimization and Layout Tool\n");
+  handleOptionOm();
 
   if (opts::OutputFilename.empty()) {
     errs() << ToolName << ": expected -o=<output file> option.\n";

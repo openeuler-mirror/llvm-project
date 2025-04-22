@@ -229,7 +229,7 @@ static cl::opt<std::string> DWPPathName("dwp",
                                         cl::Hidden, cl::init(""),
                                         cl::cat(BoltCategory));
 
-static cl::opt<bool>
+cl::opt<bool>
 UseGnuStack("use-gnu-stack",
   cl::desc("use GNU_STACK program header for new segment (workaround for "
            "issues with strip/objcopy)"),

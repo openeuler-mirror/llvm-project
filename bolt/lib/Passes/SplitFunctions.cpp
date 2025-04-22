@@ -34,25 +34,6 @@
 using namespace llvm;
 using namespace bolt;
 
-namespace {
-class DeprecatedSplitFunctionOptionParser : public cl::parser<bool> {
-public:
-  explicit DeprecatedSplitFunctionOptionParser(cl::Option &O)
-      : cl::parser<bool>(O) {}
-
-  bool parse(cl::Option &O, StringRef ArgName, StringRef Arg, bool &Value) {
-    if (Arg == "2" || Arg == "3") {
-      Value = true;
-      errs() << formatv("BOLT-WARNING: specifying non-boolean value \"{0}\" "
-                        "for option -{1} is deprecated\n",
-                        Arg, ArgName);
-      return false;
-    }
-    return cl::parser<bool>::parse(O, ArgName, Arg, Value);
-  }
-};
-} // namespace
-
 namespace opts {
 
 extern cl::OptionCategory BoltOptCategory;
@@ -61,7 +42,7 @@ extern cl::opt<bool> SplitEH;
 extern cl::opt<unsigned> ExecutionCountThreshold;
 extern cl::opt<uint32_t> RandomSeed;
 
-static cl::opt<bool> AggressiveSplitting(
+cl::opt<bool> AggressiveSplitting(
     "split-all-cold", cl::desc("outline as many cold basic blocks as possible"),
     cl::cat(BoltOptCategory));
 
@@ -74,7 +55,7 @@ static cl::opt<unsigned> SplitAlignThreshold(
 
     cl::Hidden, cl::cat(BoltOptCategory));
 
-static cl::opt<bool, false, DeprecatedSplitFunctionOptionParser>
+cl::opt<bool, false, DeprecatedSplitFunctionOptionParser>
     SplitFunctions("split-functions",
                    cl::desc("split functions into fragments"),
                    cl::cat(BoltOptCategory));

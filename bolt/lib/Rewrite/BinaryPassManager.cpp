@@ -58,7 +58,7 @@ DynoStatsAll("dyno-stats-all",
   cl::desc("print dyno stats after each stage"),
   cl::ZeroOrMore, cl::Hidden, cl::cat(BoltCategory));
 
-static cl::opt<bool>
+cl::opt<bool>
     EliminateUnreachable("eliminate-unreachable",
                          cl::desc("eliminate unreachable code"), cl::init(true),
                          cl::cat(BoltOptCategory));
@@ -212,12 +212,12 @@ static cl::opt<bool> RegReAssign(
         "reassign registers so as to avoid using REX prefixes in hot code"),
     cl::cat(BoltOptCategory));
 
-static cl::opt<bool> SimplifyConditionalTailCalls(
+cl::opt<bool> SimplifyConditionalTailCalls(
     "simplify-conditional-tail-calls",
     cl::desc("simplify conditional tail calls by removing unnecessary jumps"),
     cl::init(true), cl::cat(BoltOptCategory));
 
-static cl::opt<bool> SimplifyRODataLoads(
+cl::opt<bool> SimplifyRODataLoads(
     "simplify-rodata-loads",
     cl::desc("simplify loads from read-only sections by replacing the memory "
              "operand with the constant found in the corresponding section"),

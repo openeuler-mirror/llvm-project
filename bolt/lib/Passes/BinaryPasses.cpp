@@ -93,7 +93,7 @@ static cl::opt<bool> MinBranchClusters(
              "branches"),
     cl::Hidden, cl::cat(BoltOptCategory));
 
-static cl::list<Peepholes::PeepholeOpts> Peepholes(
+cl::list<Peepholes::PeepholeOpts> Peepholes(
     "peepholes", cl::CommaSeparated, cl::desc("enable peephole optimizations"),
     cl::value_desc("opt1,opt2,opt3,..."),
     cl::values(clEnumValN(Peepholes::PEEP_NONE, "none", "disable peepholes"),
@@ -181,13 +181,7 @@ static cl::opt<bool>
                      cl::desc("print the list of functions with stale profile"),
                      cl::Hidden, cl::cat(BoltOptCategory));
 
-enum SctcModes : char {
-  SctcAlways,
-  SctcPreserveDirection,
-  SctcHeuristic
-};
-
-static cl::opt<SctcModes>
+cl::opt<SctcModes>
 SctcMode("sctc-mode",
   cl::desc("mode for simplify conditional tail calls"),
   cl::init(SctcAlways),

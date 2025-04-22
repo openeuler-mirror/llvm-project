@@ -20,7 +20,7 @@ namespace opts {
 
 extern cl::OptionCategory BoltOptCategory;
 
-static llvm::cl::opt<bool>
+llvm::cl::opt<bool>
     EliminateVeneers("elim-link-veneers",
                      cl::desc("run veneer elimination pass"), cl::init(true),
                      cl::Hidden, cl::cat(BoltOptCategory));

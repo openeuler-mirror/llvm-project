@@ -15,6 +15,25 @@
 #include "llvm/Support/CommandLine.h"
 #include <atomic>
 
+using namespace llvm;
+
+class DeprecatedSplitFunctionOptionParser : public cl::parser<bool> {
+public:
+  explicit DeprecatedSplitFunctionOptionParser(cl::Option &O)
+      : cl::parser<bool>(O) {}
+
+  bool parse(cl::Option &O, StringRef ArgName, StringRef Arg, bool &Value) {
+    if (Arg == "2" || Arg == "3") {
+      Value = true;
+      errs() << formatv("BOLT-WARNING: specifying non-boolean value \"{0}\" "
+                        "for option -{1} is deprecated\n",
+                        Arg, ArgName);
+      return false;
+    }
+    return cl::parser<bool>::parse(O, ArgName, Arg, Value);
+  }
+};
+
 namespace llvm {
 namespace bolt {
 
