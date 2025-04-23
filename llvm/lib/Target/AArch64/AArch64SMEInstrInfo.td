@@ -1014,9 +1014,9 @@ defm FMLALL_VG4_M4Z4Z_BtoS : sme2_mla_ll_array_vg4_multi<"fmlall", 0b01000, Matr
 defm FMOPA_MPPZZ_BtoS : sme2_fp8_fmopa_za32<"fmopa", int_aarch64_sme_fp8_fmopa_za32>;
 } //[HasSMEF8F32]
 
-let Predicates = [HasSME_MOP4, HasSMEF8F16], Uses = [FPMR, FPCR] in {
-  defm FMOP4A : sme2_fmop4a_fp8_fp16_2way<"fmop4a">;
-} // [HasSME_MOP4, HasSMEF8F16],  Uses = [FPMR, FPCR]
+let Predicates = [HasSME_MOP4, HasSMEF8F16] in {
+  defm FMOP4A : sme2_fmop4a_fp8_fp16_2way<"fmop4a", "int_aarch64_sme_fp8_fmop4a_za16">;
+} // [HasSME_MOP4, HasSMEF8F16]
 
 let Predicates = [HasSME_MOP4, HasSMEF16F16] in {
   defm FMOP4A : sme2_fmop4as_fp16_non_widening<0, "fmop4a", "int_aarch64_sme_mop4a">;
@@ -1033,8 +1033,6 @@ let Predicates = [HasSME_MOP4, HasSMEF64F64] in {
   defm FMOP4S : sme2_fmop4as_fp64_non_widening<1, "fmop4s", "int_aarch64_sme_mop4s">;
 }
 
-let Uses = [FPMR, FPCR] in {
 let Predicates = [HasSME_MOP4, HasSMEF8F32] in {
-  defm FMOP4A : sme2_fmop4a_fp8_fp32_4way<"fmop4a">;
-}
+  defm FMOP4A : sme2_fmop4a_fp8_fp32_4way<"fmop4a", "int_aarch64_sme_fp8_fmop4a_za32">;
 }
