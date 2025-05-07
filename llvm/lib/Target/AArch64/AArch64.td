@@ -842,6 +842,7 @@ include "AArch64SchedNeoverseN1.td"
 include "AArch64SchedNeoverseN2.td"
 include "AArch64SchedNeoverseV1.td"
 include "AArch64SchedNeoverseV2.td"
+include "AArch64SchedHIP12.td"
 
 def TuneA35     : SubtargetFeature<"a35", "ARMProcFamily", "CortexA35",
                                 "Cortex-A35 ARM processors">;
@@ -1346,6 +1347,16 @@ def TuneTSV110 : SubtargetFeature<"tsv110", "ARMProcFamily", "TSV110",
                                   FeatureStorePairSuppress,
                                   FeaturePostRAScheduler]>;
 
+def TuneHIP12 : SubtargetFeature<"hip12", "ARMProcFamily", "HIP12",
+                                   "HiSilicon HIP12 processors", [
+                                    FeatureExperimentalZeroingPseudos,
+                                    FeatureCmpBccFusion,
+                                    FeatureFuseAES,
+                                    FeatureALULSLFast,
+                                    FeatureAscendStoreAddress,
+                                    FeatureStorePairSuppress,
+                                    FeaturePostRAScheduler]>;
+
 def TuneAmpere1 : SubtargetFeature<"ampere1", "ARMProcFamily", "Ampere1",
                                    "Ampere Computing Ampere-1 processors", [
                                    FeaturePostRAScheduler,
@@ -1541,6 +1552,19 @@ def ProcessorFeatures {
                                    FeatureNEON, FeaturePerfMon, FeatureSPE,
                                    FeatureFullFP16, FeatureFP16FML, FeatureDotProd,
                                    FeatureJS, FeatureComplxNum];
+  list<SubtargetFeature> HIP12 = [HasV9_2aOps, FeatureSVE, FeatureSVE2,
+                                  FeatureSVE2BitPerm, FeatureSVE2AES,
+                                  FeatureSVE2SM4, FeatureSVE2SHA3,
+                                  FeatureFullFP16, FeaturePerfMon,
+                                  FeatureETE, FeatureTRBE, FeatureSPE,
+                                  FeatureSPE_EEF, FeatureNMI,
+                                  FeatureHBC, FeatureRCPC3, FeatureBF16,
+                                  FeatureComplxNum, FeatureCRC,
+                                  FeatureDotProd, FeatureFPARMv8,
+                                  FeatureMatMulInt8, FeatureJS,
+                                  FeatureLSE, FeatureNEON, FeaturePAuth,
+                                  FeatureRAS, FeatureRCPC, FeatureRDM,
+                                  FeatureLS64, FeatureRME,FeatureBRBE];
   list<SubtargetFeature> Ampere1 = [HasV8_6aOps, FeatureNEON, FeaturePerfMon,
                                     FeatureSSBS, FeatureRandGen, FeatureSB,
                                     FeatureSHA2, FeatureSHA3, FeatureAES];
@@ -1659,6 +1683,8 @@ def : ProcessorModel<"thunderx3t110", ThunderX3T110Model,
                      ProcessorFeatures.ThunderX3T110, [TuneThunderX3T110]>;
 def : ProcessorModel<"tsv110", TSV110Model, ProcessorFeatures.TSV110,
                      [TuneTSV110]>;
+def : ProcessorModel<"hip12", HIP12Model, ProcessorFeatures.HIP12,
+                     [TuneHIP12]>;
 
 // Support cyclone as an alias for apple-a7 so we can still LTO old bitcode.
 def : ProcessorModel<"cyclone", CycloneModel, ProcessorFeatures.AppleA7,
