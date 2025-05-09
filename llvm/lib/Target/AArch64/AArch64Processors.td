@@ -594,7 +594,8 @@ def ProcessorFeatures {
                                    FeatureSPECRES2, FeatureSVE2AES, FeatureSVE2SM4,
                                    FeatureSVE2SHA3, FeatureSVE2, FeatureSVE2BitPerm,
                                    FeatureETE, FeatureMEC, FeatureFAMINMAX,
-                                   FeatureFP8DOT2, FeatureLUT];
+                                   FeatureFP8DOT2, FeatureFP8DOT4,
+                                   FeatureFP8FMA, FeatureLUT];
   list<SubtargetFeature> Carmel   = [HasV8_2aOps, FeatureNEON, FeatureCrypto,
                                      FeatureFullFP16, FeatureLSE];
   list<SubtargetFeature> AppleA7  = [HasV8_0aOps, FeatureCrypto, FeatureFPARMv8,
