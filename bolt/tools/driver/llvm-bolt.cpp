@@ -60,6 +60,7 @@ extern cl::opt<bool> CgUseSplitHotSize;
 extern cl::opt<TailDuplication::DuplicationMode> TailDuplicationMode;
 extern cl::opt<bool> IterativeGuess;
 extern cl::opt<bool> AssumeABI;
+extern cl::opt<bool> StrictMode;
 
 static cl::OptionCategory *BoltCategories[] = {&BoltCategory,
                                                &BoltOptCategory,
@@ -210,6 +211,7 @@ void handleOptionOm() {
   opts::TailDuplicationMode = TailDuplication::TD_AGGRESSIVE;    // --tail-duplication=aggressive
   opts::IterativeGuess = true;                                   // --iterative-guess
   opts::AssumeABI = true;                                        // --assume-abi
+  opts::StrictMode = true;                                       // --strict
 }
 
 void boltMode(int argc, char **argv) {
