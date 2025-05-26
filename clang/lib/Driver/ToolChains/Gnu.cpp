@@ -2417,7 +2417,8 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
   // lists should shrink over time. Please don't add more elements to *Triples.
   static const char *const AArch64LibDirs[] = {"/lib64", "/lib"};
   static const char *const AArch64Triples[] = {
-      "aarch64-none-linux-gnu", "aarch64-redhat-linux", "aarch64-suse-linux"};
+      "aarch64-none-linux-gnu", "aarch64-redhat-linux", "aarch64-suse-linux",
+      "aarch64-openEuler-linux", "aarch64-kylin-linux"};
   static const char *const AArch64beLibDirs[] = {"/lib"};
   static const char *const AArch64beTriples[] = {"aarch64_be-none-linux-gnu"};
 
@@ -2445,7 +2446,8 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
       "x86_64-pc-linux-gnu",    "x86_64-redhat-linux6E",
       "x86_64-redhat-linux",    "x86_64-suse-linux",
       "x86_64-manbo-linux-gnu", "x86_64-slackware-linux",
-      "x86_64-unknown-linux",   "x86_64-amazon-linux"};
+      "x86_64-unknown-linux",   "x86_64-amazon-linux",
+      "x86_64-openEuler-linux", "x86_64-kylin-linux"};
   static const char *const X32Triples[] = {"x86_64-linux-gnux32",
                                            "x86_64-pc-linux-gnux32"};
   static const char *const X32LibDirs[] = {"/libx32", "/lib"};
@@ -2458,7 +2460,8 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
 
   static const char *const LoongArch64LibDirs[] = {"/lib64", "/lib"};
   static const char *const LoongArch64Triples[] = {
-      "loongarch64-linux-gnu", "loongarch64-unknown-linux-gnu"};
+      "loongarch64-linux-gnu", "loongarch64-unknown-linux-gnu",
+      "loongarch64-openEuler-linux", "loongarch64-kylin-linux"};
 
   static const char *const M68kLibDirs[] = {"/lib"};
   static const char *const M68kTriples[] = {"m68k-unknown-linux-gnu",
@@ -2515,7 +2518,9 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
                                                "riscv32-unknown-elf"};
   static const char *const RISCV64LibDirs[] = {"/lib64", "/lib"};
   static const char *const RISCV64Triples[] = {"riscv64-unknown-linux-gnu",
-                                               "riscv64-unknown-elf"};
+                                               "riscv64-unknown-elf",
+                                               "riscv64-openEuler-linux",
+                                               "riscv64-kylin-linux"};
 
   static const char *const SPARCv8LibDirs[] = {"/lib32", "/lib"};
   static const char *const SPARCv8Triples[] = {"sparc-linux-gnu",
