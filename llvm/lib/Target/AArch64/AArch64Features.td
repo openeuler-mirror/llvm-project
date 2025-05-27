@@ -532,7 +532,7 @@ def FeatureFAMINMAX: SubtargetFeature<"faminmax", "HasFAMINMAX", "true",
    "Enable FAMIN and FAMAX instructions (FEAT_FAMINMAX)", [FeatureNEON]>;
 
 def FeatureFP8FMA : SubtargetFeature<"fp8fma", "HasFP8FMA", "true",
-  "Enable fp8 multiply-add instructions (FEAT_FP8FMA)">;
+  "Enable fp8 multiply-add instructions (FEAT_FP8FMA)", [FeatureFP8]>;
 
 def FeatureSSVE_FP8FMA : SubtargetFeature<"ssve-fp8fma", "HasSSVE_FP8FMA", "true",
   "Enable SVE2 fp8 multiply-add instructions (FEAT_SSVE_FP8FMA)", [FeatureSME2]>;
