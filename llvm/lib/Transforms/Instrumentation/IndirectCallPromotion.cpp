@@ -822,8 +822,8 @@ bool IndirectCallPromoter::processFunction(ProfileSummaryInfo *PSI) {
     uint64_t TotalCount;
     auto ICallProfDataRef = ICallAnalysis.getPromotionCandidatesForInstruction(
         CB, TotalCount, NumCandidates);
-    if (!NumCandidates ||
-        (PSI && PSI->hasProfileSummary() && !PSI->isHotCount(TotalCount)))
+    if (!NumCandidates || (PSI && PSI->hasProfileSummary() &&
+                           !PSI->isHotCount(TotalCount, /*isForICP=*/true)))
       continue;
 
     auto PromotionCandidates = getPromotionCandidatesForCallSite(
