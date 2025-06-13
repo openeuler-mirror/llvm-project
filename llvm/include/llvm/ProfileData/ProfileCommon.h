@@ -68,6 +68,7 @@ public:
   static const ProfileSummaryEntry &
   getEntryForPercentile(const SummaryEntryVector &DS, uint64_t Percentile);
   static uint64_t getHotCountThreshold(const SummaryEntryVector &DS);
+  static uint64_t getHotCountThresholdForICP(const SummaryEntryVector &DS);
   static uint64_t getColdCountThreshold(const SummaryEntryVector &DS);
 };
 
