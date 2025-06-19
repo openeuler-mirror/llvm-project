@@ -122,6 +122,12 @@ New checks
 
   Check if a non-void function hasn't return statement.
 
+- New :doc:`BSCompatibility-unsequenced-function-parameter
+  <clang-tidy/checks/BSCompatibility/unsequenced-function-parameter>` check.
+
+  Detect multiple function parameters and provides suggestions for extracting
+  parameters from the function call.
+
 - New :doc:`bugprone-empty-catch
   <clang-tidy/checks/bugprone/empty-catch>` check.
 
