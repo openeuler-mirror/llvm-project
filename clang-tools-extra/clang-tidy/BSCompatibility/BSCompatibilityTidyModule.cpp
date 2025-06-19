@@ -8,6 +8,7 @@
 #include "../ClangTidyModuleRegistry.h"
 #include "../cppcoreguidelines/NarrowingConversionsCheck.h"
 #include "NonVoidFunctionReturnVoidCheck.h"
+#include "UnsequencedFunctionParameterCheck.h"
 
 namespace clang::tidy {
 namespace BSCompatibility {
@@ -17,6 +18,8 @@ public:
   void addCheckFactories(ClangTidyCheckFactories &CheckFactories) override {
     CheckFactories.registerCheck<NonVoidFunctionReturnVoidCheck>(
         "BSCompatibility-non-void-function-return-void");
+    CheckFactories.registerCheck<UnsequencedFunctionParameterCheck>(
+        "BSCompatibility-unsequenced-function-parameter");
   }
 };
 

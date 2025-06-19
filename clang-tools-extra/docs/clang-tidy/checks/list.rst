@@ -77,6 +77,7 @@ Clang-Tidy Checks
    :doc:`android-cloexec-socket <android/cloexec-socket>`, "Yes"
    :doc:`android-comparison-in-temp-failure-retry <android/comparison-in-temp-failure-retry>`,
    :doc:`BSCompatibility-non-void-function-return-void <BSCompatibility/non-void-function-return-void.html>`_, "Yes"
+   :doc:`BSCompatibility-unsequenced-function-parameter <BSCompatibility/unsequenced-function-parameter>`, "Yes"
    :doc:`boost-use-ranges <boost/use-ranges>`, "Yes"
    :doc:`boost-use-to-string <boost/use-to-string>`, "Yes"
    :doc:`bugprone-argument-comment <bugprone/argument-comment>`, "Yes"

@@ -6,6 +6,7 @@ set(LLVM_LINK_COMPONENTS
 add_clang_library(clangTidyBSCompatibilityModule
   BSCompatibilityTidyModule.cpp
   NonVoidFunctionReturnVoidCheck.cpp
+  UnsequencedFunctionParameterCheck.cpp
 
   LINK_LIBS
   clangTidy
