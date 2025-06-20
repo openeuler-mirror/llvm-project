@@ -21,6 +21,8 @@ def ArithExpandOpsPass : Pass<"arith-expand"> {
            "Enable the F8E5M2 expansion patterns">,
     Option<"includeF8E4M3FN", "include-f8e4m3fn", "bool", /*default=*/"false",
            "Enable the F8E4M3FN expansion patterns">,
+    Option<"includeF4E2M1", "include-f4e2m1", "bool", /*default=*/"false",
+           "Enable the F4E2M1 expansion patterns">,
   ];
 }
 
