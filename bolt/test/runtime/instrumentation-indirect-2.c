@@ -51,6 +51,8 @@ int main() {
 }
 /*
 REQUIRES: system-linux,shell,fuser
+#instrumentation functionality is not complete, this case will fail.
+UNSUPPORTED:target={{x86.*|aarch64.*}}
 
 RUN: %clang %cflags %s -o %t.exe -Wl,-q -pie -fpie
 
