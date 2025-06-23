@@ -14,6 +14,7 @@ containerize_needed="0"
 container="openEuler"
 docker=$(type -p docker)
 do_install="0"
+enable_bolt="1"
 enabled_projects="clang;lld;clang-tools-extra"
 host_arch="$(uname -m)"
 install="install"
@@ -62,6 +63,7 @@ Options:
   -I name  Specify install directory name (default: "$install_dir_name").
   -j N     Allow N jobs at once (default: $threads).
   -o       Enable LLVM_INSTALL_TOOLCHAIN_ONLY=ON.
+  -O       Do not build BOLT(binary optimization tool).
   -r       Delete $install_prefix and perform a clean build (default: incremental).
   -s       Strip binaries and minimize file permissions when (re-)installing.
   -t       Enable unit tests for components that support them (make check-all).
@@ -73,7 +75,7 @@ EOF
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
 containerized_opts=()
-while getopts :b:cCd:D:EhiI:j:orstvX: optchr; do
+while getopts :b:cCd:D:EhiI:j:oOrstvX: optchr; do
   case "$optchr" in
     b)
       buildtype="$OPTARG"
@@ -147,6 +149,10 @@ while getopts :b:cCd:D:EhiI:j:orstvX: optchr; do
       ;;
     o)
       install_toolchain_only=1
+      containerized_opts+=(-$optchr)
+      ;;
+    O)
+      enable_bolt="0"
       containerized_opts+=(-$optchr)
       ;;
     r)
@@ -350,6 +356,18 @@ else
   LIT_ARGS="-sv"
 fi
 
+
+if [ $enable_bolt == "1" ]; then
+  echo "enable BOLT"
+  #There is internal error when linking with gold while compiling BOLT.
+  unset llvm_use_linker
+  enabled_projects+=";bolt"
+  EXE_LINKER_FLAGS="-Wl,--compress-debug-sections=zlib" 
+else
+  llvm_use_linker="-DLLVM_USE_LINKER=gold"
+  EXE_LINKER_FLAGS="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" 
+fi
+
 # Build and install
 if [ $clean -eq 1 -a -e "$install_prefix" ]; then
   rm -rf "$install_prefix"
@@ -368,8 +386,8 @@ cmake $CMAKE_OPTIONS \
       -DCLANG_ENABLE_ARCMT=ON \
       -DCLANG_ENABLE_STATIC_ANALYZER=ON \
       -DCLANG_PLUGIN_SUPPORT=ON \
-      -DCMAKE_EXE_LINKER_FLAGS_DEBUG="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
-      -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
+      -DCMAKE_EXE_LINKER_FLAGS_DEBUG=$EXE_LINKER_FLAGS \
+      -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO=$EXE_LINKER_FLAGS \
       -DCMAKE_SKIP_RPATH=ON \
       -DCOMPILER_RT_BUILD_SANITIZERS=on \
       -DENABLE_LINKER_BUILD_ID=ON \
@@ -399,10 +417,10 @@ cmake $CMAKE_OPTIONS \
       -DLLVM_INSTALL_UTILS=ON \
       -DLLVM_LIT_ARGS="$LIT_ARGS -j$threads" \
       -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
-      -DLLVM_USE_LINKER=gold \
       -DLLVM_USE_PERF=ON \
       -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
       $llvm_binutils_incdir \
+      $llvm_use_linker \
       ../llvm
 
 make -j$threads $verbose
