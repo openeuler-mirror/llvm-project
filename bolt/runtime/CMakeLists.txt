@@ -33,6 +33,15 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
   set(BOLT_RT_FLAGS ${BOLT_RT_FLAGS} "-mno-sse")
 endif()
 
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+  include(CheckCXXCompilerFlag)
+  CHECK_CXX_COMPILER_FLAG("-mno-outline-atomics"
+    COMPILER_SUPPORTS_MNO_OUTLINE_ATOMICS)
+  if (COMPILER_SUPPORTS_MNO_OUTLINE_ATOMICS)  
+    set(BOLT_RT_FLAGS ${BOLT_RT_FLAGS} "-mno-outline-atomics")
+  endif()
+endif()
+
 # Don't let the compiler think it can create calls to standard libs
 target_compile_options(bolt_rt_instr PRIVATE ${BOLT_RT_FLAGS})
 target_include_directories(bolt_rt_instr PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
