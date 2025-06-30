@@ -10231,6 +10231,16 @@ void test_vst1q_s64(int64_t *a, int64x2_t b) {
   vst1q_s64(a, b);
 }
 
+// CHECK-LABEL: define{{.*}} void @test_vst1q_mf8(
+// CHECK: entry:
+// CHECK:   store <16 x i8> %val, ptr %a, align 1
+// CHECK:   ret void
+void test_vst1q_mf8(mfloat8_t *a, mfloat8x16_t val) {
+  vst1q_mf8(a, val);
+}
+
+
+
 // CHECK-LABEL: @test_vst1q_f16(
 // CHECK:   [[TMP1:%.*]] = bitcast <8 x half> %b to <16 x i8>
 // CHECK:   [[TMP3:%.*]] = bitcast <16 x i8> [[TMP1]] to <8 x half>
@@ -10341,6 +10351,16 @@ void test_vst1_s32(int32_t *a, int32x2_t b) {
 void test_vst1_s64(int64_t *a, int64x1_t b) {
   vst1_s64(a, b);
 }
+
+// CHECK-LABEL: define{{.*}} void @test_vst1_mf8(
+// CHECK: entry:
+// CHECK:   store <8 x i8> %val, ptr %a, align 1
+// CHECK:   ret void
+void test_vst1_mf8(mfloat8_t *a, mfloat8x8_t val) {
+  vst1_mf8(a, val);
+}
+
+
 
 // CHECK-LABEL: @test_vst1_f16(
 // CHECK:   [[TMP1:%.*]] = bitcast <4 x half> %b to <8 x i8>
@@ -10552,6 +10572,27 @@ void test_vst2q_s32(int32_t *a, int32x4x2_t b) {
 void test_vst2q_s64(int64_t *a, int64x2x2_t b) {
   vst2q_s64(a, b);
 }
+
+// CHECK-LABEL: define{{.*}} void @test_vst2q_mf8(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x16x2_t, align 16
+// CHECK:   %__s1 = alloca %struct.mfloat8x16x2_t, align 16
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x16x2_t, ptr %b, i32 0, i32 0
+// CHECK:   store [2 x <16 x i8>] %b.coerce, ptr %coerce.dive, align 16
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 16 %__s1, ptr align 16 %b, i64 32, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x16x2_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [2 x <16 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <16 x i8>, ptr %arrayidx, align 16
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x16x2_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [2 x <16 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <16 x i8>, ptr %arrayidx2, align 16
+// CHECK:   call void @llvm.aarch64.neon.st2.v16i8.p0(<16 x i8> %0, <16 x i8> %1, ptr %a)
+// CHECK:   ret void
+void test_vst2q_mf8(mfloat8_t *a, mfloat8x16x2_t b) {
+  vst2q_mf8(a, b);
+}
+
+
 
 // CHECK-LABEL: @test_vst2q_f16(
 // CHECK:   [[B:%.*]] = alloca %struct.float16x8x2_t, align 16
@@ -10826,6 +10867,27 @@ void test_vst2_s32(int32_t *a, int32x2x2_t b) {
 void test_vst2_s64(int64_t *a, int64x1x2_t b) {
   vst2_s64(a, b);
 }
+
+// CHECK-LABEL: define{{.*}} void @test_vst2_mf8(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x8x2_t, align 8
+// CHECK:   %__s1 = alloca %struct.mfloat8x8x2_t, align 8
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x8x2_t, ptr %b, i32 0, i32 0
+// CHECK:   store [2 x <8 x i8>] %b.coerce, ptr %coerce.dive, align 8
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %__s1, ptr align 8 %b, i64 16, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x8x2_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [2 x <8 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <8 x i8>, ptr %arrayidx, align 8
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x8x2_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [2 x <8 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <8 x i8>, ptr %arrayidx2, align 8
+// CHECK:   call void @llvm.aarch64.neon.st2.v8i8.p0(<8 x i8> %0, <8 x i8> %1, ptr %a)
+// CHECK:   ret void
+void test_vst2_mf8(mfloat8_t *a, mfloat8x8x2_t b) {
+  vst2_mf8(a, b);
+}
+
+
 
 // CHECK-LABEL: @test_vst2_f16(
 // CHECK:   [[B:%.*]] = alloca %struct.float16x4x2_t, align 8
@@ -11136,6 +11198,30 @@ void test_vst3q_s32(int32_t *a, int32x4x3_t b) {
 void test_vst3q_s64(int64_t *a, int64x2x3_t b) {
   vst3q_s64(a, b);
 }
+
+// CHECK-LABEL: define{{.*}} void @test_vst3q_mf8(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x16x3_t, align 16
+// CHECK:   %__s1 = alloca %struct.mfloat8x16x3_t, align 16
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x16x3_t, ptr %b, i32 0, i32 0
+// CHECK:   store [3 x <16 x i8>] %b.coerce, ptr %coerce.dive, align 16
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 16 %__s1, ptr align 16 %b, i64 48, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x16x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [3 x <16 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <16 x i8>, ptr %arrayidx, align 16
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x16x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [3 x <16 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <16 x i8>, ptr %arrayidx2, align 16
+// CHECK:   %val3 = getelementptr inbounds %struct.mfloat8x16x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx4 = getelementptr inbounds [3 x <16 x i8>], ptr %val3, i64 0, i64 2
+// CHECK:   %2 = load <16 x i8>, ptr %arrayidx4, align 16
+// CHECK:   call void @llvm.aarch64.neon.st3.v16i8.p0(<16 x i8> %0, <16 x i8> %1, <16 x i8> %2, ptr %a)
+// CHECK:   ret void
+void test_vst3q_mf8(mfloat8_t *a, mfloat8x16x3_t b) {
+  vst3q_mf8(a, b);
+}
+
+
 
 // CHECK-LABEL: @test_vst3q_f16(
 // CHECK:   [[B:%.*]] = alloca %struct.float16x8x3_t, align 16
@@ -11469,6 +11555,30 @@ void test_vst3_s32(int32_t *a, int32x2x3_t b) {
 void test_vst3_s64(int64_t *a, int64x1x3_t b) {
   vst3_s64(a, b);
 }
+
+// CHECK-LABEL: define{{.*}} void @test_vst3_mf8(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x8x3_t, align 8
+// CHECK:   %__s1 = alloca %struct.mfloat8x8x3_t, align 8
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x8x3_t, ptr %b, i32 0, i32 0
+// CHECK:   store [3 x <8 x i8>] %b.coerce, ptr %coerce.dive, align 8
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %__s1, ptr align 8 %b, i64 24, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x8x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [3 x <8 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <8 x i8>, ptr %arrayidx, align 8
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x8x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [3 x <8 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <8 x i8>, ptr %arrayidx2, align 8
+// CHECK:   %val3 = getelementptr inbounds %struct.mfloat8x8x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx4 = getelementptr inbounds [3 x <8 x i8>], ptr %val3, i64 0, i64 2
+// CHECK:   %2 = load <8 x i8>, ptr %arrayidx4, align 8
+// CHECK:   call void @llvm.aarch64.neon.st3.v8i8.p0(<8 x i8> %0, <8 x i8> %1, <8 x i8> %2, ptr %a)
+// CHECK:   ret void
+void test_vst3_mf8(mfloat8_t *a, mfloat8x8x3_t b) {
+  vst3_mf8(a, b);
+}
+
+
 
 // CHECK-LABEL: @test_vst3_f16(
 // CHECK:   [[B:%.*]] = alloca %struct.float16x4x3_t, align 8
@@ -11838,6 +11948,33 @@ void test_vst4q_s32(int32_t *a, int32x4x4_t b) {
 void test_vst4q_s64(int64_t *a, int64x2x4_t b) {
   vst4q_s64(a, b);
 }
+
+// CHECK-LABEL: define{{.*}} void @test_vst4q_mf8(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x16x4_t, align 16
+// CHECK:   %__s1 = alloca %struct.mfloat8x16x4_t, align 16
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x16x4_t, ptr %b, i32 0, i32 0
+// CHECK:   store [4 x <16 x i8>] %b.coerce, ptr %coerce.dive, align 16
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 16 %__s1, ptr align 16 %b, i64 64, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x16x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [4 x <16 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <16 x i8>, ptr %arrayidx, align 16
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x16x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [4 x <16 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <16 x i8>, ptr %arrayidx2, align 16
+// CHECK:   %val3 = getelementptr inbounds %struct.mfloat8x16x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx4 = getelementptr inbounds [4 x <16 x i8>], ptr %val3, i64 0, i64 2
+// CHECK:   %2 = load <16 x i8>, ptr %arrayidx4, align 16
+// CHECK:   %val5 = getelementptr inbounds %struct.mfloat8x16x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx6 = getelementptr inbounds [4 x <16 x i8>], ptr %val5, i64 0, i64 3
+// CHECK:   %3 = load <16 x i8>, ptr %arrayidx6, align 16
+// CHECK:   call void @llvm.aarch64.neon.st4.v16i8.p0(<16 x i8> %0, <16 x i8> %1, <16 x i8> %2, <16 x i8> %3, ptr %a)
+// CHECK:   ret void
+void test_vst4q_mf8(mfloat8_t *a, mfloat8x16x4_t b) {
+  vst4q_mf8(a, b);
+}
+
+
 
 // CHECK-LABEL: @test_vst4q_f16(
 // CHECK:   [[B:%.*]] = alloca %struct.float16x8x4_t, align 16
@@ -12231,6 +12368,33 @@ void test_vst4_s64(int64_t *a, int64x1x4_t b) {
   vst4_s64(a, b);
 }
 
+// CHECK-LABEL: define{{.*}} void @test_vst4_mf8(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x8x4_t, align 8
+// CHECK:   %__s1 = alloca %struct.mfloat8x8x4_t, align 8
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x8x4_t, ptr %b, i32 0, i32 0
+// CHECK:   store [4 x <8 x i8>] %b.coerce, ptr %coerce.dive, align 8
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %__s1, ptr align 8 %b, i64 32, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x8x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [4 x <8 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <8 x i8>, ptr %arrayidx, align 8
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x8x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [4 x <8 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <8 x i8>, ptr %arrayidx2, align 8
+// CHECK:   %val3 = getelementptr inbounds %struct.mfloat8x8x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx4 = getelementptr inbounds [4 x <8 x i8>], ptr %val3, i64 0, i64 2
+// CHECK:   %2 = load <8 x i8>, ptr %arrayidx4, align 8
+// CHECK:   %val5 = getelementptr inbounds %struct.mfloat8x8x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx6 = getelementptr inbounds [4 x <8 x i8>], ptr %val5, i64 0, i64 3
+// CHECK:   %3 = load <8 x i8>, ptr %arrayidx6, align 8
+// CHECK:   call void @llvm.aarch64.neon.st4.v8i8.p0(<8 x i8> %0, <8 x i8> %1, <8 x i8> %2, <8 x i8> %3, ptr %a)
+// CHECK:   ret void
+void test_vst4_mf8(mfloat8_t *a, mfloat8x8x4_t b) {
+  vst4_mf8(a, b);
+}
+
+
+
 // CHECK-LABEL: @test_vst4_f16(
 // CHECK:   [[B:%.*]] = alloca %struct.float16x4x4_t, align 8
 // CHECK:   [[__S1:%.*]] = alloca %struct.float16x4x4_t, align 8
@@ -12527,6 +12691,27 @@ poly64x1x4_t test_vld1_p64_x4(poly64_t const *a) {
   return vld1_p64_x4(a);
 }
 
+// CHECK-LABEL: define{{.*}} void @test_vst1q_mf8_x2(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x16x2_t, align 16
+// CHECK:   %__s1 = alloca %struct.mfloat8x16x2_t, align 16
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x16x2_t, ptr %b, i32 0, i32 0
+// CHECK:   store [2 x <16 x i8>] %b.coerce, ptr %coerce.dive, align 16
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 16 %__s1, ptr align 16 %b, i64 32, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x16x2_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [2 x <16 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <16 x i8>, ptr %arrayidx, align 16
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x16x2_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [2 x <16 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <16 x i8>, ptr %arrayidx2, align 16
+// CHECK:   call void @llvm.aarch64.neon.st1x2.v16i8.p0(<16 x i8> %0, <16 x i8> %1, ptr %a)
+// CHECK:   ret void
+void test_vst1q_mf8_x2(mfloat8_t *a, mfloat8x16x2_t b) {
+  vst1q_mf8_x2(a, b);
+}
+
+
+
 // CHECK-LABEL: @test_vst1q_f64_x2(
 // CHECK:   [[B:%.*]] = alloca %struct.float64x2x2_t, align 16
 // CHECK:   [[__S1:%.*]] = alloca %struct.float64x2x2_t, align 16
@@ -12571,6 +12756,27 @@ void test_vst1q_p64_x2(poly64_t *a, poly64x2x2_t b) {
   vst1q_p64_x2(a, b);
 }
 
+// CHECK-LABEL: define{{.*}} void @test_vst1_mf8_x2(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x8x2_t, align 8
+// CHECK:   %__s1 = alloca %struct.mfloat8x8x2_t, align 8
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x8x2_t, ptr %b, i32 0, i32 0
+// CHECK:   store [2 x <8 x i8>] %b.coerce, ptr %coerce.dive, align 8
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %__s1, ptr align 8 %b, i64 16, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x8x2_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [2 x <8 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <8 x i8>, ptr %arrayidx, align 8
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x8x2_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [2 x <8 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <8 x i8>, ptr %arrayidx2, align 8
+// CHECK:   call void @llvm.aarch64.neon.st1x2.v8i8.p0(<8 x i8> %0, <8 x i8> %1, ptr %a)
+// CHECK:   ret void
+void test_vst1_mf8_x2(mfloat8_t *a, mfloat8x8x2_t b) {
+  vst1_mf8_x2(a, b);
+}
+
+
+
 // CHECK-LABEL: @test_vst1_f64_x2(
 // CHECK:   [[B:%.*]] = alloca %struct.float64x1x2_t, align 8
 // CHECK:   [[__S1:%.*]] = alloca %struct.float64x1x2_t, align 8
@@ -12614,6 +12820,30 @@ void test_vst1_f64_x2(float64_t *a, float64x1x2_t b) {
 void test_vst1_p64_x2(poly64_t *a, poly64x1x2_t b) {
   vst1_p64_x2(a, b);
 }
+
+// CHECK-LABEL: define{{.*}} void @test_vst1q_mf8_x3(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x16x3_t, align 16
+// CHECK:   %__s1 = alloca %struct.mfloat8x16x3_t, align 16
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x16x3_t, ptr %b, i32 0, i32 0
+// CHECK:   store [3 x <16 x i8>] %b.coerce, ptr %coerce.dive, align 16
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 16 %__s1, ptr align 16 %b, i64 48, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x16x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [3 x <16 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <16 x i8>, ptr %arrayidx, align 16
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x16x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [3 x <16 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <16 x i8>, ptr %arrayidx2, align 16
+// CHECK:   %val3 = getelementptr inbounds %struct.mfloat8x16x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx4 = getelementptr inbounds [3 x <16 x i8>], ptr %val3, i64 0, i64 2
+// CHECK:   %2 = load <16 x i8>, ptr %arrayidx4, align 16
+// CHECK:   call void @llvm.aarch64.neon.st1x3.v16i8.p0(<16 x i8> %0, <16 x i8> %1, <16 x i8> %2, ptr %a)
+// CHECK:   ret void
+void test_vst1q_mf8_x3(mfloat8_t *a, mfloat8x16x3_t b) {
+  vst1q_mf8_x3(a, b);
+}
+
+
 
 // CHECK-LABEL: @test_vst1q_f64_x3(
 // CHECK:   [[B:%.*]] = alloca %struct.float64x2x3_t, align 16
@@ -12669,6 +12899,30 @@ void test_vst1q_p64_x3(poly64_t *a, poly64x2x3_t b) {
   vst1q_p64_x3(a, b);
 }
 
+// CHECK-LABEL: define{{.*}} void @test_vst1_mf8_x3(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x8x3_t, align 8
+// CHECK:   %__s1 = alloca %struct.mfloat8x8x3_t, align 8
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x8x3_t, ptr %b, i32 0, i32 0
+// CHECK:   store [3 x <8 x i8>] %b.coerce, ptr %coerce.dive, align 8
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %__s1, ptr align 8 %b, i64 24, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x8x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [3 x <8 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <8 x i8>, ptr %arrayidx, align 8
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x8x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [3 x <8 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <8 x i8>, ptr %arrayidx2, align 8
+// CHECK:   %val3 = getelementptr inbounds %struct.mfloat8x8x3_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx4 = getelementptr inbounds [3 x <8 x i8>], ptr %val3, i64 0, i64 2
+// CHECK:   %2 = load <8 x i8>, ptr %arrayidx4, align 8
+// CHECK:   call void @llvm.aarch64.neon.st1x3.v8i8.p0(<8 x i8> %0, <8 x i8> %1, <8 x i8> %2, ptr %a)
+// CHECK:   ret void
+void test_vst1_mf8_x3(mfloat8_t *a, mfloat8x8x3_t b) {
+  vst1_mf8_x3(a, b);
+}
+
+
+
 // CHECK-LABEL: @test_vst1_f64_x3(
 // CHECK:   [[B:%.*]] = alloca %struct.float64x1x3_t, align 8
 // CHECK:   [[__S1:%.*]] = alloca %struct.float64x1x3_t, align 8
@@ -12722,6 +12976,33 @@ void test_vst1_f64_x3(float64_t *a, float64x1x3_t b) {
 void test_vst1_p64_x3(poly64_t *a, poly64x1x3_t b) {
   vst1_p64_x3(a, b);
 }
+
+// CHECK-LABEL: define{{.*}} void @test_vst1q_mf8_x4(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x16x4_t, align 16
+// CHECK:   %__s1 = alloca %struct.mfloat8x16x4_t, align 16
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x16x4_t, ptr %b, i32 0, i32 0
+// CHECK:   store [4 x <16 x i8>] %b.coerce, ptr %coerce.dive, align 16
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 16 %__s1, ptr align 16 %b, i64 64, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x16x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [4 x <16 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <16 x i8>, ptr %arrayidx, align 16
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x16x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [4 x <16 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <16 x i8>, ptr %arrayidx2, align 16
+// CHECK:   %val3 = getelementptr inbounds %struct.mfloat8x16x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx4 = getelementptr inbounds [4 x <16 x i8>], ptr %val3, i64 0, i64 2
+// CHECK:   %2 = load <16 x i8>, ptr %arrayidx4, align 16
+// CHECK:   %val5 = getelementptr inbounds %struct.mfloat8x16x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx6 = getelementptr inbounds [4 x <16 x i8>], ptr %val5, i64 0, i64 3
+// CHECK:   %3 = load <16 x i8>, ptr %arrayidx6, align 16
+// CHECK:   call void @llvm.aarch64.neon.st1x4.v16i8.p0(<16 x i8> %0, <16 x i8> %1, <16 x i8> %2, <16 x i8> %3, ptr %a)
+// CHECK:   ret void
+void test_vst1q_mf8_x4(mfloat8_t *a, mfloat8x16x4_t b) {
+  vst1q_mf8_x4(a, b);
+}
+
+
 
 // CHECK-LABEL: @test_vst1q_f64_x4(
 // CHECK:   [[B:%.*]] = alloca %struct.float64x2x4_t, align 16
@@ -12786,6 +13067,33 @@ void test_vst1q_f64_x4(float64_t *a, float64x2x4_t b) {
 void test_vst1q_p64_x4(poly64_t *a, poly64x2x4_t b) {
   vst1q_p64_x4(a, b);
 }
+
+// CHECK-LABEL: define{{.*}} void @test_vst1_mf8_x4(
+// CHECK: entry:
+// CHECK:   %b = alloca %struct.mfloat8x8x4_t, align 8
+// CHECK:   %__s1 = alloca %struct.mfloat8x8x4_t, align 8
+// CHECK:   %coerce.dive = getelementptr inbounds %struct.mfloat8x8x4_t, ptr %b, i32 0, i32 0
+// CHECK:   store [4 x <8 x i8>] %b.coerce, ptr %coerce.dive, align 8
+// CHECK:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %__s1, ptr align 8 %b, i64 32, i1 false)
+// CHECK:   %val = getelementptr inbounds %struct.mfloat8x8x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx = getelementptr inbounds [4 x <8 x i8>], ptr %val, i64 0, i64 0
+// CHECK:   %0 = load <8 x i8>, ptr %arrayidx, align 8
+// CHECK:   %val1 = getelementptr inbounds %struct.mfloat8x8x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx2 = getelementptr inbounds [4 x <8 x i8>], ptr %val1, i64 0, i64 1
+// CHECK:   %1 = load <8 x i8>, ptr %arrayidx2, align 8
+// CHECK:   %val3 = getelementptr inbounds %struct.mfloat8x8x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx4 = getelementptr inbounds [4 x <8 x i8>], ptr %val3, i64 0, i64 2
+// CHECK:   %2 = load <8 x i8>, ptr %arrayidx4, align 8
+// CHECK:   %val5 = getelementptr inbounds %struct.mfloat8x8x4_t, ptr %__s1, i32 0, i32 0
+// CHECK:   %arrayidx6 = getelementptr inbounds [4 x <8 x i8>], ptr %val5, i64 0, i64 3
+// CHECK:   %3 = load <8 x i8>, ptr %arrayidx6, align 8
+// CHECK:   call void @llvm.aarch64.neon.st1x4.v8i8.p0(<8 x i8> %0, <8 x i8> %1, <8 x i8> %2, <8 x i8> %3, ptr %a)
+// CHECK:   ret void
+void test_vst1_mf8_x4(mfloat8_t *a, mfloat8x8x4_t b) {
+  vst1_mf8_x4(a, b);
+}
+
+
 
 // CHECK-LABEL: @test_vst1_f64_x4(
 // CHECK:   [[B:%.*]] = alloca %struct.float64x1x4_t, align 8
