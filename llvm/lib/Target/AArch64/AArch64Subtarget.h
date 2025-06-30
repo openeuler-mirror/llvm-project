@@ -219,6 +219,8 @@ public:
     }
   }
 
+  bool isTSV110() const { return ARMProcFamily == TSV110; }
+
   bool isXRaySupported() const override { return true; }
 
   /// Returns true if the function has a streaming body.

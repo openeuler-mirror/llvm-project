@@ -57,6 +57,10 @@ using namespace llvm;
 #define GET_INSTRINFO_CTOR_DTOR
 #include "AArch64GenInstrInfo.inc"
 
+// Disable LDP/STP generation for Q registers.
+static cl::opt<bool> NoPairLdStInstQReg("aarch64-ldp-stp-noq", cl::init(true),
+                                        cl::Hidden);
+
 static cl::opt<unsigned> TBZDisplacementBits(
     "aarch64-tbz-offset-bits", cl::Hidden, cl::init(14),
     cl::desc("Restrict range of TB[N]Z instructions (DEBUG)"));
@@ -2399,19 +2403,18 @@ unsigned AArch64InstrInfo::getLoadStoreImmIdx(unsigned Opc) {
   }
 }
 
-bool AArch64InstrInfo::isPairableLdStInst(const MachineInstr &MI) {
+bool AArch64InstrInfo::isPairableLdStInst(const MachineInstr &MI,
+                                          const AArch64Subtarget &STI) {
   switch (MI.getOpcode()) {
   default:
     return false;
   // Scaled instructions.
   case AArch64::STRSui:
   case AArch64::STRDui:
-  case AArch64::STRQui:
   case AArch64::STRXui:
   case AArch64::STRWui:
   case AArch64::LDRSui:
   case AArch64::LDRDui:
-  case AArch64::LDRQui:
   case AArch64::LDRXui:
   case AArch64::LDRWui:
   case AArch64::LDRSWui:
@@ -2420,7 +2423,6 @@ bool AArch64InstrInfo::isPairableLdStInst(const MachineInstr &MI) {
   case AArch64::STRSpre:
   case AArch64::STURDi:
   case AArch64::STRDpre:
-  case AArch64::STURQi:
   case AArch64::STRQpre:
   case AArch64::STURWi:
   case AArch64::STRWpre:
@@ -2430,7 +2432,6 @@ bool AArch64InstrInfo::isPairableLdStInst(const MachineInstr &MI) {
   case AArch64::LDRSpre:
   case AArch64::LDURDi:
   case AArch64::LDRDpre:
-  case AArch64::LDURQi:
   case AArch64::LDRQpre:
   case AArch64::LDURWi:
   case AArch64::LDRWpre:
@@ -2438,6 +2439,18 @@ bool AArch64InstrInfo::isPairableLdStInst(const MachineInstr &MI) {
   case AArch64::LDRXpre:
   case AArch64::LDURSWi:
     return true;
+  // Scaled instructions
+  case AArch64::STRQui:
+  case AArch64::LDRQui:
+  // Unscaled instructions
+  case AArch64::STURQi:
+  case AArch64::LDURQi:
+    if(STI.isTSV110()){
+      //If LDP/STP generation is disabled for TSV110,return false.
+      return !NoPairLdStInstQReg;
+    } else {
+      return true;
+    }
   }
 }
 
@@ -3393,7 +3406,8 @@ bool AArch64InstrInfo::shouldClusterMemOps(
   if (NumLoads > 2)
     return false;
 
-  if (!isPairableLdStInst(FirstLdSt) || !isPairableLdStInst(SecondLdSt))
+  if (!isPairableLdStInst(FirstLdSt, Subtarget) || 
+      !isPairableLdStInst(SecondLdSt, Subtarget))
     return false;
 
   // Can we pair these instructions based on their opcodes?

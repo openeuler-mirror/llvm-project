@@ -124,7 +124,8 @@ public:
   static unsigned getLoadStoreImmIdx(unsigned Opc);
 
   /// Return true if pairing the given load or store may be paired with another.
-  static bool isPairableLdStInst(const MachineInstr &MI);
+  static bool isPairableLdStInst(const MachineInstr &MI,
+                                 const AArch64Subtarget &STI);
 
   /// Return the opcode that set flags when possible.  The caller is
   /// responsible for ensuring the opc has a flag setting equivalent.

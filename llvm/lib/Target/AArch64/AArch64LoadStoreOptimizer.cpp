@@ -2283,7 +2283,7 @@ bool AArch64LoadStoreOpt::optimizeBlock(MachineBasicBlock &MBB,
     // Track currently live registers up to this point, to help with
     // searching for a rename register on demand.
     updateDefinedRegisters(*MBBI, DefinedInBB, TRI);
-    if (TII->isPairableLdStInst(*MBBI) && tryToPairLdStInst(MBBI))
+    if (TII->isPairableLdStInst(*MBBI, *Subtarget) && tryToPairLdStInst(MBBI))
       Modified = true;
     else
       ++MBBI;
