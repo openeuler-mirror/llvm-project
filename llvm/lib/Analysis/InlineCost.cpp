@@ -195,6 +195,10 @@ int getInstrCost() { return InstrCost; }
 
 } // namespace llvm
 
+static cl::opt<bool> IgnoreNoinlineAttr(
+  "enable-aggressive-inline", cl::init(false), cl::Hidden,
+  cl::desc("For testing purposes only: force inlining even when 'noinline' is present on the function or call site"));
+
 namespace {
 class InlineCostCallAnalyzer;
 
@@ -2970,14 +2974,17 @@ std::optional<InlineResult> llvm::getAttributeBasedInliningDecision(
   if (Callee->isInterposable())
     return InlineResult::failure("interposable");
 
-  // Don't inline functions marked noinline.
-  if (Callee->hasFnAttribute(Attribute::NoInline))
-    return InlineResult::failure("noinline function attribute");
+  // ignore noinline attribute
+  if (!IgnoreNoinlineAttr) {
+    // Don't inline functions marked noinline.
+    if (Callee->hasFnAttribute(Attribute::NoInline))
+      return InlineResult::failure("noinline function attribute");
 
-  // Don't inline call sites marked noinline.
-  if (Call.isNoInline())
-    return InlineResult::failure("noinline call site attribute");
-
+    // Don't inline call sites marked noinline.
+    if (Call.isNoInline())
+      return InlineResult::failure("noinline call site attribute");
+  }
+  
   return std::nullopt;
 }
 
