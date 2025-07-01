@@ -193,6 +193,12 @@ static cl::opt<unsigned>
     MIResourceCutOff("misched-resource-cutoff", cl::Hidden,
                      cl::desc("Number of intervals to track"), cl::init(10));
 
+extern cl::opt<bool> EnableMatrix;
+
+static cl::opt<unsigned>
+    BigBasicBlock("schedule-big-basic-block", cl::Hidden, cl::init(200),
+                  cl::desc("The limit to use while schedule a region "));
+
 // DAG subtrees must have at least this many nodes.
 static const unsigned MinSubtreeSize = 8;
 
@@ -635,6 +641,9 @@ void MachineSchedulerBase::scheduleRegions(ScheduleDAGInstrs &Scheduler,
       MachineBasicBlock::iterator I = R.RegionBegin;
       MachineBasicBlock::iterator RegionEnd = R.RegionEnd;
       unsigned NumRegionInstrs = R.NumRegionInstrs;
+
+      if (EnableMatrix && NumRegionInstrs > BigBasicBlock)
+        continue;
 
       // Notify the scheduler of the region, even if we may skip scheduling
       // it. Perhaps it still needs to be bundled.

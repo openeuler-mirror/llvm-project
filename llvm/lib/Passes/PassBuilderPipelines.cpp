@@ -275,9 +275,7 @@ static cl::opt<bool> EnableOrderFileInstrumentation(
     "enable-order-file-instrumentation", cl::init(false), cl::Hidden,
     cl::desc("Enable order file instrumentation (default = off)"));
 
-static cl::opt<bool>
-    EnableMatrix("enable-matrix", cl::init(false), cl::Hidden,
-                 cl::desc("Enable lowering of the matrix intrinsics"));
+extern cl::opt<bool> EnableMatrix;
 
 static cl::opt<bool> EnableConstraintElimination(
     "enable-constraint-elimination", cl::init(true), cl::Hidden,

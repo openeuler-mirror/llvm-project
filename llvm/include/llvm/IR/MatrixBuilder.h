@@ -34,6 +34,36 @@ class MatrixBuilder {
   IRBuilderBase &B;
   Module *getModule() { return B.GetInsertBlock()->getParent()->getParent(); }
 
+  Value *getExistingLocation(Value *V) {
+    // if V is a load, we find the location for reusing.
+    if (!isa<LoadInst>(V))
+      return nullptr;
+
+    // We can further optimize if load address is alloca and it has only two
+    // uses: one is store which initializes the alloca and another is load
+    // which is V itself. The store use must store a value loaded
+    // from an address. Then the address is the memory location we need.
+    // This normally happens in the function entry, so we won't do recursive
+    // search here.
+    Value *Addr = cast<LoadInst>(V)->getPointerOperand();
+    if (!isa<AllocaInst>(Addr) || !Addr->hasNUses(2))
+      return Addr;
+
+    Value *AnotherUse = *Addr->user_begin();
+    if (AnotherUse == V)
+      AnotherUse = *(++Addr->user_begin());
+
+    if (!isa<StoreInst>(AnotherUse))
+      return Addr;
+
+    // Store value is the result of V.
+    Value *StoredValue = cast<StoreInst>(AnotherUse)->getValueOperand();
+    if (!isa<LoadInst>(StoredValue))
+      return Addr;
+
+    return cast<LoadInst>(StoredValue)->getPointerOperand();
+  }
+
   std::pair<Value *, Value *> splatScalarOperandIfNeeded(Value *LHS,
                                                          Value *RHS) {
     assert((LHS->getType()->isVectorTy() || RHS->getType()->isVectorTy()) &&
@@ -105,6 +135,44 @@ public:
     return Call;
   }
 
+  Value *CreateSMEMatrixTranspose(Value *Matrix, unsigned Rows,
+                                  unsigned Columns) {
+    auto *OpType = cast<VectorType>(Matrix->getType());
+    auto *ElemType = OpType->getElementType();
+    auto *ReturnType = FixedVectorType::get(ElemType, Rows * Columns);
+
+    std::string FuncName = "__sme_transpose_";
+    FuncName += ElemType->isIntegerTy() ? "int" : "float";
+    FuncName += std::to_string(ElemType->getScalarSizeInBits() / 8);
+
+    // %a.addr = alloca [6 x i16]
+    // %a = load [6 x i16], ptr %0
+    // store [6 x i16] %a, ptr %a.addr
+    // %1 = load <6 x i16>, ptr %a.addr
+    //
+    // If we want to create a stack slot for Matrix, we can just use %0,
+    // no need to create new memory.
+    Value *MemPara = getExistingLocation(Matrix);
+    if (!MemPara) {
+      MemPara = B.CreateAlloca(OpType);
+      B.CreateStore(Matrix, MemPara);
+    }
+
+    // FIXME: optimize the memory for the return address too.
+    Value *MemForRet = B.CreateAlloca(ReturnType);
+
+    Value *Ops[] = {MemForRet, MemPara, B.getInt32(Rows), B.getInt32(Columns)};
+    FunctionCallee Func = getModule()->getOrInsertFunction(
+        FuncName, FunctionType::get(B.getVoidTy(),
+                                    {B.getPtrTy(), B.getPtrTy(), B.getInt32Ty(),
+                                     B.getInt32Ty()},
+                                    false));
+
+    B.CreateCall(Func, Ops);
+    (cast<Function>(Func.getCallee()))->addFnAttr("aarch64_pstate_sm_enabled");
+    return B.CreateLoad(ReturnType, MemForRet);
+  }
+
   /// Create a llvm.matrix.transpose call, transposing \p Matrix with \p Rows
   /// rows and \p Columns columns.
   CallInst *CreateMatrixTranspose(Value *Matrix, unsigned Rows,
@@ -119,6 +187,93 @@ public:
         getModule(), Intrinsic::matrix_transpose, OverloadedTypes);
 
     return B.CreateCall(TheFn->getFunctionType(), TheFn, Ops, Name);
+  }
+
+  Value *CreateSMEMatrixMultiply(Value *LHS, Value *RHS, unsigned LHSRows,
+                                 unsigned LHSColumns, unsigned RHSColumns,
+                                 bool IsSigned) {
+    auto *ElemType = (cast<VectorType>(LHS->getType()))->getElementType();
+
+    auto *LHSType = FixedVectorType::get(ElemType, LHSRows * LHSColumns);
+    auto *RHSType = FixedVectorType::get(ElemType, LHSColumns * RHSColumns);
+    auto *ReturnType = FixedVectorType::get(ElemType, LHSRows * RHSColumns);
+
+    std::string FuncName = "__sme_matmul_";
+    FuncName += ElemType->isIntegerTy() ? (IsSigned ? "int" : "uint") : "float";
+    FuncName += std::to_string(ElemType->getScalarSizeInBits() / 8);
+
+    // First check if we can reuse some existing memory.
+    Value *MemForLHS = getExistingLocation(LHS);
+    if (!MemForLHS) {
+      MemForLHS = B.CreateAlloca(LHSType);
+      B.CreateStore(LHS, MemForLHS);
+    }
+
+    Value *MemForRHS = getExistingLocation(RHS);
+    if (!MemForRHS) {
+      MemForRHS = B.CreateAlloca(RHSType);
+      B.CreateStore(RHS, MemForRHS);
+    }
+
+    Value *MemForRet = B.CreateAlloca(ReturnType);
+
+    Value *Ops[] = {MemForRet,
+                    MemForLHS,
+                    MemForRHS,
+                    B.getInt32(LHSRows),
+                    B.getInt32(LHSColumns),
+                    B.getInt32(RHSColumns)};
+    FunctionCallee Func = getModule()->getOrInsertFunction(
+        FuncName,
+        FunctionType::get(B.getVoidTy(),
+                          {B.getPtrTy(), B.getPtrTy(), B.getPtrTy(),
+                           B.getInt32Ty(), B.getInt32Ty(), B.getInt32Ty()},
+                          false));
+
+    B.CreateCall(Func, Ops);
+    (cast<Function>(Func.getCallee()))->addFnAttr("aarch64_pstate_sm_enabled");
+    return B.CreateLoad(ReturnType, MemForRet);
+  }
+
+  // Matrix binary operations that depend on weo matrixes have same shape, like
+  // add, sub.
+  Value *CreateSMEMatrixBinOp(Value *LHS, Value *RHS, unsigned Rows,
+                              unsigned Columns, bool IsSigned,
+                              StringRef OpName) {
+    auto *ElemType = (cast<VectorType>(LHS->getType()))->getElementType();
+
+    auto *Type = FixedVectorType::get(ElemType, Rows * Columns);
+
+    std::string FuncName = (StringRef("__sme_") + OpName + "_").str();
+    FuncName += ElemType->isIntegerTy() ? (IsSigned ? "int" : "uint") : "float";
+    FuncName += std::to_string(ElemType->getScalarSizeInBits() / 8);
+
+    // First check if we can reuse some existing memory.
+    Value *MemForLHS = getExistingLocation(LHS);
+    if (!MemForLHS) {
+      MemForLHS = B.CreateAlloca(Type);
+      B.CreateStore(LHS, MemForLHS);
+    }
+
+    Value *MemForRHS = getExistingLocation(RHS);
+    if (!MemForRHS) {
+      MemForRHS = B.CreateAlloca(Type);
+      B.CreateStore(RHS, MemForRHS);
+    }
+
+    Value *MemForRet = B.CreateAlloca(Type);
+
+    Value *Ops[] = {MemForRet, MemForLHS, MemForRHS, B.getInt32(Rows),
+                    B.getInt32(Columns)};
+    FunctionCallee Func = getModule()->getOrInsertFunction(
+        FuncName, FunctionType::get(B.getVoidTy(),
+                                    {B.getPtrTy(), B.getPtrTy(), B.getPtrTy(),
+                                     B.getInt32Ty(), B.getInt32Ty()},
+                                    false));
+
+    B.CreateCall(Func, Ops);
+    (cast<Function>(Func.getCallee()))->addFnAttr("aarch64_pstate_sm_enabled");
+    return B.CreateLoad(Type, MemForRet);
   }
 
   /// Create a llvm.matrix.multiply call, multiplying matrixes \p LHS and \p

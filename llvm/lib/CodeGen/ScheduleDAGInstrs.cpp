@@ -79,6 +79,10 @@ static cl::opt<unsigned> HugeRegion("dag-maps-huge-region", cl::Hidden,
                              "prior to scheduling, at which point a trade-off "
                              "is made to avoid excessive compile time."));
 
+cl::opt<bool>
+    EnableMatrix("enable-matrix", cl::init(false), cl::Hidden,
+                 cl::desc("Enable lowering of the matrix intrinsics"));
+
 static cl::opt<unsigned> ReductionSize(
     "dag-maps-reduction-size", cl::Hidden,
     cl::desc("A huge scheduling region will have maps reduced by this many "
@@ -93,8 +97,11 @@ static cl::opt<bool> SchedPrintCycles(
 static unsigned getReductionSize() {
   // Always reduce a huge region with half of the elements, except
   // when user sets this number explicitly.
-  if (ReductionSize.getNumOccurrences() == 0)
+  if (ReductionSize.getNumOccurrences() == 0) {
+    if (EnableMatrix)
+      return HugeRegion / 20;
     return HugeRegion / 2;
+  }
   return ReductionSize;
 }
 
@@ -1010,11 +1017,12 @@ void ScheduleDAGInstrs::buildSchedGraph(AAResults *AA,
     }
 
     // Reduce maps if they grow huge.
-    if (Stores.size() + Loads.size() >= HugeRegion) {
+    unsigned RegionSize = EnableMatrix ? (HugeRegion / 10) : HugeRegion;
+    if (Stores.size() + Loads.size() >= RegionSize) {
       LLVM_DEBUG(dbgs() << "Reducing Stores and Loads maps.\n";);
       reduceHugeMemNodeMaps(Stores, Loads, getReductionSize());
     }
-    if (NonAliasStores.size() + NonAliasLoads.size() >= HugeRegion) {
+    if (NonAliasStores.size() + NonAliasLoads.size() >= RegionSize) {
       LLVM_DEBUG(
           dbgs() << "Reducing NonAliasStores and NonAliasLoads maps.\n";);
       reduceHugeMemNodeMaps(NonAliasStores, NonAliasLoads, getReductionSize());

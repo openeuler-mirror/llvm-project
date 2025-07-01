@@ -4176,6 +4176,21 @@ public:
            (T->isRealType() && !T->isBooleanType() && !T->isEnumeralType());
   }
 
+  static bool isValidTypeForSME(QualType T) {
+    if (!isValidElementType(T))
+      return false;
+
+    if (!isa<BuiltinType>(T))
+      return false;
+
+    // AArch64 can not do vector operations like fma/add/sub for __bf16.
+    if (T->isBFloat16Type())
+      return false;
+
+    return cast<BuiltinType>(T)->isFloatingPoint() ||
+           cast<BuiltinType>(T)->isInteger();
+  }
+
   bool isSugared() const { return false; }
   QualType desugar() const { return QualType(this, 0); }
 

@@ -570,6 +570,53 @@ set(aarch64_SOURCES
 )
 
 if (COMPILER_RT_HAS_AARCH64_SME)
+  list(APPEND aarch64_SOURCES
+    aarch64/matrix/add_float2.c
+    aarch64/matrix/add_float4.c
+    aarch64/matrix/add_float8.c
+    aarch64/matrix/add_int1.c
+    aarch64/matrix/add_int2.c
+    aarch64/matrix/add_int4.c
+    aarch64/matrix/add_int8.c
+    aarch64/matrix/add_uint1.c
+    aarch64/matrix/add_uint2.c
+    aarch64/matrix/add_uint4.c
+    aarch64/matrix/add_uint8.c
+    aarch64/matrix/matmul_float2.c
+    aarch64/matrix/matmul_float4.c
+    aarch64/matrix/matmul_float8.c
+    aarch64/matrix/matmul_int1.c
+    aarch64/matrix/matmul_int2.c
+    aarch64/matrix/matmul_int4.c
+    aarch64/matrix/matmul_int8.c
+    aarch64/matrix/matmul_uint1.c
+    aarch64/matrix/matmul_uint2.c
+    aarch64/matrix/matmul_uint4.c
+    aarch64/matrix/matmul_uint8.c
+    aarch64/matrix/sub_float2.c
+    aarch64/matrix/sub_float4.c
+    aarch64/matrix/sub_float8.c
+    aarch64/matrix/sub_int1.c
+    aarch64/matrix/sub_int2.c
+    aarch64/matrix/sub_int4.c
+    aarch64/matrix/sub_int8.c
+    aarch64/matrix/sub_uint1.c
+    aarch64/matrix/sub_uint2.c
+    aarch64/matrix/sub_uint4.c
+    aarch64/matrix/sub_uint8.c
+    aarch64/matrix/transpose_float2.c
+    aarch64/matrix/transpose_float4.c
+    aarch64/matrix/transpose_float8.c
+    aarch64/matrix/transpose_int1.c
+    aarch64/matrix/transpose_int2.c
+    aarch64/matrix/transpose_int4.c
+    aarch64/matrix/transpose_int8.c
+  )
+else()
+  message(STATUS "AArch64 SME matrix routines disabled")
+endif()
+
+if (COMPILER_RT_HAS_AARCH64_SME)
   if (NOT COMPILER_RT_DISABLE_AARCH64_FMV AND COMPILER_RT_HAS_FNO_BUILTIN_FLAG AND (COMPILER_RT_HAS_AUXV OR COMPILER_RT_BAREMETAL_BUILD))
     list(APPEND aarch64_SOURCES aarch64/sme-abi.S aarch64/sme-libc-mem-routines.S aarch64/sme-abi-init.c aarch64/sme-abi-vg.c aarch64/sme-libc-routines.c)
     message(STATUS "AArch64 SME ABI routines enabled")

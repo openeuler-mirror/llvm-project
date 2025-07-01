@@ -1112,6 +1112,10 @@ ToolChain::RuntimeLibType ToolChain::GetRuntimeLibType(
     runtimeLibType = GetDefaultRuntimeLibType();
   }
 
+  const llvm::Triple::ArchType Arch = getArch();
+  if (Arch == llvm::Triple::aarch64 && Args.hasArg(options::OPT_fenable_matrix))
+    runtimeLibType = ToolChain::RLT_CompilerRT;
+
   return *runtimeLibType;
 }
 

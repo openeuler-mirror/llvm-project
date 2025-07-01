@@ -1010,3 +1010,9 @@ if config.compiler_id == "GNU":
 # llvm.
 config.substitutions.append(("%crt_src", config.compiler_rt_src_root))
 config.substitutions.append(("%llvm_src", config.llvm_src_root))
+
+if config.host_os in ["Linux"] and config.target_triple.startswith("aarch64"):
+    output = subprocess.check_output(["/usr/bin/lscpu"])
+    sme_indicator=b"smef64f64"
+    if re.search(sme_indicator, output):
+        config.available_features.add("aarch64_sme_run")

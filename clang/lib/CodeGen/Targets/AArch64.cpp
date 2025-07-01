@@ -294,6 +294,10 @@ AArch64ABIInfo::classifyArgumentType(QualType Ty, bool IsVariadic,
   if (isIllegalVectorType(Ty))
     return coerceIllegalVector(Ty);
 
+  // Always pass the matrix type via memory.
+  if (Ty->isMatrixType())
+    return getNaturalAlignIndirect(Ty, false);
+
   if (!isAggregateTypeForABI(Ty)) {
     // Treat an enum type as its underlying type.
     if (const EnumType *EnumTy = Ty->getAs<EnumType>())
@@ -392,6 +396,10 @@ ABIArgInfo AArch64ABIInfo::classifyReturnType(QualType RetTy,
         VT->getVectorKind() == VectorKind::SveFixedLengthPredicate)
       return coerceIllegalVector(RetTy);
   }
+
+  // Always return the matrix type via memory.
+  if (RetTy->isMatrixType())
+    return getNaturalAlignIndirect(RetTy);
 
   // Large vector types should be returned via memory.
   if (RetTy->isVectorType() && getContext().getTypeSize(RetTy) > 128)
