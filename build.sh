@@ -7,6 +7,7 @@ CXX_COMPILER_PATH=g++
 # Initialize our own variables:
 enable_acpo="1"
 enable_autotuner="1"
+enable_bolt="1"
 buildtype=RelWithDebInfo
 backends="all"
 build_for_openeuler="0"
@@ -68,6 +69,7 @@ Options:
   -d dir   Specify the build directory (default: "$build_dir_name").
   -j N     Allow N jobs at once (default: $threads).
   -o       Enable LLVM_INSTALL_TOOLCHAIN_ONLY=ON.
+  -O       Do not build BOLT(binary optimization tool).
   -r       Delete $install_prefix and perform a clean build (default: incremental).
   -s       Strip binaries and minimize file permissions when (re-)installing.
   -t       Enable unit tests for components that support them (make check-all).
@@ -80,7 +82,7 @@ EOF
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
 containerized_opts=()
-while getopts :aAb:cCd:D:eEhiI:j:orstvfX: optchr; do
+while getopts :aAb:cCd:D:eEhiI:j:oOrstvfX: optchr; do
   case "$optchr" in
     a)
       enable_autotuner="0"
@@ -170,6 +172,10 @@ while getopts :aAb:cCd:D:eEhiI:j:orstvfX: optchr; do
       ;;
     o)
       install_toolchain_only=1
+      containerized_opts+=(-$optchr)
+      ;;
+    O)
+      enable_bolt="0"
       containerized_opts+=(-$optchr)
       ;;
     r)
@@ -385,6 +391,18 @@ if [ $enable_acpo == "1" ]; then
   export CXXFLAGS="-Wp,-DENABLE_ACPO ${CXXFLAGS}"
 fi
 
+
+if [ $enable_bolt == "1" ]; then
+  echo "enable BOLT"
+  #There is internal error when linking with gold while compiling BOLT.
+  unset llvm_use_linker
+  enabled_projects+=";bolt"
+  EXE_LINKER_FLAGS="-Wl,--compress-debug-sections=zlib" 
+else
+  llvm_use_linker="-DLLVM_USE_LINKER=gold"
+  EXE_LINKER_FLAGS="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" 
+fi
+
 # Build and install
 if [ $clean -eq 1 -a -e "$install_prefix" ]; then
   rm -rf "$install_prefix"
@@ -400,11 +418,11 @@ cmake $CMAKE_OPTIONS \
       -DCOMPILER_RT_BUILD_SANITIZERS=on \
       -DLLVM_ENABLE_PROJECTS=$enabled_projects \
       -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind" \
-      -DLLVM_USE_LINKER=gold \
+      $llvm_use_linker \
       -DLLVM_LIT_ARGS="-sv -j$threads" \
       -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
-      -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
-      -DCMAKE_EXE_LINKER_FLAGS_DEBUG="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
+      -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO=$EXE_LINKER_FLAGS \
+      -DCMAKE_EXE_LINKER_FLAGS_DEBUG=$EXE_LINKER_FLAGS \
       -DBUILD_SHARED_LIBS=OFF \
       -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
       -DLLVM_ENABLE_ZLIB=ON \
@@ -457,10 +475,11 @@ if pushd runtimes > /dev/null 2>&1; then
 	  -DCMAKE_C_COMPILER="$c_compiler" \
 	  -DCMAKE_CXX_COMPILER="$cxx_compiler" \
 	  -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
+	  -DLIBCXX_ENABLE_ASSERTIONS=OFF \
 	  -DLLVM_LIT_ARGS="-sv -j$threads" \
 	  -DBUILD_SHARED_LIBS=OFF \
 	  -DCMAKE_SKIP_RPATH=ON \
-	  -DLLVM_USE_LINKER=gold \
+          $llvm_use_linker\
 	  -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
 	  ../../../runtimes
   else
