@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===---------------------------------------------------------------------===//
-
-#if defined (__x86_64__) && !defined(__APPLE__)
+#if (defined (__x86_64__) && !defined(__APPLE__))                             \
+|| (defined(__aarch64__) && !defined(__APPLE__))
 
 #include "common.h"
 
@@ -170,6 +170,14 @@ extern "C" __attribute((naked)) void __bolt_hugify_self() {
   __asm__ __volatile__(SAVE_ALL "call __bolt_hugify_self_impl\n" RESTORE_ALL
                                 "jmp __bolt_hugify_start_program\n" ::
                                     :);
+#elif defined(__aarch64__)
+  __asm__ __volatile__(SAVE_ALL
+                       "bl __bolt_hugify__self__impl\n"
+                       RESTORE_ALL
+                       "adrp x16, __bolt_hugify_start_program\n"
+                       "add x16, x16, #:lo12:__bolt_hugify_start_program\n"
+                       "br x16\n"
+                       :::);
 #else
   exit(1);
 #endif
