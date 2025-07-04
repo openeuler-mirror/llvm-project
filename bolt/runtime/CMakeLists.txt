@@ -29,6 +29,7 @@ set(BOLT_RT_FLAGS
   -fno-rtti
   -fno-stack-protector
   -fPIC
+  -Wno-unused-function
   -mgeneral-regs-only)
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
   set(BOLT_RT_FLAGS ${BOLT_RT_FLAGS} "-mno-sse")
