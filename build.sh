@@ -453,6 +453,7 @@ cmake $CMAKE_OPTIONS \
       -DLIBCXX_STATICALLY_LINK_ABI_IN_STATIC_LIBRARY=ON \
       -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=ON \
       -DLIBOMP_INSTALL_ALIASES=OFF \
+      -DLLVM_ENABLE_TERMINFO=NO \
       -DENABLE_ACPO=$enable_acpo \
       $llvm_binutils_incdir \
       $verbose \
