@@ -264,6 +264,12 @@ void AArch64Subtarget::initializeProperties() {
     PrefFunctionLogAlignment = 4;
     PrefLoopLogAlignment = 2;
     break;
+  case HIP12:
+    CacheLineSize = 64;
+    PrefFunctionLogAlignment = 4;
+    PrefLoopLogAlignment = 2;
+    VScaleForTuning = 2;
+    break;
   case ThunderX3T110:
     CacheLineSize = 64;
     PrefFunctionLogAlignment = 4;

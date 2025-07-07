@@ -148,6 +148,7 @@ enum ArchExtKind : uint64_t {
   AEK_SPECRES2 =    1ULL << 53, // FEAT_SPECRES2
   AEK_RASv2 =       1ULL << 54, // FEAT_RASv2
   AEK_ITE =         1ULL << 55, // FEAT_ITE
+  AEK_FPAC =        1ULL << 56, // FEAT_FPAC
 };
 // clang-format on
 
@@ -250,6 +251,7 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"the", AArch64::AEK_THE, "+the", "-the", FEAT_MAX, "", 0},
     {"tme", AArch64::AEK_TME, "+tme", "-tme", FEAT_MAX, "", 0},
     {"wfxt", AArch64::AEK_NONE, {}, {}, FEAT_WFXT, "+wfxt", 550},
+    {"fpac",  AArch64::AEK_FPAC,  "+fpac", "-fpac",  FEAT_MAX, "", 0},
     // Special cases
     {"none", AArch64::AEK_NONE, {}, {}, FEAT_MAX, "", ExtensionInfo::MaxFMVPriority},
     {"invalid", AArch64::AEK_INVALID, {}, {}, FEAT_MAX, "", 0},
@@ -481,6 +483,16 @@ inline constexpr CpuInfo CpuInfos[] = {
     {"tsv110", ARMV8_2A,
      (AArch64::AEK_CRYPTO | AArch64::AEK_DOTPROD | AArch64::AEK_FP16 |
       AArch64::AEK_FP16FML | AArch64::AEK_PROFILE)},
+    {"hip12", ARMV9_2A,
+     (AArch64::AEK_SVE | AArch64::AEK_SVE2 | AArch64::AEK_SVE2BITPERM |
+      AArch64::AEK_SVE2AES | AArch64::AEK_SVE2SM4 | AArch64::AEK_SVE2SHA3 |
+      AArch64::AEK_FP16 | AArch64::AEK_PERFMON | AArch64::AEK_PROFILE |
+      AArch64::AEK_HBC | AArch64::AEK_RCPC3 | AArch64::AEK_BF16 |
+      AArch64::AEK_CRC | AArch64::AEK_DOTPROD | AArch64::AEK_FP |
+      AArch64::AEK_I8MM | AArch64::AEK_LSE | AArch64::AEK_SIMD |
+      AArch64::AEK_PAUTH | AArch64::AEK_RAS | AArch64::AEK_RCPC |
+      AArch64::AEK_RDM | AArch64::AEK_LS64 | AArch64::AEK_BRBE |
+      AArch64::AEK_FPAC)},
     {"a64fx", ARMV8_2A,
      (AArch64::AEK_CRYPTO | AArch64::AEK_FP16 | AArch64::AEK_SVE)},
     {"carmel", ARMV8_2A, (AArch64::AEK_CRYPTO | AArch64::AEK_FP16)},
