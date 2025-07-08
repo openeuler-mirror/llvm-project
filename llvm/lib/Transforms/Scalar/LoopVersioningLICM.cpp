@@ -83,6 +83,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Utils/LoopUtils.h"
 #include "llvm/Transforms/Utils/LoopVersioning.h"
+#include "llvm/Transforms/Utils/ScalarEvolutionExpander.h"
 #include <cassert>
 
 using namespace llvm;
@@ -106,6 +107,11 @@ static cl::opt<unsigned> LVLoopDepthThreshold(
         "LoopVersioningLICM's threshold for maximum allowed loop nest/depth"),
     cl::init(2), cl::Hidden);
 
+static cl::opt<bool>
+    LVOverlap("loop-versioning-overlap",
+              cl::desc("Loop versioning with a fixed length's overlap"),
+              cl::init(true), cl::Hidden);
+
 namespace {
 
 struct LoopVersioningLICM {
@@ -114,10 +120,9 @@ struct LoopVersioningLICM {
   // for versioning. By passing the proxy instead the construction of
   // LoopAccessInfo will take place only when it's necessary.
   LoopVersioningLICM(AliasAnalysis *AA, ScalarEvolution *SE,
-                     OptimizationRemarkEmitter *ORE,
-                     LoopAccessInfoManager &LAIs, LoopInfo &LI,
-                     Loop *CurLoop)
-      : AA(AA), SE(SE), LAIs(LAIs), LI(LI), CurLoop(CurLoop),
+                     TargetTransformInfo *TTI, OptimizationRemarkEmitter *ORE,
+                     LoopAccessInfoManager &LAIs, LoopInfo &LI, Loop *CurLoop)
+      : AA(AA), SE(SE), TTI(TTI), LAIs(LAIs), LI(LI), CurLoop(CurLoop),
         LoopDepthThreshold(LVLoopDepthThreshold),
         InvariantThreshold(LVInvarThreshold), ORE(ORE) {}
 
@@ -129,6 +134,8 @@ private:
 
   // Current ScalarEvolution
   ScalarEvolution *SE;
+
+  TargetTransformInfo *TTI;
 
   // Current Loop's LoopAccessInfo
   const LoopAccessInfo *LAI = nullptr;
@@ -156,6 +163,9 @@ private:
   // Read only loop marker.
   bool IsReadOnlyLoop = true;
 
+  // Whether enable loop versioning overlap optimization.
+  bool EnableLVOverlap = false;
+
   // OptimizationRemarkEmitter
   OptimizationRemarkEmitter *ORE;
 
@@ -166,6 +176,7 @@ private:
   bool isLoopAlreadyVisited();
   void setNoAliasToLoop(Loop *VerLoop);
   bool instructionSafeForVersioning(Instruction *I);
+  bool legalLoopVersioningOverlap();
 };
 
 } // end anonymous namespace
@@ -397,40 +408,111 @@ bool LoopVersioningLICM::legalLoopInstructions() {
     });
     return false;
   }
-  // Loop should have at least one invariant load or store instruction.
-  if (!InvariantCounter) {
-    LLVM_DEBUG(dbgs() << "    Invariant not found !!\n");
-    return false;
-  }
   // Read only loop not allowed.
   if (IsReadOnlyLoop) {
     LLVM_DEBUG(dbgs() << "    Found a read-only loop!\n");
     return false;
   }
-  // Profitablity check:
-  // Check invariant threshold, should be in limit.
-  if (InvariantCounter * 100 < InvariantThreshold * LoadAndStoreCounter) {
-    LLVM_DEBUG(
-        dbgs()
-        << "    Invariant load & store are less then defined threshold\n");
-    LLVM_DEBUG(dbgs() << "    Invariant loads & stores: "
-                      << ((InvariantCounter * 100) / LoadAndStoreCounter)
-                      << "%\n");
-    LLVM_DEBUG(dbgs() << "    Invariant loads & store threshold: "
-                      << InvariantThreshold << "%\n");
-    ORE->emit([&]() {
-      return OptimizationRemarkMissed(DEBUG_TYPE, "InvariantThreshold",
-                                      CurLoop->getStartLoc(),
-                                      CurLoop->getHeader())
-             << "Invariant load & store "
-             << NV("LoadAndStoreCounter",
-                   ((InvariantCounter * 100) / LoadAndStoreCounter))
-             << " are less then defined threshold "
-             << NV("Threshold", InvariantThreshold);
-    });
-    return false;
+
+  bool IgnoreInvariantCheck = EnableLVOverlap;
+  if (!IgnoreInvariantCheck) {
+    // Loop should have at least one invariant load or store instruction.
+    if (!InvariantCounter) {
+      LLVM_DEBUG(dbgs() << "    Invariant not found !!\n");
+      return false;
+    }
+    // Profitablity check:
+    // Check invariant threshold, should be in limit.
+    if (InvariantCounter * 100 < InvariantThreshold * LoadAndStoreCounter) {
+      LLVM_DEBUG(
+          dbgs()
+          << "    Invariant load & store are less then defined threshold\n");
+      LLVM_DEBUG(dbgs() << "    Invariant loads & stores: "
+                        << ((InvariantCounter * 100) / LoadAndStoreCounter)
+                        << "%\n");
+      LLVM_DEBUG(dbgs() << "    Invariant loads & store threshold: "
+                        << InvariantThreshold << "%\n");
+      ORE->emit([&]() {
+        return OptimizationRemarkMissed(DEBUG_TYPE, "InvariantThreshold",
+                                        CurLoop->getStartLoc(),
+                                        CurLoop->getHeader())
+               << "Invariant load & store "
+               << NV("LoadAndStoreCounter",
+                     ((InvariantCounter * 100) / LoadAndStoreCounter))
+               << " are less then defined threshold "
+               << NV("Threshold", InvariantThreshold);
+      });
+      return false;
+    }
   }
   return true;
+}
+
+/// Try to version a loop from
+///   do { memcpy(dst,src,8); dst+=8; src+=8; } while (dst<end);
+/// To
+///   if (dst-src==8) ...
+///   else ...
+bool LoopVersioningLICM::legalLoopVersioningOverlap() {
+  // Now we only allow one load and one store
+  if (LAI->getNumLoads() != 1 || LAI->getNumStores() != 1)
+    return false;
+
+  // Reuse DiffChecks info that previously used to prove that
+  // there are no vectorization-preventing dependencies.
+  // It records DstPtr info, SrcPtr info and AccessSize.
+  auto DiffChecks = LAI->getRuntimePointerChecking()->getDiffChecks();
+  if (!DiffChecks)
+    return false;
+  if ((*DiffChecks).size() != 1)
+    return false;
+  const auto &DiffCheck = (*DiffChecks)[0];
+  if (DiffCheck.NeedsFreeze)
+    return false;
+
+  const DataLayout &DL = CurLoop->getHeader()->getDataLayout();
+  for (auto *Block : CurLoop->getBlocks())
+    for (auto &Inst : *Block) {
+      StoreInst *SI = dyn_cast<StoreInst>(&Inst);
+      if (!SI)
+        continue;
+
+      Value *Val = SI->getValueOperand();
+      LoadInst *LI = dyn_cast<LoadInst>(Val);
+      if (!LI)
+        return false;
+      if (LI->getParent() != SI->getParent())
+        return false;
+
+      Value *StPtr = SI->getPointerOperand();
+      Value *LdPtr = LI->getPointerOperand();
+      auto *StAR = dyn_cast<SCEVAddRecExpr>(SE->getSCEV(StPtr));
+      auto *LdAR = dyn_cast<SCEVAddRecExpr>(SE->getSCEV(LdPtr));
+      if (!StAR || !LdAR)
+        return false;
+      if (StAR->getLoop() != CurLoop || LdAR->getLoop() != CurLoop)
+        return false;
+
+      auto *StStep = dyn_cast<SCEVConstant>(StAR->getStepRecurrence(*SE));
+      auto *LdStep = dyn_cast<SCEVConstant>(LdAR->getStepRecurrence(*SE));
+      if (!StStep || !LdStep)
+        return false;
+
+      const APInt &StStepInt = StStep->getAPInt();
+      const APInt &LdStepInt = LdStep->getAPInt();
+      uint64_t ValSize = DL.getTypeStoreSize(Val->getType()).getFixedValue();
+      // We should have the same size between
+      //   a) DstPtr stride and SrcPtr stride
+      //   b) pointer stride and load/store value size
+      //   c) pointer stride and AccessSize analyzed from DiffChecks
+      if (StStepInt == LdStepInt && StStepInt == ValSize &&
+          StStepInt == DiffCheck.AccessSize)
+        // TODO: Now we only support 8 bytes stride
+        if (StStepInt == 8)
+          return true;
+    }
+
+  return false;
 }
 
 /// It checks loop is already visited or not.
@@ -489,6 +571,11 @@ bool LoopVersioningLICM::isLegalForVersioning() {
     });
     return false;
   }
+  if (EnableLVOverlap && !legalLoopVersioningOverlap()) {
+    LLVM_DEBUG(dbgs() << "    Loop Versioning with overlap not suitable for "
+                         "LoopVersioningLICM\n\n");
+    return false;
+  }
   // Loop versioning is feasible, return true.
   LLVM_DEBUG(dbgs() << "    Loop Versioning found to be beneficial\n\n");
   ORE->emit([&]() {
@@ -543,6 +630,66 @@ bool LoopVersioningLICM::run(DominatorTree *DT) {
 
   bool Changed = false;
 
+  // Try loop versioning overlap optimization, if it fails, go through
+  // to the original LoopVersioningLICM.
+  if (LVOverlap && TTI->isProfitableToLoopVersioning()) {
+    EnableLVOverlap = true;
+    if (isLegalForVersioning()) {
+      LLVM_DEBUG(dbgs() << "    Do Loop Versioning Overlap transformation\n\n");
+
+      LoopVersioning LVer(*LAI, LAI->getRuntimePointerChecking()->getChecks(),
+                          CurLoop, &LI, DT, SE, EnableLVOverlap);
+      LVer.versionLoop();
+      // Add metaData to prevent repeated LoopVersioningLICM optimization.
+      addStringMetadataToLoop(LVer.getNonVersionedLoop(),
+                              LICMVersioningMetaData);
+      addStringMetadataToLoop(LVer.getVersionedLoop(), LICMVersioningMetaData);
+
+      Loop *LVLoop = LVer.getVersionedLoop();
+      auto getStoreInst = [&]() {
+        StoreInst *SI = nullptr;
+        for (auto *Block : LVLoop->getBlocks())
+          for (auto &Inst : *Block) {
+            SI = dyn_cast<StoreInst>(&Inst);
+            if (SI)
+              return SI;
+          }
+        return SI;
+      };
+      // Now just have one store instruction in loop.
+      StoreInst *SI = getStoreInst();
+      Value *Val = SI->getValueOperand();
+      LoadInst *LI = dyn_cast<LoadInst>(Val);
+      assert(LI != nullptr && "Should be load instruction!");
+
+      const SCEV *LdSCEV = SE->getSCEV(LI->getPointerOperand());
+      const SCEVAddRecExpr *LdAR = dyn_cast<SCEVAddRecExpr>(LdSCEV);
+      assert(LdAR != nullptr && "Should not null SCEVAddRecExpr!");
+      const SCEV *LdStart = LdAR->getStart();
+      SCEVExpander Exp(*SE, LVLoop->getHeader()->getDataLayout(),
+                       "lvoverlap");
+      // Get the start address of SrcPtr.
+      Value *StartPointer =
+          Exp.expandCodeFor(LdStart, LdStart->getType(),
+                            LVLoop->getLoopPreheader()->getTerminator());
+
+      // Transform loop from
+      //   do { memcpy(dst,src,8); dst+=8; src+=8; } while (dst<end);
+      // To
+      //   if (dst-src==8) {
+      //     value=*(i64*)src;
+      //     do { *(i64*)dst=value; dst+=8; src+=8; } while (dst<end);
+      //   }
+      //   else ...
+      IRBuilder<> Builder(LVLoop->getLoopPreheader()->getTerminator());
+      Value *LoadValue = Builder.CreateLoad(Val->getType(), StartPointer);
+      SI->setOperand(0, LoadValue);
+
+      Changed = true;
+    }
+    EnableLVOverlap = false;
+  }
+
   // Check feasiblity of LoopVersioningLICM.
   // If versioning found to be feasible and beneficial then proceed
   // else simply return, by cleaning up memory.
@@ -577,11 +724,12 @@ PreservedAnalyses LoopVersioningLICMPass::run(Loop &L, LoopAnalysisManager &AM,
   AliasAnalysis *AA = &LAR.AA;
   ScalarEvolution *SE = &LAR.SE;
   DominatorTree *DT = &LAR.DT;
+  TargetTransformInfo *TTI = &LAR.TTI;
   const Function *F = L.getHeader()->getParent();
   OptimizationRemarkEmitter ORE(F);
 
   LoopAccessInfoManager LAIs(*SE, *AA, *DT, LAR.LI, nullptr, nullptr);
-  if (!LoopVersioningLICM(AA, SE, &ORE, LAIs, LAR.LI, &L).run(DT))
+  if (!LoopVersioningLICM(AA, SE, TTI, &ORE, LAIs, LAR.LI, &L).run(DT))
     return PreservedAnalyses::all();
   return getLoopPassPreservedAnalyses();
 }

@@ -885,6 +885,8 @@ public:
   /// then/else to before if.
   bool isProfitableToHoist(Instruction *I) const;
 
+  bool isProfitableToLoopVersioning() const;
+
   bool useAA() const;
 
   /// Return true if this type is legal.
@@ -2030,6 +2032,7 @@ public:
   virtual bool LSRWithInstrQueries() = 0;
   virtual bool isTruncateFree(Type *Ty1, Type *Ty2) = 0;
   virtual bool isProfitableToHoist(Instruction *I) = 0;
+  virtual bool isProfitableToLoopVersioning() = 0;
   virtual bool useAA() = 0;
   virtual bool isTypeLegal(Type *Ty) = 0;
   virtual unsigned getRegUsageForType(Type *Ty) = 0;
@@ -2610,6 +2613,9 @@ public:
   }
   bool isProfitableToHoist(Instruction *I) override {
     return Impl.isProfitableToHoist(I);
+  }
+  bool isProfitableToLoopVersioning() override {
+    return Impl.isProfitableToLoopVersioning();
   }
   bool useAA() override { return Impl.useAA(); }
   bool isTypeLegal(Type *Ty) override { return Impl.isTypeLegal(Ty); }

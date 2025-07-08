@@ -463,6 +463,8 @@ public:
     return getTLI()->isProfitableToHoist(I);
   }
 
+  bool isProfitableToLoopVersioning() const { return false; }
+
   bool useAA() const { return getST()->useAA(); }
 
   bool isTypeLegal(Type *Ty) {

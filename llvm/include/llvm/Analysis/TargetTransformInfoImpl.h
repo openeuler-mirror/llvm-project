@@ -373,6 +373,8 @@ public:
 
   bool isProfitableToHoist(Instruction *I) const { return true; }
 
+  bool isProfitableToLoopVersioning() const { return false; }
+
   bool useAA() const { return false; }
 
   bool isTypeLegal(Type *Ty) const { return false; }

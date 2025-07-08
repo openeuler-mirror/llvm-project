@@ -2054,6 +2054,35 @@ Value *llvm::addDiffRuntimeChecks(
   return MemoryRuntimeCheck;
 }
 
+Value *llvm::addOverlapRuntimeChecks(Instruction *Loc,
+                                     ArrayRef<PointerDiffInfo> Checks,
+                                     SCEVExpander &Expander) {
+  LLVMContext &Ctx = Loc->getContext();
+  IRBuilder ChkBuilder(Ctx, InstSimplifyFolder(Loc->getDataLayout()));
+  ChkBuilder.SetInsertPoint(Loc);
+  Value *MemoryRuntimeCheck = nullptr;
+
+  for (const auto &C : Checks) {
+    Type *Ty = C.SinkStart->getType();
+    Value *Sink = Expander.expandCodeFor(C.SinkStart, Ty, Loc);
+    Value *Src = Expander.expandCodeFor(C.SrcStart, Ty, Loc);
+    Value *Diff = ChkBuilder.CreateSub(Sink, Src);
+    // Add code that checks at runtime like
+    //   if (DstPtr - SrcPtr == AccessSize) ...
+    //   else ...
+    Value *IsAccessSizeOverlap = ChkBuilder.CreateICmpNE(
+        Diff, ConstantInt::get(Diff->getType(), C.AccessSize), "overlap.check");
+
+    if (MemoryRuntimeCheck) {
+      IsAccessSizeOverlap = ChkBuilder.CreateOr(
+          MemoryRuntimeCheck, IsAccessSizeOverlap, "overlap.rdx");
+    }
+    MemoryRuntimeCheck = IsAccessSizeOverlap;
+  }
+
+  return MemoryRuntimeCheck;
+}
+
 std::optional<IVConditionInfo>
 llvm::hasPartialIVCondition(const Loop &L, unsigned MSSAThreshold,
                             const MemorySSA &MSSA, AAResults &AA) {

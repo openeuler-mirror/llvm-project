@@ -171,6 +171,17 @@ public:
     return ARMProcFamily;
   }
 
+  bool isHiSiliconProc() const {
+    switch (ARMProcFamily) {
+    case TSV110:
+    case HIP09:
+    case HIP12:
+      return true;
+    default:
+      return false;
+    }
+  }
+
   bool isXRaySupported() const override { return true; }
 
   /// Returns true if the function has a streaming body.
