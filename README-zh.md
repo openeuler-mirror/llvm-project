@@ -35,7 +35,7 @@ python3-setuptools python-wheel texinfo binutils-devel libatomic
 ./build.sh -C -r -b release -X X86 -j 8   // 添加了-C选项
 ```
 
-为解决其他操作系统下（CentOS等）的glibc兼容性问题，openEuler LLVM项目同时提供可选的CentOS构建镜像（当前仅支持AArch64架构），开发者可以通过`build.sh`脚本的`-D`选项切换使用的构建容器，例如：
+为解决其他操作系统下（CentOS等）的glibc兼容性问题，openEuler LLVM项目同时提供可选的CentOS构建镜像（当前仅支持AArch64架构）。建议仅在目标系统使用的glibc版本满足 >=2.17 且 <2.34 时使用此镜像。开发者可以通过`build.sh`脚本的`-D`选项切换使用的构建容器，例如：
 
 ```
 ./build.sh -C -D CentOS -r -b release -X AArch64 -j 8   // 添加了-D CentOS

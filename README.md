@@ -39,7 +39,7 @@ The openEuler LLVM project provides a containerized building mode to solve the p
 ./build.sh -C -r -b release -X X86 -j 8 // added -C option
 ` ` `
 
-To address glibc compatibility issues on other operating systems (such as CentOS), the openEuler LLVM project also provides an optional CentOS build image (currently only supporting the AArch64 architecture). Developers can switch the build container using the -D option in the build.sh script. For example:
+To address glibc compatibility issues on other operating systems (such as CentOS), the openEuler LLVM project also provides an optional CentOS build image (currently only supporting the AArch64 architecture). It is recommended to use this image only when the glibc version on the target system <=2.17 and <2.34. Developers can switch the build container using the -D option in the build.sh script. For example:
 
 ` ` `
 ./build.sh -C -D CentOS -r -b release -X AArch64 -j 8   // added -D CentOS option
