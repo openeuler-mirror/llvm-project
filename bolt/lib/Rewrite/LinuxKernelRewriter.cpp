@@ -337,6 +337,7 @@ class LinuxKernelRewriter final : public MetadataRewriter {
   /// Paravirtual instruction patch sites.
   Error readParaInstructions();
   Error rewriteParaInstructions();
+  void processParaInstructionsPostCFG();
 
   /// __bug_table section handling.
   Error readBugTable();
@@ -445,6 +446,7 @@ public:
     if (Error E = processORCPostCFG())
       return E;
 
+    processParaInstructionsPostCFG();
     processAltInstructionsPostCFG();
 
     return Error::success();
@@ -1435,10 +1437,6 @@ Error LinuxKernelRewriter::readParaInstructions() {
     }
   }
 
-  // Disable output of functions with paravirtual instructions before the
-  // rewrite support is complete.
-  skipFunctionsWithAnnotation("ParaSite");
-
   BC.outs() << "BOLT-INFO: parsed " << EntryID << " paravirtual patch sites\n";
 
   return Error::success();
@@ -1459,6 +1457,12 @@ void LinuxKernelRewriter::skipFunctionsWithAnnotation(
       }
     }
   }
+}
+
+void LinuxKernelRewriter::processParaInstructionsPostCFG() {
+  // Disable output of functions with paravirtual instructions before the
+  // rewrite support is complete.
+  skipFunctionsWithAnnotation("ParaSite");
 }
 
 Error LinuxKernelRewriter::rewriteParaInstructions() {
