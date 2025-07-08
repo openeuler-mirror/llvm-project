@@ -511,6 +511,10 @@ Value *addDiffRuntimeChecks(
     Instruction *Loc, ArrayRef<PointerDiffInfo> Checks, SCEVExpander &Expander,
     function_ref<Value *(IRBuilderBase &, unsigned)> GetVF, unsigned IC);
 
+Value *addOverlapRuntimeChecks(Instruction *Loc,
+                               ArrayRef<PointerDiffInfo> Checks,
+                               SCEVExpander &Expander);
+
 /// Struct to hold information about a partially invariant condition.
 struct IVConditionInfo {
   /// Instructions that need to be duplicated and checked for the unswitching
