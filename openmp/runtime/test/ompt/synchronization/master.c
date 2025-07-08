@@ -2,6 +2,7 @@
 // REQUIRES: ompt
 // GCC generates code that does not call the runtime for the master construct
 // XFAIL: gcc
+// UNSUPPORTED: aarch64-target-arch
 
 #define USE_PRIVATE_TOOL 1
 #include "callback.h"
