@@ -124,10 +124,9 @@ struct LoopVersioningLICM {
   // for versioning. By passing the proxy instead the construction of
   // LoopAccessInfo will take place only when it's necessary.
   LoopVersioningLICM(AliasAnalysis *AA, ScalarEvolution *SE,
-                     OptimizationRemarkEmitter *ORE,
-                     LoopAccessInfoManager &LAIs, LoopInfo &LI,
-                     Loop *CurLoop)
-      : AA(AA), SE(SE), LAIs(LAIs), LI(LI), CurLoop(CurLoop),
+                     TargetTransformInfo *TTI, OptimizationRemarkEmitter *ORE,
+                     LoopAccessInfoManager &LAIs, LoopInfo &LI, Loop *CurLoop)
+      : AA(AA), SE(SE), TTI(TTI), LAIs(LAIs), LI(LI), CurLoop(CurLoop),
         LoopDepthThreshold(LVLoopDepthThreshold),
         InvariantThreshold(LVInvarThreshold), ORE(ORE) {}
 
@@ -139,6 +138,8 @@ private:
 
   // Current ScalarEvolution
   ScalarEvolution *SE;
+
+  TargetTransformInfo *TTI;
 
   // Current Loop's LoopAccessInfo
   const LoopAccessInfo *LAI = nullptr;
@@ -630,7 +631,7 @@ bool LoopVersioningLICM::run(DominatorTree *DT) {
 
   // Try loop versioning overlap optimization, if it fails, go through
   // to the original LoopVersioningLICM.
-  if (LVOverlap) {
+  if (LVOverlap && TTI->isProfitableToLoopVersioning()) {
     EnableLVOverlap = true;
     if (isLegalForVersioning()) {
       LLVM_DEBUG(dbgs() << "    Do Loop Versioning Overlap transformation\n\n");
@@ -722,11 +723,12 @@ PreservedAnalyses LoopVersioningLICMPass::run(Loop &L, LoopAnalysisManager &AM,
   AliasAnalysis *AA = &LAR.AA;
   ScalarEvolution *SE = &LAR.SE;
   DominatorTree *DT = &LAR.DT;
+  TargetTransformInfo *TTI = &LAR.TTI;
   const Function *F = L.getHeader()->getParent();
   OptimizationRemarkEmitter ORE(F);
 
   LoopAccessInfoManager LAIs(*SE, *AA, *DT, LAR.LI, nullptr);
-  if (!LoopVersioningLICM(AA, SE, &ORE, LAIs, LAR.LI, &L).run(DT))
+  if (!LoopVersioningLICM(AA, SE, TTI, &ORE, LAIs, LAR.LI, &L).run(DT))
     return PreservedAnalyses::all();
   return getLoopPassPreservedAnalyses();
 }
@@ -744,21 +746,26 @@ public:
     if (skipLoop(L))
       return false;
 
+    Function *F = L->getHeader()->getParent();
+
     AliasAnalysis *AA = &getAnalysis<AAResultsWrapperPass>().getAAResults();
     ScalarEvolution *SE = &getAnalysis<ScalarEvolutionWrapperPass>().getSE();
     DominatorTree *DT = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+    TargetTransformInfo *TTI =
+        &getAnalysis<TargetTransformInfoWrapperPass>().getTTI(*F);
     LoopInfo *LI = &getAnalysis<LoopInfoWrapperPass>().getLoopInfo();
     OptimizationRemarkEmitter *ORE =
         &getAnalysis<OptimizationRemarkEmitterWrapperPass>().getORE();
 
     LoopAccessInfoManager LAIs(*SE, *AA, *DT, *LI, nullptr);
-    return LoopVersioningLICM(AA, SE, ORE, LAIs, *LI, L).run(DT);
+    return LoopVersioningLICM(AA, SE, TTI, ORE, LAIs, *LI, L).run(DT);
   }
 
   void getAnalysisUsage(AnalysisUsage &AU) const override {
     AU.addRequired<AAResultsWrapperPass>();
     AU.addRequired<ScalarEvolutionWrapperPass>();
     AU.addRequired<DominatorTreeWrapperPass>();
+    AU.addRequired<TargetTransformInfoWrapperPass>();
     AU.addRequired<LoopInfoWrapperPass>();
     AU.addRequired<OptimizationRemarkEmitterWrapperPass>();
   }
@@ -774,6 +781,7 @@ INITIALIZE_PASS_BEGIN(LoopVersioningLICMLegacyPass, "loop-versioning-licm",
 INITIALIZE_PASS_DEPENDENCY(AAResultsWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(ScalarEvolutionWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(TargetTransformInfoWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(LoopInfoWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(OptimizationRemarkEmitterWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(LoopSimplify)

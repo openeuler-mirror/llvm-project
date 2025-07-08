@@ -197,10 +197,6 @@ static cl::opt<bool> EnableGISelLoadStoreOptPostLegal(
     cl::desc("Enable GlobalISel's post-legalizer load/store optimization pass"),
     cl::init(false), cl::Hidden);
 
-static cl::opt<bool> EnableLoopVersioningLICM(
-    "aarch64-enable-loop-versioning-licm", cl::init(false), cl::Hidden,
-    cl::desc("Enable the experimental Loop Versioning LICM pass"));
-
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeAArch64Target() {
   // Register the target.
   RegisterTargetMachine<AArch64leTargetMachine> X(getTheAArch64leTarget());
@@ -570,12 +566,6 @@ void AArch64PassConfig::addIRPasses() {
                                             .needCanonicalLoops(false)
                                             .hoistCommonInsts(true)
                                             .sinkCommonInsts(true)));
-
-  if (EnableLoopVersioningLICM) {
-    // Loop needs to be in loop simplify form.
-    addPass(createLoopSimplifyPass());
-    addPass(createLoopVersioningLICMPass());
-  }
 
   // Run LoopDataPrefetch
   //

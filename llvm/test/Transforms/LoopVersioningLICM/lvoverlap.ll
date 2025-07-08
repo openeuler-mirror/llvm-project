@@ -1,5 +1,5 @@
-; RUN: opt < %s  -S --passes='loop-versioning-licm' -loop-versioning-overlap -debug-only=loop-versioning-licm 2>&1 | FileCheck %s
-; REQUIRES: asserts
+; RUN: opt < %s  -S --passes='loop-versioning-licm' --mcpu=tsv110 -mtriple aarch64-linux-gnu -loop-versioning-overlap -debug-only=loop-versioning-licm 2>&1 | FileCheck %s
+; REQUIRES: asserts, aarch64-registered-target
 ;
 ; CHECK:    Do Loop Versioning Overlap transformation
 ;

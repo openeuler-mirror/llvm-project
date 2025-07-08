@@ -96,6 +96,8 @@ public:
                                       TTI::TargetCostKind CostKind);
   TTI::PopcntSupportKind getPopcntSupport(unsigned TyWidth);
 
+  bool isProfitableToLoopVersioning() const;
+
   /// @}
 
   /// \name Vector TTI Implementations
