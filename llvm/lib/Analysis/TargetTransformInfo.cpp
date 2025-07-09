@@ -519,6 +519,10 @@ bool TargetTransformInfo::isProfitableToHoist(Instruction *I) const {
   return TTIImpl->isProfitableToHoist(I);
 }
 
+bool TargetTransformInfo::isProfitableToLoopVersioning() const {
+  return TTIImpl->isProfitableToLoopVersioning();
+}
+
 bool TargetTransformInfo::useAA() const { return TTIImpl->useAA(); }
 
 bool TargetTransformInfo::isTypeLegal(Type *Ty) const {
