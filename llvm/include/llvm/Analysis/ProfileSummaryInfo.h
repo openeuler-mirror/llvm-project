@@ -44,6 +44,7 @@ private:
   void computeThresholds();
   // Count thresholds to answer isHotCount and isColdCount queries.
   std::optional<uint64_t> HotCountThreshold, ColdCountThreshold;
+  std::optional<uint64_t> HotCountThresholdICP;
   // True if the working set size of the code is considered huge,
   // because the number of profile counts required to reach the hot
   // percentile is above a huge threshold.
@@ -130,7 +131,7 @@ public:
                                               const Function *F,
                                               BlockFrequencyInfo &BFI) const;
   /// Returns true if count \p C is considered hot.
-  bool isHotCount(uint64_t C) const;
+  bool isHotCount(uint64_t C, bool isForICP = false) const;
   /// Returns true if count \p C is considered cold.
   bool isColdCount(uint64_t C) const;
   /// Returns true if count \p C is considered hot with regard to a given

@@ -242,6 +242,8 @@ void ProfileSummaryInfo::computeThresholds() {
       DetailedSummary, ProfileSummaryCutoffHot);
   HotCountThreshold =
       ProfileSummaryBuilder::getHotCountThreshold(DetailedSummary);
+  HotCountThresholdICP =
+      ProfileSummaryBuilder::getHotCountThresholdForICP(DetailedSummary);
   ColdCountThreshold =
       ProfileSummaryBuilder::getColdCountThreshold(DetailedSummary);
   assert(ColdCountThreshold <= HotCountThreshold &&
@@ -289,7 +291,10 @@ bool ProfileSummaryInfo::hasLargeWorkingSetSize() const {
   return HasLargeWorkingSetSize && *HasLargeWorkingSetSize;
 }
 
-bool ProfileSummaryInfo::isHotCount(uint64_t C) const {
+bool ProfileSummaryInfo::isHotCount(uint64_t C, bool isForICP) const {
+  if (isForICP) {
+    return HotCountThresholdICP && C >= *HotCountThresholdICP;
+  }
   return HotCountThreshold && C >= *HotCountThreshold;
 }
 
