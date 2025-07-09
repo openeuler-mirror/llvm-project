@@ -257,6 +257,7 @@ StringRef sys::detail::getHostCPUNameForARM(StringRef ProcCpuinfoContent) {
     // contents are specified in the various processor manuals.
     return StringSwitch<const char *>(Part)
       .Case("0xd01", "tsv110")
+      .Case("0xd02", "hip09")
       .Case("0xd06", "hip12")
       .Default("generic");
 

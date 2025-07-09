@@ -289,6 +289,10 @@ def FeatureFuseLiterals : SubtargetFeature<
     "fuse-literals", "HasFuseLiterals", "true",
     "CPU fuses literal generation operations">;
 
+def FeatureFuseMvnClz : SubtargetFeature<
+    "fuse-mvn-clz", "HasFuseMvnClz", "true",
+    "CPU fuses mvn+clz operations">;
+
 def FeatureDisableLatencySchedHeuristic : SubtargetFeature<
     "disable-latency-sched-heuristic", "DisableLatencySchedHeuristic", "true",
     "Disable latency scheduling heuristic">;
@@ -747,6 +751,7 @@ include "AArch64SchedThunderX3T110.td"
 include "AArch64SchedTSV110.td"
 include "AArch64SchedAmpere1.td"
 include "AArch64SchedNeoverseN2.td"
+include "AArch64SchedHIP09.td"
 include "AArch64SchedHIP12.td"
 
 def TuneA35     : SubtargetFeature<"a35", "ARMProcFamily", "CortexA35",
@@ -1165,6 +1170,19 @@ def TuneTSV110 : SubtargetFeature<"tsv110", "ARMProcFamily", "TSV110",
                                   FeatureFuseAES,
                                   FeaturePostRAScheduler]>;
 
+def TuneHIP09 : SubtargetFeature<"hip09", "ARMProcFamily", "HIP09",
+                                   "HiSilicon HIP-09 processors", [
+                                   FeatureCustomCheapAsMoveHandling,
+                                   FeatureExperimentalZeroingPseudos,
+                                   FeatureFuseAES,
+                                   FeatureLSLFast,
+                                   FeatureAscendStoreAddress,
+                                   FeatureCmpBccFusion,
+                                   FeatureArithmeticBccFusion,
+                                   FeatureFuseLiterals,
+                                   FeatureFuseMvnClz,
+                                   FeaturePostRAScheduler]>;
+
 def TuneHIP12 : SubtargetFeature<"hip12", "ARMProcFamily", "HIP12",
                                    "HiSilicon HIP12 processors", [
                                     FeatureCustomCheapAsMoveHandling,
@@ -1337,6 +1355,12 @@ def ProcessorFeatures {
   list<SubtargetFeature> TSV110 = [HasV8_2aOps, FeatureCrypto, FeatureFPARMv8,
                                    FeatureNEON, FeaturePerfMon, FeatureSPE,
                                    FeatureFullFP16, FeatureFP16FML, FeatureDotProd];
+  list<SubtargetFeature> HIP09 = [HasV8_5aOps, FeatureBF16, FeatureCrypto, FeatureFPARMv8,
+                                  FeatureMatMulInt8, FeatureMatMulFP32, FeatureMatMulFP64,
+                                  FeatureNEON, FeaturePerfMon, FeatureRandGen, FeatureSPE,
+                                  FeatureFullFP16, FeatureFP16FML, FeatureDotProd,
+                                  FeatureJS, FeatureComplxNum, FeatureSHA3, FeatureSM4,
+                                  FeatureSVE];
   list<SubtargetFeature> HIP12 = [HasV9_2aOps, FeatureSVE, FeatureSVE2,
                                   FeatureSVE2BitPerm, FeatureSVE2AES,
                                   FeatureSVE2SM4, FeatureSVE2SHA3,
@@ -1457,10 +1481,15 @@ def : ProcessorModel<"thunderx2t99", ThunderX2T99Model,
 // Marvell ThunderX3T110 Processors.
 def : ProcessorModel<"thunderx3t110", ThunderX3T110Model,
                      ProcessorFeatures.ThunderX3T110, [TuneThunderX3T110]>;
+
+// HiSilicon Processors.
 def : ProcessorModel<"tsv110", TSV110Model, ProcessorFeatures.TSV110,
                      [TuneTSV110]>;
+def : ProcessorModel<"hip09", HIP09Model, ProcessorFeatures.HIP09,
+                     [TuneHIP09]>;
 def : ProcessorModel<"hip12", HIP12Model, ProcessorFeatures.HIP12,
                      [TuneHIP12]>;
+
 // Support cyclone as an alias for apple-a7 so we can still LTO old bitcode.
 def : ProcessorModel<"cyclone", CycloneModel, ProcessorFeatures.AppleA7,
                      [TuneAppleA7]>;
