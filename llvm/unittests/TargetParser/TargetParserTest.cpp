@@ -1394,6 +1394,18 @@ INSTANTIATE_TEST_SUITE_P(
                              AArch64::AEK_FP16 | AArch64::AEK_FP16FML |
                              AArch64::AEK_DOTPROD,
                          "8.2-A"),
+        ARMCPUTestParams(
+            "hip12", "armv9.2-a", "crypto-neon-fp-armv8",
+            AArch64::AEK_SVE | AArch64::AEK_SVE2 | AArch64::AEK_SVE2BITPERM |
+                AArch64::AEK_SVE2AES | AArch64::AEK_SVE2SM4 | AArch64::AEK_SVE2SHA3 |
+                AArch64::AEK_FP16 | AArch64::AEK_PERFMON | AArch64::AEK_PROFILE |
+                AArch64::AEK_HBC | AArch64::AEK_RCPC3 | AArch64::AEK_BF16 |
+                AArch64::AEK_CRC | AArch64::AEK_DOTPROD | AArch64::AEK_FP |
+                AArch64::AEK_I8MM | AArch64::AEK_LSE | AArch64::AEK_SIMD |
+                AArch64::AEK_PAUTH | AArch64::AEK_RAS | AArch64::AEK_RCPC |
+                AArch64::AEK_RDM | AArch64::AEK_LS64 | AArch64::AEK_BRBE |
+                AArch64::AEK_FPAC,
+            "9.2-A"),
         ARMCPUTestParams("a64fx", "armv8.2-a", "crypto-neon-fp-armv8",
                          AArch64::AEK_CRC | AArch64::AEK_CRYPTO |
                              AArch64::AEK_FP | AArch64::AEK_SIMD |
@@ -1409,7 +1421,7 @@ INSTANTIATE_TEST_SUITE_P(
                          "8.2-A")));
 
 // Note: number of CPUs includes aliases.
-static constexpr unsigned NumAArch64CPUArchs = 62;
+static constexpr unsigned NumAArch64CPUArchs = 63;
 
 TEST(TargetParserTest, testAArch64CPUArchList) {
   SmallVector<StringRef, NumAArch64CPUArchs> List;
@@ -1559,7 +1571,7 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
       AArch64::AEK_B16B16,  AArch64::AEK_SMEF16F16, AArch64::AEK_CSSC,
       AArch64::AEK_RCPC3,   AArch64::AEK_THE,       AArch64::AEK_D128,
       AArch64::AEK_LSE128,  AArch64::AEK_SPECRES2,  AArch64::AEK_RASv2,
-      AArch64::AEK_ITE,
+      AArch64::AEK_ITE,     AArch64::AEK_FPAC,
   };
 
   std::vector<StringRef> Features;
@@ -1632,7 +1644,7 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+lse128"));
   EXPECT_TRUE(llvm::is_contained(Features, "+specres2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+ite"));
-
+  EXPECT_TRUE(llvm::is_contained(Features, "+fpac"));
   // Assuming we listed every extension above, this should produce the same
   // result. (note that AEK_NONE doesn't have a name so it won't be in the
   // result despite its bit being set)

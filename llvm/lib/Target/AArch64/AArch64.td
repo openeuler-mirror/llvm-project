@@ -317,6 +317,10 @@ def FeatureJS : SubtargetFeature<
     "Enable v8.3-A JavaScript FP conversion instructions (FEAT_JSCVT)",
     [FeatureFPARMv8]>;
 
+def FeatureFPAC : SubtargetFeature<
+    "fpac", "HasFPAC", "true",
+    "Assume AUT* instructions generate fault on invalid PAC (FEAT_FPAC)">;
+
 def FeatureCCIDX : SubtargetFeature<
     "ccidx", "HasCCIDX", "true",
     "Enable v8.3-A Extend of the CCSIDR number of sets (FEAT_CCIDX)">;
@@ -704,6 +708,15 @@ def FeatureHardenSlsNoComdat : SubtargetFeature<"harden-sls-nocomdat",
 
 class AArch64Unsupported { list<Predicate> F; }
 
+let F = [HasSVE2p1, HasSVE2p1_or_HasSME2, HasSVE2p1_or_HasSME2p1, HasSVE2p1_or_HasSME] in
+def SVE2p1Unsupported : AArch64Unsupported;
+
+def SVE2Unsupported : AArch64Unsupported {
+  let F = !listconcat([HasSVE2, HasSVE2orSME,
+                       HasSVE2AES, HasSVE2SHA3, HasSVE2SM4, HasSVE2BitPerm],
+                       SVE2p1Unsupported.F);
+}
+
 def SVEUnsupported : AArch64Unsupported {
   let F = [HasSVE, HasSVE2, HasSVE2AES, HasSVE2SM4, HasSVE2SHA3,
            HasSVE2BitPerm, HasSVEorSME, HasSVE2p1, HasSVE2orSME, HasSVE2p1_or_HasSME2p1];
@@ -734,6 +747,7 @@ include "AArch64SchedThunderX3T110.td"
 include "AArch64SchedTSV110.td"
 include "AArch64SchedAmpere1.td"
 include "AArch64SchedNeoverseN2.td"
+include "AArch64SchedHIP12.td"
 
 def TuneA35     : SubtargetFeature<"a35", "ARMProcFamily", "CortexA35",
                                 "Cortex-A35 ARM processors">;
@@ -1151,6 +1165,16 @@ def TuneTSV110 : SubtargetFeature<"tsv110", "ARMProcFamily", "TSV110",
                                   FeatureFuseAES,
                                   FeaturePostRAScheduler]>;
 
+def TuneHIP12 : SubtargetFeature<"hip12", "ARMProcFamily", "HIP12",
+                                   "HiSilicon HIP12 processors", [
+                                    FeatureCustomCheapAsMoveHandling,
+                                    FeatureExperimentalZeroingPseudos,
+                                    FeatureCmpBccFusion,
+                                    FeatureFuseAES,
+                                    FeatureLSLFast,
+                                    FeatureAscendStoreAddress,
+                                    FeaturePostRAScheduler]>;
+
 def TuneAmpere1 : SubtargetFeature<"ampere1", "ARMProcFamily", "Ampere1",
                                    "Ampere Computing Ampere-1 processors", [
                                    FeaturePostRAScheduler,
@@ -1313,6 +1337,20 @@ def ProcessorFeatures {
   list<SubtargetFeature> TSV110 = [HasV8_2aOps, FeatureCrypto, FeatureFPARMv8,
                                    FeatureNEON, FeaturePerfMon, FeatureSPE,
                                    FeatureFullFP16, FeatureFP16FML, FeatureDotProd];
+  list<SubtargetFeature> HIP12 = [HasV9_2aOps, FeatureSVE, FeatureSVE2,
+                                  FeatureSVE2BitPerm, FeatureSVE2AES,
+                                  FeatureSVE2SM4, FeatureSVE2SHA3,
+                                  FeatureFullFP16, FeaturePerfMon,
+                                  FeatureETE, FeatureTRBE, FeatureSPE,
+                                  FeatureSPE_EEF, FeatureNMI,
+                                  FeatureHBC, FeatureRCPC3, FeatureBF16,
+                                  FeatureComplxNum, FeatureCRC,
+                                  FeatureDotProd, FeatureFPARMv8,
+                                  FeatureMatMulInt8, FeatureJS,
+                                  FeatureLSE, FeatureNEON, FeaturePAuth,
+                                  FeatureRAS, FeatureRCPC, FeatureRDM,
+                                  FeatureFPAC, FeatureLS64, FeatureRME,
+                                  FeatureBRBE];
   list<SubtargetFeature> Ampere1 = [HasV8_6aOps, FeatureNEON, FeaturePerfMon,
                                     FeatureSSBS, FeatureRandGen, FeatureSB,
                                     FeatureSHA2, FeatureSHA3, FeatureAES,
@@ -1421,7 +1459,8 @@ def : ProcessorModel<"thunderx3t110", ThunderX3T110Model,
                      ProcessorFeatures.ThunderX3T110, [TuneThunderX3T110]>;
 def : ProcessorModel<"tsv110", TSV110Model, ProcessorFeatures.TSV110,
                      [TuneTSV110]>;
-
+def : ProcessorModel<"hip12", HIP12Model, ProcessorFeatures.HIP12,
+                     [TuneHIP12]>;
 // Support cyclone as an alias for apple-a7 so we can still LTO old bitcode.
 def : ProcessorModel<"cyclone", CycloneModel, ProcessorFeatures.AppleA7,
                      [TuneAppleA7]>;
