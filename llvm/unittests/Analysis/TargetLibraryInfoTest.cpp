@@ -412,6 +412,8 @@ TEST_F(TargetLibraryInfoTest, ValidProto) {
       "declare i32 @fseeko64(%struct*, i64, i32)\n"
       "declare i64 @ftello64(%struct*)\n"
 
+      "declare void @_Unwind_Resume(%struct*)\n"
+      "declare void @_ZSt9terminatev()\n"
       "declare void @_ZdaPv(i8*)\n"
       "declare void @_ZdaPvRKSt9nothrow_t(i8*, %struct*)\n"
       "declare void @_ZdaPvSt11align_val_t(i8*, i64)\n"
@@ -468,7 +470,9 @@ TEST_F(TargetLibraryInfoTest, ValidProto) {
       "declare void @\"??_V@YAXPAXI@Z\"(i8*, i32)\n"
 
       // These other functions were derived from the .def C declaration.
+      "declare i8* @__cxa_allocate_exception(i64)\n"
       "declare i32 @__cxa_atexit(void (i8*)*, i8*, i8*)\n"
+      "declare i8* @__cxa_begin_catch(i8*)\n"
       "declare void @__cxa_guard_abort(%struct*)\n"
       "declare i32 @__cxa_guard_acquire(%struct*)\n"
       "declare void @__cxa_guard_release(%struct*)\n"
@@ -559,6 +563,7 @@ TEST_F(TargetLibraryInfoTest, ValidProto) {
       "declare double @__cosh_finite(double)\n"
       "declare float @__coshf_finite(float)\n"
       "declare x86_fp80 @__coshl_finite(x86_fp80)\n"
+      "declare void @__cxa_throw(i8*, i8*, i8*)\n"
       "declare double @__exp10_finite(double)\n"
       "declare float @__exp10f_finite(float)\n"
       "declare x86_fp80 @__exp10l_finite(x86_fp80)\n"

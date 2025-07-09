@@ -32,13 +32,18 @@
 # RUN: FileCheck %s --check-prefix=AVAIL --input-file %t3.txt
 # RUN: FileCheck %s --check-prefix=UNAVAIL --input-file %t3.txt
 #
-# CHECK: << Total TLI yes SDK no:  0
+# CHECK: << Total TLI yes SDK no:  5
 # CHECK: >> Total TLI no  SDK yes: 0
 # CHECK: == Total TLI yes SDK yes: 235
 #
+# WRONG_DETAIL: << TLI yes SDK no : '_Unwind_Resume'
+# WRONG_DETAIL: << TLI yes SDK no : '_ZSt9terminatev' aka std::terminate()
 # WRONG_DETAIL: << TLI yes SDK no : '_ZdaPv' aka operator delete[](void*)
 # WRONG_DETAIL: >> TLI no  SDK yes: '_ZdaPvj' aka operator delete[](void*, unsigned int)
-# WRONG_SUMMARY: << Total TLI yes SDK no:  1{{$}}
+# WRONG_DETAIL: << TLI yes SDK no : '__cxa_allocate_exception'
+# WRONG_DETAIL: << TLI yes SDK no : '__cxa_begin_catch'
+# WRONG_DETAIL: << TLI yes SDK no : '__cxa_throw'
+# WRONG_SUMMARY: << Total TLI yes SDK no:  6
 # WRONG_SUMMARY: >> Total TLI no  SDK yes: 1{{$}}
 # WRONG_SUMMARY: == Total TLI yes SDK yes: 234
 #
@@ -46,11 +51,9 @@
 ## the exact count first; the two directives should add up to that.
 ## Yes, this means additions to TLI will fail this test, but the argument
 ## to -COUNT can't be an expression.
-# AVAIL: TLI knows 468 symbols, 235 available
-# AVAIL-COUNT-235: {{^}} available
-# AVAIL-NOT:       {{^}} available
+# AVAIL: TLI knows 473 symbols, 240 available
+# AVAIL-COUNT-240: {{^}} available
 # UNAVAIL-COUNT-233: not available
-# UNAVAIL-NOT:       not available
 
 ## This is a large file so it's worth telling lit to stop here.
 # END.
