@@ -26,6 +26,8 @@
 #include "llvm/IR/GlobalValue.h"
 #include "llvm/Support/AArch64TargetParser.h"
 #include "llvm/Support/TargetParser.h"
+#include "llvm/IR/Module.h"
+#include "llvm/TargetParser/AArch64TargetParser.h"
 
 using namespace llvm;
 
@@ -44,10 +46,10 @@ static cl::opt<bool>
 UseAddressTopByteIgnored("aarch64-use-tbi", cl::desc("Assume that top byte of "
                          "an address is ignored"), cl::init(false), cl::Hidden);
 
-static cl::opt<bool>
-    UseNonLazyBind("aarch64-enable-nonlazybind",
-                   cl::desc("Call nonlazybind functions via direct GOT load"),
-                   cl::init(false), cl::Hidden);
+static cl::opt<bool> MachOUseNonLazyBind(
+    "aarch64-macho-enable-nonlazybind",
+    cl::desc("Call nonlazybind functions via direct GOT load for Mach-O"),
+    cl::Hidden);
 
 static cl::opt<bool> UseAA("aarch64-use-aa", cl::init(true),
                            cl::desc("Enable the use of AA during codegen."));
@@ -401,8 +403,14 @@ unsigned AArch64Subtarget::classifyGlobalFunctionReference(
 
   // NonLazyBind goes via GOT unless we know it's available locally.
   auto *F = dyn_cast<Function>(GV);
-  if (UseNonLazyBind && F && F->hasFnAttribute(Attribute::NonLazyBind) &&
-      !TM.shouldAssumeDSOLocal(*GV->getParent(), GV))
+// Check if NonLazyBind should go via GOT:
+// 1. The target is not MachO, or MachO uses NonLazyBind.
+// 2. The function's parent module requires GOT for runtime library calls.
+// 3. The symbol is not assumed to be DSO-local.
+// 4. The symbol does not have local linkage.
+  if ((!isTargetMachO() || MachOUseNonLazyBind) && F &&
+      F->getParent()->getRtLibUseGOT() && 
+      !(TM.shouldAssumeDSOLocal(*GV->getParent(), GV) || GV->hasLocalLinkage()))
     return AArch64II::MO_GOT;
 
   if (getTargetTriple().isOSWindows()) {
