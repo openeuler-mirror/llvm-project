@@ -1,4 +1,4 @@
-# RUN: llvm-mc -triple aarch64-none-linux-gnu -mattr=+v8.1a --disassemble < %s | FileCheck %s
+# RUN: llvm-mc -triple aarch64-none-linux-gnu -mattr=+v8.1a,+lse --disassemble < %s | FileCheck %s
 
 0x41,0x7c,0xa0,0x08
 0x41,0x7c,0xe0,0x08
