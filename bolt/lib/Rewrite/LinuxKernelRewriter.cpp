@@ -1049,7 +1049,11 @@ Error LinuxKernelRewriter::readStaticCalls() {
                              "no section matching __start_static_call_sites");
 
   StaticCallSection = *ErrorOrSection;
-  if (!StaticCallSection->containsAddress(Stop->getAddress() - 1))
+  // In order to support kernels of different versions and architechures(such as
+  // aarch64 linux kernel5.10), we allow the address of the start and stop to be
+  // same.
+  if (!StaticCallSection->containsAddress(Stop->getAddress() - 1) &&
+      StaticCallTableAddress !=  Stop->getAddress())
     return createStringError(errc::executable_format_error,
                              "__stop_static_call_sites not in the same section "
                              "as __start_static_call_sites");
