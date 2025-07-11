@@ -1984,14 +1984,14 @@ def : InstRW<[HIP12Write_3c_2V], (instregex "^[SU]MULL[BT]_ZZZI_[SD]",
 // Multiply accumulate, B, H, S element size SVE256
 // instrs MLA, MLS, MAD, MSB
 def : InstRW<[HIP12Write_3c_2V, HIP12Rd_ZMABHS],
-             (instregex "^ML[AS]_ZZZI_[HS]")>;
+             (instregex "^ML[AS]_ZZZI_[HS]", "^ML[AS]_ZPZZZ_UNDEF_[BHS]")>;
 def : InstRW<[HIP12Write_3c_2V, ReadDefault, HIP12Rd_ZMABHS],
              (instregex "^(ML[AS]|MAD|MSB)_ZPmZZ_[BHS]")>;
 
 // Multiply accumulate, D element size SVE256
 // instrs MLA, MLS, MAD, MSB
 def : InstRW<[HIP12Write_4c_4V, HIP12Rd_ZMAD],
-             (instregex "^ML[AS]_ZZZI_D")>;
+             (instregex "^ML[AS]_ZZZI_D", "^ML[AS]_ZPZZZ_UNDEF_D")>;
 def : InstRW<[HIP12Write_4c_4V, ReadDefault, HIP12Rd_ZMAD],
              (instregex "^(ML[AS]|MAD|MSB)_ZPmZZ_D")>;
 
