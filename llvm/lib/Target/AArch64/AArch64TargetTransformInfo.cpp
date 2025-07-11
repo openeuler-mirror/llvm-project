@@ -39,6 +39,10 @@ static cl::opt<unsigned> SVEGatherOverhead("sve-gather-overhead", cl::init(10),
 static cl::opt<unsigned> SVEScatterOverhead("sve-scatter-overhead",
                                             cl::init(10), cl::Hidden);
 
+static cl::opt<bool>
+    ForceEnableExperimentalOpt("force-enable-experimental-optimization",
+                               cl::init(false), cl::Hidden);
+
 namespace {
 class TailFoldingKind {
 private:
@@ -319,6 +323,14 @@ AArch64TTIImpl::getPopcntSupport(unsigned TyWidth) {
     return TTI::PSK_FastHardware;
   // TODO: AArch64TargetLowering::LowerCTPOP() supports 128bit popcount.
   return TTI::PSK_Software;
+}
+
+bool AArch64TTIImpl::isProfitableToLoopVersioning() const {
+  // Prove to work well for HiSilicon Processors.
+  // You can experimentally enable optimization by option
+  // -mllvm -force-enable-experimental-optimization if you
+  // want to test it on other platforms.
+  return ST->isHiSiliconProc() || ForceEnableExperimentalOpt;
 }
 
 InstructionCost
