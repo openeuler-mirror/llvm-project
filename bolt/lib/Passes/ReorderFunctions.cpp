@@ -13,6 +13,7 @@
 #include "bolt/Passes/ReorderFunctions.h"
 #include "bolt/Passes/HFSort.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Transforms/Utils/CodeLayout.h"
 #include <fstream>
 
 #define DEBUG_TYPE "hfsort"
@@ -27,33 +28,27 @@ extern cl::opt<uint32_t> RandomSeed;
 
 extern size_t padFunction(const bolt::BinaryFunction &Function);
 
-cl::opt<bolt::ReorderFunctions::ReorderType>
-ReorderFunctions("reorder-functions",
-  cl::desc("reorder and cluster functions (works only with relocations)"),
-  cl::init(bolt::ReorderFunctions::RT_NONE),
-  cl::values(clEnumValN(bolt::ReorderFunctions::RT_NONE,
-      "none",
-      "do not reorder functions"),
-    clEnumValN(bolt::ReorderFunctions::RT_EXEC_COUNT,
-      "exec-count",
-      "order by execution count"),
-    clEnumValN(bolt::ReorderFunctions::RT_HFSORT,
-      "hfsort",
-      "use hfsort algorithm"),
-    clEnumValN(bolt::ReorderFunctions::RT_HFSORT_PLUS,
-      "hfsort+",
-      "use hfsort+ algorithm"),
-    clEnumValN(bolt::ReorderFunctions::RT_PETTIS_HANSEN,
-      "pettis-hansen",
-      "use Pettis-Hansen algorithm"),
-    clEnumValN(bolt::ReorderFunctions::RT_RANDOM,
-      "random",
-      "reorder functions randomly"),
-    clEnumValN(bolt::ReorderFunctions::RT_USER,
-      "user",
-      "use function order specified by -function-order")),
-  cl::ZeroOrMore,
-  cl::cat(BoltOptCategory));
+cl::opt<bolt::ReorderFunctions::ReorderType> ReorderFunctions(
+    "reorder-functions",
+    cl::desc("reorder and cluster functions (works only with relocations)"),
+    cl::init(bolt::ReorderFunctions::RT_NONE),
+    cl::values(clEnumValN(bolt::ReorderFunctions::RT_NONE, "none",
+                          "do not reorder functions"),
+               clEnumValN(bolt::ReorderFunctions::RT_EXEC_COUNT, "exec-count",
+                          "order by execution count"),
+               clEnumValN(bolt::ReorderFunctions::RT_HFSORT, "hfsort",
+                          "use hfsort algorithm"),
+               clEnumValN(bolt::ReorderFunctions::RT_HFSORT_PLUS, "hfsort+",
+                          "use hfsort+ algorithm"),
+               clEnumValN(bolt::ReorderFunctions::RT_CDS, "cds",
+                          "use cache-directed sort"),
+               clEnumValN(bolt::ReorderFunctions::RT_PETTIS_HANSEN,
+                          "pettis-hansen", "use Pettis-Hansen algorithm"),
+               clEnumValN(bolt::ReorderFunctions::RT_RANDOM, "random",
+                          "reorder functions randomly"),
+               clEnumValN(bolt::ReorderFunctions::RT_USER, "user",
+                          "use function order specified by -function-order")),
+    cl::ZeroOrMore, cl::cat(BoltOptCategory));
 
 static cl::opt<bool> ReorderFunctionsUseHotSize(
     "reorder-functions-use-hot-size",
@@ -323,6 +318,34 @@ void ReorderFunctions::runOnFunctions(BinaryContext &BC) {
   case RT_HFSORT_PLUS:
     Clusters = hfsortPlus(Cg);
     break;
+  case RT_CDS: {
+    // It is required that the sum of incoming arc weights is not greater
+    // than the number of samples for every function. Ensuring the call graph
+    // obeys the property before running the algorithm.
+    Cg.adjustArcWeights();
+
+    // Initialize CFG nodes and their data
+    std::vector<uint64_t> FuncSizes;
+    std::vector<uint64_t> FuncCounts;
+    std::vector<codelayout::EdgeCount> CallCounts;
+    std::vector<uint64_t> CallOffsets;
+    for (NodeId F = 0; F < Cg.numNodes(); ++F) {
+      FuncSizes.push_back(Cg.size(F));
+      FuncCounts.push_back(Cg.samples(F));
+      for (NodeId Succ : Cg.successors(F)) {
+        const Arc &Arc = *Cg.findArc(F, Succ);
+        CallCounts.push_back({F, Succ, uint64_t(Arc.weight())});
+        CallOffsets.push_back(uint64_t(Arc.avgCallOffset()));
+      }
+    }
+
+    // Run the layout algorithm.
+    std::vector<uint64_t> Result = codelayout::computeCacheDirectedLayout(
+        FuncSizes, FuncCounts, CallCounts, CallOffsets);
+
+    // Create a single cluster from the computed order of hot functions.
+    Clusters.emplace_back(Cluster(Result, Cg));
+  } break;
   case RT_PETTIS_HANSEN:
     Clusters = pettisAndHansen(Cg);
     break;

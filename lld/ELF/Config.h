@@ -57,6 +57,9 @@ enum class BsymbolicKind { None, NonWeakFunctions, Functions, All };
 // For --build-id.
 enum class BuildIdKind { None, Fast, Md5, Sha1, Hexstring, Uuid };
 
+// For --call-graph-profile-sort={none,hfsort,cdsort}.
+enum class CGProfileSortKind { None, Hfsort, Cdsort };
+
 // For --discard-{all,locals,none}.
 enum class DiscardPolicy { Default, All, Locals, None };
 
@@ -193,7 +196,7 @@ struct Config {
   bool armJ1J2BranchEncoding = false;
   bool asNeeded = false;
   BsymbolicKind bsymbolic = BsymbolicKind::None;
-  bool callGraphProfileSort;
+  CGProfileSortKind callGraphProfileSort;
   bool checkSections;
   bool checkDynamicRelocs;
   llvm::DebugCompressionType compressDebugSections;
@@ -225,6 +228,7 @@ struct Config {
   bool ltoDebugPassManager;
   bool ltoEmitAsm;
   bool ltoUniqueBasicBlockSectionNames;
+  bool ltoValidateAllVtablesHaveTypeInfos;
   bool ltoWholeProgramVisibility;
   bool mergeArmExidx;
   bool mipsN32Abi = false;
@@ -441,6 +445,9 @@ struct Ctx {
   std::atomic<bool> hasTlsIe{false};
   // True if we need to reserve two .got entries for local-dynamic TLS model.
   std::atomic<bool> needsTlsLd{false};
+  // True if all native vtable symbols have corresponding type info symbols
+  // during LTO.
+  bool ltoAllVtablesHaveTypeInfos;
 
   void reset();
 };
