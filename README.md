@@ -33,7 +33,7 @@ You can run the `./build.sh -h` command to view the build options supported by t
 
 ### 2.2 Build with container
 
-The openEuler LLVM project provides a containerized building mode to solve the problems of build failures and binary differences of build products caused by development environment differences. Thanks to the [openEuler container image project](https://gitee.com/openeuler/openeuler-docker-images), the [llvm-build-deps container image](https://gitee.com/openeuler/openeuler-docker-images/tree/master/llvm-build-deps) is created in advance. Developers can enable containerized builds using the `-C` option of the `build.sh` script. For example:
+The openEuler LLVM project provides a containerized building mode to solve the problems of build failures and binary differences of build products caused by development environment differences. Thanks to the [openEuler container image project](https://gitee.com/openeuler/openeuler-docker-images), the [llvm-build-deps container image](https://gitee.com/openeuler/openeuler-docker-images/tree/master/AI/llvm-build-deps) is created in advance. Developers can enable containerized builds using the `-C` option of the `build.sh` script. For example:
 
 ` ` `
 ./build.sh -C -r -b release -X X86 -j 8 // added -C option
