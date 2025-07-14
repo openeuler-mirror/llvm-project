@@ -13,6 +13,8 @@
 #include "llvm/Support/BlockFrequency.h"
 #include "llvm/Support/BranchProbability.h"
 #include <cassert>
+#include "llvm/Support/ScaledNumber.h"
+#include "llvm/Support/raw_ostream.h"
 
 using namespace llvm;
 
@@ -80,4 +82,19 @@ BlockFrequency &BlockFrequency::operator>>=(const unsigned count) {
   // Saturate to 1 if we are 0.
   Frequency |= Frequency == 0;
   return *this;
+}
+
+void llvm::printRelativeBlockFreq(raw_ostream &OS, BlockFrequency EntryFreq,
+                                  BlockFrequency Freq) {
+  if (Freq == BlockFrequency(0)) {
+    OS << "0";
+    return;
+  }
+  if (EntryFreq == BlockFrequency(0)) {
+    OS << "<invalid BFI>";
+    return;
+  }
+  ScaledNumber<uint64_t> Block(Freq.getFrequency(), 0);
+  ScaledNumber<uint64_t> Entry(EntryFreq.getFrequency(), 0);
+  OS << Block / Entry;
 }

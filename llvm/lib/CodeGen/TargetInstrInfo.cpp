@@ -33,6 +33,7 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Target/TargetMachine.h"
 
 using namespace llvm;
 
@@ -429,10 +430,18 @@ bool TargetInstrInfo::produceSameValue(const MachineInstr &MI0,
   return MI0.isIdenticalTo(MI1, MachineInstr::IgnoreVRegDefs);
 }
 
-MachineInstr &TargetInstrInfo::duplicate(MachineBasicBlock &MBB,
-    MachineBasicBlock::iterator InsertBefore, const MachineInstr &Orig) const {
-  assert(!Orig.isNotDuplicable() && "Instruction cannot be duplicated");
+MachineInstr &
+TargetInstrInfo::duplicate(MachineBasicBlock &MBB,
+                           MachineBasicBlock::iterator InsertBefore,
+                           const MachineInstr &Orig) const {
   MachineFunction &MF = *MBB.getParent();
+  // CFI instructions are marked as non-duplicable, because Darwin compact
+  // unwind info emission can't handle multiple prologue setups.
+  assert((!Orig.isNotDuplicable() ||
+          (!MF.getTarget().getTargetTriple().isOSDarwin() &&
+           Orig.isCFIInstruction())) &&
+         "Instruction cannot be duplicated");
+
   return MF.cloneMachineInstrBundle(MBB, InsertBefore, Orig);
 }
 
@@ -1302,6 +1311,26 @@ bool TargetInstrInfo::hasLowDefLatency(const TargetSchedModel &SchedModel,
   unsigned DefClass = DefMI.getDesc().getSchedClass();
   int DefCycle = ItinData->getOperandCycle(DefClass, DefIdx);
   return (DefCycle != -1 && DefCycle <= 1);
+}
+
+bool TargetInstrInfo::isFunctionSafeToSplit(const MachineFunction &MF) const {
+  // TODO: We don't split functions where a section attribute has been set
+  // since the split part may not be placed in a contiguous region. It may also
+  // be more beneficial to augment the linker to ensure contiguous layout of
+  // split functions within the same section as specified by the attribute.
+  if (MF.getFunction().hasSection() ||
+      MF.getFunction().hasFnAttribute("implicit-section-name"))
+    return false;
+
+  // We don't want to proceed further for cold functions
+  // or functions of unknown hotness. Lukewarm functions have no prefix.
+  std::optional<StringRef> SectionPrefix = MF.getFunction().getSectionPrefix();
+  if (SectionPrefix &&
+      (*SectionPrefix == "unlikely" || *SectionPrefix == "unknown")) {
+    return false;
+  }
+
+  return true;
 }
 
 std::optional<ParamLoadedValue>

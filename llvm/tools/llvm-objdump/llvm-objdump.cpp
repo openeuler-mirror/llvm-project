@@ -184,6 +184,120 @@ public:
                        "Mach-O object file displaying tool") {}
 };
 
+struct BBAddrMapLabel {
+  std::string BlockLabel;
+  std::string PGOAnalysis;
+};
+
+// This class represents the BBAddrMap and PGOMap associated with a single
+// function.
+class BBAddrMapFunctionEntry {
+public:
+  BBAddrMapFunctionEntry(BBAddrMap AddrMap, PGOAnalysisMap PGOMap)
+      : AddrMap(std::move(AddrMap)), PGOMap(std::move(PGOMap)) {}
+
+  const BBAddrMap &getAddrMap() const { return AddrMap; }
+
+  // Returns the PGO string associated with the entry of index `PGOBBEntryIndex`
+  // in `PGOMap`. If PrettyPGOAnalysis is true, prints BFI as relative frequency
+  // and BPI as percentage. Otherwise raw values are displayed.
+  std::string constructPGOLabelString(size_t PGOBBEntryIndex,
+                                      bool PrettyPGOAnalysis) const {
+    if (!PGOMap.FeatEnable.hasPGOAnalysis())
+      return "";
+    std::string PGOString;
+    raw_string_ostream PGOSS(PGOString);
+
+    PGOSS << " (";
+    if (PGOMap.FeatEnable.FuncEntryCount && PGOBBEntryIndex == 0) {
+      PGOSS << "Entry count: " << Twine(PGOMap.FuncEntryCount);
+      if (PGOMap.FeatEnable.hasPGOAnalysisBBData()) {
+        PGOSS << ", ";
+      }
+    }
+
+    if (PGOMap.FeatEnable.hasPGOAnalysisBBData()) {
+
+      assert(PGOBBEntryIndex < PGOMap.BBEntries.size() &&
+             "Expected PGOAnalysisMap and BBAddrMap to have the same entries");
+      const PGOAnalysisMap::PGOBBEntry &PGOBBEntry =
+          PGOMap.BBEntries[PGOBBEntryIndex];
+
+      if (PGOMap.FeatEnable.BBFreq) {
+        PGOSS << "Frequency: ";
+        if (PrettyPGOAnalysis)
+          printRelativeBlockFreq(PGOSS, PGOMap.BBEntries.front().BlockFreq,
+                                 PGOBBEntry.BlockFreq);
+        else
+          PGOSS << Twine(PGOBBEntry.BlockFreq.getFrequency());
+        if (PGOMap.FeatEnable.BrProb && PGOBBEntry.Successors.size() > 0) {
+          PGOSS << ", ";
+        }
+      }
+      if (PGOMap.FeatEnable.BrProb && PGOBBEntry.Successors.size() > 0) {
+        PGOSS << "Successors: ";
+        interleaveComma(
+            PGOBBEntry.Successors, PGOSS,
+            [&](const PGOAnalysisMap::PGOBBEntry::SuccessorEntry &SE) {
+              PGOSS << "BB" << SE.ID << ":";
+              if (PrettyPGOAnalysis)
+                PGOSS << "[" << SE.Prob << "]";
+              else
+                PGOSS.write_hex(SE.Prob.getNumerator());
+            });
+      }
+    }
+    PGOSS << ")";
+
+    return PGOString;
+  }
+
+private:
+  const BBAddrMap AddrMap;
+  const PGOAnalysisMap PGOMap;
+};
+
+// This class represents the BBAddrMap and PGOMap of potentially multiple
+// functions in a section.
+class BBAddrMapInfo {
+public:
+  void clear() {
+    FunctionAddrToMap.clear();
+    RangeBaseAddrToFunctionAddr.clear();
+  }
+
+  bool empty() const { return FunctionAddrToMap.empty(); }
+
+  void AddFunctionEntry(BBAddrMap AddrMap, PGOAnalysisMap PGOMap) {
+    uint64_t FunctionAddr = AddrMap.getFunctionAddress();
+    for (size_t I = 1; I < AddrMap.BBRanges.size(); ++I)
+      RangeBaseAddrToFunctionAddr.emplace(AddrMap.BBRanges[I].BaseAddress,
+                                          FunctionAddr);
+    [[maybe_unused]] auto R = FunctionAddrToMap.try_emplace(
+        FunctionAddr, std::move(AddrMap), std::move(PGOMap));
+    assert(R.second && "duplicate function address");
+  }
+
+  // Returns the BBAddrMap entry for the function associated with `BaseAddress`.
+  // `BaseAddress` could be the function address or the address of a range
+  // associated with that function. Returns `nullptr` if `BaseAddress` is not
+  // mapped to any entry.
+  const BBAddrMapFunctionEntry *getEntryForAddress(uint64_t BaseAddress) const {
+    uint64_t FunctionAddr = BaseAddress;
+    auto S = RangeBaseAddrToFunctionAddr.find(BaseAddress);
+    if (S != RangeBaseAddrToFunctionAddr.end())
+      FunctionAddr = S->second;
+    auto R = FunctionAddrToMap.find(FunctionAddr);
+    if (R == FunctionAddrToMap.end())
+      return nullptr;
+    return &R->second;
+  }
+
+private:
+  std::unordered_map<uint64_t, BBAddrMapFunctionEntry> FunctionAddrToMap;
+  std::unordered_map<uint64_t, uint64_t> RangeBaseAddrToFunctionAddr;
+};
+
 } // namespace
 
 #define DEBUG_TYPE "objdump"
@@ -229,6 +343,7 @@ static bool HasStopAddressFlag;
 
 bool objdump::SymbolTable;
 static bool SymbolizeOperands;
+static bool PrettyPGOAnalysisMap;
 static bool DynamicSymbolTable;
 std::string objdump::TripleName;
 bool objdump::UnwindInfo;
@@ -1117,23 +1232,38 @@ static SymbolInfoTy createDummySymbolInfo(const ObjectFile &Obj,
     return SymbolInfoTy(Addr, Name, Type);
 }
 
-static void
-collectBBAddrMapLabels(const std::unordered_map<uint64_t, BBAddrMap> &AddrToBBAddrMap,
-                       uint64_t SectionAddr, uint64_t Start, uint64_t End,
-                       std::unordered_map<uint64_t, std::vector<std::string>> &Labels) {
-  if (AddrToBBAddrMap.empty())
+static void collectBBAddrMapLabels(
+    const BBAddrMapInfo &FullAddrMap, uint64_t SectionAddr, uint64_t Start,
+    uint64_t End,
+    std::unordered_map<uint64_t, std::vector<BBAddrMapLabel>> &Labels) {
+  if (FullAddrMap.empty())
     return;
   Labels.clear();
   uint64_t StartAddress = SectionAddr + Start;
   uint64_t EndAddress = SectionAddr + End;
-  auto Iter = AddrToBBAddrMap.find(StartAddress);
-  if (Iter == AddrToBBAddrMap.end())
+  const BBAddrMapFunctionEntry *FunctionMap =
+      FullAddrMap.getEntryForAddress(StartAddress);
+  if (!FunctionMap)
     return;
-  for (unsigned I = 0, Size = Iter->second.BBEntries.size(); I < Size; ++I) {
-    uint64_t BBAddress = Iter->second.BBEntries[I].Offset + Iter->second.Addr;
+  std::optional<size_t> BBRangeIndex =
+      FunctionMap->getAddrMap().getBBRangeIndexForBaseAddress(StartAddress);
+  if (!BBRangeIndex)
+    return;
+  size_t NumBBEntriesBeforeRange = 0;
+  for (size_t I = 0; I < *BBRangeIndex; ++I)
+    NumBBEntriesBeforeRange +=
+        FunctionMap->getAddrMap().BBRanges[I].BBEntries.size();
+  const auto &BBRange = FunctionMap->getAddrMap().BBRanges[*BBRangeIndex];
+  for (size_t I = 0; I < BBRange.BBEntries.size(); ++I) {
+    const BBAddrMap::BBEntry &BBEntry = BBRange.BBEntries[I];
+    uint64_t BBAddress = BBEntry.Offset + BBRange.BaseAddress;
     if (BBAddress >= EndAddress)
       continue;
-    Labels[BBAddress].push_back(("BB" + Twine(I)).str());
+
+    std::string LabelString = ("BB" + Twine(BBEntry.ID)).str();
+    Labels[BBAddress].push_back(
+        {LabelString, FunctionMap->constructPGOLabelString(
+                          NumBBEntriesBeforeRange + I, PrettyPGOAnalysisMap)});
   }
 }
 
@@ -1433,17 +1563,22 @@ static void disassembleObject(const Target *TheTarget, ObjectFile &Obj,
 
   LLVM_DEBUG(LVP.dump());
 
-  std::unordered_map<uint64_t, BBAddrMap> AddrToBBAddrMap;
+  BBAddrMapInfo FullAddrMap;
   auto ReadBBAddrMap = [&](std::optional<unsigned> SectionIndex =
                                std::nullopt) {
-    AddrToBBAddrMap.clear();
+    FullAddrMap.clear();
     if (const auto *Elf = dyn_cast<ELFObjectFileBase>(&Obj)) {
-      auto BBAddrMapsOrErr = Elf->readBBAddrMap(SectionIndex);
-      if (!BBAddrMapsOrErr)
+      std::vector<PGOAnalysisMap> PGOAnalyses;
+      auto BBAddrMapsOrErr = Elf->readBBAddrMap(SectionIndex, &PGOAnalyses);
+      if (!BBAddrMapsOrErr) {
         reportWarning(toString(BBAddrMapsOrErr.takeError()), Obj.getFileName());
-      for (auto &FunctionBBAddrMap : *BBAddrMapsOrErr)
-        AddrToBBAddrMap.emplace(FunctionBBAddrMap.Addr,
-                                std::move(FunctionBBAddrMap));
+        return;
+      }
+      for (auto &&[FunctionBBAddrMap, FunctionPGOAnalysis] :
+           zip_equal(*std::move(BBAddrMapsOrErr), std::move(PGOAnalyses))) {
+        FullAddrMap.AddFunctionEntry(std::move(FunctionBBAddrMap),
+                                     std::move(FunctionPGOAnalysis));
+      }
     }
   };
 
@@ -1739,11 +1874,11 @@ static void disassembleObject(const Target *TheTarget, ObjectFile &Obj,
       formatted_raw_ostream FOS(outs());
 
       std::unordered_map<uint64_t, std::string> AllLabels;
-      std::unordered_map<uint64_t, std::vector<std::string>> BBAddrMapLabels;
+      std::unordered_map<uint64_t, std::vector<BBAddrMapLabel>> BBAddrMapLabels;
       if (SymbolizeOperands) {
         collectLocalBranchTargets(Bytes, MIA, DisAsm, IP, PrimarySTI,
                                   SectionAddr, Index, End, AllLabels);
-        collectBBAddrMapLabels(AddrToBBAddrMap, SectionAddr, Index, End,
+        collectBBAddrMapLabels(FullAddrMap, SectionAddr, Index, End,
                                BBAddrMapLabels);
       }
 
@@ -1791,8 +1926,9 @@ static void disassembleObject(const Target *TheTarget, ObjectFile &Obj,
           // Print local label if there's any.
           auto Iter1 = BBAddrMapLabels.find(SectionAddr + Index);
           if (Iter1 != BBAddrMapLabels.end()) {
-            for (StringRef Label : Iter1->second)
-              FOS << "<" << Label << ">:\n";
+            for (const auto &BBLabel : Iter1->second)
+              FOS << "<" << BBLabel.BlockLabel << ">" << BBLabel.PGOAnalysis
+                  << ":\n";
           } else {
             auto Iter2 = AllLabels.find(SectionAddr + Index);
             if (Iter2 != AllLabels.end())
@@ -1917,7 +2053,7 @@ static void disassembleObject(const Target *TheTarget, ObjectFile &Obj,
                   // the target address.
                   *TargetOS << TargetName;
                 } else if (BBAddrMapLabelAvailable) {
-                  *TargetOS << BBAddrMapLabels[Target].front();
+                  *TargetOS << BBAddrMapLabels[Target].front().BlockLabel;
                 } else if (LabelAvailable) {
                   *TargetOS << AllLabels[Target];
                 } else {
@@ -1927,7 +2063,8 @@ static void disassembleObject(const Target *TheTarget, ObjectFile &Obj,
                 }
                 *TargetOS << ">";
               } else if (BBAddrMapLabelAvailable) {
-                *TargetOS << " <" << BBAddrMapLabels[Target].front() << ">";
+                *TargetOS << " <" << BBAddrMapLabels[Target].front().BlockLabel
+                          << ">";
               } else if (LabelAvailable) {
                 *TargetOS << " <" << AllLabels[Target] << ">";
               }
@@ -3065,6 +3202,10 @@ static void parseObjdumpOptions(const llvm::opt::InputArgList &InputArgs) {
   HasStopAddressFlag = InputArgs.hasArg(OBJDUMP_stop_address_EQ);
   SymbolTable = InputArgs.hasArg(OBJDUMP_syms);
   SymbolizeOperands = InputArgs.hasArg(OBJDUMP_symbolize_operands);
+  PrettyPGOAnalysisMap = InputArgs.hasArg(OBJDUMP_pretty_pgo_analysis_map);
+  if (PrettyPGOAnalysisMap && !SymbolizeOperands)
+    reportCmdLineWarning("--symbolize-operands must be enabled for "
+                         "--pretty-pgo-analysis-map to have an effect");
   DynamicSymbolTable = InputArgs.hasArg(OBJDUMP_dynamic_syms);
   TripleName = InputArgs.getLastArgValue(OBJDUMP_triple_EQ).str();
   UnwindInfo = InputArgs.hasArg(OBJDUMP_unwind_info);

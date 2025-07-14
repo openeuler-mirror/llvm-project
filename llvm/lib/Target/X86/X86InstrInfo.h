@@ -455,6 +455,9 @@ public:
                                int64_t Offset2,
                                unsigned NumLoads) const override;
 
+  void insertNoop(MachineBasicBlock &MBB,
+                  MachineBasicBlock::iterator MI) const override;
+
   MCInst getNop() const override;
 
   bool

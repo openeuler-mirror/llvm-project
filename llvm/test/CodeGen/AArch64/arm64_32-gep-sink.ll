@@ -1,4 +1,4 @@
-; RUN: opt -codegenprepare -mtriple=arm64_32-apple-ios %s -S -o - | FileCheck %s
+; RUN: opt -passes='require<profile-summary>,function(codegenprepare)' -mtriple=arm64_32-apple-ios %s -S -o - | FileCheck %s
 
 define void @test_simple_sink(ptr %base, i64 %offset) {
 ; CHECK-LABEL: @test_simple_sink

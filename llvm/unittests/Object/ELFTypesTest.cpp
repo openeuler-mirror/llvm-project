@@ -6,6 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 #include "llvm/Object/ELFTypes.h"
+#include "llvm/Testing/Support/Error.h"
 #include "gtest/gtest.h"
 #include <iostream>
 
@@ -60,4 +61,75 @@ TEST(ELFTypesTest, NoteTest) {
   auto Note3 =
       TestData.getElfNote("AMD", ELF::NT_AMDGPU_METADATA, ArrayRef<uint8_t>());
   EXPECT_EQ(Note3.getDescAsStringRef(), StringRef(""));
+}
+
+TEST(ELFTypesTest, BBEntryMetadataEncodingTest) {
+  const std::array<BBAddrMap::BBEntry::Metadata, 7> Decoded = {
+      {{false, false, false, false, false},
+       {true, false, false, false, false},
+       {false, true, false, false, false},
+       {false, false, true, false, false},
+       {false, false, false, true, false},
+       {false, false, false, false, true},
+       {true, true, true, true, true}}};
+  const std::array<uint32_t, 7> Encoded = {{0, 1, 2, 4, 8, 16, 31}};
+  for (size_t i = 0; i < Decoded.size(); ++i)
+    EXPECT_EQ(Decoded[i].encode(), Encoded[i]);
+  for (size_t i = 0; i < Encoded.size(); ++i) {
+    Expected<BBAddrMap::BBEntry::Metadata> MetadataOrError =
+        BBAddrMap::BBEntry::Metadata::decode(Encoded[i]);
+    ASSERT_THAT_EXPECTED(MetadataOrError, Succeeded());
+    EXPECT_EQ(*MetadataOrError, Decoded[i]);
+  }
+}
+
+TEST(ELFTypesTest, BBEntryMetadataInvalidEncodingTest) {
+  const std::array<std::string, 2> Errors = {
+      "invalid encoding for BBEntry::Metadata: 0xffff",
+      "invalid encoding for BBEntry::Metadata: 0x100001"};
+  const std::array<uint32_t, 2> Values = {{0xFFFF, 0x100001}};
+  for (size_t i = 0; i < Values.size(); ++i) {
+    EXPECT_THAT_ERROR(
+        BBAddrMap::BBEntry::Metadata::decode(Values[i]).takeError(),
+        FailedWithMessage(Errors[i]));
+  }
+}
+
+static_assert(
+    std::is_same_v<decltype(PGOAnalysisMap::PGOBBEntry::SuccessorEntry::ID),
+                   decltype(BBAddrMap::BBEntry::ID)>,
+    "PGOAnalysisMap should use the same type for basic block ID as BBAddrMap");
+
+TEST(ELFTypesTest, BBAddrMapFeaturesEncodingTest) {
+  const std::array<BBAddrMap::Features, 9> Decoded = {
+      {{false, false, false, false},
+       {true, false, false, false},
+       {false, true, false, false},
+       {false, false, true, false},
+       {false, false, false, true},
+       {true, true, false, false},
+       {false, true, true, false},
+       {false, true, true, true},
+       {true, true, true, true}}};
+  const std::array<uint8_t, 9> Encoded = {
+      {0b0000, 0b0001, 0b0010, 0b0100, 0b1000, 0b0011, 0b0110, 0b1110, 0b1111}};
+  for (const auto &[Feat, EncodedVal] : llvm::zip(Decoded, Encoded))
+    EXPECT_EQ(Feat.encode(), EncodedVal);
+  for (const auto &[Feat, EncodedVal] : llvm::zip(Decoded, Encoded)) {
+    Expected<BBAddrMap::Features> FeatEnableOrError =
+        BBAddrMap::Features::decode(EncodedVal);
+    ASSERT_THAT_EXPECTED(FeatEnableOrError, Succeeded());
+    EXPECT_EQ(*FeatEnableOrError, Feat);
+  }
+}
+
+TEST(ELFTypesTest, BBAddrMapFeaturesInvalidEncodingTest) {
+  const std::array<std::string, 2> Errors = {
+      "invalid encoding for BBAddrMap::Features: 0x10",
+      "invalid encoding for BBAddrMap::Features: 0xff"};
+  const std::array<uint8_t, 2> Values = {{0b10000, 0b1111'1111}};
+  for (const auto &[Val, Error] : llvm::zip(Values, Errors)) {
+    EXPECT_THAT_ERROR(BBAddrMap::Features::decode(Val).takeError(),
+                      FailedWithMessage(Error));
+  }
 }

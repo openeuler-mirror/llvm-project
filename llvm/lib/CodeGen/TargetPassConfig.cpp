@@ -252,6 +252,11 @@ static cl::opt<bool> DisableSelectOptimize(
     "disable-select-optimize", cl::init(true), cl::Hidden,
     cl::desc("Disable the select-optimization pass from running"));
 
+/// Enable garbage-collecting empty basic blocks.
+static cl::opt<bool>
+    GCEmptyBlocks("gc-empty-basic-blocks", cl::init(false), cl::Hidden,
+                  cl::desc("Enable garbage-collecting empty basic blocks"));
+
 /// Allow standard passes to be disabled by command line options. This supports
 /// simple binary flags that either suppress the pass or do nothing.
 /// i.e. -disable-mypass=false has no effect.
@@ -966,7 +971,7 @@ void TargetPassConfig::addPassesToHandleExceptions() {
 /// before exception handling preparation passes.
 void TargetPassConfig::addCodeGenPrepare() {
   if (getOptLevel() != CodeGenOpt::None && !DisableCGP)
-    addPass(createCodeGenPreparePass());
+    addPass(createCodeGenPrepareLegacyPass());
 }
 
 /// Add common passes that perform LLVM IR to IR transforms in preparation for
@@ -1253,20 +1258,30 @@ void TargetPassConfig::addMachinePasses() {
       addPass(createMachineOutlinerPass(RunOnAllFunctions));
   }
 
+  if (GCEmptyBlocks)
+    addPass(llvm::createGCEmptyBasicBlocksPass());
+
+  bool NeedsBBSections =
+      TM->getBBSectionsType() != llvm::BasicBlockSection::None;
   // Machine function splitter uses the basic block sections feature. Both
-  // cannot be enabled at the same time. Basic block sections takes precedence.
-  // FIXME: In principle, BasicBlockSection::Labels and splitting can used
-  // together. Update this check once we have addressed any issues.
-  if (TM->getBBSectionsType() != llvm::BasicBlockSection::None) {
-    if (TM->getBBSectionsType() == llvm::BasicBlockSection::List) {
-      addPass(llvm::createBasicBlockSectionsProfileReaderPass(
-          TM->getBBSectionsFuncListBuf()));
-    }
-    addPass(llvm::createBasicBlockSectionsPass());
-  } else if (TM->Options.EnableMachineFunctionSplitter ||
-             EnableMachineFunctionSplitter) {
+  // cannot be enabled at the same time. We do not apply machine function
+  // splitter if -basic-block-sections is requested.
+  if (!NeedsBBSections && (TM->Options.EnableMachineFunctionSplitter ||
+                           EnableMachineFunctionSplitter)) {
     addPass(createMachineFunctionSplitterPass());
   }
+  // We run the BasicBlockSections pass if either we need BB sections or BB
+  // address map (or both).
+  if (NeedsBBSections || TM->Options.BBAddrMap) {
+    if (TM->getBBSectionsType() == llvm::BasicBlockSection::List) {
+      addPass(llvm::createBasicBlockSectionsProfileReaderWrapperPass(
+          TM->getBBSectionsFuncListBuf()));
+      addPass(llvm::createBasicBlockPathCloningPass());
+    }
+    addPass(llvm::createBasicBlockSectionsPass());
+  }
+
+  addPostBBSections();
 
   if (!DisableCFIFixup && TM->Options.EnableCFIFixup)
     addPass(createCFIFixup());

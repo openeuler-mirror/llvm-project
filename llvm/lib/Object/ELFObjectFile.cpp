@@ -674,30 +674,58 @@ ELFObjectFileBase::getPltAddresses() const {
 
 template <class ELFT>
 Expected<std::vector<BBAddrMap>> static readBBAddrMapImpl(
-    const ELFFile<ELFT> &EF, std::optional<unsigned> TextSectionIndex) {
+    const ELFFile<ELFT> &EF, std::optional<unsigned> TextSectionIndex,
+    std::vector<PGOAnalysisMap> *PGOAnalyses) {
   using Elf_Shdr = typename ELFT::Shdr;
+  bool IsRelocatable = EF.getHeader().e_type == ELF::ET_REL;
   std::vector<BBAddrMap> BBAddrMaps;
+  if (PGOAnalyses)
+    PGOAnalyses->clear();
+
   const auto &Sections = cantFail(EF.sections());
-  for (const Elf_Shdr &Sec : Sections) {
+  auto IsMatch = [&](const Elf_Shdr &Sec) -> Expected<bool> {
     if (Sec.sh_type != ELF::SHT_LLVM_BB_ADDR_MAP &&
         Sec.sh_type != ELF::SHT_LLVM_BB_ADDR_MAP_V0)
-      continue;
-    if (TextSectionIndex) {
-      Expected<const Elf_Shdr *> TextSecOrErr = EF.getSection(Sec.sh_link);
-      if (!TextSecOrErr)
-        return createError("unable to get the linked-to section for " +
-                           describe(EF, Sec) + ": " +
-                           toString(TextSecOrErr.takeError()));
-      if (*TextSectionIndex != std::distance(Sections.begin(), *TextSecOrErr))
-        continue;
-    }
-    Expected<std::vector<BBAddrMap>> BBAddrMapOrErr = EF.decodeBBAddrMap(Sec);
-    if (!BBAddrMapOrErr)
-      return createError("unable to read " + describe(EF, Sec) + ": " +
+      return false;
+    if (!TextSectionIndex)
+      return true;
+    Expected<const Elf_Shdr *> TextSecOrErr = EF.getSection(Sec.sh_link);
+    if (!TextSecOrErr)
+      return createError("unable to get the linked-to section for " +
+                         describe(EF, Sec) + ": " +
+                         toString(TextSecOrErr.takeError()));
+    assert(*TextSecOrErr >= Sections.begin() &&
+           "Text section pointer outside of bounds");
+    if (*TextSectionIndex !=
+        (unsigned)std::distance(Sections.begin(), *TextSecOrErr))
+      return false;
+    return true;
+  };
+
+  Expected<MapVector<const Elf_Shdr *, const Elf_Shdr *>> SectionRelocMapOrErr =
+      EF.getSectionAndRelocations(IsMatch);
+  if (!SectionRelocMapOrErr)
+    return SectionRelocMapOrErr.takeError();
+
+  for (auto const &[Sec, RelocSec] : *SectionRelocMapOrErr) {
+    if (IsRelocatable && !RelocSec)
+      return createError("unable to get relocation section for " +
+                         describe(EF, *Sec));
+    Expected<std::vector<BBAddrMap>> BBAddrMapOrErr =
+        EF.decodeBBAddrMap(*Sec, RelocSec, PGOAnalyses);
+    if (!BBAddrMapOrErr) {
+      if (PGOAnalyses)
+        PGOAnalyses->clear();
+      return createError("unable to read " + describe(EF, *Sec) + ": " +
                          toString(BBAddrMapOrErr.takeError()));
+    }
     std::move(BBAddrMapOrErr->begin(), BBAddrMapOrErr->end(),
               std::back_inserter(BBAddrMaps));
   }
+  if (PGOAnalyses)
+    assert(PGOAnalyses->size() == BBAddrMaps.size() &&
+           "The same number of BBAddrMaps and PGOAnalysisMaps should be "
+           "returned when PGO information is requested");
   return BBAddrMaps;
 }
 
@@ -771,15 +799,14 @@ ELFObjectFileBase::readDynsymVersions() const {
 }
 
 Expected<std::vector<BBAddrMap>> ELFObjectFileBase::readBBAddrMap(
-    std::optional<unsigned> TextSectionIndex) const {
+    std::optional<unsigned> TextSectionIndex,
+    std::vector<PGOAnalysisMap> *PGOAnalyses) const {
   if (const auto *Obj = dyn_cast<ELF32LEObjectFile>(this))
-    return readBBAddrMapImpl(Obj->getELFFile(), TextSectionIndex);
+    return readBBAddrMapImpl(Obj->getELFFile(), TextSectionIndex, PGOAnalyses);
   if (const auto *Obj = dyn_cast<ELF64LEObjectFile>(this))
-    return readBBAddrMapImpl(Obj->getELFFile(), TextSectionIndex);
+    return readBBAddrMapImpl(Obj->getELFFile(), TextSectionIndex, PGOAnalyses);
   if (const auto *Obj = dyn_cast<ELF32BEObjectFile>(this))
-    return readBBAddrMapImpl(Obj->getELFFile(), TextSectionIndex);
-  if (const auto *Obj = cast<ELF64BEObjectFile>(this))
-    return readBBAddrMapImpl(Obj->getELFFile(), TextSectionIndex);
-  else
-    llvm_unreachable("Unsupported binary format");
+    return readBBAddrMapImpl(Obj->getELFFile(), TextSectionIndex, PGOAnalyses);
+  return readBBAddrMapImpl(cast<ELF64BEObjectFile>(this)->getELFFile(),
+                           TextSectionIndex, PGOAnalyses);
 }
