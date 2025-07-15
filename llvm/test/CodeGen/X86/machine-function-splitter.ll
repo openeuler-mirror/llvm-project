@@ -386,7 +386,7 @@ define void @foo16(i1 zeroext %0) nounwind !prof !14 !section_prefix !15 {
 ; MFS-O0:                     .section        .text.split.foo16
 ; MFS-O0-NEXT:                foo16.cold
   %2 = call i32 @baz()
-  br i1 false, label %3, label %5, !prof !25
+  br i1 false, label %3, label %5, !prof !24
 
 3:                                                ; preds = %1
   %4 = call i32 @bar()
@@ -445,7 +445,7 @@ define i32 @foo18(i32 %in) !prof !14 !section_prefix !15 {
     i32 1, label %hot2
     i32 2, label %cold1
     i32 3, label %cold2
-  ], !prof !28
+  ], !prof !25
 
 common.ret:                                       ; preds = %0
   ret i32 0
@@ -473,10 +473,10 @@ define i32 @foo19(i32 %in) !prof !14 !section_prefix !15 {
 ; MFS-DEFAULTS-LABEL:        foo19
 ; MFS-DEFAULTS:              .section        .text.split.foo19
 ; MFS-DEFAULTS-NEXT:         foo19.cold:
-; MFS-DEFAULTS-X86:            .LJTI18_0
-; MFS-DEFAULTS-AARCH64-NOT:    .LJTI18_0
+; MFS-DEFAULTS-X86:            .LJTI16_0
+; MFS-DEFAULTS-AARCH64-NOT:    .LJTI16_0
 ; MFS-DEFAULTS:              .section        .rodata
-; MFS-DEFAULTS:                .LJTI18_0
+; MFS-DEFAULTS:                .LJTI16_0
   %cmp = icmp sgt i32 %in, 3
   br i1 %cmp, label %hot, label %cold_switch, !prof !17
 
@@ -489,7 +489,7 @@ cold_switch:                                      ; preds = %0
     i32 1, label %hot2
     i32 2, label %cold1
     i32 3, label %cold2
-  ], !prof !28
+  ], !prof !25
 
 common.ret:                                       ; preds = %0
   ret i32 0
@@ -574,4 +574,5 @@ attributes #0 = { "implicit-section-name"="nosplit" }
 !21 = !{!"branch_weights", i32 6000, i32 4000}
 !22 = !{!"branch_weights", i32 80, i32 9920}
 !23 = !{!"function_entry_count", i64 7}
-!24 = !{!"branch_weights", i32 0, i32 4000, i32 4000, i32 0, i32 0}
+!24 = !{!"branch_weights", i32 0, i32 700}
+!25 = !{!"branch_weights", i32 0, i32 4000, i32 4000, i32 0, i32 0}
