@@ -30,7 +30,7 @@ python3-setuptools python-wheel texinfo binutils-devel libatomic
 
 ### 2.2、容器化构建
 
-为了解决由于开发环境差异导致的构建失败和构建产物二进制差异问题，openEuler LLVM项目提供了容器化构建方法。得益于[openEuler容器镜像项目](https://gitee.com/openeuler/openeuler-docker-images)，提前制作了[llvm-build-deps容器镜像](https://gitee.com/openeuler/openeuler-docker-images/tree/master/llvm-build-deps)。开发者可以通过`build.sh`脚本的`-C`选项启用容器化构建，例如：
+为了解决由于开发环境差异导致的构建失败和构建产物二进制差异问题，openEuler LLVM项目提供了容器化构建方法。得益于[openEuler容器镜像项目](https://gitee.com/openeuler/openeuler-docker-images)，提前制作了[llvm-build-deps容器镜像](https://gitee.com/openeuler/openeuler-docker-images/tree/master/AI/llvm-build-deps)。开发者可以通过`build.sh`脚本的`-C`选项启用容器化构建，例如：
 ```
 ./build.sh -C -r -b release -X X86 -j 8   // 添加了-C选项
 ```
