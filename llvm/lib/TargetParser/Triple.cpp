@@ -199,7 +199,7 @@ StringRef Triple::getVendorTypeName(VendorType Kind) {
   case PC: return "pc";
   case SCEI: return "scei";
   case SUSE: return "suse";
-#ifdef BUILD_FOR_EMBEDDED
+#if defined(BUILD_FOR_EMBEDDED) || defined(BUILD_FOR_OPENEULER)
   case openEuler: return "openeuler";
 #endif
   }
@@ -580,6 +580,8 @@ static Triple::VendorType parseVendor(StringRef VendorName) {
     .Case("oe", Triple::OpenEmbedded)
 #ifdef BUILD_FOR_EMBEDDED
     .Case("openeulersdk", Triple::OpenEmbedded)
+#endif
+#if defined(BUILD_FOR_EMBEDDED) || defined(BUILD_FOR_OPENEULER)
     .Case("openeuler", Triple::openEuler)
 #endif
     .Default(Triple::UnknownVendor);

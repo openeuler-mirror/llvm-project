@@ -487,6 +487,14 @@ TEST(TripleTest, ParsedIDs) {
   EXPECT_EQ(Triple::Linux, T.getOS());
   EXPECT_EQ(Triple::GNU, T.getEnvironment());
 
+#ifdef BUILD_FOR_OPENEULER
+  T = Triple("loongarch64-openeuler-linux-gnu");
+  EXPECT_EQ(Triple::loongarch64, T.getArch());
+  EXPECT_EQ(Triple::openEuler, T.getVendor());
+  EXPECT_EQ(Triple::Linux, T.getOS());
+  EXPECT_EQ(Triple::GNU, T.getEnvironment());
+#endif
+
   T = Triple("loongarch64-unknown-linux-gnuf32");
   EXPECT_EQ(Triple::loongarch64, T.getArch());
   EXPECT_EQ(Triple::UnknownVendor, T.getVendor());
@@ -534,6 +542,14 @@ TEST(TripleTest, ParsedIDs) {
   EXPECT_EQ(Triple::SUSE, T.getVendor());
   EXPECT_EQ(Triple::Linux, T.getOS());
   EXPECT_EQ(Triple::UnknownEnvironment, T.getEnvironment());
+
+#ifdef BUILD_FOR_OPENEULER
+  T = Triple("riscv64-openeuler-linux");
+  EXPECT_EQ(Triple::riscv64, T.getArch());
+  EXPECT_EQ(Triple::openEuler, T.getVendor());
+  EXPECT_EQ(Triple::Linux, T.getOS());
+  EXPECT_EQ(Triple::UnknownEnvironment, T.getEnvironment());
+#endif
 
   T = Triple("armv7hl-suse-linux-gnueabi");
   EXPECT_EQ(Triple::arm, T.getArch());

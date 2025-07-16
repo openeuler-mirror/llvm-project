@@ -186,7 +186,7 @@ public:
     AMD,
     Mesa,
     SUSE,
-#ifdef BUILD_FOR_EMBEDDED
+#if defined(BUILD_FOR_EMBEDDED) || defined(BUILD_FOR_OPENEULER)
     openEuler,
 #endif
     OpenEmbedded,
