@@ -26,6 +26,7 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/Format.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Target/TargetMachine.h"
 #include <cassert>
 #include <cstdint>
 #include <iterator>
@@ -84,6 +85,7 @@ class BranchRelaxation : public MachineFunctionPass {
   MachineFunction *MF;
   const TargetRegisterInfo *TRI;
   const TargetInstrInfo *TII;
+  const TargetMachine *TM;
 
   bool relaxBranchInstructions();
   void scanFunction();
@@ -219,6 +221,11 @@ BranchRelaxation::createNewBlockAfter(MachineBasicBlock &OrigMBB,
   MachineBasicBlock *NewBB = MF->CreateMachineBasicBlock(BB);
   MF->insert(++OrigMBB.getIterator(), NewBB);
 
+  // Place the new block in the same section as OrigBB
+  NewBB->setSectionID(OrigMBB.getSectionID());
+  NewBB->setIsEndSection(OrigMBB.isEndSection());
+  OrigMBB.setIsEndSection(false);
+
   // Insert an entry into BlockInfo to align it properly with the block numbers.
   BlockInfo.insert(BlockInfo.begin() + NewBB->getNumber(), BasicBlockInfo());
 
@@ -228,14 +235,20 @@ BranchRelaxation::createNewBlockAfter(MachineBasicBlock &OrigMBB,
 /// Split the basic block containing MI into two blocks, which are joined by
 /// an unconditional branch.  Update data structures and renumber blocks to
 /// account for this change and returns the newly created block.
-MachineBasicBlock *BranchRelaxation::splitBlockBeforeInstr(MachineInstr &MI,
-                                                           MachineBasicBlock *DestBB) {
+MachineBasicBlock *
+BranchRelaxation::splitBlockBeforeInstr(MachineInstr &MI,
+                                        MachineBasicBlock *DestBB) {
   MachineBasicBlock *OrigBB = MI.getParent();
 
   // Create a new MBB for the code after the OrigBB.
   MachineBasicBlock *NewBB =
       MF->CreateMachineBasicBlock(OrigBB->getBasicBlock());
   MF->insert(++OrigBB->getIterator(), NewBB);
+
+  // Place the new block in the same section as OrigBB.
+  NewBB->setSectionID(OrigBB->getSectionID());
+  NewBB->setIsEndSection(OrigBB->isEndSection());
+  OrigBB->setIsEndSection(false);
 
   // Splice the instructions starting with MI over to NewBB.
   NewBB->splice(NewBB->end(), OrigBB, MI.getIterator(), OrigBB->end());
@@ -287,7 +300,12 @@ bool BranchRelaxation::isBlockInRange(
   int64_t BrOffset = getInstrOffset(MI);
   int64_t DestOffset = BlockInfo[DestBB.getNumber()].Offset;
 
-  if (TII->isBranchOffsetInRange(MI.getOpcode(), DestOffset - BrOffset))
+  const MachineBasicBlock *SrcBB = MI.getParent();
+
+  if (TII->isBranchOffsetInRange(MI.getOpcode(),
+                                 SrcBB->getSectionID() != DestBB.getSectionID()
+                                     ? TM->getMaxCodeSize()
+                                     : DestOffset - BrOffset))
     return true;
 
   LLVM_DEBUG(dbgs() << "Out of range branch to destination "
@@ -449,7 +467,10 @@ bool BranchRelaxation::fixupUnconditionalBranch(MachineInstr &MI) {
   int64_t DestOffset = BlockInfo[DestBB->getNumber()].Offset;
   int64_t SrcOffset = getInstrOffset(MI);
 
-  assert(!TII->isBranchOffsetInRange(MI.getOpcode(), DestOffset - SrcOffset));
+  assert(!TII->isBranchOffsetInRange(
+      MI.getOpcode(), MBB->getSectionID() != DestBB->getSectionID()
+                          ? TM->getMaxCodeSize()
+                          : DestOffset - SrcOffset));
 
   BlockInfo[MBB->getNumber()].Size -= OldBrSize;
 
@@ -479,9 +500,15 @@ bool BranchRelaxation::fixupUnconditionalBranch(MachineInstr &MI) {
   // be erased.
   MachineBasicBlock *RestoreBB = createNewBlockAfter(MF->back(),
                                                      DestBB->getBasicBlock());
+  std::prev(RestoreBB->getIterator())
+      ->setIsEndSection(RestoreBB->isEndSection());
+  RestoreBB->setIsEndSection(false);
 
   TII->insertIndirectBranch(*BranchBB, *DestBB, *RestoreBB, DL,
-                            DestOffset - SrcOffset, RS.get());
+                            BranchBB->getSectionID() != DestBB->getSectionID()
+                                ? TM->getMaxCodeSize()
+                                : DestOffset - SrcOffset,
+                            RS.get());
 
   BlockInfo[BranchBB->getNumber()].Size = computeBlockSize(*BranchBB);
   adjustBlockOffsets(*MBB);
@@ -512,6 +539,11 @@ bool BranchRelaxation::fixupUnconditionalBranch(MachineInstr &MI) {
     BlockInfo[RestoreBB->getNumber()].Size = computeBlockSize(*RestoreBB);
     // Update the offset starting from the previous block.
     adjustBlockOffsets(*PrevBB);
+
+    // Fix up section information for RestoreBB and DestBB
+    RestoreBB->setSectionID(DestBB->getSectionID());
+    RestoreBB->setIsBeginSection(DestBB->isBeginSection());
+    DestBB->setIsBeginSection(false);
   } else {
     // Remove restore block if it's not required.
     MF->erase(RestoreBB);
@@ -540,7 +572,7 @@ bool BranchRelaxation::relaxBranchInstructions() {
       // Unconditional branch destination might be unanalyzable, assume these
       // are OK.
       if (MachineBasicBlock *DestBB = TII->getBranchDestBlock(*Last)) {
-        if (!isBlockInRange(*Last, *DestBB)) {
+        if (!isBlockInRange(*Last, *DestBB) && !TII->isTailCall(*Last)) {
           fixupUnconditionalBranch(*Last);
           ++NumUnconditionalRelaxed;
           Changed = true;
@@ -594,6 +626,7 @@ bool BranchRelaxation::runOnMachineFunction(MachineFunction &mf) {
 
   const TargetSubtargetInfo &ST = MF->getSubtarget();
   TII = ST.getInstrInfo();
+  TM = &MF->getTarget();
 
   TRI = ST.getRegisterInfo();
   if (TRI->trackLivenessAfterRegAlloc(*MF))
