@@ -1,0 +1,1 @@
+The source file test.c needs to include both <stdlib.h> and <vaabin.h> for the compiler to find the required headers.

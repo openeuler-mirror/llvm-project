@@ -3,12 +3,17 @@ This defines the global configurations for the compiler driver
 """
 
 import logging
+from enum import Enum
 import os
 from termcolor import colored
 
 # Global Constants
 LOG_FILE = "llm4compiler.log"
-llm_url = "https://api.siliconflow.cn/v1/chat/completions"
+
+class ModelType(str, Enum):
+    LOCAL_OLLAMA = "local_ollama"    # 本地Ollama部署
+    OPENAI = "openai"                # OpenAI API
+    LLAMA_CPP_CPU = "llama_cpp_cpu"  # llama.cpp CPU部署
 
 
 # Function to get the api token for siliconflow
@@ -16,6 +21,22 @@ def get_llm_api_token() -> str:
     """Return the api token for LLM"""
     return os.getenv("LLM_API_TOKEN", "")
 llm_api_token = get_llm_api_token()
+
+def get_model_type() -> ModelType:
+    """Return the LLM model type"""
+    return ModelType(os.getenv("LLM_MODEL_TYPE", ModelType.OPENAI))
+
+def get_enable_stream() -> bool:
+    value = os.getenv("ENABLE_STREAM", "0")
+    mapping = {
+        "1": True,
+        "0": False
+    }
+    return mapping.get(value, False)
+
+def get_llm_url() -> str:
+    """Return the LLM url"""
+    return os.getenv("LLM_URL", "")
 
 
 # Function to check if automatic acceptance of LLM code changes is enabled
@@ -114,3 +135,7 @@ def configure_logging():
 
 # Initialize logging
 configure_logging()
+
+def get_llamacpp_model_path():
+    """获取 LlamaCPP 模型路径"""
+    return os.environ.get("LLAMACPP_MODEL_PATH", "/path/to/default/model.gguf")

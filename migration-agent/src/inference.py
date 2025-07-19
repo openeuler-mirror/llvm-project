@@ -179,12 +179,12 @@ class LLMRepair:
         # logging.debug(f"prompt={prompt}")
         response = self.llm.inference(prompt)
 
+        logging.debug(f"response={response}")
+
         if response:
-            data = json.loads(response.text)
-            message_content = data.get("choices")[0].get("message").get("content")
-            reasoning_content = (
-                data.get("choices")[0].get("message").get("reasoning_content")
-            )
+            # 直接从 response 字典中获取 content 和 reasoning_content
+            message_content = response.get("content", "")
+            reasoning_content = response.get("reasoning_content", "")
             self.llm.set_model_id(prev_model)
             return self.process_response(message_content, reasoning_content)
 

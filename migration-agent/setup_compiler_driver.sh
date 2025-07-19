@@ -2,7 +2,7 @@
 pip install pyinstaller
 rm -rf build/
 rm -rf dist/
-rm bishengai.spec
+rm -f bishengai.spec
 TARGET="bishengai"
 SOURCE="src/compiler_driver.py"
 pyinstaller --onefile $SOURCE --name $TARGET
@@ -12,10 +12,23 @@ export LLM_DEVELOPMENT=1
 # export COMPILER_CHOICE="clang++" # "clang" for c; "clang++"" for c++
 export LLM_DEBUG=1
 export AUTO_ACCEPT=1 # not export-interactive window; export-automatically change
-export LLM_API_TOKEN=   # add your api token here
-~
-~
-~
-~
-~
 
+
+# 1：流式 0：非流式
+export ENABLE_STREAM=0
+
+# openai
+# export LLM_MODEL_TYPE=openai
+# export LLM_API_TOKEN=xxxxxxxxxxxxxxxxxxx
+# export LLM_MODEL=deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+# export LLM_URL=https://api.siliconflow.cn/v1/chat/completions
+
+# 本地ollama
+# export LLM_MODEL_TYPE=local_ollama
+# export LLM_URL=http://localhost:11434/api/generate
+# export LLM_MODEL=deepseek-r1:1.5b
+
+
+export LLM_MODEL_TYPE=openai
+export LLM_MODEL=/data/zrf/models/DeepSeek-R1-Distill-Qwen-1.5B-baseline.gguf
+export LLM_URL=http://127.0.0.1:8080/v1/chat/completions
