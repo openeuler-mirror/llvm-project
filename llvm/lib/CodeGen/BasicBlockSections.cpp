@@ -270,7 +270,9 @@ void llvm::avoidZeroOffsetLandingPad(MachineFunction &MF) {
       MachineBasicBlock::iterator MI = MBB.begin();
       while (!MI->isEHLabel())
         ++MI;
-      MF.getSubtarget().getInstrInfo()->insertNoop(MBB, MI);
+      MCInst Nop = MF.getSubtarget().getInstrInfo()->getNop();
+      BuildMI(MBB, MI, DebugLoc(),
+              MF.getSubtarget().getInstrInfo()->get(Nop.getOpcode()));
     }
   }
 }
