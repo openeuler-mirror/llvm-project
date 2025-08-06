@@ -7,6 +7,7 @@ add_clang_library(clangTidyBSCompatibilityModule
   BSCompatibilityTidyModule.cpp
   DependentTemplateKeywordCheck.cpp
   NonVoidFunctionReturnVoidCheck.cpp
+  RedundantDefaultTemplateArgCheck.cpp
   UnsequencedFunctionParameterCheck.cpp
 
   LINK_LIBS

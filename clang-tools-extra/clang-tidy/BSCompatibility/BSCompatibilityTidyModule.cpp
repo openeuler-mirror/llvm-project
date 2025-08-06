@@ -9,6 +9,7 @@
 #include "../cppcoreguidelines/NarrowingConversionsCheck.h"
 #include "DependentTemplateKeywordCheck.h"
 #include "NonVoidFunctionReturnVoidCheck.h"
+#include "RedundantDefaultTemplateArgCheck.h"
 #include "UnsequencedFunctionParameterCheck.h"
 
 namespace clang::tidy {
@@ -21,6 +22,8 @@ public:
         "BSCompatibility-dependent-template-keyword");
     CheckFactories.registerCheck<NonVoidFunctionReturnVoidCheck>(
         "BSCompatibility-non-void-function-return-void");
+    CheckFactories.registerCheck<RedundantDefaultTemplateArgCheck>(
+        "BSCompatibility-redundant-default-template-arg");
     CheckFactories.registerCheck<UnsequencedFunctionParameterCheck>(
         "BSCompatibility-unsequenced-function-parameter");
   }
