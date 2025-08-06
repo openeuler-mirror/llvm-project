@@ -183,6 +183,11 @@ New checks
 
   Check if a non-void function hasn't return statement.
 
+- New :doc:`BSCompatibility-redundant-default-template-arg
+  <clang-tidy/checks/BSCompatibility/redundant-default-template-arg>` check.
+
+  Detect redundant default template arguments for template function.
+
 - New :doc:`BSCompatibility-unsequenced-function-parameter
   <clang-tidy/checks/BSCompatibility/unsequenced-function-parameter>` check.
 
