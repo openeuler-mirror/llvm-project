@@ -117,6 +117,12 @@ Improvements to clang-tidy
 New checks
 ^^^^^^^^^^
 
+- New :doc:`BSCompatibility-dependent-template-keyword
+  <clang-tidy/checks/BSCompatibility/dependent-template-keyword>` check.
+
+  Detect if template is missing when calling a dependent template function
+  and add template keyword if so.
+
 - New :doc:`BSCompatibility-non-void-function-return-void
   <clang-tidy/checks/BSCompatibility/non-void-function-return-void>` check.
 
