@@ -1217,7 +1217,7 @@ InstrProfiling::getOrCreateRegionCounters(InstrProfCntrInstBase *Inc) {
 
   if (DebugInfoCorrelate ||
       ProfileCorrelate == InstrProfCorrelator::DEBUG_INFO) {
-    LLVMContext &Ctx = M.getContext();
+    LLVMContext &Ctx = M->getContext();
     Function *Fn = Inc->getParent()->getParent();
     if (auto *SP = Fn->getSubprogram()) {
       DIBuilder DB(*M, true, SP->getUnit());
@@ -1363,7 +1363,7 @@ void InstrProfiling::createDataVariable(InstrProfCntrInstBase *Inc,
     Visibility = GlobalValue::DefaultVisibility;
   }
   auto *Data =
-      new GlobalVariable(M, DataTy, false, Linkage, nullptr, DataVarName);
+      new GlobalVariable(*M, DataTy, false, Linkage, nullptr, DataVarName);
   Constant *RelativeCounterPtr;
   GlobalVariable *BitmapPtr = PD.RegionBitmaps;
   Constant *RelativeBitmapPtr = ConstantInt::get(IntPtrTy, 0);

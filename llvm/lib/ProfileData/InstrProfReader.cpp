@@ -925,8 +925,7 @@ data_type InstrProfLookupTrait::ReadData(StringRef K, const unsigned char *D,
       uint64_t BitmapBytes = 0;
       if (D + sizeof(uint64_t) > End)
         return data_type();
-      BitmapBytes =
-          endian::readNext<uint64_t, llvm::endianness::little, unaligned>(D);
+      BitmapBytes = endian::readNext<uint64_t, little, unaligned>(D);
       // Read bitmap byte values.
       if (D + BitmapBytes * sizeof(uint8_t) > End)
         return data_type();
@@ -934,8 +933,7 @@ data_type InstrProfLookupTrait::ReadData(StringRef K, const unsigned char *D,
       BitmapByteBuffer.reserve(BitmapBytes);
       for (uint64_t J = 0; J < BitmapBytes; ++J)
         BitmapByteBuffer.push_back(static_cast<uint8_t>(
-            endian::readNext<uint64_t, llvm::endianness::little, unaligned>(
-                D)));
+            endian::readNext<uint64_t, little, unaligned>(D)));
     }
 
     DataBuffer.emplace_back(K, Hash, std::move(CounterBuffer),
@@ -1272,13 +1270,11 @@ Error IndexedInstrProfReader::readHeader() {
 
   if (GET_VERSION(Header->formatVersion()) >= 12) {
     uint64_t VTableNamesOffset =
-        endian::byte_swap<uint64_t, llvm::endianness::little>(
-            Header->VTableNamesOffset);
+        endian::byte_swap<uint64_t, little>(Header->VTableNamesOffset);
     const unsigned char *Ptr = Start + VTableNamesOffset;
 
     CompressedVTableNamesLen =
-        support::endian::readNext<uint64_t, llvm::endianness::little,
-                                  unaligned>(Ptr);
+        support::endian::readNext<uint64_t, little, unaligned>(Ptr);
 
     // Writer first writes the length of compressed string, and then the actual
     // content.
@@ -1456,8 +1452,9 @@ Error IndexedInstrProfReader::getFunctionCounts(StringRef FuncName,
   return success();
 }
 
-Error IndexedInstrProfReader::getFunctionBitmapBytes(
-    StringRef FuncName, uint64_t FuncHash, std::vector<uint8_t> &BitmapBytes) {
+Error IndexedInstrProfReader::getFunctionBitmap(StringRef FuncName,
+						uint64_t FuncHash,
+						BitVector &Bitmap) {
   Expected<InstrProfRecord> Record = getInstrProfRecord(FuncName, FuncHash);
   if (Error E = Record.takeError())
     return error(std::move(E));
@@ -1473,7 +1470,7 @@ Error IndexedInstrProfReader::getFunctionBitmapBytes(
         std::memset(W, 0, sizeof(W));
         std::memcpy(W, &BitmapBytes[I], N);
         I += N;
-        return support::endian::read<XTy, llvm::endianness::little,
+        return support::endian::read<XTy, llvm::support::little,
                                      support::aligned>(W);
       },
       Bitmap, Bitmap);

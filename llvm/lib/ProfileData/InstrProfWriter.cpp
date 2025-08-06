@@ -840,7 +840,7 @@ void InstrProfWriter::writeTextTemporalProfTraceData(raw_fd_ostream &OS,
   for (auto &Trace : TemporalProfTraces) {
     OS << "# Weight:\n" << Trace.Weight << "\n";
     for (auto &NameRef : Trace.FunctionNameRefs)
-      OS << Symtab.getFuncName(NameRef) << ",";
+      OS << Symtab.getFuncOrVarName(NameRef) << ",";
     OS << "\n";
   }
   OS << "\n";

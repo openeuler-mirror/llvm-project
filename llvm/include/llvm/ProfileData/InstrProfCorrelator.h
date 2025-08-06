@@ -40,10 +40,10 @@ public:
 
   /// Construct a ProfileData vector used to correlate raw instrumentation data
   /// to their functions.
-  virtual Error correlateProfileData() = 0;
+  virtual Error correlateProfileData(int MaxWarnings) = 0;
 
   /// Process debug info and dump the correlation data.
-  virtual Error dumpYaml(raw_ostream &OS) = 0;
+  virtual Error dumpYaml(int MaxWarnings, raw_ostream &OS) = 0;
 
   /// Return the number of ProfileData elements.
   std::optional<size_t> getDataSize() const;
@@ -142,8 +142,9 @@ public:
 protected:
   std::vector<RawInstrProf::ProfileData<IntPtrT>> Data;
 
-  Error correlateProfileData() override;
+  Error correlateProfileData(int MaxWarnings) override;
   virtual void correlateProfileDataImpl(
+      int MaxWarnings,
       InstrProfCorrelator::CorrelationData *Data = nullptr) = 0;
 
   virtual Error correlateProfileNameImpl() = 0;
@@ -212,6 +213,7 @@ private:
   ///     NULL
   /// \endcode
   void correlateProfileDataImpl(
+      int MaxWarnings,
       InstrProfCorrelator::CorrelationData *Data = nullptr) override;
 
   Error correlateProfileNameImpl() override;

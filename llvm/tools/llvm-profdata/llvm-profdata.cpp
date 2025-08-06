@@ -48,9 +48,33 @@
 using namespace llvm;
 using ProfCorrelatorKind = InstrProfCorrelator::ProfCorrelatorKind;
 
-// We use this string to indicate that there are
-// multiple static functions map to the same name.
-const std::string DuplicateNameStr = "----";
+// https://llvm.org/docs/CommandGuide/llvm-profdata.html has documentations
+// on each subcommand.
+cl::SubCommand ShowSubcommand(
+    "show",
+    "Takes a profile data file and displays the profiles. See detailed "
+    "documentation in "
+    "https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-show");
+cl::SubCommand OrderSubcommand(
+    "order",
+    "Reads temporal profiling traces from a profile and outputs a function "
+    "order that reduces the number of page faults for those traces. See "
+    "detailed documentation in "
+    "https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-order");
+cl::SubCommand OverlapSubcommand(
+    "overlap",
+    "Computes and displays the overlap between two profiles. See detailed "
+    "documentation in "
+    "https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-overlap");
+cl::SubCommand MergeSubcommand(
+    "merge",
+    "Takes several profiles and merge them together. See detailed "
+    "documentation in "
+    "https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge");
+
+namespace {
+enum ProfileKinds { instr, sample, memory };
+enum FailureMode { warnOnly, failIfAnyAreInvalid, failIfAllAreInvalid };
 
 enum ProfileFormat {
   PF_None = 0,
@@ -62,6 +86,7 @@ enum ProfileFormat {
 };
 
 enum class ShowFormat { Text, Json, Yaml };
+} // namespace
 
 // Common options.
 cl::opt<std::string> OutputFilename("output", cl::value_desc("output"),
@@ -437,11 +462,6 @@ static void exitWithError(Error E, StringRef Whence = "") {
 static void exitWithErrorCode(std::error_code EC, StringRef Whence = "") {
   exitWithError(EC.message(), std::string(Whence));
 }
-
-namespace {
-enum ProfileKinds { instr, sample, memory };
-enum FailureMode { warnOnly, failIfAnyAreInvalid, failIfAllAreInvalid };
-} // namespace
 
 static void warnOrExitGivenError(FailureMode FailMode, std::error_code EC,
                                  StringRef Whence = "") {
@@ -3252,12 +3272,12 @@ static int showDebugInfoCorrelation(const std::string &Filename,
               .moveInto(Correlator))
     exitWithError(std::move(Err), Filename);
   if (SFormat == ShowFormat::Yaml) {
-    if (auto Err = Correlator->dumpYaml(OS))
+    if (auto Err = Correlator->dumpYaml(MaxDbgCorrelationWarnings, OS))
       exitWithError(std::move(Err), Filename);
     return 0;
   }
 
-  if (auto Err = Correlator->correlateProfileData())
+  if (auto Err = Correlator->correlateProfileData(MaxDbgCorrelationWarnings))
     exitWithError(std::move(Err), Filename);
 
   InstrProfSymtab Symtab;

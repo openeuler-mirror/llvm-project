@@ -36,6 +36,7 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/Compression.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/Endian.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -271,14 +272,68 @@ static StringRef stripDirPrefix(StringRef PathNameStr, uint32_t NumPrefix) {
   return PathNameStr.substr(LastPos);
 }
 
-static StringRef getStrippedSourceFileName(const Function &F) {
-  StringRef FileName(F.getParent()->getSourceFileName());
+static StringRef getStrippedSourceFileName(const GlobalObject &GO) {
+  StringRef FileName(GO.getParent()->getSourceFileName());
   uint32_t StripLevel = StaticFuncFullModulePrefix ? 0 : (uint32_t)-1;
   if (StripLevel < StaticFuncStripDirNamePrefix)
     StripLevel = StaticFuncStripDirNamePrefix;
   if (StripLevel)
     FileName = stripDirPrefix(FileName, StripLevel);
   return FileName;
+}
+
+// The PGO name has the format [<filepath>;]<mangled-name> where <filepath>; is
+// provided if linkage is local and is used to discriminate possibly identical
+// mangled names. ";" is used because it is unlikely to be found in either
+// <filepath> or <mangled-name>.
+//
+// Older compilers used getPGOFuncName() which has the format
+// [<filepath>:]<mangled-name>. This caused trouble for Objective-C functions
+// which commonly have :'s in their names. We still need to compute this name to
+// lookup functions from profiles built by older compilers.
+static std::string
+getIRPGONameForGlobalObject(const GlobalObject &GO,
+			    GlobalValue::LinkageTypes Linkage,
+			    StringRef FileName) {
+  return GlobalValue::getGlobalIdentifier(GO.getName(), Linkage, FileName);
+}
+
+static std::optional<std::string> lookupPGONameFromMetadata(MDNode *MD) {
+  if (MD != nullptr) {
+    StringRef S = cast<MDString>(MD->getOperand(0))->getString();
+    return S.str();
+  }
+  return {};
+}
+
+// Returns the PGO object name. This function has some special handling
+// when called in LTO optimization. The following only applies when calling in
+// LTO passes (when \c InLTO is true): LTO's internalization privatizes many
+// global linkage symbols. This happens after value profile annotation, but
+// those internal linkage functions should not have a source prefix.
+// Additionally, for ThinLTO mode, exported internal functions are promoted
+// and renamed. We need to ensure that the original internal PGO name is
+// used when computing the GUID that is compared against the profiled GUIDs.
+// To differentiate compiler generated internal symbols from original ones,
+// PGOFuncName meta data are created and attached to the original internal
+// symbols in the value profile annotation step
+// (PGOUseFunc::annotateIndirectCallSites). If a symbol does not have the meta
+// data, its original linkage must be non-internal.
+static std::string getIRPGOObjectName(const GlobalObject &GO, bool InLTO,
+				      MDNode *PGONameMetadata) {
+  if (!InLTO) {
+    auto FileName = getStrippedSourceFileName(GO);
+    return getIRPGONameForGlobalObject(GO, GO.getLinkage(), FileName);
+  }
+
+  // In LTO mode (when InLTO is true), first check if there is a meta data.
+  if (auto IRPGOFuncName = lookupPGONameFromMetadata(PGONameMetadata))
+    return *IRPGOFuncName;
+
+  // If there is no meta data, the function must be a global before the value
+  // profile annotation pass. Its current linkage may be internal if it is
+  // internalized in LTO mode.
+  return getIRPGONameForGlobalObject(GO, GlobalValue::ExternalLinkage, "");
 }
 
 // The PGO name has the format [<filepath>;]<linkage-name> where <filepath>; is
@@ -315,21 +370,10 @@ static std::optional<std::string> lookupPGOFuncName(const Function &F) {
   return {};
 }
 
-// See getPGOFuncName()
+// Returns the IRPGO function name and does special handling when called
+// in LTO optimization. See the comments of `getIRPGOObjectName` for details. 
 std::string getIRPGOFuncName(const Function &F, bool InLTO) {
-  if (!InLTO) {
-    auto FileName = getStrippedSourceFileName(F);
-    return getIRPGOFuncName(F, F.getLinkage(), FileName);
-  }
-
-  // In LTO mode (when InLTO is true), first check if there is a meta data.
-  if (auto IRPGOFuncName = lookupPGOFuncName(F))
-    return *IRPGOFuncName;
-
-  // If there is no meta data, the function must be a global before the value
-  // profile annotation pass. Its current linkage may be internal if it is
-  // internalized in LTO mode.
-  return getIRPGOFuncName(F, GlobalValue::ExternalLinkage, "");
+  return getIRPGOObjectName(F, InLTO, getPGOFuncNameMetadata(F));
 }
 
 // Return the PGOFuncName. This function has some special handling when called
@@ -359,6 +403,13 @@ std::string getPGOFuncName(const Function &F, bool InLTO, uint64_t Version) {
   // profile annotation pass. Its current linkage may be internal if it is
   // internalized in LTO mode.
   return getPGOFuncName(F.getName(), GlobalValue::ExternalLinkage, "");
+}
+
+std::string getPGOName(const GlobalVariable &V, bool InLTO) {
+  // PGONameMetadata should be set by compiler at profile use time
+  // and read by symtab creation to look up symbols corresponding to
+  // a MD5 hash.
+  return getIRPGOObjectName(V, InLTO, V.getMetadata(getPGONameMetadataName()));
 }
 
 // See getIRPGOFuncName() for a discription of the format.
@@ -442,41 +493,160 @@ Error InstrProfSymtab::create(Module &M, bool InLTO) {
     if (Error E = addFuncWithName(F, getPGOFuncName(F, InLTO)))
       return E;
   }
+
+  SmallVector<MDNode *, 2> Types;
+  for (GlobalVariable &G : M.globals()) {
+    if (!G.hasName() || !G.hasMetadata(LLVMContext::MD_type))
+      continue;
+    if (Error E = addVTableWithName(G, getPGOName(G, InLTO)))
+      return E;
+  }
+
   Sorted = false;
   finalizeSymtab();
   return Error::success();
 }
 
-Error InstrProfSymtab::addFuncWithName(Function &F, StringRef PGOFuncName) {
-  if (Error E = addFuncName(PGOFuncName))
+Error InstrProfSymtab::addVTableWithName(GlobalVariable &VTable,
+					 StringRef VTablePGOName) {
+  auto NameToGUIDMap = [&](StringRef Name) -> Error {
+    if (Error E = addSymbolName(Name)) 
+      return E;
+ 
+  bool Inserted = true;
+  std::tie(std::ignore, Inserted) =
+      MD5VTableMap.try_emplace(GlobalValue::getGUID(Name), &VTable);
+  return Error::success();
+  };
+  if (Error E = NameToGUIDMap(VTablePGOName))
     return E;
-  MD5FuncMap.emplace_back(Function::getGUID(PGOFuncName), &F);
+
+  StringRef CanonicalName = getCanonicalName(VTablePGOName);
+  if (CanonicalName != VTablePGOName)
+    return NameToGUIDMap(CanonicalName);
+
+  return Error::success();
+}
+
+/// \c NameStrings is a string composed of one of more possibly encoded
+/// sub-strings. The substrings are separated by 0 or more zero bytes. This
+/// method decodes the string and calls `NameCallback` for each substring.
+static Error
+readAndDecodeStrings(StringRef NameStrings,
+		     std::function<Error(StringRef)> NameCallback) {
+  const uint8_t *P = NameStrings.bytes_begin();
+  const uint8_t *EndP = NameStrings.bytes_end();
+  while (P < EndP) {
+    uint32_t N;
+    uint64_t UncompressedSize = decodeULEB128(P, &N);
+    P += N;
+    uint64_t CompressedSize = decodeULEB128(P, &N);
+    P += N;
+    const bool IsCompressed = (CompressedSize != 0);
+    SmallVector<uint8_t, 128> UncompressedNameStrings;
+    StringRef NameStrings;
+    if (IsCompressed) {
+      if (!llvm::compression::zlib::isAvailable())
+	return make_error<InstrProfError>(instrprof_error::zlib_unavailable);
+ 
+      if (Error E = compression::zlib::decompress(ArrayRef(P, CompressedSize),
+			      			  UncompressedNameStrings,
+						  UncompressedSize)) {
+        consumeError(std::move(E));
+	return make_error<InstrProfError>(instrprof_error::uncompress_failed);
+      }
+      P += CompressedSize;
+      NameStrings = toStringRef(UncompressedNameStrings);
+    } else {
+      NameStrings =
+	  StringRef(reinterpret_cast<const char *>(P), UncompressedSize);
+      P += UncompressedSize;
+    }
+    // Now parse the name strings.
+    SmallVector<StringRef, 0> Names;
+    NameStrings.split(Names, getInstrProfNameSeparator());
+    for (StringRef &Name : Names)
+      if (Error E = NameCallback(Name))
+	return E;
+
+    while (P < EndP && *P == 0)
+      P++;
+  }
+  return Error::success();
+}
+
+Error InstrProfSymtab::create(StringRef NameStrings) {
+  return readAndDecodeStrings(
+      NameStrings,
+      std::bind(&InstrProfSymtab::addFuncName, this, std::placeholders::_1));
+}
+
+Error InstrProfSymtab::create(StringRef FuncNameStrings,
+			      StringRef VTableNameStrings) {
+  if (Error E = readAndDecodeStrings(FuncNameStrings,
+			  	     std::bind(&InstrProfSymtab::addFuncName,
+					       this, std::placeholders::_1)))
+    return E;
+
+  return readAndDecodeStrings(
+      VTableNameStrings,
+      std::bind(&InstrProfSymtab::addVTableName, this, std::placeholders::_1));
+}
+
+Error InstrProfSymtab::initVTableNamesFromCompressedStrings(
+    StringRef CompressedVTableStrings) {
+  return readAndDecodeStrings(
+      CompressedVTableStrings,
+      std::bind(&InstrProfSymtab::addVTableName, this, std::placeholders::_1));
+}
+
+StringRef InstrProfSymtab::getCanonicalName(StringRef PGOName) {
   // In ThinLTO, local function may have been promoted to global and have
   // suffix ".llvm." added to the function name. We need to add the
   // stripped function name to the symbol table so that we can find a match
   // from profile.
   //
-  // We may have other suffixes similar as ".llvm." which are needed to
-  // be stripped before the matching, but ".__uniq." suffix which is used
-  // to differentiate internal linkage functions in different modules
-  // should be kept. Now this is the only suffix with the pattern ".xxx"
-  // which is kept before matching.
+  // ".__uniq." suffix is used to differentiate internal linkage functions in
+  // different modules and should be kept. This is the only suffix with the
+  // pattern ".xxx" which is kept before matching, other suffixes similar as
+  // ".llvm." will be stripped.
   const std::string UniqSuffix = ".__uniq.";
-  auto pos = PGOFuncName.find(UniqSuffix);
-  // Search '.' after ".__uniq." if ".__uniq." exists, otherwise
-  // search '.' from the beginning.
-  if (pos != std::string::npos)
-    pos += UniqSuffix.length();
+  size_t Pos = PGOName.find(UniqSuffix);
+  if (Pos != StringRef::npos)
+    Pos += UniqSuffix.length();
   else
-    pos = 0;
-  pos = PGOFuncName.find('.', pos);
-  if (pos != std::string::npos && pos != 0) {
-    StringRef OtherFuncName = PGOFuncName.substr(0, pos);
-    if (Error E = addFuncName(OtherFuncName))
+    Pos = 0;
+ 
+  // Search '.' after ".__uniq." if ".__uniq." exists, otherwise search '.' from
+  // the beginning. 
+  Pos = PGOName.find('.', Pos);
+  if (Pos != StringRef::npos && Pos != 0)
+    return PGOName.substr(0, Pos);
+
+  return PGOName;
+}
+
+Error InstrProfSymtab::addFuncWithName(Function &F, StringRef PGOFuncName) {
+  auto NameToGUIDMap = [&](StringRef Name) -> Error {
+    if (Error E = addFuncName(Name))
       return E;
-    MD5FuncMap.emplace_back(Function::getGUID(OtherFuncName), &F);
-  }
+    MD5FuncMap.emplace_back(Function::getGUID(Name), &F);
+    return Error::success();
+  };
+  if (Error E = NameToGUIDMap(PGOFuncName))
+    return E;
+
+  StringRef CanonicalFuncName = getCanonicalName(PGOFuncName);
+  if (CanonicalFuncName != PGOFuncName)
+    return NameToGUIDMap(CanonicalFuncName);
+
   return Error::success();
+}
+
+uint64_t InstrProfSymtab::getVTableHashFromAddress(uint64_t Address) {
+  // Given a runtime address, look up the hash value in the interval map, and
+  // fallback to value 0 if a hash value is not found.
+  return VTableAddrMap.lookup(Address, 0);
 }
 
 uint64_t InstrProfSymtab::getFunctionHashFromAddress(uint64_t Address) {
@@ -498,6 +668,45 @@ void InstrProfSymtab::dumpNames(raw_ostream &OS) const {
   llvm::sort(Sorted);
   for (StringRef S : Sorted)
     OS << S << '\n';
+}
+
+Error collectGlobalObjectNameStrings(ArrayRef<std::string> NameStrs,
+				     bool DoCompression, std::string &Result) {
+  assert(!NameStrs.empty() && "No name data to emit");
+
+  uint8_t Header[20], *P = Header;
+  std::string UncompressedNameStrings =
+      join(NameStrs.begin(), NameStrs.end(), getInstrProfNameSeparator());
+
+  assert(
+      StringRef(UncompressedNameStrings).count(getInstrProfNameSeparator()) ==
+      	  (NameStrs.size() - 1) &&
+      "PGO name is invalid (contains separator token)");
+
+  unsigned EncLen = encodeULEB128(UncompressedNameStrings.length(), P);
+  P += EncLen;
+
+  auto WriteStringToResult = [&](size_t CompressedLen, StringRef InputStr) {
+    EncLen = encodeULEB128(CompressedLen, P);
+    P += EncLen;
+    char *HeaderStr = reinterpret_cast<char *>(&Header[0]);
+    unsigned HeaderLen = P - &Header[0];
+    Result.append(HeaderStr, HeaderLen);
+    Result += InputStr;
+    return Error::success();
+  };
+
+  if (!DoCompression) {
+    return WriteStringToResult(0, UncompressedNameStrings);
+  }
+
+  SmallVector<uint8_t, 128> CompressedNameStrings;
+  compression::zlib::compress(arrayRefFromStringRef(UncompressedNameStrings),
+		  	      CompressedNameStrings,
+			      compression::zlib::BestSizeCompression);
+
+  return WriteStringToResult(CompressedNameStrings.size(),
+		  	     toStringRef(CompressedNameStrings));
 }
 
 Error collectPGOFuncNameStrings(ArrayRef<std::string> NameStrs,
@@ -551,8 +760,18 @@ Error collectPGOFuncNameStrings(ArrayRef<GlobalVariable *> NameVars,
   for (auto *NameVar : NameVars) {
     NameStrs.push_back(std::string(getPGOFuncNameVarInitializer(NameVar)));
   }
-  return collectPGOFuncNameStrings(
+  return collectGlobalObjectNameStrings(
       NameStrs, compression::zlib::isAvailable() && doCompression, Result);
+}
+
+Error collectVTableStrings(ArrayRef<GlobalVariable *> VTables,
+			   std::string &Result, bool DoCompression) {
+  std::vector<std::string> VTableNameStrs;
+  for (auto *VTable : VTables)
+    VTableNameStrs.push_back(getPGOName(*VTable));
+  return collectGlobalObjectNameStrings(
+      VTableNameStrs, compression::zlib::isAvailable() && DoCompression,
+      Result);
 }
 
 Error readPGOFuncNameStrings(StringRef NameStrings, InstrProfSymtab &Symtab) {
@@ -858,6 +1077,9 @@ uint64_t InstrProfRecord::remapValue(uint64_t Value, uint32_t ValueKind,
 
   if (ValueKind == IPVK_IndirectCallTarget)
     return SymTab->getFunctionHashFromAddress(Value);
+
+  if (ValueKind == IPVK_VTableTarget)
+    return SymTab->getVTableHashFromAddress(Value);
 
   return Value;
 }

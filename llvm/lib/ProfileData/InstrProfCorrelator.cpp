@@ -201,7 +201,7 @@ InstrProfCorrelatorImpl<IntPtrT>::get(
 }
 
 template <class IntPtrT>
-Error InstrProfCorrelatorImpl<IntPtrT>::correlateProfileData() {
+Error InstrProfCorrelatorImpl<IntPtrT>::correlateProfileData(int MaxWarnings) {
   assert(Data.empty() && Names.empty() && NamesVec.empty());
   correlateProfileDataImpl(MaxWarnings);
   if (this->Data.empty())
@@ -238,9 +238,10 @@ template <> struct yaml::SequenceElementTraits<InstrProfCorrelator::Probe> {
 };
 
 template <class IntPtrT>
-Error InstrProfCorrelatorImpl<IntPtrT>::dumpYaml(raw_ostream &OS) {
+Error InstrProfCorrelatorImpl<IntPtrT>::dumpYaml(int MaxWarnings,
+						 raw_ostream &OS) {
   InstrProfCorrelator::CorrelationData Data;
-  correlateProfileDataImpl(&Data);
+  correlateProfileDataImpl(MaxWarnings, &Data);
   if (Data.Probes.empty())
     return make_error<InstrProfError>(
         instrprof_error::unable_to_correlate_profile,
@@ -321,7 +322,10 @@ bool DwarfInstrProfCorrelator<IntPtrT>::isDIEOfProbe(const DWARFDie &Die) {
 
 template <class IntPtrT>
 void DwarfInstrProfCorrelator<IntPtrT>::correlateProfileDataImpl(
-    InstrProfCorrelator::CorrelationData *Data) {
+    int MaxWarnings, InstrProfCorrelator::CorrelationData *Data) {
+  bool UnlimitedWarnings = (MaxWarnings == 0);
+  // -N suppressed warnings means we can emit up to N (unsuppressed) warnings
+  int NumSuppressedWarnings = -MaxWarnings;
   auto maybeAddProbe = [&](DWARFDie Die) {
     if (!isDIEOfProbe(Die))
       return;
@@ -358,28 +362,30 @@ void DwarfInstrProfCorrelator<IntPtrT>::correlateProfileDataImpl(
       }
     }
     if (!FunctionName || !CFGHash || !CounterPtr || !NumCounters) {
-      LLVM_DEBUG(dbgs() << "Incomplete DIE for probe\n\tFunctionName: "
-                        << FunctionName << "\n\tCFGHash: " << CFGHash
-                        << "\n\tCounterPtr: " << CounterPtr
-                        << "\n\tNumCounters: " << NumCounters);
-      LLVM_DEBUG(Die.dump(dbgs()));
+      if (UnlimitedWarnings || ++NumSuppressedWarnings < 1) {
+        WithColor::warning() 
+            << "Incomplete DIE for function " << FunctionName 
+            << ": CFGHash=" << CFGHash << "  CounterPtr=" << CounterPtr 
+	    << "  NumCounters=" << NumCounters << "\n";
+        LLVM_DEBUG(Die.dump(dbgs()));
+      }
       return;
     }
     uint64_t CountersStart = this->Ctx->CountersSectionStart;
     uint64_t CountersEnd = this->Ctx->CountersSectionEnd;
     if (*CounterPtr < CountersStart || *CounterPtr >= CountersEnd) {
-      LLVM_DEBUG(
-          dbgs() << "CounterPtr out of range for probe\n\tFunction Name: "
-                 << FunctionName << "\n\tExpected: [0x"
-                 << Twine::utohexstr(CountersStart) << ", 0x"
-                 << Twine::utohexstr(CountersEnd) << ")\n\tActual: 0x"
-                 << Twine::utohexstr(*CounterPtr));
-      LLVM_DEBUG(Die.dump(dbgs()));
+      if (UnlimitedWarnings || ++NumSuppressedWarnings < 1) { 
+        WithColor::warning() 
+            << format("CounterPtr out of range for function %s: Actual=0x%x " 
+                      "Expected=[0x%x, 0x%x)\n",
+                      *FunctionName, *CounterPtr, CountersStart, CountersEnd);
+        LLVM_DEBUG(Die.dump(dbgs()));         
+      } 
       return;
     }
-    if (!FunctionPtr) {
-      LLVM_DEBUG(dbgs() << "Could not find address of " << *FunctionName
-                        << "\n");
+    if (!FunctionPtr && (UnlimitedWarnings || ++NumSuppressedWarnings < 1)) {
+      WithColor::warning() << format("Could not find address of function %s\n", 
+                       		     *FunctionName); 
       LLVM_DEBUG(Die.dump(dbgs()));
     }
     // In debug info correlation mode, the CounterPtr is an absolute address of
@@ -412,6 +418,10 @@ void DwarfInstrProfCorrelator<IntPtrT>::correlateProfileDataImpl(
   for (auto &CU : DICtx->dwo_units())
     for (const auto &Entry : CU->dies())
       maybeAddProbe(DWARFDie(CU.get(), &Entry));
+
+  if (!UnlimitedWarnings && NumSuppressedWarnings > 0)
+    WithColor::warning() << format("Suppressed %d additional warnings\n",
+		    		   NumSuppressedWarnings);
 }
 
 template <class IntPtrT>
