@@ -8,6 +8,7 @@
 #include "../ClangTidyModuleRegistry.h"
 #include "../cppcoreguidelines/NarrowingConversionsCheck.h"
 #include "DependentTemplateKeywordCheck.h"
+#include "ForbiddenBuiltinExitCheck.h"
 #include "NonVoidFunctionReturnVoidCheck.h"
 #include "RedundantDefaultTemplateArgCheck.h"
 #include "UnsequencedFunctionParameterCheck.h"
@@ -18,6 +19,8 @@ namespace BSCompatibility {
 class BSCompatibilityModule : public ClangTidyModule {
 public:
   void addCheckFactories(ClangTidyCheckFactories &CheckFactories) override {
+    CheckFactories.registerCheck<ForbiddenBuiltinExitCheck>(
+        "BSCompatibility-forbidden-builtin-exit");
     CheckFactories.registerCheck<DependentTemplateKeywordCheck>(
         "BSCompatibility-dependent-template-keyword");
     CheckFactories.registerCheck<NonVoidFunctionReturnVoidCheck>(
