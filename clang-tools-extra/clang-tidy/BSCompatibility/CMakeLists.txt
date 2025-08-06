@@ -5,6 +5,7 @@ set(LLVM_LINK_COMPONENTS
 
 add_clang_library(clangTidyBSCompatibilityModule
   BSCompatibilityTidyModule.cpp
+  ForbiddenBuiltinExitCheck.cpp
   DependentTemplateKeywordCheck.cpp
   NonVoidFunctionReturnVoidCheck.cpp
   RedundantDefaultTemplateArgCheck.cpp

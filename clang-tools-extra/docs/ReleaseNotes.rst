@@ -123,6 +123,11 @@ New checks
   Detect if template is missing when calling a dependent template function
   and add template keyword if so.
 
+- New :doc:`BSCompatibility-forbidden-builtin-exit
+  <clang-tidy/checks/BSCompatibility/forbidden-builtin-exit>` check.
+
+  Detect the use of __builtin_exit and propose warning.
+
 - New :doc:`BSCompatibility-non-void-function-return-void
   <clang-tidy/checks/BSCompatibility/non-void-function-return-void>` check.
 

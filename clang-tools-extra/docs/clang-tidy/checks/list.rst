@@ -77,6 +77,7 @@ Clang-Tidy Checks
    `android-cloexec-socket <android/cloexec-socket.html>`_, "Yes"
    `android-comparison-in-temp-failure-retry <android/comparison-in-temp-failure-retry.html>`_,
    `BSCompatibility-dependent-template-keyword <BSCompatibility/dependent-template-keyword>`, "Yes"
+   `BSCompatibility-forbidden-builtin-exit <BSCompatibility/forbidden-builtin-exit>`, "Yes"
    `BSCompatibility-non-void-function-return-void <BSCompatibility/non-void-function-return-void.html>`_, "Yes"
    `BSCompatibility-redundant-default-template-arg <BSCompatibility/redundant-default-template-arg>`, "Yes"
    `BSCompatibility-unsequenced-function-parameter <BSCompatibility/unsequenced-function-parameter>`, "Yes"
