@@ -7,6 +7,7 @@
 #include "../ClangTidyModule.h"
 #include "../ClangTidyModuleRegistry.h"
 #include "../cppcoreguidelines/NarrowingConversionsCheck.h"
+#include "DependentTemplateKeywordCheck.h"
 #include "NonVoidFunctionReturnVoidCheck.h"
 #include "UnsequencedFunctionParameterCheck.h"
 
@@ -16,6 +17,8 @@ namespace BSCompatibility {
 class BSCompatibilityModule : public ClangTidyModule {
 public:
   void addCheckFactories(ClangTidyCheckFactories &CheckFactories) override {
+    CheckFactories.registerCheck<DependentTemplateKeywordCheck>(
+        "BSCompatibility-dependent-template-keyword");
     CheckFactories.registerCheck<NonVoidFunctionReturnVoidCheck>(
         "BSCompatibility-non-void-function-return-void");
     CheckFactories.registerCheck<UnsequencedFunctionParameterCheck>(
