@@ -68,6 +68,27 @@ struct SparseInstrProfTest : public InstrProfTest {
   void SetUp() override { Writer.setOutputSparse(true); }
 };
 
+struct InstrProfReaderWriterTest
+    : public InstrProfTest,
+      public ::testing::WithParamInterface<
+	  std::tuple<bool, uint64_t, llvm::support::endianness>> {
+  void SetUp() override { Writer.setOutputSparse(std::get<0>(GetParam())); }
+  void TearDown() override {
+    // Reset writer value profile data endianness after each test case. Note
+    // it's not necessary to reset reader value profile endianness for each test
+    // case. Each test case creates a new reader; at reader initialization time,
+    // it uses the endianness from hash table object (which is little by
+    // default).
+    Writer.setValueProfDataEndianness(llvm::support::endianness::little);
+  }
+
+  uint64_t getProfWeight() const { return std::get<1>(GetParam()); }
+
+  llvm::support::endianness getEndianness() const {
+    return std::get<2>(GetParam());
+  }
+};
+
 struct MaybeSparseInstrProfTest : public InstrProfTest,
                                   public ::testing::WithParamInterface<bool> {
   void SetUp() override { Writer.setOutputSparse(GetParam()); }
@@ -777,8 +798,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(
 	::testing::Bool(),	    /* Sparse */
 	::testing::Values(1U, 10U), /* ProfWeight */
-	::testing::Values(llvm::endianness::big,
-			  llvm::endianness::little) /* Endianness */
+	::testing::Values(llvm::support::endianness::big,
+			  llvm::support::endianness::little) /* Endianness */
 	));
 
 TEST_P(MaybeSparseInstrProfTest, annotate_vp_data) {
@@ -1061,7 +1082,16 @@ TEST_P(MaybeSparseInstrProfTest, icall_and_vtable_data_merge) {
   }
 }
 
-TEST_P(MaybeSparseInstrProfTest, get_icall_data_merge1_saturation) {
+struct ValueProfileMergeEdgeCaseTest
+    : public InstrProfTest,
+      public ::testing::WithParamInterface<std::tuple<bool, uint32_t>> {
+  void SetUp() override { Writer.setOutputSparse(std::get<0>(GetParam())); }
+
+  uint32_t getValueProfileKind() const { return std::get<1>(GetParam()); }
+};
+
+TEST_P(ValueProfileMergeEdgeCaseTest, get_icall_data_merge1_saturation) {
+  const uint32_t ValueKind = getValueProfileKind();
   static const char bar[] = "bar";
 
   const uint64_t MaxValCount = std::numeric_limits<uint64_t>::max();

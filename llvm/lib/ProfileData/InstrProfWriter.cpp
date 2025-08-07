@@ -181,10 +181,12 @@ public:
 
 InstrProfWriter::InstrProfWriter(bool Sparse,
                                  uint64_t TemporalProfTraceReservoirSize,
-                                 uint64_t MaxTemporalProfTraceLength)
+                                 uint64_t MaxTemporalProfTraceLength,
+				 bool WritePrevVersion)
     : Sparse(Sparse), MaxTemporalProfTraceLength(MaxTemporalProfTraceLength),
       TemporalProfTraceReservoirSize(TemporalProfTraceReservoirSize),
-      InfoObj(new InstrProfRecordWriterTrait()) {}
+      InfoObj(new InstrProfRecordWriterTrait()),
+      WritePrevVersion(WritePrevVersion) {}
 
 InstrProfWriter::~InstrProfWriter() { delete InfoObj; }
 

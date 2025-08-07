@@ -422,7 +422,15 @@ std::string getPGOName(const GlobalVariable &V, bool InLTO) {
 
 // See getIRPGOObjectName() for a discription of the format.
 std::pair<StringRef, StringRef> getParsedIRPGOFuncName(StringRef IRPGOName) {
-  auto [FileName, MangledName] = IRPGOFuncName.split(GlobalIdentifierDelimiter);
+  auto [FileName, MangledName] = IRPGOName.split(';');
+  if (MangledName.empty())
+    return std::make_pair(StringRef(), IRPGOName);
+  return std::make_pair(FileName, MangledName);
+}
+
+// See getIRPGOObjectName() for a discription of the format.
+std::pair<StringRef, StringRef> getParsedIRPGOName(StringRef IRPGOName) {
+  auto [FileName, MangledName] = IRPGOName.split(';');
   if (MangledName.empty())
     return std::make_pair(StringRef(), IRPGOName);
   return std::make_pair(FileName, MangledName);
