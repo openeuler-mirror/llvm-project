@@ -593,6 +593,7 @@ public:
   Error create(const FuncNameIterRange &FuncIterRange,
                const VTableNameIterRange &VTableIterRange);
 
+  // Map the MD5 of the symbol name to the name.
   Error addSymbolName(StringRef SymbolName) {
     if (SymbolName.empty())
       return make_error<InstrProfError>(instrprof_error::malformed,
@@ -676,6 +677,11 @@ public:
 
   /// Return function from the name's md5 hash. Return nullptr if not found.
   inline Function *getFunction(uint64_t FuncMD5Hash);
+
+  /// Return the function's original assembly name by stripping off
+  /// the prefix attached (to symbols with priviate linkage). For
+  /// global functions, it returns the same string as getFuncName.
+  inline StringRef getOrigFuncName(uint64_t FuncMD5Hash);
 
   /// Return the global variable corresponding to md5 hash. Return nullptr if
   /// not found.
@@ -775,6 +781,16 @@ Function* InstrProfSymtab::getFunction(uint64_t FuncMD5Hash) {
   if (Result != MD5FuncMap.end() && Result->first == FuncMD5Hash)
     return Result->second;
   return nullptr;
+}
+
+// See also getPGOFuncName implementation. These two need to be
+// matched.
+StringRef InstrProfSymtab::getOrigFuncName(uint64_t FuncMD5Hash) {
+  StringRef PGOName = getFuncName(FuncMD5Hash);
+  size_t S = PGOName.find_first_of(':');
+  if (S == StringRef::npos)
+    return PGOName;
+  return PGOName.drop_front(S + 1);
 }
 
 GlobalVariable *InstrProfSymtab::getGlobalVariable(uint64_t MD5Hash) {

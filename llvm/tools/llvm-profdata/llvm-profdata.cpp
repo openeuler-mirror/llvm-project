@@ -608,7 +608,8 @@ static void overlapInput(const std::string &BaseFilename,
 /// Load an input into a writer context.
 static void loadInput(const WeightedFile &Input, SymbolRemapper *Remapper,
                       const InstrProfCorrelator *Correlator,
-                      const StringRef ProfiledBinary, WriterContext *WC) {
+                      const StringRef ProfiledBinary, WriterContext *WC,
+		      const bool KeepVTableSymbols) {
   std::unique_lock<std::mutex> CtxGuard{WC->Lock};
 
   // Copy the filename, because llvm::ThreadPool copied the input "const
@@ -791,11 +792,12 @@ static void writeInstrProfile(StringRef OutputFilename,
 
 static void
 mergeInstrProfile(const WeightedFileVector &Inputs, StringRef DebugInfoFilename,
-                  SymbolRemapper *Remapper, StringRef OutputFilename,
-                  ProfileFormat OutputFormat, uint64_t TraceReservoirSize,
-                  uint64_t MaxTraceLength, bool OutputSparse,
-                  unsigned NumThreads, FailureMode FailMode,
-                  const StringRef ProfiledBinary) {
+                  StringRef BinaryFilename, SymbolRemapper *Remapper,
+		  StringRef OutputFilename, ProfileFormat OutputFormat,
+		  uint64_t TraceReservoirSize, uint64_t MaxTraceLength,
+		  bool OutputSparse, unsigned NumThreads, FailureMode FailMode,
+                  const StringRef ProfiledBinary,
+		  const bool KeepVTableSymbols) {
   if (OutputFormat == PF_Compact_Binary)
     exitWithError("Compact Binary is deprecated");
   if (OutputFormat != PF_Binary && OutputFormat != PF_Ext_Binary &&
@@ -843,7 +845,7 @@ mergeInstrProfile(const WeightedFileVector &Inputs, StringRef DebugInfoFilename,
   if (NumThreads == 1) {
     for (const auto &Input : Inputs)
       loadInput(Input, Remapper, Correlator.get(), ProfiledBinary,
-                Contexts[0].get());
+                Contexts[0].get(), KeepVTableSymbols);
   } else {
     ThreadPool Pool(hardware_concurrency(NumThreads));
 
@@ -851,7 +853,7 @@ mergeInstrProfile(const WeightedFileVector &Inputs, StringRef DebugInfoFilename,
     unsigned Ctx = 0;
     for (const auto &Input : Inputs) {
       Pool.async(loadInput, Input, Remapper, Correlator.get(), ProfiledBinary,
-                 Contexts[Ctx].get());
+                 Contexts[Ctx].get(), KeepVTableSymbols);
       Ctx = (Ctx + 1) % NumThreads;
     }
     Pool.wait();
@@ -1244,7 +1246,7 @@ static void supplementInstrProfile(
     const WeightedFileVector &Inputs, StringRef SampleFilename,
     StringRef OutputFilename, ProfileFormat OutputFormat, bool OutputSparse,
     unsigned SupplMinSizeThreshold, float ZeroCounterThreshold,
-    unsigned InstrProfColdThreshold) {
+    unsigned InstrProfColdThreshold, const bool KeepVTableSymbols) {
   if (OutputFilename.compare("-") == 0)
     exitWithError("cannot write indexed profdata format to stdout");
   if (Inputs.size() != 1)
@@ -1270,7 +1272,8 @@ static void supplementInstrProfile(
   SmallSet<instrprof_error, 4> WriterErrorCodes;
   auto WC = std::make_unique<WriterContext>(OutputSparse, ErrorLock,
                                             WriterErrorCodes);
-  loadInput(Inputs[0], nullptr, nullptr, /*ProfiledBinary=*/"", WC.get());
+  loadInput(Inputs[0], nullptr, nullptr, /*ProfiledBinary=*/"", WC.get(),
+	    KeepVTableSymbols);
   if (WC->Errors.size() > 0)
     exitWithError(std::move(WC->Errors[0].first), InstrFilename);
 
@@ -1672,6 +1675,10 @@ static int merge_main(int argc, const char *argv[]) {
   cl::opt<std::string> DebugInfoFilename(
       "debug-info", cl::init(""),
       cl::desc("Use the provided debug info to correlate the raw profile."));
+  cl::opt<std::string>
+    BinaryFilename("binary-file", cl::init(""),
+		   cl::desc("For merge, use the provided unstripped binary to "
+			    "correlate the raw profile."));
   cl::opt<std::string> ProfiledBinary(
       "profiled-binary", cl::init(""),
       cl::desc("Path to binary from which the profile was collected."));
@@ -1679,6 +1686,9 @@ static int merge_main(int argc, const char *argv[]) {
       "drop-profile-symbol-list", cl::init(false), cl::Hidden,
       cl::desc("Drop the profile symbol list when merging AutoFDO profiles "
                "(only meaningful for -sample)"));
+  cl::opt<bool> KeepVTableSymbols(
+      "keep-vtable-symbols", cl::init(false), cl::Hidden,
+      cl::desc("If true, keep the vtable symbols in indexed profiles"));
   // WARNING: This reservoir size value is propagated to any input indexed
   // profiles for simplicity. Changing this value between invocations could
   // result in sample bias.
@@ -1725,16 +1735,17 @@ static int merge_main(int argc, const char *argv[]) {
 
     supplementInstrProfile(WeightedInputs, SupplInstrWithSample, OutputFilename,
                            OutputFormat, OutputSparse, SupplMinSizeThreshold,
-                           ZeroCounterThreshold, InstrProfColdThreshold);
+                           ZeroCounterThreshold, InstrProfColdThreshold,
+			   KeepVTableSymbols);
     return 0;
   }
 
   if (ProfileKind == instr)
-    mergeInstrProfile(WeightedInputs, DebugInfoFilename, Remapper.get(),
-                      OutputFilename, OutputFormat,
+    mergeInstrProfile(WeightedInputs, DebugInfoFilename, BinaryFilename,
+		      Remapper.get(), OutputFilename, OutputFormat,
                       TemporalProfTraceReservoirSize,
                       TemporalProfMaxTraceLength, OutputSparse, NumThreads,
-                      FailureMode, ProfiledBinary);
+                      FailureMode, ProfiledBinary, KeepVTableSymbols);
   else
     mergeSampleProfile(WeightedInputs, Remapper.get(), OutputFilename,
                        OutputFormat, ProfileSymbolListFile, CompressAllSections,
@@ -1766,7 +1777,8 @@ static void overlapInstrProfile(const std::string &BaseFilename,
     OS << "Sum of edge counts for profile " << TestFilename << " is 0.\n";
     exit(0);
   }
-  loadInput(WeightedInput, nullptr, nullptr, /*ProfiledBinary=*/"", &Context);
+  loadInput(WeightedInput, nullptr, nullptr, /*ProfiledBinary=*/"", &Context,
+	    /*KeepVTableSymbols=*/false);
   overlapInput(BaseFilename, TestFilename, &Context, Overlap, FuncFilter, OS,
                IsCS);
   Overlap.dump(OS);
@@ -2814,7 +2826,7 @@ static void showValueSitesStats(raw_fd_ostream &OS, uint32_t VK,
 
 static int showInstrProfile(
     const std::string &Filename, bool ShowCounts, uint32_t TopN,
-    bool ShowIndirectCallTargets, bool ShowMemOPSizes, bool ShowDetailedSummary,
+    bool ShowIndirectCallTargets, bool ShowVTables, bool ShowMemOPSizes, bool ShowDetailedSummary,
     std::vector<uint32_t> DetailedSummaryCutoffs, bool ShowAllFunctions,
     bool ShowCS, uint64_t ValueCutoff, bool OnlyListBelow,
     const std::string &ShowFunction, bool TextFormat, bool ShowBinaryIds,
@@ -3351,6 +3363,8 @@ static int show_main(int argc, const char *argv[]) {
   cl::opt<bool> ShowIndirectCallTargets(
       "ic-targets", cl::init(false),
       cl::desc("Show indirect call site target values for shown functions"));
+  cl::opt<bool> ShowVTables("show-vtables", cl::init(false),
+		  	  cl::desc("Show vtable names for shown functions"));
   cl::opt<bool> ShowMemOPSizes(
       "memop-sizes", cl::init(false),
       cl::desc("Show the profiled sizes of the memory intrinsic calls "
@@ -3446,7 +3460,7 @@ static int show_main(int argc, const char *argv[]) {
 
   if (ProfileKind == instr)
     return showInstrProfile(
-        Filename, ShowCounts, TopNFunctions, ShowIndirectCallTargets,
+        Filename, ShowCounts, TopNFunctions, ShowIndirectCallTargets, ShowVTables,
         ShowMemOPSizes, ShowDetailedSummary, DetailedSummaryCutoffs,
         ShowAllFunctions, ShowCS, ValueCutoff, OnlyListBelow, ShowFunction,
         TextFormat, ShowBinaryIds, ShowCovered, ShowProfileVersion,

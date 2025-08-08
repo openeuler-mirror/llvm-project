@@ -15,10 +15,10 @@ define i32 @callee(ptr %0, i32 %1) !prof !19 {
 ; CHECK-NEXT:    ret i32 [[TMP6]]
 ;
   %3 = load ptr, ptr %0, !prof !15
-  %5 = getelementptr inbounds i8, ptr %3, i64 8
-  %6 = load ptr, ptr %5
-  %7 = tail call i32 %6(ptr %0, i32 %1), !prof !16
-  ret i32 %7
+  %4 = getelementptr inbounds i8, ptr %3, i64 8
+  %5 = load ptr, ptr %4
+  %6 = tail call i32 %5(ptr %0, i32 %1), !prof !16
+  ret i32 %6
 }
 
 define i32 @caller1(i32 %0) !prof !17 {

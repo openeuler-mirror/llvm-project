@@ -1819,7 +1819,7 @@ void llvm::updateProfileCallee(
   // During inlining ?
   if (VMap) {
     uint64_t CloneEntryCount = PriorEntryCount - NewEntryCount;
-    for (auto Entry : *VMap)
+    for (auto Entry : *VMap) {
       if (isa<CallInst>(Entry.first))
         if (auto *CI = dyn_cast_or_null<CallInst>(Entry.second)) {
           CI->updateProfWeight(CloneEntryCount, PriorEntryCount);
