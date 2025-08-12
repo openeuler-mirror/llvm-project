@@ -239,7 +239,7 @@ template <> struct yaml::SequenceElementTraits<InstrProfCorrelator::Probe> {
 
 template <class IntPtrT>
 Error InstrProfCorrelatorImpl<IntPtrT>::dumpYaml(int MaxWarnings,
-						 raw_ostream &OS) {
+                                                 raw_ostream &OS) {
   InstrProfCorrelator::CorrelationData Data;
   correlateProfileDataImpl(MaxWarnings, &Data);
   if (Data.Probes.empty())
@@ -363,10 +363,10 @@ void DwarfInstrProfCorrelator<IntPtrT>::correlateProfileDataImpl(
     }
     if (!FunctionName || !CFGHash || !CounterPtr || !NumCounters) {
       if (UnlimitedWarnings || ++NumSuppressedWarnings < 1) {
-        WithColor::warning() 
-            << "Incomplete DIE for function " << FunctionName 
-            << ": CFGHash=" << CFGHash << "  CounterPtr=" << CounterPtr 
-	    << "  NumCounters=" << NumCounters << "\n";
+        WithColor::warning()
+            << "Incomplete DIE for function " << FunctionName
+            << ": CFGHash=" << CFGHash << "  CounterPtr=" << CounterPtr
+            << "  NumCounters=" << NumCounters << "\n";
         LLVM_DEBUG(Die.dump(dbgs()));
       }
       return;
@@ -374,18 +374,18 @@ void DwarfInstrProfCorrelator<IntPtrT>::correlateProfileDataImpl(
     uint64_t CountersStart = this->Ctx->CountersSectionStart;
     uint64_t CountersEnd = this->Ctx->CountersSectionEnd;
     if (*CounterPtr < CountersStart || *CounterPtr >= CountersEnd) {
-      if (UnlimitedWarnings || ++NumSuppressedWarnings < 1) { 
+      if (UnlimitedWarnings || ++NumSuppressedWarnings < 1) {
         WithColor::warning() 
             << format("CounterPtr out of range for function %s: Actual=0x%x " 
                       "Expected=[0x%x, 0x%x)\n",
                       *FunctionName, *CounterPtr, CountersStart, CountersEnd);
-        LLVM_DEBUG(Die.dump(dbgs()));         
-      } 
+        LLVM_DEBUG(Die.dump(dbgs()));
+      }
       return;
     }
     if (!FunctionPtr && (UnlimitedWarnings || ++NumSuppressedWarnings < 1)) {
-      WithColor::warning() << format("Could not find address of function %s\n", 
-                       		     *FunctionName); 
+      WithColor::warning() << format("Could not find address of function %s\n",
+                                     *FunctionName); 
       LLVM_DEBUG(Die.dump(dbgs()));
     }
     // In debug info correlation mode, the CounterPtr is an absolute address of
@@ -421,7 +421,7 @@ void DwarfInstrProfCorrelator<IntPtrT>::correlateProfileDataImpl(
 
   if (!UnlimitedWarnings && NumSuppressedWarnings > 0)
     WithColor::warning() << format("Suppressed %d additional warnings\n",
-		    		   NumSuppressedWarnings);
+                                   NumSuppressedWarnings);
 }
 
 template <class IntPtrT>

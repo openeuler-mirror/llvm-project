@@ -203,7 +203,7 @@ Constant *llvm::getPointerAtOffset(Constant *I, uint64_t Offset, Module &M,
 
 std::pair<Function *, Constant *>
 llvm::getFunctionAtVTableOffset(GlobalVariable *GV, uint64_t Offset,
-				Module &M) {
+                                Module &M) {
   Constant *Ptr = getPointerAtOffset(GV->getInitializer(), Offset, M, GV);
   if (!Ptr)
     return std::pair<Function *, Constant *>(nullptr, nullptr);

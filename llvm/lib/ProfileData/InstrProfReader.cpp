@@ -1480,8 +1480,8 @@ Error IndexedInstrProfReader::getFunctionCounts(StringRef FuncName,
 }
 
 Error IndexedInstrProfReader::getFunctionBitmap(StringRef FuncName,
-						uint64_t FuncHash,
-						BitVector &Bitmap) {
+                                                uint64_t FuncHash,
+                                                BitVector &Bitmap) {
   Expected<InstrProfRecord> Record = getInstrProfRecord(FuncName, FuncHash);
   if (Error E = Record.takeError())
     return error(std::move(E));

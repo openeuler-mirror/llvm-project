@@ -66,11 +66,11 @@ CallBase &promoteCallWithIfThenElse(CallBase &CB, Function *Callee,
 /// a location inside the vtable that's referenced by vpointer in C++ objects.
 ///
 /// TODO: sink the address-calculation instructions of indirect callee to the
-/// indirect call fallback after transformation
-CallBase &promoteCallWithVTableCmp(CallBase &CB, Instruction *Vptr,
-				   Function *Callee,
-				   ArrayRef<Constant *> AddressPoints,
-				   MDNode *BranchWeights);
+/// indirect call fallback after transformation.
+CallBase &promoteCallWithVTableCmp(CallBase &CB, Instruction *VPtr,
+                                   Function *Callee,
+                                   ArrayRef<Constant *> AddressPoints,
+                                   MDNode *BranchWeights);
 
 /// Try to promote (devirtualize) a virtual call on an Alloca. Return true on
 /// success.

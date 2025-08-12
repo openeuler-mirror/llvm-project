@@ -307,8 +307,8 @@ static StringRef getStrippedSourceFileName(const GlobalObject &GO) {
 // lookup functions from profiles built by older compilers.
 static std::string
 getIRPGONameForGlobalObject(const GlobalObject &GO,
-			    GlobalValue::LinkageTypes Linkage,
-			    StringRef FileName) {
+                            GlobalValue::LinkageTypes Linkage,
+                            StringRef FileName) {
   return GlobalValue::getGlobalIdentifier(GO.getName(), Linkage, FileName);
 }
 
@@ -334,7 +334,7 @@ static std::optional<std::string> lookupPGONameFromMetadata(MDNode *MD) {
 // (PGOUseFunc::annotateIndirectCallSites). If a symbol does not have the meta
 // data, its original linkage must be non-internal.
 static std::string getIRPGOObjectName(const GlobalObject &GO, bool InLTO,
-				      MDNode *PGONameMetadata) {
+                                      MDNode *PGONameMetadata) {
   if (!InLTO) {
     auto FileName = getStrippedSourceFileName(GO);
     return getIRPGONameForGlobalObject(GO, GO.getLinkage(), FileName);
@@ -385,7 +385,7 @@ static std::optional<std::string> lookupPGOFuncName(const Function &F) {
 }
 
 // Returns the IRPGO function name and does special handling when called
-// in LTO optimization. See the comments of `getIRPGOObjectName` for details. 
+// in LTO optimization. See the comments of `getIRPGOObjectName` for details.
 std::string getIRPGOFuncName(const Function &F, bool InLTO) {
   return getIRPGOObjectName(F, InLTO, getPGOFuncNameMetadata(F));
 }
@@ -426,7 +426,7 @@ std::string getPGOName(const GlobalVariable &V, bool InLTO) {
   return getIRPGOObjectName(V, InLTO, V.getMetadata(getPGONameMetadataName()));
 }
 
-// See getIRPGOObjectName() for a discription of the format.
+// See getIRPGOFuncName() for a discription of the format.
 std::pair<StringRef, StringRef> getParsedIRPGOFuncName(StringRef IRPGOName) {
   auto [FileName, MangledName] = IRPGOName.split(';');
   if (MangledName.empty())
@@ -529,15 +529,15 @@ Error InstrProfSymtab::create(Module &M, bool InLTO) {
 }
 
 Error InstrProfSymtab::addVTableWithName(GlobalVariable &VTable,
-					 StringRef VTablePGOName) {
+                                         StringRef VTablePGOName) {
   auto NameToGUIDMap = [&](StringRef Name) -> Error {
     if (Error E = addSymbolName(Name)) 
       return E;
  
-  bool Inserted = true;
-  std::tie(std::ignore, Inserted) =
-      MD5VTableMap.try_emplace(GlobalValue::getGUID(Name), &VTable);
-  return Error::success();
+    bool Inserted = true;
+    std::tie(std::ignore, Inserted) =
+        MD5VTableMap.try_emplace(GlobalValue::getGUID(Name), &VTable);
+    return Error::success();
   };
   if (Error E = NameToGUIDMap(VTablePGOName))
     return E;
@@ -554,7 +554,7 @@ Error InstrProfSymtab::addVTableWithName(GlobalVariable &VTable,
 /// method decodes the string and calls `NameCallback` for each substring.
 static Error
 readAndDecodeStrings(StringRef NameStrings,
-		     std::function<Error(StringRef)> NameCallback) {
+                     std::function<Error(StringRef)> NameCallback) {
   const uint8_t *P = NameStrings.bytes_begin();
   const uint8_t *EndP = NameStrings.bytes_end();
   while (P < EndP) {
@@ -568,19 +568,19 @@ readAndDecodeStrings(StringRef NameStrings,
     StringRef NameStrings;
     if (IsCompressed) {
       if (!llvm::compression::zlib::isAvailable())
-	return make_error<InstrProfError>(instrprof_error::zlib_unavailable);
- 
+        return make_error<InstrProfError>(instrprof_error::zlib_unavailable);
+
       if (Error E = compression::zlib::decompress(ArrayRef(P, CompressedSize),
-			      			  UncompressedNameStrings,
-						  UncompressedSize)) {
+                                                  UncompressedNameStrings,
+                                                  UncompressedSize)) {
         consumeError(std::move(E));
-	return make_error<InstrProfError>(instrprof_error::uncompress_failed);
+        return make_error<InstrProfError>(instrprof_error::uncompress_failed);
       }
       P += CompressedSize;
       NameStrings = toStringRef(UncompressedNameStrings);
     } else {
       NameStrings =
-	  StringRef(reinterpret_cast<const char *>(P), UncompressedSize);
+          StringRef(reinterpret_cast<const char *>(P), UncompressedSize);
       P += UncompressedSize;
     }
     // Now parse the name strings.
@@ -588,7 +588,7 @@ readAndDecodeStrings(StringRef NameStrings,
     NameStrings.split(Names, getInstrProfNameSeparator());
     for (StringRef &Name : Names)
       if (Error E = NameCallback(Name))
-	return E;
+        return E;
 
     while (P < EndP && *P == 0)
       P++;
@@ -637,9 +637,9 @@ StringRef InstrProfSymtab::getCanonicalName(StringRef PGOName) {
     Pos += UniqSuffix.length();
   else
     Pos = 0;
- 
+
   // Search '.' after ".__uniq." if ".__uniq." exists, otherwise search '.' from
-  // the beginning. 
+  // the beginning.
   Pos = PGOName.find('.', Pos);
   if (Pos != StringRef::npos && Pos != 0)
     return PGOName.substr(0, Pos);
@@ -692,7 +692,7 @@ void InstrProfSymtab::dumpNames(raw_ostream &OS) const {
 }
 
 Error collectGlobalObjectNameStrings(ArrayRef<std::string> NameStrs,
-				     bool DoCompression, std::string &Result) {
+                                     bool DoCompression, std::string &Result) {
   assert(!NameStrs.empty() && "No name data to emit");
 
   uint8_t Header[20], *P = Header;
@@ -701,7 +701,7 @@ Error collectGlobalObjectNameStrings(ArrayRef<std::string> NameStrs,
 
   assert(
       StringRef(UncompressedNameStrings).count(getInstrProfNameSeparator()) ==
-      	  (NameStrs.size() - 1) &&
+          (NameStrs.size() - 1) &&
       "PGO name is invalid (contains separator token)");
 
   unsigned EncLen = encodeULEB128(UncompressedNameStrings.length(), P);
@@ -723,11 +723,11 @@ Error collectGlobalObjectNameStrings(ArrayRef<std::string> NameStrs,
 
   SmallVector<uint8_t, 128> CompressedNameStrings;
   compression::zlib::compress(arrayRefFromStringRef(UncompressedNameStrings),
-		  	      CompressedNameStrings,
-			      compression::zlib::BestSizeCompression);
+                              CompressedNameStrings,
+                              compression::zlib::BestSizeCompression);
 
   return WriteStringToResult(CompressedNameStrings.size(),
-		  	     toStringRef(CompressedNameStrings));
+		  	                     toStringRef(CompressedNameStrings));
 }
 
 Error collectPGOFuncNameStrings(ArrayRef<std::string> NameStrs,
@@ -786,7 +786,7 @@ Error collectPGOFuncNameStrings(ArrayRef<GlobalVariable *> NameVars,
 }
 
 Error collectVTableStrings(ArrayRef<GlobalVariable *> VTables,
-			   std::string &Result, bool DoCompression) {
+                           std::string &Result, bool DoCompression) {
   std::vector<std::string> VTableNameStrs;
   for (auto *VTable : VTables)
     VTableNameStrs.push_back(getPGOName(*VTable));

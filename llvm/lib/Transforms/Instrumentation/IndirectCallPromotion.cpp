@@ -632,7 +632,7 @@ CallBase &llvm::pgo::promoteIndirectCall(CallBase &CB, Function *DirectCallee,
     MDBuilder MDB(NewInst.getContext());
     NewInst.setMetadata(
         LLVMContext::MD_prof,
-	MDB.createBranchWeights({static_cast<uint32_t>(Count)}));
+        MDB.createBranchWeights({static_cast<uint32_t>(Count)}));
   }
 
   using namespace ore;
@@ -1038,7 +1038,7 @@ static bool promoteIndirectCalls(Module &M, ProfileSummaryInfo *PSI, bool InLTO,
     auto &ORE = FAM.getResult<OptimizationRemarkEmitterAnalysis>(F);
 
     IndirectCallPromoter CallPromoter(
-	F, M, PSI, &Symtab, SamplePGO, VirtualCSInfo,
+        F, M, PSI, &Symtab, SamplePGO, VirtualCSInfo,
         VTableAddressPointOffsetVal, IgnoredBaseTypes, ORE);
     bool FuncChanged = CallPromoter.processFunction(PSI);
     if (ICPDUMPAFTER && FuncChanged) {

@@ -40,7 +40,7 @@ MDNode *MDBuilder::createBranchWeights(uint32_t TrueWeight,
 }
 
 MDNode *MDBuilder::createBranchWeights(ArrayRef<uint32_t> Weights,
-				       bool IsExpected) {
+                                       bool IsExpected) {
   assert(Weights.size() >= 1 && "Need at least one branch weights!");
 
   unsigned int Offset = IsExpected ? 2 : 1;

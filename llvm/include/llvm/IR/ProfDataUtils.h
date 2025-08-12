@@ -80,12 +80,12 @@ bool extractBranchWeights(const MDNode *ProfileData,
 /// Faster version of extractBranchWeights() that skips checks and must only
 /// be called with "branch_weights" metadata nodes. Supports uint32_t.
 void extractFromBranchWeightMD32(const MDNode *ProfileData,
-				 SmallVectorImpl<uint32_t> &Weights);
+                                 SmallVectorImpl<uint32_t> &Weights);
 
 /// Faster version of extractBranchWeights() that skips checks and must only
 /// be called with "branch_weights" metadata nodes. Supports uint64_t.
 void extractFromBranchWeightMD64(const MDNode *ProfileData,
-				 SmallVectorImpl<uint64_t> &Weights);
+                                 SmallVectorImpl<uint64_t> &Weights);
 
 /// Extract branch weights attatched to an Instruction
 ///
@@ -128,7 +128,7 @@ bool extractProfTotalWeight(const Instruction &I, uint64_t &TotalWeights);
 /// \param Weights an array of weights to set on instruction I.
 /// \param IsExpected were these weights added from an llvm.expect* intrinsic.
 void setBranchWeights(Instruction &I, ArrayRef<uint32_t> Weights,
-		      bool IsExpected);
+                      bool IsExpected);
 
 /// Scaling the profile data attached to 'I' using the ratio of S/T.
 void scaleProfData(Instruction &I, uint64_t S, uint64_t T);

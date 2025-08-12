@@ -609,7 +609,7 @@ static void overlapInput(const std::string &BaseFilename,
 static void loadInput(const WeightedFile &Input, SymbolRemapper *Remapper,
                       const InstrProfCorrelator *Correlator,
                       const StringRef ProfiledBinary, WriterContext *WC,
-		      const bool KeepVTableSymbols) {
+                      const bool KeepVTableSymbols) {
   std::unique_lock<std::mutex> CtxGuard{WC->Lock};
 
   // Copy the filename, because llvm::ThreadPool copied the input "const
@@ -792,12 +792,12 @@ static void writeInstrProfile(StringRef OutputFilename,
 
 static void
 mergeInstrProfile(const WeightedFileVector &Inputs, StringRef DebugInfoFilename,
-                  StringRef BinaryFilename, SymbolRemapper *Remapper,
-		  StringRef OutputFilename, ProfileFormat OutputFormat,
-		  uint64_t TraceReservoirSize, uint64_t MaxTraceLength,
-		  bool OutputSparse, unsigned NumThreads, FailureMode FailMode,
+                  SymbolRemapper *Remapper, StringRef OutputFilename,
+                  ProfileFormat OutputFormat, uint64_t TraceReservoirSize,
+                  uint64_t MaxTraceLength, bool OutputSparse,
+                  unsigned NumThreads, FailureMode FailMode,
                   const StringRef ProfiledBinary,
-		  const bool KeepVTableSymbols) {
+                  const bool KeepVTableSymbols) {
   if (OutputFormat == PF_Compact_Binary)
     exitWithError("Compact Binary is deprecated");
   if (OutputFormat != PF_Binary && OutputFormat != PF_Ext_Binary &&
@@ -806,16 +806,11 @@ mergeInstrProfile(const WeightedFileVector &Inputs, StringRef DebugInfoFilename,
 
   // TODO: Maybe we should support correlation with mixture of different
   // correlation modes(w/wo debug-info/object correlation).
-  if (!DebugInfoFilename.empty() && !BinaryFilename.empty())
-    exitWithError("Expected only one of -debug-info, -binary-file");
   std::string CorrelateFilename;
   ProfCorrelatorKind CorrelateKind = ProfCorrelatorKind::NONE;
   if (!DebugInfoFilename.empty()) {
     CorrelateFilename = DebugInfoFilename;
     CorrelateKind = ProfCorrelatorKind::DEBUG_INFO;
-  } else if (!BinaryFilename.empty()) {
-    CorrelateFilename = BinaryFilename;
-    CorrelateKind = ProfCorrelatorKind::BINARY;
   }
 
   std::unique_ptr<InstrProfCorrelator> Correlator;
@@ -1273,7 +1268,7 @@ static void supplementInstrProfile(
   auto WC = std::make_unique<WriterContext>(OutputSparse, ErrorLock,
                                             WriterErrorCodes);
   loadInput(Inputs[0], nullptr, nullptr, /*ProfiledBinary=*/"", WC.get(),
-	    KeepVTableSymbols);
+            KeepVTableSymbols);
   if (WC->Errors.size() > 0)
     exitWithError(std::move(WC->Errors[0].first), InstrFilename);
 
@@ -1675,10 +1670,6 @@ static int merge_main(int argc, const char *argv[]) {
   cl::opt<std::string> DebugInfoFilename(
       "debug-info", cl::init(""),
       cl::desc("Use the provided debug info to correlate the raw profile."));
-  cl::opt<std::string>
-    BinaryFilename("binary-file", cl::init(""),
-		   cl::desc("For merge, use the provided unstripped binary to "
-			    "correlate the raw profile."));
   cl::opt<std::string> ProfiledBinary(
       "profiled-binary", cl::init(""),
       cl::desc("Path to binary from which the profile was collected."));
@@ -1736,13 +1727,13 @@ static int merge_main(int argc, const char *argv[]) {
     supplementInstrProfile(WeightedInputs, SupplInstrWithSample, OutputFilename,
                            OutputFormat, OutputSparse, SupplMinSizeThreshold,
                            ZeroCounterThreshold, InstrProfColdThreshold,
-			   KeepVTableSymbols);
+                           KeepVTableSymbols);
     return 0;
   }
 
   if (ProfileKind == instr)
-    mergeInstrProfile(WeightedInputs, DebugInfoFilename, BinaryFilename,
-		      Remapper.get(), OutputFilename, OutputFormat,
+    mergeInstrProfile(WeightedInputs, DebugInfoFilename, Remapper.get(),
+                      OutputFilename, OutputFormat,
                       TemporalProfTraceReservoirSize,
                       TemporalProfMaxTraceLength, OutputSparse, NumThreads,
                       FailureMode, ProfiledBinary, KeepVTableSymbols);
@@ -1778,7 +1769,7 @@ static void overlapInstrProfile(const std::string &BaseFilename,
     exit(0);
   }
   loadInput(WeightedInput, nullptr, nullptr, /*ProfiledBinary=*/"", &Context,
-	    /*KeepVTableSymbols=*/false);
+            /*KeepVTableSymbols=*/false);
   overlapInput(BaseFilename, TestFilename, &Context, Overlap, FuncFilter, OS,
                IsCS);
   Overlap.dump(OS);
@@ -3364,7 +3355,7 @@ static int show_main(int argc, const char *argv[]) {
       "ic-targets", cl::init(false),
       cl::desc("Show indirect call site target values for shown functions"));
   cl::opt<bool> ShowVTables("show-vtables", cl::init(false),
-		  	  cl::desc("Show vtable names for shown functions"));
+                          cl::desc("Show vtable names for shown functions"));
   cl::opt<bool> ShowMemOPSizes(
       "memop-sizes", cl::init(false),
       cl::desc("Show the profiled sizes of the memory intrinsic calls "

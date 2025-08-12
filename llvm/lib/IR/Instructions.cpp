@@ -1131,10 +1131,10 @@ LandingPadInst *InvokeInst::getLandingPadInst() const {
 void InvokeInst::updateProfWeight(uint64_t S, uint64_t T) {
   if (T == 0) {
     LLVM_DEBUG(dbgs() << "Attempting to update profile weights will result in "
-		    	 "div by 0. Ignoring. Likely the function "
-		      << getParent()->getParent()->getName()
-		      << " has 0 entry count, and contains call instruction "
-		      	 "with non-zero prof info.");
+                         "div by 0. Ignoring. Likely the function "
+                      << getParent()->getParent()->getName()
+                      << " has 0 entry count, and contains call instruction "
+                         "with non-zero prof info.");
     return;
   }
   scaleProfData(*this, S, T);

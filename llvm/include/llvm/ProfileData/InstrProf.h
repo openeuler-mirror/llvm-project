@@ -234,15 +234,15 @@ StringRef getFuncNameWithoutPrefix(StringRef PGOFuncName,
 
 /// Given a vector of strings (names of global objects like functions or,
 /// virtual tables) \c NameStrs, the method generates a combined string \c
-/// Result that is ready to be serialized. The \c result string is comprised of
+/// Result that is ready to be serialized. The \c Result string is comprised of
 /// three fields: The first field is the length of the uncompressed strings, and
 /// the the second field is the length of the zlib-compressed string. Both
-/// fields are encoded in ULEB128. If \c doCompress is false, the
+/// fields are encoded in ULEB128.  If \c doCompress is false, the
 ///  third field is the uncompressed strings; otherwise it is the
 /// compressed string. When the string compression is off, the
 /// second field will have value zero.
 Error collectGlobalObjectNameStrings(ArrayRef<std::string> NameStrs,
-				     bool doCompression, std::string &Result);
+                                     bool doCompression, std::string &Result);
 
 /// Given a vector of strings (function PGO names) \c NameStrs, the
 /// method generates a combined string \c Result that is ready to be
@@ -513,9 +513,9 @@ private:
 
   static StringRef getExternalSymbol() { return "** External Symbol **"; }
 
-  //Returns the canonical name of the given PGOName. In a canonical name, all
-  //suffixes that begins with "." except ".uniq." are stripped.
-  //FIXME: Unify this with `FunctionSamples::getCanonicalFnName`.
+  // Returns the canonial name of the given PGOName. In a canonical name, all
+  // suffixes that begins with "." except ".__uniq." are stripped.
+  // FIXME: Unify this with `FunctionSamples::getCanonicalFnName`.
   static StringRef getCanonicalName(StringRef PGOName);
 
   // Add the function into the symbol table, by creating the following
@@ -749,8 +749,8 @@ StringRef InstrProfSymtab::getFuncOrVarNameIfDefined(uint64_t MD5Hash) {
 StringRef InstrProfSymtab::getFuncOrVarName(uint64_t MD5Hash) {
   finalizeSymtab();
   auto Result = llvm::lower_bound(MD5NameMap, MD5Hash,
-		  		  [](const std::pair<uint64_t, StringRef> &LHS,
-				     uint64_t RHS) { return LHS.first < RHS; });
+                                  [](const std::pair<uint64_t, StringRef> &LHS,
+                                     uint64_t RHS) { return LHS.first < RHS; });
   if (Result != MD5NameMap.end() && Result->first == MD5Hash)
     return Result->second;
   return StringRef();

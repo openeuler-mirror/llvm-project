@@ -282,7 +282,7 @@ static void createRetBitCast(CallBase &CB, Type *RetTy, CastInst **RetBitCast) {
 ///     %t0 = musttail call i32 %ptr()
 ///     ret %t0
 static CallBase &versionCallSiteWithCond(CallBase &CB, Value *Cond,
-                                	 MDNode *BranchWeights) {
+                                         MDNode *BranchWeights) {
 
   IRBuilder<> Builder(&CB);
   CallBase *OrigInst = &CB;
@@ -376,9 +376,9 @@ static CallBase &versionCallSiteWithCond(CallBase &CB, Value *Cond,
 }
 
 // Predicate and clone the given call site using condition `CB.callee ==
-// Callee`. See the comment `versionCallSiteWithcond` for the transformation.
+// Callee`. See the comment `versionCallSiteWithCond` for the transformation.
 CallBase &llvm::versionCallSite(CallBase &CB, Value *Callee,
-				MDNode *BranchWeights) {
+                                MDNode *BranchWeights) {
 
   IRBuilder<> Builder(&CB);
 
@@ -571,9 +571,9 @@ CallBase &llvm::promoteCallWithIfThenElse(CallBase &CB, Function *Callee,
 }
 
 CallBase &llvm::promoteCallWithVTableCmp(CallBase &CB, Instruction *VPtr,
-					 Function *Callee,
-					 ArrayRef<Constant *> AddressPoints,
-					 MDNode *BranchWeights) {
+                                         Function *Callee,
+                                         ArrayRef<Constant *> AddressPoints,
+                                         MDNode *BranchWeights) {
   assert(!AddressPoints.empty() && "Caller should guarantee");
   IRBuilder<> Builder(&CB);
   SmallVector<Value *, 2> ICmps;
@@ -632,7 +632,7 @@ bool llvm::tryPromoteCall(CallBase &CB) {
   APInt VTableGVOffset = VTableOffsetGVBase + VTableOffset;
   if (!(VTableGVOffset.getActiveBits() <= 64))
     return false; // Out of range.
- 
+
   Function *DirectCallee = nullptr;
   std::tie(DirectCallee, std::ignore) =
       getFunctionAtVTableOffset(GV, VTableGVOffset.getZExtValue(), *M);

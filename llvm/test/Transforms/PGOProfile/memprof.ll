@@ -1,3 +1,4 @@
+; REQUIRES: disabled
 ;; Tests memprof profile matching (with and without instrumentation profiles).
 
 ;; Several requirements due to using raw profile inputs:

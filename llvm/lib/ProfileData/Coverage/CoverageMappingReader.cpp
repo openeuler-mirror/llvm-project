@@ -837,34 +837,34 @@ BinaryCoverageReader::createCoverageReaderFromBuffer(
     StringRef Coverage, FuncRecordsStorage &&FuncRecords,
     std::unique_ptr<InstrProfSymtab> ProfileNamesPtr, uint8_t BytesInAddress,
     support::endianness Endian, StringRef CompilationDir) {
-  if (ProfileNamesPtr == nullptr) 
-    return make_error<CoverageMapError>(coveragemap_error::malformed, 
- 					"Caller must provide ProfileNames");
+  if (ProfileNamesPtr == nullptr)
+    return make_error<CoverageMapError>(coveragemap_error::malformed,
+                                        "Caller must provide ProfileNames");
   std::unique_ptr<BinaryCoverageReader> Reader(new BinaryCoverageReader(
-      std::move(ProfileNamesPtr), std::move(FuncRecords))); 
+      std::move(ProfileNamesPtr), std::move(FuncRecords)));
   InstrProfSymtab &ProfileNames = *Reader->ProfileNames;
   StringRef FuncRecordsRef = Reader->FuncRecords->getBuffer();
   if (BytesInAddress == 4 && Endian == support::endianness::little) {
     if (Error E =
             readCoverageMappingData<uint32_t, support::endianness::little>(
                 ProfileNames, Coverage, FuncRecordsRef, Reader->MappingRecords,
-		CompilationDir, Reader->Filenames))
+                CompilationDir, Reader->Filenames))
       return std::move(E);
   } else if (BytesInAddress == 4 && Endian == support::endianness::big) {
     if (Error E = readCoverageMappingData<uint32_t, support::endianness::big>(
             ProfileNames, Coverage, FuncRecordsRef, Reader->MappingRecords,
-	    CompilationDir, Reader->Filenames))
+            CompilationDir, Reader->Filenames))
       return std::move(E);
   } else if (BytesInAddress == 8 && Endian == support::endianness::little) {
     if (Error E =
             readCoverageMappingData<uint64_t, support::endianness::little>(
                 ProfileNames, Coverage, FuncRecordsRef, Reader->MappingRecords,
-		CompilationDir, Reader->Filenames))
+                CompilationDir, Reader->Filenames))
       return std::move(E);
   } else if (BytesInAddress == 8 && Endian == support::endianness::big) {
     if (Error E = readCoverageMappingData<uint64_t, support::endianness::big>(
             ProfileNames, Coverage, FuncRecordsRef, Reader->MappingRecords,
-	    CompilationDir, Reader->Filenames))
+            CompilationDir, Reader->Filenames))
       return std::move(E);
   } else
     return make_error<CoverageMapError>(coveragemap_error::malformed);

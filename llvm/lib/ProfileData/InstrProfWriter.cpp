@@ -182,7 +182,7 @@ public:
 InstrProfWriter::InstrProfWriter(bool Sparse,
                                  uint64_t TemporalProfTraceReservoirSize,
                                  uint64_t MaxTemporalProfTraceLength,
-				 bool WritePrevVersion)
+                                 bool WritePrevVersion)
     : Sparse(Sparse), MaxTemporalProfTraceLength(MaxTemporalProfTraceLength),
       TemporalProfTraceReservoirSize(TemporalProfTraceReservoirSize),
       InfoObj(new InstrProfRecordWriterTrait()),
@@ -618,12 +618,12 @@ Error InstrProfWriter::writeImpl(ProfOStream &OS) {
 
     const uint64_t CompressedStringLen = CompressedVTableNames.length();
 
-  // Record the length of compressed string.
-  OS.write(CompressedStringLen);
+    // Record the length of compressed string.
+    OS.write(CompressedStringLen);
 
-  // Write the chars in compressed strings.
-  for (auto &c : CompressedVTableNames)
-    OS.writeByte(static_cast<uint8_t>(c));
+    // Write the chars in compressed strings.
+    for (auto &c : CompressedVTableNames)
+      OS.writeByte(static_cast<uint8_t>(c));
 
     // Pad up to a multiple of 8.
     // InstrProfReader could read bytes according to 'CompressedStringLen'.

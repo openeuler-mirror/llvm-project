@@ -196,7 +196,7 @@ private:
   FuncRecordsStorage FuncRecords;
 
   BinaryCoverageReader(std::unique_ptr<InstrProfSymtab> Symtab,
-		       FuncRecordsStorage &&FuncRecords)
+                       FuncRecordsStorage &&FuncRecords)
       : ProfileNames(std::move(Symtab)), FuncRecords(std::move(FuncRecords)) {}
 
 public:

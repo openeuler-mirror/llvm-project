@@ -53,7 +53,7 @@ struct PGOIndirectCallVisitor : public InstVisitor<PGOIndirectCallVisitor> {
       // address is negligible if exists at all. Comparing loaded address
       // with symbol address guarantees correctness.
       if (VTablePtr != nullptr && isa<Instruction>(VTablePtr))
-        return cast<Instruction>(VTablePtr); 
+        return cast<Instruction>(VTablePtr);
     }
     return nullptr;
   }
@@ -66,9 +66,9 @@ struct PGOIndirectCallVisitor : public InstVisitor<PGOIndirectCallVisitor> {
         return;
 
       Instruction *VPtr =
-	  PGOIndirectCallVisitor::tryGetVTableInstruction(&Call);
+          PGOIndirectCallVisitor::tryGetVTableInstruction(&Call);
       if (VPtr)
-	ProfiledAddresses.push_back(VPtr);
+        ProfiledAddresses.push_back(VPtr);
     }
   }
 

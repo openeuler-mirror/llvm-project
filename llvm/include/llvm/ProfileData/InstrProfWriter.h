@@ -83,7 +83,7 @@ public:
   InstrProfWriter(bool Sparse = false,
                   uint64_t TemporalProfTraceReservoirSize = 0,
                   uint64_t MaxTemporalProfTraceLength = 0,
-		  bool WritePrevVersion = false);
+                  bool WritePrevVersion = false);
   ~InstrProfWriter();
 
   StringMap<ProfilingData> &getProfileData() { return FunctionData; }

@@ -540,7 +540,7 @@ TEST_P(MaybeSparseInstrProfTest, get_icall_data_read_write) {
   InstrProfValueData VD2[] = {{(uint64_t)callee1, 1}, {(uint64_t)callee2, 2}};
   Record1.addValueData(IPVK_IndirectCallTarget, 2, VD2, 2, nullptr);
   InstrProfValueData VD3[] = {{(uint64_t)callee1, 1}};
-  Record1.addValueData(IPVK_IndirectCallTarget, 3, VD3, 1, nullptr); 
+  Record1.addValueData(IPVK_IndirectCallTarget, 3, VD3, 1, nullptr);
 
   Writer.addRecord(std::move(Record1), Err);
   Writer.addRecord({"callee1", 0x1235, {3, 4}}, Err);
@@ -561,14 +561,14 @@ TEST_P(MaybeSparseInstrProfTest, get_icall_data_read_write) {
   std::unique_ptr<InstrProfValueData[]> VD =
       R->getValueForSite(IPVK_IndirectCallTarget, 0, &TotalC);
 
-    ASSERT_EQ(3U, VD[0].Count);
-    ASSERT_EQ(2U, VD[1].Count); 
-    ASSERT_EQ(1U, VD[2].Count);
-    ASSERT_EQ(6U, TotalC);
+  ASSERT_EQ(3U, VD[0].Count);
+  ASSERT_EQ(2U, VD[1].Count);
+  ASSERT_EQ(1U, VD[2].Count);
+  ASSERT_EQ(6U, TotalC);
 
-    ASSERT_EQ(StringRef((const char *)VD[0].Value, 7), StringRef("callee3"));
-    ASSERT_EQ(StringRef((const char *)VD[1].Value, 7), StringRef("callee2"));
-    ASSERT_EQ(StringRef((const char *)VD[2].Value, 7), StringRef("callee1"));
+  ASSERT_EQ(StringRef((const char *)VD[0].Value, 7), StringRef("callee3"));
+  ASSERT_EQ(StringRef((const char *)VD[1].Value, 7), StringRef("callee2"));
+  ASSERT_EQ(StringRef((const char *)VD[2].Value, 7), StringRef("callee1"));
 }
 
 TEST_P(MaybeSparseInstrProfTest, annotate_vp_data) {
@@ -731,7 +731,7 @@ TEST_P(MaybeSparseInstrProfTest, get_icall_data_read_write_big_endian) {
   Writer.addRecord({"callee3", 0x1235, {3, 4}}, Err);
 
   // Set big endian output.
-  Writer.setValueProfDataEndianness((support::big));
+  Writer.setValueProfDataEndianness(support::big);
 
   auto Profile = Writer.writeBuffer();
   readProfile(std::move(Profile));
@@ -762,7 +762,7 @@ TEST_P(MaybeSparseInstrProfTest, get_icall_data_merge1) {
   NamedInstrProfRecord Record11(caller, 0x1234, {1, 2});
   NamedInstrProfRecord Record12(caller, 0x1234, {1, 2});
 
-  // 5 value sites
+  // 5 value sites.
   Record11.reserveSites(IPVK_IndirectCallTarget, 5);
   InstrProfValueData VD0[] = {{uint64_t(callee1), 1},
                               {uint64_t(callee2), 2},
@@ -781,8 +781,8 @@ TEST_P(MaybeSparseInstrProfTest, get_icall_data_merge1) {
   Record11.addValueData(IPVK_IndirectCallTarget, 3, VD3, 1, nullptr);
 
   InstrProfValueData VD4[] = {{uint64_t(callee1), 1},
-	  		      {uint64_t(callee2), 2},
-			      {uint64_t(callee3), 3}};
+                              {uint64_t(callee2), 2},
+                              {uint64_t(callee3), 3}};
   Record11.addValueData(IPVK_IndirectCallTarget, 4, VD4, 3, nullptr);
 
   // A different record for the same caller.
@@ -800,8 +800,8 @@ TEST_P(MaybeSparseInstrProfTest, get_icall_data_merge1) {
   Record12.addValueData(IPVK_IndirectCallTarget, 3, nullptr, 0, nullptr);
 
   InstrProfValueData VD42[] = {{uint64_t(callee1), 1},
-	  		       {uint64_t(callee2), 2},
-			       {uint64_t(callee3), 3}};
+                               {uint64_t(callee2), 2},
+                               {uint64_t(callee3), 3}};
   Record12.addValueData(IPVK_IndirectCallTarget, 4, VD42, 3, nullptr);
 
   Writer.addRecord(std::move(Record11), Err);
@@ -827,39 +827,39 @@ TEST_P(MaybeSparseInstrProfTest, get_icall_data_merge1) {
 
   std::unique_ptr<InstrProfValueData[]> VD =
       R->getValueForSite(IPVK_IndirectCallTarget, 0);
-    ASSERT_EQ(StringRef((const char *)VD[0].Value, 7), StringRef("callee2"));
-    ASSERT_EQ(7U, VD[0].Count);
-    ASSERT_EQ(StringRef((const char *)VD[1].Value, 7), StringRef("callee3"));
-    ASSERT_EQ(6U, VD[1].Count);
-    ASSERT_EQ(StringRef((const char *)VD[2].Value, 7), StringRef("callee4"));
-    ASSERT_EQ(4U, VD[2].Count);
-    ASSERT_EQ(StringRef((const char *)VD[3].Value, 7), StringRef("callee1"));
-    ASSERT_EQ(1U, VD[3].Count);
+  ASSERT_EQ(StringRef((const char *)VD[0].Value, 7), StringRef("callee2"));
+  ASSERT_EQ(7U, VD[0].Count);
+  ASSERT_EQ(StringRef((const char *)VD[1].Value, 7), StringRef("callee3"));
+  ASSERT_EQ(6U, VD[1].Count);
+  ASSERT_EQ(StringRef((const char *)VD[2].Value, 7), StringRef("callee4"));
+  ASSERT_EQ(4U, VD[2].Count);
+  ASSERT_EQ(StringRef((const char *)VD[3].Value, 7), StringRef("callee1"));
+  ASSERT_EQ(1U, VD[3].Count);
 
-    std::unique_ptr<InstrProfValueData[]> VD_2(
-        R->getValueForSite(IPVK_IndirectCallTarget, 2));
-    ASSERT_EQ(StringRef((const char *)VD_2[0].Value, 7), StringRef("callee3"));
-    ASSERT_EQ(6U, VD_2[0].Count);
-    ASSERT_EQ(StringRef((const char *)VD_2[1].Value, 7), StringRef("callee4"));
-    ASSERT_EQ(4U, VD_2[1].Count);
-    ASSERT_EQ(StringRef((const char *)VD_2[2].Value, 7), StringRef("callee2"));
-    ASSERT_EQ(3U, VD_2[2].Count);
-    ASSERT_EQ(StringRef((const char *)VD_2[3].Value, 7), StringRef("callee1"));
-    ASSERT_EQ(1U, VD_2[3].Count);
+  std::unique_ptr<InstrProfValueData[]> VD_2(
+      R->getValueForSite(IPVK_IndirectCallTarget, 2));
+  ASSERT_EQ(StringRef((const char *)VD_2[0].Value, 7), StringRef("callee3"));
+  ASSERT_EQ(6U, VD_2[0].Count);
+  ASSERT_EQ(StringRef((const char *)VD_2[1].Value, 7), StringRef("callee4"));
+  ASSERT_EQ(4U, VD_2[1].Count);
+  ASSERT_EQ(StringRef((const char *)VD_2[2].Value, 7), StringRef("callee2"));
+  ASSERT_EQ(3U, VD_2[2].Count);
+  ASSERT_EQ(StringRef((const char *)VD_2[3].Value, 7), StringRef("callee1"));
+  ASSERT_EQ(1U, VD_2[3].Count);
 
-    std::unique_ptr<InstrProfValueData[]> VD_3(
-	R->getValueForSite(IPVK_IndirectCallTarget, 3));
-    ASSERT_EQ(StringRef((const char *)VD_3[0].Value, 7), StringRef("callee1"));
-    ASSERT_EQ(1U, VD_3[0].Count);
+  std::unique_ptr<InstrProfValueData[]> VD_3(
+      R->getValueForSite(IPVK_IndirectCallTarget, 3));
+  ASSERT_EQ(StringRef((const char *)VD_3[0].Value, 7), StringRef("callee1"));
+  ASSERT_EQ(1U, VD_3[0].Count);
 
-    std::unique_ptr<InstrProfValueData[]> VD_4(
-	R->getValueForSite(IPVK_IndirectCallTarget, 4));
-    ASSERT_EQ(StringRef((const char *)VD_4[0].Value, 7), StringRef("callee3"));
-    ASSERT_EQ(6U, VD_4[0].Count);
-    ASSERT_EQ(StringRef((const char *)VD_4[1].Value, 7), StringRef("callee2"));
-    ASSERT_EQ(4U, VD_4[1].Count);
-    ASSERT_EQ(StringRef((const char *)VD_4[2].Value, 7), StringRef("callee1"));
-    ASSERT_EQ(2U, VD_4[2].Count);
+  std::unique_ptr<InstrProfValueData[]> VD_4(
+      R->getValueForSite(IPVK_IndirectCallTarget, 4));
+  ASSERT_EQ(StringRef((const char *)VD_4[0].Value, 7), StringRef("callee3"));
+  ASSERT_EQ(6U, VD_4[0].Count);
+  ASSERT_EQ(StringRef((const char *)VD_4[1].Value, 7), StringRef("callee2"));
+  ASSERT_EQ(4U, VD_4[1].Count);
+  ASSERT_EQ(StringRef((const char *)VD_4[2].Value, 7), StringRef("callee1"));
+  ASSERT_EQ(2U, VD_4[2].Count);
 }
 
 TEST_P(MaybeSparseInstrProfTest, get_icall_data_merge1_saturation) {
@@ -971,26 +971,26 @@ TEST_P(MaybeSparseInstrProfTest, get_icall_data_merge_site_trunc) {
 }
 
 static void addValueProfData(InstrProfRecord &Record) {
-    Record.reserveSites(IPVK_IndirectCallTarget, 5);
-    InstrProfValueData VD0[] = {{uint64_t(callee1), 400},
-                                {uint64_t(callee2), 1000},
-                                {uint64_t(callee3), 500},
-                                {uint64_t(callee4), 300},
-                                {uint64_t(callee5), 100}};
-    Record.addValueData(IPVK_IndirectCallTarget, 0, VD0, 5, nullptr);
-    InstrProfValueData VD1[] = {{uint64_t(callee5), 800},
-                                {uint64_t(callee3), 1000},
-                                {uint64_t(callee2), 2500},
-                                {uint64_t(callee1), 1300}};
-    Record.addValueData(IPVK_IndirectCallTarget, 1, VD1, 4, nullptr);
-    InstrProfValueData VD2[] = {{uint64_t(callee6), 800},
-                                {uint64_t(callee3), 1000},
-                                {uint64_t(callee4), 5500}};
-    Record.addValueData(IPVK_IndirectCallTarget, 2, VD2, 3, nullptr);
-    InstrProfValueData VD3[] = {{uint64_t(callee2), 1800},
-                                {uint64_t(callee3), 2000}};
-    Record.addValueData(IPVK_IndirectCallTarget, 3, VD3, 2, nullptr);
-    Record.addValueData(IPVK_IndirectCallTarget, 4, nullptr, 0, nullptr);
+  Record.reserveSites(IPVK_IndirectCallTarget, 5);
+  InstrProfValueData VD0[] = {{uint64_t(callee1), 400},
+                              {uint64_t(callee2), 1000},
+                              {uint64_t(callee3), 500},
+                              {uint64_t(callee4), 300},
+                              {uint64_t(callee5), 100}};
+  Record.addValueData(IPVK_IndirectCallTarget, 0, VD0, 5, nullptr);
+  InstrProfValueData VD1[] = {{uint64_t(callee5), 800},
+                              {uint64_t(callee3), 1000},
+                              {uint64_t(callee2), 2500},
+                              {uint64_t(callee1), 1300}};
+  Record.addValueData(IPVK_IndirectCallTarget, 1, VD1, 4, nullptr);
+  InstrProfValueData VD2[] = {{uint64_t(callee6), 800},
+                              {uint64_t(callee3), 1000},
+                              {uint64_t(callee4), 5500}};
+  Record.addValueData(IPVK_IndirectCallTarget, 2, VD2, 3, nullptr);
+  InstrProfValueData VD3[] = {{uint64_t(callee2), 1800},
+                              {uint64_t(callee3), 2000}};
+  Record.addValueData(IPVK_IndirectCallTarget, 3, VD3, 2, nullptr);
+  Record.addValueData(IPVK_IndirectCallTarget, 4, nullptr, 0, nullptr);
 }
 
 TEST_P(MaybeSparseInstrProfTest, value_prof_data_read_write) {
@@ -1218,8 +1218,8 @@ TEST_P(MaybeSparseInstrProfTest, instr_prof_symtab_module_test) {
     ASSERT_TRUE(F != nullptr);
     std::string PGOName = getPGOFuncName(*F);
     uint64_t Key = IndexedInstrProf::ComputeHash(PGOName);
-    ASSERT_EQ(StringRef(PGOName), 
-    	      ProfSymtab.getFuncName(Key));
+    ASSERT_EQ(StringRef(PGOName),
+              ProfSymtab.getFuncName(Key));
     ASSERT_EQ(StringRef(Funcs[I]), ProfSymtab.getOrigFuncName(Key));
   }
 }

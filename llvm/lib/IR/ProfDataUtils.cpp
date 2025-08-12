@@ -69,9 +69,9 @@ bool isTargetMD(const MDNode *ProfData, const char *Name, unsigned MinOps) {
 }
 
 template <typename T,
-	  typename = typename std::enable_if<std::is_arithmetic_v<T>>>
+          typename = typename std::enable_if<std::is_arithmetic_v<T>>>
 static void extractFromBranchWeightMD(const MDNode *ProfileData,
-				      SmallVectorImpl<T> &Weights) {
+                                      SmallVectorImpl<T> &Weights) {
   assert(isBranchWeightMD(ProfileData) && "wrong metadata");
 
   unsigned NOps = ProfileData->getNumOperands();
@@ -84,7 +84,7 @@ static void extractFromBranchWeightMD(const MDNode *ProfileData,
         mdconst::dyn_extract<ConstantInt>(ProfileData->getOperand(Idx));
     assert(Weight && "Malformed branch_weight in MD_prof node");
     assert(Weight->getValue().getActiveBits() <= (sizeof(T) * 8) &&
-	   "Too many bits for MD_prof branch_weight");
+           "Too many bits for MD_prof branch_weight");
     Weights[Idx - WeightsIdx] = Weight->getZExtValue();
   }
 }
@@ -115,7 +115,7 @@ bool hasCountTypeMD(const Instruction &I) {
   // Value profiles record count-type information.
   if (isValueProfileMD(ProfileData))
     return true;
-  // Conservatively assume non CallBase instruction only get take/not-taken
+  // Conservatively assume non CallBase instruction only get taken/not-taken
   // branch probability, so not interpret them as count.
   return isa<CallBase>(I) && !isBranchWeightMD(ProfileData);
 }
@@ -163,12 +163,12 @@ MDNode *getValidBranchWeightMDNode(const Instruction &I) {
 }
 
 void extractFromBranchWeightMD32(const MDNode *ProfileData,
-				 SmallVectorImpl<uint32_t> &Weights) {
+                                 SmallVectorImpl<uint32_t> &Weights) {
   extractFromBranchWeightMD(ProfileData, Weights);
 }
 
 void extractFromBranchWeightMD64(const MDNode *ProfileData,
-				 SmallVectorImpl<uint64_t> &Weights) {
+                                 SmallVectorImpl<uint64_t> &Weights) {
   extractFromBranchWeightMD(ProfileData, Weights);
 }
 
@@ -239,7 +239,7 @@ bool extractProfTotalWeight(const Instruction &I, uint64_t &TotalVal) {
 }
 
 void setBranchWeights(Instruction &I, ArrayRef<uint32_t> Weights,
-		      bool IsExpected) {
+                      bool IsExpected) {
   MDBuilder MDB(I.getContext());
   MDNode *BranchWeights = MDB.createBranchWeights(Weights, IsExpected);
   I.setMetadata(LLVMContext::MD_prof, BranchWeights);
@@ -252,7 +252,7 @@ void scaleProfData(Instruction &I, uint64_t S, uint64_t T) {
 
   auto *ProfDataName = dyn_cast<MDString>(ProfileData->getOperand(0));
   if (!ProfDataName || (ProfDataName->getString() != "branch_weights" &&
-			ProfDataName->getString() != "VP"))
+                        ProfDataName->getString() != "VP"))
     return;
 
   if (!hasCountTypeMD(I))
@@ -268,31 +268,31 @@ void scaleProfData(Instruction &I, uint64_t S, uint64_t T) {
       ProfileData->getNumOperands() > 0) {
     // Using APInt::div may be expensive, but most cases should fit 64 bits.
     APInt Val(128,
-	      mdconst::dyn_extract<ConstantInt>(
-		  ProfileData->getOperand(getBranchWeightOffset(ProfileData)))
-	      	  ->getValue()
-		  .getZExtValue());
+              mdconst::dyn_extract<ConstantInt>(
+                  ProfileData->getOperand(getBranchWeightOffset(ProfileData)))
+                  ->getValue()
+                  .getZExtValue());
     Val *= APS;
     Vals.push_back(MDB.createConstant(ConstantInt::get(
-	Type::getInt32Ty(C), Val.udiv(APT).getLimitedValue(UINT32_MAX))));
+        Type::getInt32Ty(C), Val.udiv(APT).getLimitedValue(UINT32_MAX))));
   } else if (ProfDataName->getString() == "VP")
     for (unsigned i = 1; i < ProfileData->getNumOperands(); i += 2) {
       // The first value is the key of the value profile, which will not change.
       Vals.push_back(ProfileData->getOperand(i));
       uint64_t Count =
-	  mdconst::dyn_extract<ConstantInt>(ProfileData->getOperand(i + 1))
-	      ->getValue()
-      	      .getZExtValue();
+          mdconst::dyn_extract<ConstantInt>(ProfileData->getOperand(i + 1))
+              ->getValue()
+              .getZExtValue();
       // Don't scale the magic number.
       if (Count == NOMORE_ICP_MAGICNUM) {
-	Vals.push_back(ProfileData->getOperand(i + 1));
-	continue;
+        Vals.push_back(ProfileData->getOperand(i + 1));
+        continue;
       }
       // Using APInt::div may be expensive, but most cases should fit 64 bits.
       APInt Val(128, Count);
       Val *= APS;
       Vals.push_back(MDB.createConstant(ConstantInt::get(
-	  Type::getInt64Ty(C), Val.udiv(APT).getLimitedValue())));
+          Type::getInt64Ty(C), Val.udiv(APT).getLimitedValue())));
     }
   I.setMetadata(LLVMContext::MD_prof, MDNode::get(C, Vals));
 }
