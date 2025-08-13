@@ -3543,6 +3543,12 @@ def LDRHHpost : LoadPostIdx<0b01, 0, 0b01, GPR32z, "ldrh">;
 // load sign-extended word
 def LDRSWpost : LoadPostIdx<0b10, 0, 0b10, GPR64z, "ldrsw">;
 
+def : Pat<(srl (bswap (extloadi16 (am_indexed16 GPR64sp:$Rn, uimm12s2:$offset))), (i64 16)),
+  (REV16Wr (LDRHHui GPR64sp:$Rn, uimm12s2:$offset))>;
+
+def : Pat<(srl (bswap (extloadi16 (am_unscaled16 GPR64sp:$Rn, simm9:$offset))), (i64 16)),
+  (REV16Wr (LDURHHi GPR64sp:$Rn, simm9:$offset))>;
+
 //===----------------------------------------------------------------------===//
 // Store instructions.
 //===----------------------------------------------------------------------===//
@@ -3860,6 +3866,14 @@ defm STURHH : StoreUnscaled<0b01, 0, 0b00, GPR32z, "sturh",
 defm STURBB : StoreUnscaled<0b00, 0, 0b00, GPR32z, "sturb",
                          [(truncstorei8 GPR32z:$Rt,
                                   (am_unscaled8 GPR64sp:$Rn, simm9:$offset))]>;
+
+def : Pat<(truncstorei16 (srl (bswap GPR32:$a), (i64 16)),
+                         (am_indexed16 GPR64sp:$Rn, uimm12s2:$offset)),
+  (STRHHui (REV16Wr GPR32:$a), GPR64sp:$Rn, uimm12s2:$offset)>;
+
+def : Pat<(truncstorei16 (srl (bswap GPR32:$a), (i64 16)),
+                         (am_unscaled16 GPR64sp:$Rn, simm9:$offset)),
+  (STURHHi (REV16Wr GPR32:$a), GPR64sp:$Rn, uimm12s2:$offset)>;
 
 // Armv8.4 Weaker Release Consistency enhancements
 //         LDAPR & STLR with Immediate Offset instructions

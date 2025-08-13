@@ -60,8 +60,7 @@ define i32 @test_rev_w_srl16_load(ptr %a) {
 ; CHECK-LABEL: test_rev_w_srl16_load:
 ; CHECK:       // %bb.0: // %entry
 ; CHECK-NEXT:    ldrh w8, [x0]
-; CHECK-NEXT:    rev w8, w8
-; CHECK-NEXT:    lsr w0, w8, #16
+; CHECK-NEXT:    rev16 w0, w8
 ; CHECK-NEXT:    ret
 ;
 ; GISEL-LABEL: test_rev_w_srl16_load:
@@ -618,8 +617,7 @@ define void @test_rev16_truncstore() {
 ; GISEL-NEXT:  .LBB30_1: // %cleanup
 ; GISEL-NEXT:    // =>This Inner Loop Header: Depth=1
 ; GISEL-NEXT:    ldrh w8, [x8]
-; GISEL-NEXT:    rev w8, w8
-; GISEL-NEXT:    lsr w8, w8, #16
+; GISEL-NEXT:    rev16 w8, w8
 ; GISEL-NEXT:    strh w8, [x8]
 ; GISEL-NEXT:    tbz wzr, #0, .LBB30_1
 ; GISEL-NEXT:  .LBB30_2: // %fail
