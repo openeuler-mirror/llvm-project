@@ -54,11 +54,11 @@ void test_bfloat(svbool_t pg, uint64_t u64, int64_t i64, const bfloat16_t *const
   svstnt1_vnum_bf16(pg, bf16_ptr, i64, bf16);
   // expected-error@+1 {{'svtrn1_bf16' needs target feature (sve,bf16)|(sme,bf16)}}
   svtrn1_bf16(bf16, bf16);
-  // expected-error@+1 {{'svtrn1q_bf16' needs target feature sve,bf16}}
+  // expected-error@+1 {{'svtrn1q_bf16' needs target feature sve,f64mm}}
   svtrn1q_bf16(bf16, bf16);
   // expected-error@+1 {{'svtrn2_bf16' needs target feature (sve,bf16)|(sme,bf16)}}
   svtrn2_bf16(bf16, bf16);
-  // expected-error@+1 {{'svtrn2q_bf16' needs target feature sve,bf16}}
+  // expected-error@+1 {{'svtrn2q_bf16' needs target feature sve,f64mm}}
   svtrn2q_bf16(bf16, bf16);
   // expected-error@+1 {{'svundef_bf16' needs target feature (sve,bf16)|(sme,bf16)}}
   svundef_bf16();
@@ -70,18 +70,18 @@ void test_bfloat(svbool_t pg, uint64_t u64, int64_t i64, const bfloat16_t *const
   svundef4_bf16();
   // expected-error@+1 {{'svuzp1_bf16' needs target feature (sve,bf16)|(sme,bf16)}}
   svuzp1_bf16(bf16, bf16);
-  // expected-error@+1 {{'svuzp1q_bf16' needs target feature sve,bf16}}
+  // expected-error@+1 {{'svuzp1q_bf16' needs target feature sve,f64mm}}
   svuzp1q_bf16(bf16, bf16);
   // expected-error@+1 {{'svuzp2_bf16' needs target feature (sve,bf16)|(sme,bf16)}}
   svuzp2_bf16(bf16, bf16);
-  // expected-error@+1 {{'svuzp2q_bf16' needs target feature sve,bf16}}
+  // expected-error@+1 {{'svuzp2q_bf16' needs target feature sve,f64mm}}
   svuzp2q_bf16(bf16, bf16);
   // expected-error@+1 {{'svzip1_bf16' needs target feature (sve,bf16)|(sme,bf16)}}
   svzip1_bf16(bf16, bf16);
-  // expected-error@+1 {{'svzip1q_bf16' needs target feature sve,bf16}}
+  // expected-error@+1 {{'svzip1q_bf16' needs target feature sve,f64mm}}
   svzip1q_bf16(bf16, bf16);
   // expected-error@+1 {{'svzip2_bf16' needs target feature (sve,bf16)|(sme,bf16)}}
   svzip2_bf16(bf16, bf16);
-  // expected-error@+1 {{'svzip2q_bf16' needs target feature sve,bf16}}
+  // expected-error@+1 {{'svzip2q_bf16' needs target feature sve,f64mm}}
   svzip2q_bf16(bf16, bf16);
 }
