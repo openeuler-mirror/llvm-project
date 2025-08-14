@@ -25,17 +25,17 @@ define dso_local void @test(i32 %Num, float* nocapture readonly %TargetArray, i3
 ; CHECK-NEXT:    [[TMP4:%.*]] = add i64 [[INDVARS_IV]], 84
 ; CHECK-NEXT:    [[TMP5:%.*]] = shl nuw nsw i64 [[INDVARS_IV]], 2
 ; CHECK-NEXT:    [[TMP6:%.*]] = add i64 [[TMP5]], 168
-; CHECK-NEXT:    [[UGLYGEP1:%.*]] = getelementptr i8, ptr [[OFFSETARRAY:%.*]], i64 [[TMP6]]
+; CHECK-NEXT:    [[SCEVGEP1:%.*]] = getelementptr i8, ptr [[OFFSETARRAY:%.*]], i64 [[TMP6]]
 ; CHECK-NEXT:    [[TMP7:%.*]] = shl nuw nsw i64 [[INDVARS_IV]], 2
 ; CHECK-NEXT:    [[TMP8:%.*]] = add i64 [[TMP7]], 168
-; CHECK-NEXT:    [[UGLYGEP:%.*]] = getelementptr i8, ptr [[TEMPARRAY:%.*]], i64 [[TMP8]]
+; CHECK-NEXT:    [[SCEVGEP:%.*]] = getelementptr i8, ptr [[TEMPARRAY:%.*]], i64 [[TMP8]]
 ; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds float, ptr [[TEMPARRAY]], i64 [[INDVARS_IV]]
-; CHECK-NEXT:    call void @llvm.prefetch.p0(ptr [[UGLYGEP]], i32 0, i32 3, i32 1)
+; CHECK-NEXT:    call void @llvm.prefetch.p0(ptr [[SCEVGEP]], i32 0, i32 3, i32 1)
 ; CHECK-NEXT:    [[TMP9:%.*]] = load float, ptr [[ARRAYIDX]], align 4
 ; CHECK-NEXT:    [[ARRAYIDX2:%.*]] = getelementptr inbounds i32, ptr [[OFFSETARRAY]], i64 [[INDVARS_IV]]
 ; CHECK-NEXT:    [[TMP10:%.*]] = getelementptr inbounds i32, ptr [[OFFSETARRAY]], i64 [[TMP4]]
 ; CHECK-NEXT:    [[TMP11:%.*]] = getelementptr inbounds i32, ptr [[OFFSETARRAY]], i64 [[TMP3]]
-; CHECK-NEXT:    call void @llvm.prefetch.p0(ptr [[UGLYGEP1]], i32 0, i32 3, i32 1)
+; CHECK-NEXT:    call void @llvm.prefetch.p0(ptr [[SCEVGEP1]], i32 0, i32 3, i32 1)
 ; CHECK-NEXT:    [[TMP12:%.*]] = load i32, ptr [[ARRAYIDX2]], align 4
 ; CHECK-NEXT:    [[TMP13:%.*]] = load i32, ptr [[TMP11]], align 4
 ; CHECK-NEXT:    call void @llvm.prefetch.p0(ptr [[TMP10]], i32 0, i32 3, i32 1)
