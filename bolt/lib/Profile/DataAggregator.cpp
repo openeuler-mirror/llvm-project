@@ -46,6 +46,11 @@ static cl::opt<bool>
                      cl::desc("aggregate basic samples (without LBR info)"),
                      cl::cat(AggregatorCategory));
 
+static cl::opt<std::string>
+    ITraceAggregation("itrace",
+                      cl::desc("Generate LBR info with perf itrace argument"),
+                      cl::cat(AggregatorCategory));
+
 static cl::opt<bool>
 FilterMemProfile("filter-mem-profile",
   cl::desc("if processing a memory profile, filter out stack or heap accesses "
@@ -163,16 +168,23 @@ void DataAggregator::start() {
 
   findPerfExecutable();
 
-  if (opts::BasicAggregation)
+  if (opts::BasicAggregation) {
     launchPerfProcess("events without LBR",
                       MainEventsPPI,
                       "script -F pid,event,ip",
                       /*Wait = */false);
-  else
+  } else if (!opts::ITraceAggregation.empty()) {
+    std::string ItracePerfScriptArgs = llvm::formatv(
+        "script -F pid,ip,brstack --itrace={0}", opts::ITraceAggregation);
+    launchPerfProcess("branch events with itrace", MainEventsPPI,
+                      ItracePerfScriptArgs.c_str(),
+                      /*Wait = */ false);
+  } else {
     launchPerfProcess("branch events",
                       MainEventsPPI,
                       "script -F pid,ip,brstack",
                       /*Wait = */false);
+  }
 
   // Note: we launch script for mem events regardless of the option, as the
   //       command fails fairly fast if mem events were not collected.
@@ -1479,13 +1491,10 @@ std::error_code DataAggregator::parseBranchEvents() {
     NumTraces += parseLBRSample(Sample, NeedsSkylakeFix);
   }
 
-  for (const auto &LBR : BranchLBRs) {
-    const Trace &Trace = LBR.first;
-    if (BinaryFunction *BF = getBinaryFunctionContainingAddress(Trace.From))
-      BF->setHasProfileAvailable();
-    if (BinaryFunction *BF = getBinaryFunctionContainingAddress(Trace.To))
-      BF->setHasProfileAvailable();
-  }
+  for (const Trace &Trace : llvm::make_first_range(BranchLBRs))
+    for (const uint64_t Addr : {Trace.From, Trace.To})
+      if (BinaryFunction *BF = getBinaryFunctionContainingAddress(Addr))
+        BF->setHasProfileAvailable();
 
   auto printColored = [](raw_ostream &OS, float Percent, float T1, float T2) {
     OS << " (";
@@ -1721,12 +1730,9 @@ std::error_code DataAggregator::parsePreAggregatedLBRSamples() {
     if (std::error_code EC = AggrEntry.getError())
       return EC;
 
-    if (BinaryFunction *BF =
-            getBinaryFunctionContainingAddress(AggrEntry->From.Offset))
-      BF->setHasProfileAvailable();
-    if (BinaryFunction *BF =
-            getBinaryFunctionContainingAddress(AggrEntry->To.Offset))
-      BF->setHasProfileAvailable();
+    for (const uint64_t Addr : {AggrEntry->From.Offset, AggrEntry->To.Offset})
+      if (BinaryFunction *BF = getBinaryFunctionContainingAddress(Addr))
+        BF->setHasProfileAvailable();
 
     AggregatedLBRs.emplace_back(std::move(AggrEntry.get()));
   }

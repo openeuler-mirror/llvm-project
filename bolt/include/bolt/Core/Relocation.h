@@ -97,6 +97,10 @@ struct Relocation {
   /// Return true if relocation type is for thread local storage.
   static bool isTLS(uint64_t Type);
 
+  /// Return true of relocation type is for referencing a specific instruction
+  /// (as opposed to a function, basic block, etc).
+  static bool isInstructionReference(uint64_t Type);
+
   /// Return code for a NONE relocation
   static uint64_t getNone();
 
@@ -118,6 +122,10 @@ struct Relocation {
   /// Return true if this relocation is R_*_RELATIVE type. Return false
   /// otherwise.
   bool isRelative() const { return isRelative(Type); }
+
+  /// Return true if this relocation is R_*_IRELATIVE type. Return false
+  /// otherwise.
+  bool isIRelative() const { return isIRelative(Type); }
 
   /// Emit relocation at a current \p Streamer' position. The caller is
   /// responsible for setting the position correctly.

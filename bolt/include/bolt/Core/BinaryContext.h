@@ -13,6 +13,7 @@
 #ifndef BOLT_CORE_BINARY_CONTEXT_H
 #define BOLT_CORE_BINARY_CONTEXT_H
 
+#include "bolt/Core/AddressMap.h"
 #include "bolt/Core/BinaryData.h"
 #include "bolt/Core/BinarySection.h"
 #include "bolt/Core/DebugData.h"
@@ -220,6 +221,9 @@ class BinaryContext {
 
   bool ContainsDwarf5{false};
   bool ContainsDwarfLegacy{false};
+
+  /// Mapping from input to output addresses.
+  std::optional<AddressMap> IOAddressMap;
 
   /// Preprocess DWO debug information.
   void preprocessDWODebugInfo();
@@ -638,9 +642,22 @@ public:
   /// Total hotness score according to profiling data for this binary.
   uint64_t TotalScore{0};
 
-  /// Binary-wide stats for macro-fusion.
-  uint64_t MissedMacroFusionPairs{0};
-  uint64_t MissedMacroFusionExecCount{0};
+  /// Binary-wide aggregated stats.
+  struct BinaryStats {
+    /// Stats for macro-fusion.
+    uint64_t MissedMacroFusionPairs{0};
+    uint64_t MissedMacroFusionExecCount{0};
+
+    /// Stats for stale profile matching:
+    ///   the total number of basic blocks in the profile
+    uint32_t NumStaleBlocks{0};
+    ///   the number of matched basic blocks
+    uint32_t NumMatchedBlocks{0};
+    ///   the total count of samples in the profile
+    uint64_t StaleSampleCount{0};
+    ///   the count of matched samples
+    uint64_t MatchedSampleCount{0};
+  } Stats;
 
   // Address of the first allocated segment.
   uint64_t FirstAllocAddress{std::numeric_limits<uint64_t>::max()};
@@ -662,6 +679,15 @@ public:
   /// Address of the code/function that is going to be executed right before
   /// the execution of the binary is completed.
   std::optional<uint64_t> FiniFunctionAddress;
+
+  /// DT_FINI.
+  std::optional<uint64_t> FiniAddress;
+
+  /// DT_FINI_ARRAY. Only used when DT_FINI is not set.
+  std::optional<uint64_t> FiniArrayAddress;
+
+  /// DT_FINI_ARRAYSZ. Only used when DT_FINI is not set.
+  std::optional<uint64_t> FiniArraySize;
 
   /// Page alignment used for code layout.
   uint64_t PageAlign{HugePageSize};
@@ -1195,6 +1221,9 @@ public:
   ///
   /// Return the pair where the first size is for the main part, and the second
   /// size is for the cold one.
+  /// Modify BinaryBasicBlock::OutputAddressRange for each basic block in the
+  /// function in place so that BinaryBasicBlock::getOutputSize() gives the
+  /// emitted size of the basic block.
   std::pair<size_t, size_t> calculateEmittedSize(BinaryFunction &BF,
                                                  bool FixBranches = true);
 
@@ -1204,8 +1233,8 @@ public:
   uint64_t
   computeInstructionSize(const MCInst &Inst,
                          const MCCodeEmitter *Emitter = nullptr) const {
-    if (auto Size = MIB->getAnnotationWithDefault<uint32_t>(Inst, "Size"))
-      return Size;
+    if (std::optional<uint32_t> Size = MIB->getSize(Inst))
+      return *Size;
 
     if (!Emitter)
       Emitter = this->MCE.get();
@@ -1254,6 +1283,9 @@ public:
 
   /// Return true if the function should be emitted to the output file.
   bool shouldEmit(const BinaryFunction &Function) const;
+
+  /// Dump the assembly representation of MCInst to debug output.
+  void dump(const MCInst &Inst) const;
 
   /// Print the string name for a CFI operation.
   static void printCFI(raw_ostream &OS, const MCCFIInstruction &Inst);
@@ -1329,6 +1361,12 @@ public:
         /* IncrementalLinkerCompatible */ false,
         /* DWARFMustBeAtTheEnd */ false));
     return Streamer;
+  }
+
+  void setIOAddressMap(AddressMap Map) { IOAddressMap = std::move(Map); }
+  const AddressMap &getIOAddressMap() const {
+    assert(IOAddressMap && "Address map not set yet");
+    return *IOAddressMap;
   }
 };
 

@@ -437,8 +437,8 @@ public:
 #ifndef NDEBUG
     uint64_t Pos = tell();
     // /dev/null always reports a pos of 0, so we cannot perform this check
-    // in that case.
-    if (Pos)
+    // in that case. and, When size is 0, no extending will occur.
+    if (Pos && Size)
       assert(Size + Offset <= Pos && "We don't support extending the stream");
 #endif
     pwrite_impl(Ptr, Size, Offset);
