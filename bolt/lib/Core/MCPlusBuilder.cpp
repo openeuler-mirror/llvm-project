@@ -131,8 +131,10 @@ bool MCPlusBuilder::equals(const MCTargetExpr &A, const MCTargetExpr &B,
 }
 
 bool MCPlusBuilder::isTerminator(const MCInst &Inst) const {
-  return Analysis->isTerminator(Inst) ||
-         (opts::TerminalTrap && Info->get(Inst.getOpcode()).isTrap());
+  return (opts::TerminalTrap && Info->get(Inst.getOpcode()).isTrap()) ||
+                 Analysis->isTerminator(Inst)
+             ? !isX86HLT(Inst)
+             : false;
 }
 
 void MCPlusBuilder::setTailCall(MCInst &Inst) const {
