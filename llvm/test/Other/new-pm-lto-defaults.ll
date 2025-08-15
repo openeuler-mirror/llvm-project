@@ -114,6 +114,7 @@
 ; CHECK-O23SZ-NEXT: Running pass: LoopFullUnrollPass on loop
 ; CHECK-O23SZ-NEXT: Running pass: LoopDistributePass on foo
 ; CHECK-O23SZ-NEXT: Running analysis: LoopAccessAnalysis on foo
+; CHECK-O23SZ-NEXT: Running pass: LoopVectorizePreparePass on foo
 ; CHECK-O23SZ-NEXT: Running pass: LoopVectorizePass on foo
 ; CHECK-O23SZ-NEXT: Running analysis: DemandedBitsAnalysis on foo
 ; CHECK-O23SZ-NEXT: Running pass: LoopUnrollPass on foo
