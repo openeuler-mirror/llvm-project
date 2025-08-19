@@ -12,6 +12,7 @@
 #include "MoveExplicitInstantiationAfterDefsCheck.h"
 #include "NonVoidFunctionReturnVoidCheck.h"
 #include "RedundantDefaultTemplateArgCheck.h"
+#include "ThreadStorageUnifyCheck.h"
 #include "UnsequencedFunctionParameterCheck.h"
 
 namespace clang::tidy {
@@ -30,6 +31,8 @@ public:
         "BSCompatibility-non-void-function-return-void");
     CheckFactories.registerCheck<RedundantDefaultTemplateArgCheck>(
         "BSCompatibility-redundant-default-template-arg");
+    CheckFactories.registerCheck<ThreadStorageUnifyCheck>(
+        "BSCompatibility-thread-storage-unify");
     CheckFactories.registerCheck<UnsequencedFunctionParameterCheck>(
         "BSCompatibility-unsequenced-function-parameter");
   }
