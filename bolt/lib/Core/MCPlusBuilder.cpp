@@ -32,6 +32,11 @@ using namespace MCPlus;
 
 namespace opts {
 cl::opt<bool>
+    TerminalHLT("terminal-x86-hlt",
+                cl::desc("Assume that execution stops at x86 HLT instruction"),
+                cl::init(true), cl::Hidden, cl::cat(BoltCategory));
+
+cl::opt<bool>
     TerminalTrap("terminal-trap",
                  cl::desc("Assume that execution stops at trap instruction"),
                  cl::init(true), cl::Hidden, cl::cat(BoltCategory));
@@ -131,10 +136,13 @@ bool MCPlusBuilder::equals(const MCTargetExpr &A, const MCTargetExpr &B,
 }
 
 bool MCPlusBuilder::isTerminator(const MCInst &Inst) const {
-  return (opts::TerminalTrap && Info->get(Inst.getOpcode()).isTrap()) ||
-                 Analysis->isTerminator(Inst)
-             ? !isX86HLT(Inst)
-             : false;
+  if (isX86HLT(Inst))
+    return opts::TerminalHLT;
+
+  if (Info->get(Inst.getOpcode()).isTrap())
+    return opts::TerminalTrap;
+
+  return Analysis->isTerminator(Inst);
 }
 
 void MCPlusBuilder::setTailCall(MCInst &Inst) const {
