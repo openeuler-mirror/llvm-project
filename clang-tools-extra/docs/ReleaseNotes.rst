@@ -128,6 +128,11 @@ New checks
 
   Detect the use of __builtin_exit and propose warning.
 
+- New :doc:`BSCompatibility-move-explicit-instantiation-after-defs
+  <clang-tidy/checks/BSCompatibility/move-explicit-instantiation-after-defs>` check.
+
+  Detect the explicit instantiation before any defs and move it after the last def.
+
 - New :doc:`BSCompatibility-non-void-function-return-void
   <clang-tidy/checks/BSCompatibility/non-void-function-return-void>` check.
 
