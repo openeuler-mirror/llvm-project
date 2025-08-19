@@ -8,7 +8,7 @@
 # CHECK: 	aesd	v0.16b, v2.16b
 # CHECK:        eor     v0.16b, v0.16b, v2.16b
 
-	.arch armv8.1-a
+	.arch armv8.1-a+lse
         casa  w5, w7, [x20]
 # CHECK:        casa    w5, w7, [x20]
 

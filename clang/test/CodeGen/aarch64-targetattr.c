@@ -94,10 +94,10 @@ void nosimd() {}
 __attribute__((target("no-v9.3a")))
 void minusarch() {}
 
-// CHECK: attributes #0 = { {{.*}} "target-features"="+crc,+fp-armv8,+lse,+neon,+ras,+rdm,+v8.1a,+v8.2a,+v8a" }
-// CHECK: attributes #1 = { {{.*}} "target-features"="+crc,+fp-armv8,+fullfp16,+lse,+neon,+ras,+rdm,+sve,+v8.1a,+v8.2a,+v8a" }
-// CHECK: attributes #2 = { {{.*}} "target-features"="+crc,+fp-armv8,+fullfp16,+lse,+neon,+ras,+rdm,+sve,+sve2,+v8.1a,+v8.2a,+v8a" }
-// CHECK: attributes #3 = { {{.*}} "target-features"="+bf16,+crc,+dotprod,+fp-armv8,+fullfp16,+i8mm,+lse,+neon,+ras,+rcpc,+rdm,+sve,+sve2,+v8.1a,+v8.2a,+v8.3a,+v8.4a,+v8.5a,+v8.6a,+v8a" }
+// CHECK: attributes #0 = { {{.*}} "target-features"="+crc,+fp-armv8,+neon,+ras,+rdm,+v8.1a,+v8.2a,+v8a" }
+// CHECK: attributes #1 = { {{.*}} "target-features"="+crc,+fp-armv8,+fullfp16,+neon,+ras,+rdm,+sve,+v8.1a,+v8.2a,+v8a" }
+// CHECK: attributes #2 = { {{.*}} "target-features"="+crc,+fp-armv8,+fullfp16,+neon,+ras,+rdm,+sve,+sve2,+v8.1a,+v8.2a,+v8a" }
+// CHECK: attributes #3 = { {{.*}} "target-features"="+bf16,+crc,+dotprod,+fp-armv8,+fullfp16,+i8mm,+neon,+ras,+rcpc,+rdm,+sve,+sve2,+v8.1a,+v8.2a,+v8.3a,+v8.4a,+v8.5a,+v8.6a,+v8a" }
 // CHECK: attributes #4 = { {{.*}} "target-cpu"="cortex-a710" "target-features"="+bf16,+crc,+dotprod,+flagm,+fp-armv8,+fp16fml,+fullfp16,+i8mm,+lse,+mte,+neon,+pauth,+ras,+rcpc,+rdm,+sb,+sve,+sve2,+sve2-bitperm" }
 // CHECK: attributes #5 = { {{.*}} "tune-cpu"="cortex-a710" }
 // CHECK: attributes #6 = { {{.*}} "target-cpu"="generic" }
