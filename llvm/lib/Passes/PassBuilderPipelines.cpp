@@ -132,6 +132,7 @@
 #include "llvm/Transforms/Utils/RelLookupTableConverter.h"
 #include "llvm/Transforms/Utils/SimplifyCFGOptions.h"
 #include "llvm/Transforms/Vectorize/LoopVectorize.h"
+#include "llvm/Transforms/Vectorize/LoopVectorizePrepare.h"
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
 
@@ -1290,6 +1291,7 @@ void PassBuilder::addVectorPasses(OptimizationLevel Level,
         AutoTuningCompileFunctionPass(autotuning::CompileOptionVectorize));
 #endif
 
+  FPM.addPass(LoopVectorizePreparePass());
   FPM.addPass(LoopVectorizePass(
       LoopVectorizeOptions(!PTO.LoopInterleaving, !PTO.LoopVectorization)));
 

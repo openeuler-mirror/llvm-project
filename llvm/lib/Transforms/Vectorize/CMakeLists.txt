@@ -2,6 +2,7 @@ add_llvm_component_library(LLVMVectorize
   LoadStoreVectorizer.cpp
   LoopVectorizationLegality.cpp
   LoopVectorize.cpp
+  LoopVectorizePrepare.cpp
   SLPVectorizer.cpp
   Vectorize.cpp
   VectorCombine.cpp
