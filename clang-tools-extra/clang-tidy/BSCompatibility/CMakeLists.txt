@@ -7,6 +7,7 @@ add_clang_library(clangTidyBSCompatibilityModule
   BSCompatibilityTidyModule.cpp
   ForbiddenBuiltinExitCheck.cpp
   DependentTemplateKeywordCheck.cpp
+  MoveExplicitInstantiationAfterDefsCheck.cpp
   NonVoidFunctionReturnVoidCheck.cpp
   RedundantDefaultTemplateArgCheck.cpp
   UnsequencedFunctionParameterCheck.cpp

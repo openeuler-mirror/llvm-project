@@ -78,6 +78,7 @@ Clang-Tidy Checks
    :doc:`android-comparison-in-temp-failure-retry <android/comparison-in-temp-failure-retry>`,
    :doc:`BSCompatibility-dependent-template-keyword <BSCompatibility/dependent-template-keyword>`, "Yes"
    :doc:`BSCompatibility-forbidden-builtin-exit <BSCompatibility/forbidden-builtin-exit>`, "Yes"
+   :doc:`BSCompatibility-move-explicit-instantiation-after-defs <BSCompatibility/move-explicit-instantiation-after-defs>`, "Yes"
    :doc:`BSCompatibility-non-void-function-return-void <BSCompatibility/non-void-function-return-void.html>`_, "Yes"
    :doc:`BSCompatibility-redundant-default-template-arg <BSCompatibility/redundant-default-template-arg>`, "Yes"
    :doc:`BSCompatibility-unsequenced-function-parameter <BSCompatibility/unsequenced-function-parameter>`, "Yes"

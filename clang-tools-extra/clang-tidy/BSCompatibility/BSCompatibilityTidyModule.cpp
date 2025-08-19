@@ -9,6 +9,7 @@
 #include "../cppcoreguidelines/NarrowingConversionsCheck.h"
 #include "DependentTemplateKeywordCheck.h"
 #include "ForbiddenBuiltinExitCheck.h"
+#include "MoveExplicitInstantiationAfterDefsCheck.h"
 #include "NonVoidFunctionReturnVoidCheck.h"
 #include "RedundantDefaultTemplateArgCheck.h"
 #include "UnsequencedFunctionParameterCheck.h"
@@ -23,6 +24,8 @@ public:
         "BSCompatibility-forbidden-builtin-exit");
     CheckFactories.registerCheck<DependentTemplateKeywordCheck>(
         "BSCompatibility-dependent-template-keyword");
+    CheckFactories.registerCheck<MoveExplicitInstantiationAfterDefsCheck>(
+        "BSCompatibility-move-explicit-instantiation-after-defs");
     CheckFactories.registerCheck<NonVoidFunctionReturnVoidCheck>(
         "BSCompatibility-non-void-function-return-void");
     CheckFactories.registerCheck<RedundantDefaultTemplateArgCheck>(
