@@ -143,6 +143,11 @@ New checks
 
   Detect redundant default template arguments for template function.
 
+- New :doc:`BSCompatibility-thread-storage-unify
+  <clang-tidy/checks/BSCompatibility/thread-storage-unify>` check.
+
+  detect the mixed use of __thread and thread_local.
+
 - New :doc:`BSCompatibility-unsequenced-function-parameter
   <clang-tidy/checks/BSCompatibility/unsequenced-function-parameter>` check.
 

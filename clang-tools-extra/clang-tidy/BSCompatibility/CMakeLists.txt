@@ -10,6 +10,7 @@ add_clang_library(clangTidyBSCompatibilityModule
   MoveExplicitInstantiationAfterDefsCheck.cpp
   NonVoidFunctionReturnVoidCheck.cpp
   RedundantDefaultTemplateArgCheck.cpp
+  ThreadStorageUnifyCheck.cpp
   UnsequencedFunctionParameterCheck.cpp
 
   LINK_LIBS

@@ -81,6 +81,7 @@ Clang-Tidy Checks
    `BSCompatibility-move-explicit-instantiation-after-defs <BSCompatibility/move-explicit-instantiation-after-defs>`, "Yes"
    `BSCompatibility-non-void-function-return-void <BSCompatibility/non-void-function-return-void.html>`_, "Yes"
    `BSCompatibility-redundant-default-template-arg <BSCompatibility/redundant-default-template-arg>`, "Yes"
+   `BSCompatibility-thread-storage-unify <BSCompatibility/thread-storage-unify>`, "Yes"
    `BSCompatibility-unsequenced-function-parameter <BSCompatibility/unsequenced-function-parameter>`, "Yes"
    `boost-use-to-string <boost/use-to-string.html>`_, "Yes"
    `bugprone-argument-comment <bugprone/argument-comment.html>`_, "Yes"
