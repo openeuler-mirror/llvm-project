@@ -14,32 +14,21 @@
 #include "llvm/InitializePasses.h"
 
 #include "llvm/ADT/DepthFirstIterator.h"
-#include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/Statistic.h"
-#include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/AssumptionCache.h"
 #include "llvm/Analysis/CodeMetrics.h"
-#include "llvm/Analysis/DomTreeUpdater.h"
-#include "llvm/Analysis/IVDescriptors.h"
 #include "llvm/Analysis/LoopInfo.h"
-#include "llvm/Analysis/LoopIterator.h"
 #include "llvm/Analysis/OptimizationRemarkEmitter.h"
 #include "llvm/Analysis/ScalarEvolution.h"
 #include "llvm/Analysis/ScalarEvolutionExpressions.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/Function.h"
-#include "llvm/IR/Intrinsics.h"
-#include "llvm/IR/IntrinsicsAArch64.h"
 #include "llvm/IR/Module.h"
-#include "llvm/IR/ReplaceConstant.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Utils.h"
-#include "llvm/Transforms/Utils/Cloning.h"
-#include "llvm/Transforms/Utils/LoopSimplify.h"
-#include "llvm/Transforms/Utils/LoopUtils.h"
 #include "llvm/Transforms/Utils/ScalarEvolutionExpander.h"
 
 #define DEBUG_TYPE "loop-data-prefetch"
@@ -65,105 +54,22 @@ static cl::opt<unsigned> MaxPrefetchIterationsAhead(
     "max-prefetch-iters-ahead",
     cl::desc("Max number of iterations to prefetch ahead"), cl::Hidden);
 
-static cl::opt<bool>
-    IndirectLoadPrefetch("indirect-load-prefetch", cl::Hidden, cl::init(false),
-                         cl::desc("Enable indirect laod prefetch"));
-
-static cl::opt<unsigned> PrefetchIterationsAhead(
-    "indirect-prefetch-iters-ahead",
-    cl::desc("Number of iterations for indirect-load prefetch"), cl::Hidden);
-
-static cl::opt<bool> SkipIntermediate(
-    "indirect-prefetch-skip-intermediate", cl::Hidden, cl::init(false),
-    cl::desc(
-        "Skip prefetching intermediate loads while doing indirect prefetch"));
-
-static cl::opt<unsigned> IndirectionLevel(
-    "indirect-level",
-    cl::desc("Indirection level considered for indirect load prefetch"),
-    cl::Hidden, cl::init(2));
-
-static cl::opt<bool> RandomAccessPrefetchOnly(
-    "random-access-prefetch-only", cl::Hidden, cl::init(false),
-    cl::desc("Enable only outer loop indirect load prefetch"));
-
-static cl::opt<unsigned> CachelineSize("prefetch-cache-line-size",
-                                       cl::desc("Specify cache line size"),
-                                       cl::Hidden, cl::init(64));
-
 STATISTIC(NumPrefetches, "Number of prefetches inserted");
-STATISTIC(NumIndPrefetches, "Number of indirect prefetches inserted");
-STATISTIC(NumOuterLoopPrefetches, "Number of outer loop prefetches inserted");
 
 namespace {
-
-// Helper function to return a type with the same size as
-// given step size
-static Type *getPtrTypefromPHI(PHINode *PHI, int64_t StepSize) {
-  Type *Int8Ty = Type::getInt8Ty(PHI->getParent()->getContext());
-  return ArrayType::get(Int8Ty, StepSize);
-}
 
 /// Loop prefetch implementation class.
 class LoopDataPrefetch {
 public:
-  LoopDataPrefetch(AliasAnalysis *AA, AssumptionCache *AC, DominatorTree *DT,
-                   LoopInfo *LI, ScalarEvolution *SE,
-                   const TargetTransformInfo *TTI,
+  LoopDataPrefetch(AssumptionCache *AC, DominatorTree *DT, LoopInfo *LI,
+                   ScalarEvolution *SE, const TargetTransformInfo *TTI,
                    OptimizationRemarkEmitter *ORE)
-      : AA(AA), AC(AC), DT(DT), LI(LI), SE(SE), TTI(TTI), ORE(ORE) {}
+      : AC(AC), DT(DT), LI(LI), SE(SE), TTI(TTI), ORE(ORE) {}
 
   bool run();
 
 private:
   bool runOnLoop(Loop *L);
-
-  Value *getCanonicalishSizeVariable(Loop *L, PHINode *PHI) const;
-  Value *
-  getLoopIterationNumber(Loop *L,
-                         SmallPtrSet<Instruction *, 4> &LoopAuxIndPHINodes,
-                         ValueMap<PHINode *, Value *> &AuxIndBounds);
-  /// If prefetch instruction is not inserted, need to clean iteration
-  /// instructions in the preheader.
-  void cleanLoopIterationNumber(Value *NumIterations);
-  /// Returns whether the auxiliary induction variable can generate bound.
-  /// If it can, add PHI to LoopAuxIndPHINodes
-  bool canGetAuxIndVarBound(Loop *L, PHINode *PHI,
-                            SmallPtrSet<Instruction *, 4> &LoopAuxIndPHINodes);
-
-  /// Generate bound for the auxiliary induction variable at the
-  /// preheader and add it to AuxIndBounds.
-  /// Returns whether the bound was successfully generated.
-  bool getAuxIndVarBound(Loop *L, PHINode *PHI, Value *NumIterations,
-                         ValueMap<PHINode *, Value *> &AuxIndBounds);
-
-  bool insertPrefetcherForIndirectLoad(
-      Loop *L, unsigned Idx, Value *NumIterations,
-      SmallVector<Instruction *, 4> &CandidateMemoryLoads,
-      SmallSetVector<Instruction *, 8> &DependentInsts,
-      ValueMap<PHINode *, Value *> &AuxIndBounds,
-      SmallVectorImpl<DenseMap<Value *, Value *>> &Transforms,
-      unsigned ItersAhead);
-
-  bool findCandidateMemoryLoads(
-      Instruction *I, SmallSetVector<Instruction *, 8> &InstList,
-      SmallPtrSet<Instruction *, 8> &InstSet,
-      SmallVector<Instruction *, 4> &CandidateMemoryLoads,
-      std::vector<SmallSetVector<Instruction *, 8>> &DependentInstList,
-      SmallPtrSet<Instruction *, 4> LoopAuxIndPHINodes, Loop *L);
-
-  /// Helper function to determine whether the given load is in
-  /// CandidateMemoryLoads. If yes, add the candidate's depending inst to the
-  /// list
-  bool isLoadInCandidateMemoryLoads(
-      LoadInst *LoadI, SmallSetVector<Instruction *, 8> &InstList,
-      SmallPtrSet<Instruction *, 8> &InstSet,
-      SmallVector<Instruction *, 4> &CandidateMemoryLoads,
-      std::vector<SmallSetVector<Instruction *, 8>> &DependentInstList);
-
-  /// Returns whether the given loop can do indirect prefetch and should be
-  /// processed to insert prefetches for indirect loads.
-  bool canDoIndirectPrefetch(Loop *L);
 
   /// Check if the stride of the accesses is large enough to
   /// warrant a prefetch.
@@ -197,7 +103,6 @@ private:
     return TTI->enableWritePrefetching();
   }
 
-  AliasAnalysis *AA;
   AssumptionCache *AC;
   DominatorTree *DT;
   LoopInfo *LI;
@@ -215,8 +120,6 @@ public:
   }
 
   void getAnalysisUsage(AnalysisUsage &AU) const override {
-    AU.addRequired<AAResultsWrapperPass>();
-    AU.addPreserved<AAResultsWrapperPass>();
     AU.addRequired<AssumptionCacheTracker>();
     AU.addRequired<DominatorTreeWrapperPass>();
     AU.addPreserved<DominatorTreeWrapperPass>();
@@ -237,7 +140,6 @@ public:
 char LoopDataPrefetchLegacyPass::ID = 0;
 INITIALIZE_PASS_BEGIN(LoopDataPrefetchLegacyPass, "loop-data-prefetch",
                       "Loop Data Prefetch", false, false)
-INITIALIZE_PASS_DEPENDENCY(AAResultsWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(AssumptionCacheTracker)
 INITIALIZE_PASS_DEPENDENCY(TargetTransformInfoWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(LoopInfoWrapperPass)
@@ -267,593 +169,8 @@ bool LoopDataPrefetch::isStrideLargeEnough(const SCEVAddRecExpr *AR,
   return TargetMinStride <= AbsStride;
 }
 
-/// Use the induction variable to generate value represeting the total num of
-/// iterations for the loop in the preheader.
-Value *LoopDataPrefetch::getLoopIterationNumber(
-    Loop *L, SmallPtrSet<Instruction *, 4> &LoopAuxIndPHINodes,
-    ValueMap<PHINode *, Value *> &AuxIndBounds) {
-  Value *LoopBoundValue;
-  Value *LoopStepValue;
-  Value *LoopStartValue;
-  Value *NumIterations;
-
-  // Use induction variable to derive number of iterations for the loop which
-  // will be used to calculate the upper bound for other auxiliary induction
-  // variables.
-  PHINode *PHI = L->getInductionVariable(*SE);
-  if (PHI == nullptr)
-    return nullptr;
-
-  auto LoopLB = L->getBounds(*SE);
-  if (!LoopLB)
-    return nullptr;
-
-  LoopStartValue = &(LoopLB->getInitialIVValue());
-  LoopStepValue = LoopLB->getStepValue();
-  LoopBoundValue = &(LoopLB->getFinalIVValue());
-
-  if (LoopStartValue == nullptr || LoopStepValue == nullptr ||
-      LoopBoundValue == nullptr)
-    return nullptr;
-
-  // Step should be constant.
-  if (!isa<SCEVConstant>(SE->getSCEV(LoopStepValue)))
-    return nullptr;
-
-  // Make sure each of them is invariant so we can use them in the preheader.
-  if (!L->isLoopInvariant(LoopBoundValue) ||
-      !L->isLoopInvariant(LoopStepValue) || !L->isLoopInvariant(LoopStartValue))
-    return nullptr;
-
-  // Generate instruction that calculated the total number of iterations of the
-  // loop in the preheader.
-  IRBuilder<> Builder(L->getLoopPreheader()->getTerminator());
-  Value *Range = Builder.CreateSub(LoopBoundValue, LoopStartValue);
-  NumIterations = Builder.CreateSDiv(Range, LoopStepValue);
-
-  LoopAuxIndPHINodes.insert(PHI);
-  Value *Bound = nullptr;
-  // If the step is positive, the upper bound isn't included, i.e. accessing
-  // [bound] is not legal, so subtract the bound by LoopStepValue to prevent out
-  // of bounds memory access.
-  if (SE->isKnownNegative(SE->getSCEV(LoopStepValue)))
-    Bound = LoopBoundValue;
-  else
-    Bound = Builder.CreateSub(LoopBoundValue, LoopStepValue);
-  AuxIndBounds.insert(std::pair<PHINode *, Value *>(PHI, Bound));
-  return NumIterations;
-}
-
-/// If prefetch instruction is not inserted. Need to clean iteration instruction
-/// in the preheader.
-void LoopDataPrefetch::cleanLoopIterationNumber(Value *NumIterations) {
-  std::deque<Instruction *> IterationInsts;
-  if (NumIterations != nullptr && NumIterations->use_empty()) {
-    IterationInsts.push_back(dyn_cast<Instruction>(NumIterations));
-    while (IterationInsts.size() > 0) {
-      auto *IInst = IterationInsts.front();
-      IterationInsts.pop_front();
-      if (IInst->use_empty()) {
-        for (unsigned i = 0; i < IInst->getNumOperands(); i++) {
-          if (isa<Instruction>(IInst->getOperand(i)))
-            IterationInsts.push_back(
-                dyn_cast<Instruction>(IInst->getOperand(i)));
-        }
-        dyn_cast<Instruction>(IInst)->eraseFromParent();
-      }
-    }
-  }
-}
-
-/// Returns whether the auxiliary induction variable can generate bound.
-/// If it can genearte a bound, add PHI to LoopAuxIndPHINodes
-bool LoopDataPrefetch::canGetAuxIndVarBound(
-    Loop *L, PHINode *PHI, SmallPtrSet<Instruction *, 4> &LoopAuxIndPHINodes) {
-  Value *AuxIndVarStartValue =
-      PHI->getIncomingValueForBlock(L->getLoopPreheader());
-  if (AuxIndVarStartValue == nullptr)
-    return false;
-
-  const SCEV *LSCEV = SE->getSCEV(PHI);
-  const SCEVAddRecExpr *LSCEVAddRec = dyn_cast<SCEVAddRecExpr>(LSCEV);
-
-  if (LSCEVAddRec == nullptr)
-    return false;
-
-  // Currently, we only support constant steps.
-  if (dyn_cast<SCEVConstant>(LSCEVAddRec->getStepRecurrence(*SE))) {
-    InductionDescriptor IndDesc;
-    if (!InductionDescriptor::isInductionPHI(PHI, L, SE, IndDesc))
-      return false;
-
-    if (IndDesc.getInductionOpcode() != Instruction::Add &&
-        IndDesc.getInductionOpcode() != Instruction::Sub &&
-        IndDesc.getKind() != InductionDescriptor::IK_PtrInduction)
-      return false;
-
-    LoopAuxIndPHINodes.insert(PHI);
-
-    return true;
-  }
-  return false;
-}
-
-/// Generate bound for the auxiliary induction variable at the preheader and add
-/// it to AuxIndBounds. Returns whether the bound was successfully generated.
-bool LoopDataPrefetch::getAuxIndVarBound(
-    Loop *L, PHINode *PHI, Value *NumIterations,
-    ValueMap<PHINode *, Value *> &AuxIndBounds) {
-  IRBuilder<> Builder(L->getLoopPreheader()->getTerminator());
-  Value *AuxIndVarStartValue =
-      PHI->getIncomingValueForBlock(L->getLoopPreheader());
-  if (AuxIndVarStartValue == nullptr)
-    return false;
-
-  const SCEV *LSCEV = SE->getSCEV(PHI);
-  const SCEVAddRecExpr *LSCEVAddRec = dyn_cast<SCEVAddRecExpr>(LSCEV);
-
-  // Currently, we only support constant steps.
-  if (const SCEVConstant *ConstPtrDiff =
-          dyn_cast<SCEVConstant>(LSCEVAddRec->getStepRecurrence(*SE))) {
-    Value *AuxIndVarBound;
-    InductionDescriptor IndDesc;
-    if (!InductionDescriptor::isInductionPHI(PHI, L, SE, IndDesc))
-      return false;
-
-    // Calculate the upper bound for the auxiliary induction variable.
-    Value *CastedNumIterations =
-        Builder.CreateSExtOrTrunc(NumIterations, ConstPtrDiff->getType());
-
-    // Subtract one from CastedNumIterations as we want the bound to be in
-    // bounds. If there are N iterations, the first iteration will access the
-    // array at offset 0. On the N-th iteration, it will access the array at
-    // offset N-1, not N.
-    CastedNumIterations = Builder.CreateSub(
-        CastedNumIterations, ConstantInt::get(ConstPtrDiff->getType(), 1));
-    // Teh induction operator is add / sub
-    if (IndDesc.getInductionOpcode() == Instruction::Add ||
-        IndDesc.getInductionOpcode() == Instruction::Sub) {
-      Value *Range =
-          Builder.CreateMul(ConstPtrDiff->getValue(), CastedNumIterations);
-      AuxIndVarBound = Builder.CreateAdd(Range, AuxIndVarStartValue);
-    } else if (IndDesc.getKind() == InductionDescriptor::IK_PtrInduction) {
-      // The induction variable is a pointer
-      int64_t StepSize = ConstPtrDiff->getAPInt().getSExtValue();
-      if (SE->isKnownNegative(ConstPtrDiff)) {
-        StepSize = -StepSize;
-        CastedNumIterations = Builder.CreateMul(
-            ConstantInt::getSigned(ConstPtrDiff->getType(), -1),
-            CastedNumIterations);
-      }
-      Type *GEPType = getPtrTypefromPHI(PHI, StepSize);
-      AuxIndVarBound = Builder.CreateInBoundsGEP(GEPType, AuxIndVarStartValue,
-                                                 CastedNumIterations);
-    } else
-      return false;
-
-    LLVM_DEBUG(dbgs() << "Added "
-                      << (isa<SCEVConstant>(SE->getSCEV(AuxIndVarBound))
-                              ? "Constant "
-                              : "")
-                      << "AuxIndVarBound " << *AuxIndVarBound
-                      << " for AuxIndVar:" << *PHI << "\n");
-    AuxIndBounds.insert(std::pair<PHINode *, Value *>(PHI, AuxIndVarBound));
-
-    return true;
-  }
-  return false;
-}
-
-// Helper function to calculate the step for a given loop
-static uint64_t getStep(PHINode *PN, ScalarEvolution *SE) {
-  // Get the constant step for the induction phi so we can use it to calculate
-  // how much we should increase the induction for prefetching.
-  uint64_t Step = 0;
-  const SCEV *LSCEV = SE->getSCEV(PN);
-  const SCEVAddRecExpr *LSCEVAddRec = dyn_cast<SCEVAddRecExpr>(LSCEV);
-
-  if (LSCEVAddRec == nullptr)
-    return Step;
-
-  if (const SCEVConstant *ConstPtrDiff =
-          dyn_cast<SCEVConstant>(LSCEVAddRec->getStepRecurrence(*SE))) {
-    Step = ConstPtrDiff->getAPInt().getZExtValue();
-  }
-  return Step;
-}
-
-// Helper function to determine if the loop step is positive
-static bool isPositiveStep(PHINode *PN, ScalarEvolution *SE) {
-  bool PositiveStep = true;
-  const SCEV *LSCEV = SE->getSCEV(PN);
-  const SCEVAddRecExpr *LSCEVAddRec = dyn_cast<SCEVAddRecExpr>(LSCEV);
-  if (const SCEVConstant *ConstPtrDiff =
-          dyn_cast<SCEVConstant>(LSCEVAddRec->getStepRecurrence(*SE))) {
-    if (SE->isKnownNegative(ConstPtrDiff)) {
-      PositiveStep = false;
-    }
-  }
-  return PositiveStep;
-}
-
-// Helper function to calculate the step type of a PHI node. If the PHI node is
-// not a pointer type, get the type PHI Node itself. Otherwise, get the integer
-// type of the PHI's step/offset value.
-static Type *getStepTypeFromPHINode(PHINode *PN, ScalarEvolution *SE) {
-  // Get the constant step for the induction phi so we can use it to calculate
-  // how much we should increase the induction for prefetching.
-  Type *T = PN->getType();
-  if (!T->isPointerTy())
-    return T;
-
-  const SCEV *LSCEV = SE->getSCEV(PN);
-  const SCEVAddRecExpr *LSCEVAddRec = dyn_cast<SCEVAddRecExpr>(LSCEV);
-  if (const SCEVConstant *ConstPtrDiff =
-          dyn_cast<SCEVConstant>(LSCEVAddRec->getStepRecurrence(*SE)))
-    return ConstPtrDiff->getType();
-
-  return T;
-}
-
-/// This function will take an instr list that contains indirect loads and
-/// transform them into prefetchers. E.g. Transform following indirect load
-/// A[B[i]]:
-///   phi indvar [0] [bound]
-///   idxB = gep *B, indvar
-///   offsetA = load * idxB
-///   idxA = gep *A, offsetA
-///   valueA = load *idxA
-/// To indirect load with prefetchers N iteration ahead:
-///   phi indvar [0] [bound]
-///   offsetN = add indvar, N
-///   offset2N = add indvar, 2N
-///   compare = icmp offsetN, bound
-///   offsetN = select compare, offsetN, bound
-///   preIdxN = gep *B, offsetN
-///   preIdx2N = get *B, offset2N
-///   call prefetch(preIdx2N)
-///   preOffsetA = load preIdxN
-///   preIdxA = gep *A, preOffsetA
-///   call prefetch(preIdxA)
-///   idxB = gep *B, indvar
-///   offsetA = load *idxB
-///   idxA = gep *A, offsetA
-///   valueA = load *idxA
-bool LoopDataPrefetch::insertPrefetcherForIndirectLoad(
-    Loop *L, unsigned Idx, Value *NumIterations,
-    SmallVector<Instruction *, 4> &CandidateMemoryLoads,
-    SmallSetVector<Instruction *, 8> &DependentInsts,
-    ValueMap<PHINode *, Value *> &AuxIndBounds,
-    SmallVectorImpl<DenseMap<Value *, Value *>> &Transforms,
-    unsigned ItersAhead) {
-  bool PositiveStep = true;
-  Instruction *TargetIndirectLoad = CandidateMemoryLoads[Idx];
-  IRBuilder<> Builder(TargetIndirectLoad);
-  Module *M = TargetIndirectLoad->getModule();
-  Type *I32Ty = Type::getInt32Ty(TargetIndirectLoad->getParent()->getContext());
-  LLVM_DEBUG(dbgs() << "Inserting indirect prefetchers for\t"
-                    << *TargetIndirectLoad << "\twith " << DependentInsts.size()
-                    << " dependent instructions\n");
-
-  // Keep track of the number of prefetches left to process among the
-  // DependentInst List. We assume that for given indirectLevel N, we will have
-  // N prefetches to do, unless we are skipping intermediate loads, then we are
-  // only doing 1 prefetch.
-  size_t NumPrefetchesLeft = SkipIntermediate ? 1 : IndirectionLevel;
-  int64_t Step;
-  while (!DependentInsts.empty()) {
-    Instruction *DependentInst = DependentInsts.pop_back_val();
-    Instruction *Inst = dyn_cast<Instruction>(DependentInst);
-
-    switch (Inst->getOpcode()) {
-    case Instruction::PHI: {
-      // Get the constant step for the induction phi so we can use it to
-      // calculate how much we should increase the induction for prefetching.
-      PHINode *PN = dyn_cast<PHINode>(Inst);
-      Step = getStep(PN, SE);
-      PositiveStep = isPositiveStep(PN, SE);
-      Type *InstType = getStepTypeFromPHINode(PN, SE);
-      if (!PositiveStep)
-        Step = -Step;
-
-      // Make sure phi node is i64 or i32.
-      if (!InstType->isIntegerTy(64) && !InstType->isIntegerTy(32))
-        return false;
-
-      // Create the bound for this PHI if needed:
-      if (!AuxIndBounds.count(PN))
-        getAuxIndVarBound(L, PN, NumIterations, AuxIndBounds);
-
-      //  We create values based on the induction variable so we can use it to
-      //  generate prefetcher later on. The first value (indvar + IterationAhead
-      //  * step) will be used for the load of prefetched address and it must
-      //  not exceeding the bound. The second value (indvar + 2 * IterationAhead
-      //  * step) will be used to generate prefether for the load of address.
-      //  The subsequent values are generated in a similar fashion to generate
-      //  prefetchers for offset of all dependent loads.
-
-      //  Insert the new instruction after all PHI node.
-      auto InsertionPoint = Inst;
-      if (auto FirstNonPHI = Inst->getParent()->getFirstNonPHI())
-        InsertionPoint = FirstNonPHI->getPrevNode();
-
-      for (size_t i = 0; i < NumPrefetchesLeft; i++) {
-        if (i > 0 && SkipIntermediate)
-          break;
-
-        if (Transforms.size() < i + 1) {
-          Transforms.push_back(DenseMap<Value *, Value *>());
-        } else if (Transforms[i].count(Inst))
-          continue;
-
-        // Create the new operation for the target load
-        Value *NewOp = nullptr;
-        if (Inst->getType()->isPointerTy()) {
-          Type *GEPType = getPtrTypefromPHI(PN, Step);
-          int64_t Offset =
-              PrefetchIterationsAhead ? PrefetchIterationsAhead : ItersAhead;
-          if (!PositiveStep)
-            Offset = -Offset;
-          // Do not need to calculate Offset * Step as it is calculated
-          // implicitly within the GEP instruction
-          NewOp = Builder.CreateInBoundsGEP(
-              GEPType, Inst,
-              ConstantInt::getSigned(InstType, (i + 1) * Offset));
-        } else {
-          // FullStep is the initial offset for the new value, taking into
-          // account, both Step and the number of iterations ahead to prefetch.
-          // If indirect prefetch iterations ahead is enabled, we directly use
-          // the supplied indirect-prefetch-iters-ahead value.
-          int64_t FullStep = PrefetchIterationsAhead
-                                 ? PrefetchIterationsAhead * Step
-                                 : ItersAhead * Step;
-
-          Instruction::BinaryOps BiOp =
-              PositiveStep ? Instruction::Add : Instruction::Sub;
-          NewOp = Builder.CreateBinOp(
-              BiOp, Inst,
-              ConstantInt::get(Inst->getType(), (i + 1) * FullStep));
-        }
-
-        if (auto NewOpInstr = dyn_cast<Instruction>(NewOp)) {
-          NewOpInstr->moveAfter(InsertionPoint);
-          InsertionPoint = NewOpInstr;
-        }
-
-        // Create the new operations for the offset loads
-        if (i > 0 && i == NumPrefetchesLeft - 1) {
-          Transforms[i].insert(std::pair<Value *, Value *>(Inst, NewOp));
-        } else {
-          Value *NewCmp = Builder.CreateICmp(
-              PositiveStep ? CmpInst::ICMP_SLT : CmpInst::ICMP_SGT, NewOp,
-              AuxIndBounds[cast<PHINode>(Inst)]);
-          Value *NewSelect =
-              Builder.CreateSelect(NewCmp, NewOp, AuxIndBounds[PN]);
-          Transforms[i].insert(std::pair<Value *, Value *>(Inst, NewSelect));
-
-          if (auto NewCmpInstr = dyn_cast<Instruction>(NewCmp)) {
-            NewCmpInstr->moveAfter(InsertionPoint);
-            InsertionPoint = NewCmpInstr;
-          }
-
-          if (auto NewSelectInstr = dyn_cast<Instruction>(NewSelect)) {
-            NewSelectInstr->moveAfter(InsertionPoint);
-            InsertionPoint = NewSelectInstr;
-          }
-        }
-      }
-      break;
-    }
-    case Instruction::Load: {
-      LoadInst *LoadI = dyn_cast<LoadInst>(Inst);
-      Value *LoadPtr = LoadI->getPointerOperand();
-      if (!SkipIntermediate)
-        NumPrefetchesLeft--;
-
-      auto GeneratePrefetcher = [&](llvm::Value *PrefetchPtr) {
-        Function *PrefetchFunc = Intrinsic::getDeclaration(
-            M, Intrinsic::prefetch, LoadPtr->getType());
-        Value *PrefetchArg[] = {PrefetchPtr, ConstantInt::get(I32Ty, 0),
-                                ConstantInt::get(I32Ty, 3),
-                                ConstantInt::get(I32Ty, 1)};
-        CallInst *PrefetchCall = CallInst::Create(PrefetchFunc, PrefetchArg);
-        return PrefetchCall;
-      };
-
-      if (!DependentInsts.empty()) {
-        // For any intermediate (not last) load, we generate a load for all the
-        // offset at min(indvar+N*IterationsAhead*step, bound)] for each N up to
-        // NumPrefetchesLeft - 1, and generate a prefetcher at
-        // (indvar+(N+1)*IterationAhead*step) for the offset load.
-        Instruction *PrefetchOffsetLoad = nullptr;
-        for (size_t i = 0; i < NumPrefetchesLeft; i++) {
-          if (Transforms[i].count(LoadI))
-            continue;
-          PrefetchOffsetLoad = LoadI->clone();
-          Builder.Insert(PrefetchOffsetLoad);
-          for (size_t i = 0; i < NumPrefetchesLeft; i++) {
-            if (Transforms[i].count(LoadI))
-              continue;
-            PrefetchOffsetLoad = LoadI->clone();
-            Builder.Insert(PrefetchOffsetLoad);
-            PrefetchOffsetLoad->moveAfter(LoadI);
-            PrefetchOffsetLoad->replaceUsesOfWith(LoadPtr,
-                                                  Transforms[i][LoadPtr]);
-
-            Transforms[i].insert(
-                std::pair<Value *, Value *>(LoadI, PrefetchOffsetLoad));
-          }
-        }
-
-        if (SkipIntermediate)
-          break;
-
-        // Create a prefetcher for the offset laod.
-        if (PrefetchOffsetLoad) {
-          CallInst *PrefetchCall =
-              GeneratePrefetcher(Transforms[NumPrefetchesLeft][LoadPtr]);
-          PrefetchCall->insertAfter(PrefetchOffsetLoad);
-          NumIndPrefetches++;
-        }
-      } else {
-        CallInst *PrefetchCall = GeneratePrefetcher(Transforms[0][LoadPtr]);
-        PrefetchCall->insertAfter(LoadI);
-        NumIndPrefetches++;
-      }
-      break;
-    }
-    default: {
-      // For other types of instructions, we make a clone of the instruction and
-      // repalce operands that we already transformed before.
-      for (size_t j = 0; j < NumPrefetchesLeft; j++) {
-        if (j >= Transforms.size() || Transforms[j].count(Inst))
-          continue;
-        Instruction *TransformedInst = Inst->clone();
-        Builder.Insert(TransformedInst);
-        TransformedInst->moveAfter(Inst);
-        for (unsigned i = 0; i < TransformedInst->getNumOperands(); i++) {
-          Value *Operand = TransformedInst->getOperand(i);
-          if (Transforms[j].count(Operand))
-            TransformedInst->replaceUsesOfWith(Operand, Transforms[j][Operand]);
-        }
-
-        Transforms[j].insert(
-            std::pair<Value *, Value *>(Inst, TransformedInst));
-      }
-      break;
-    }
-    }
-  }
-  return true;
-}
-
-/// Find the indirect load that depends on the auxiliary induction variable and
-/// construct an instr list that contains loop variant instruction from the
-/// target load to the candidate phi instr.
-bool LoopDataPrefetch::findCandidateMemoryLoads(
-    Instruction *I, SmallSetVector<Instruction *, 8> &InstList,
-    SmallPtrSet<Instruction *, 8> &InstSet,
-    SmallVector<Instruction *, 4> &CandidateMemoryLoads,
-    std::vector<SmallSetVector<Instruction *, 8>> &DependentInstList,
-    SmallPtrSet<Instruction *, 4> LoopAuxIndPHINodes, Loop *L) {
-  bool ret = false;
-
-  for (Use &U : I->operands()) {
-    // If value is loop invariant, just continue
-    if (LI->getLoopFor(I->getParent())->isLoopInvariant(U.get()))
-      continue;
-
-    Instruction *OperandInst = dyn_cast<Instruction>(U.get());
-    if (OperandInst != nullptr) {
-      switch (OperandInst->getOpcode()) {
-      case Instruction::Load: {
-        // Check if the load instruction that it depends on is already in the
-        // candidate. If yes, add the canddiate's depending instr to the list.
-        // If not, the load instruction it depends on is invalid.
-        LoadInst *LoadI = dyn_cast<LoadInst>(OperandInst);
-        if (isLoadInCandidateMemoryLoads(LoadI, InstList, InstSet,
-                                         CandidateMemoryLoads,
-                                         DependentInstList)) {
-          // We do not return early in case there are other auxiliary induction
-          // variables to check.
-          ret = true;
-        }
-        break;
-      }
-      case Instruction::PHI: {
-        // Check if PHI is the loop auxiliary induction PHI. If yes, found a
-        // valid load dependent on loop auxiliary induction variable. If not,
-        // invalid candidate.
-        PHINode *PhiInst = dyn_cast<PHINode>(OperandInst);
-        if (LoopAuxIndPHINodes.contains(PhiInst)) {
-          // In order to prevent the size of SmallVector from going out of
-          // bounds for large cases, only the last access of the element is
-          // retained. Update the position of OperandInst in the InstList.
-          if (InstList.count(OperandInst))
-            InstList.remove(OperandInst);
-          InstList.insert(OperandInst);
-          return true;
-        }
-        break;
-      }
-      case Instruction::Call: {
-        // We currently can not handle case where indirect load depends on other
-        // functions yet.
-        return false;
-      }
-      case Instruction::Invoke: {
-        // We currently can not handle case where indirect load depends on other
-        // functions yet.
-        return false;
-      }
-      default: {
-        // Use DFS to search though the operands.
-        if (InstList.count(OperandInst))
-          InstList.remove(OperandInst);
-        InstList.insert(OperandInst);
-        if (findCandidateMemoryLoads(OperandInst, InstList, InstSet,
-                                     CandidateMemoryLoads, DependentInstList,
-                                     LoopAuxIndPHINodes, L)) {
-          // We do not return early in case there are other auxiliary induction
-          // variables to check
-          ret = true;
-        } else {
-          // If the operand isn't dependent on an auxiliary induction variable,
-          // remove any instructions added to DependentInstList from this
-          // operand
-          InstList.remove(OperandInst);
-        }
-      }
-      }
-    }
-  }
-  return ret;
-}
-
-/// Helper function to determine whether the given load is in
-/// CandidateMemoryLoads. If Yes, add the candidate's depending instr to the
-/// list.
-bool LoopDataPrefetch::isLoadInCandidateMemoryLoads(
-    LoadInst *LoadI, SmallSetVector<Instruction *, 8> &InstList,
-    SmallPtrSet<Instruction *, 8> &InstSet,
-    SmallVector<Instruction *, 4> &CandidateMemoryLoads,
-    std::vector<SmallSetVector<Instruction *, 8>> &DependentInstList) {
-  size_t CandidateLoadIndex = 0;
-  for (auto CandidateMemoryLoad : CandidateMemoryLoads) {
-    if (LoadI == CandidateMemoryLoad)
-      break;
-    CandidateLoadIndex++;
-  }
-
-  if (CandidateLoadIndex >= CandidateMemoryLoads.size() || InstSet.count(LoadI))
-    return false;
-
-  for (auto CandidateInst : DependentInstList[CandidateLoadIndex]) {
-    if (InstList.count(CandidateInst))
-      InstList.remove(CandidateInst);
-    InstList.insert(CandidateInst);
-    InstSet.insert(CandidateInst);
-  }
-  return true;
-}
-
-/// Returns whether the given loop should be processed to insert prefetches for
-/// indirect loads.
-bool LoopDataPrefetch::canDoIndirectPrefetch(Loop *L) {
-  // Support inner most loops in a simple form. However, the parent of inner
-  // loop will be processed as well in the case of nested loops. If
-  // indirectLevel is low, only allow one block loop, otherwise, allow up to 5
-  // under certain conditions.
-  if (!L->isInnermost() || !L->getLoopPreheader() ||
-      (IndirectionLevel <= 3 && L->getNumBlocks() != 1) ||
-      (IndirectionLevel > 3 && L->getNumBlocks() == 1) || L->getNumBlocks() > 5)
-    return false;
-  return true;
-}
-
 PreservedAnalyses LoopDataPrefetchPass::run(Function &F,
                                             FunctionAnalysisManager &AM) {
-  AliasAnalysis *AA = &AM.getResult<AAManager>(F);
   DominatorTree *DT = &AM.getResult<DominatorTreeAnalysis>(F);
   LoopInfo *LI = &AM.getResult<LoopAnalysis>(F);
   ScalarEvolution *SE = &AM.getResult<ScalarEvolutionAnalysis>(F);
@@ -862,16 +179,8 @@ PreservedAnalyses LoopDataPrefetchPass::run(Function &F,
       &AM.getResult<OptimizationRemarkEmitterAnalysis>(F);
   const TargetTransformInfo *TTI = &AM.getResult<TargetIRAnalysis>(F);
 
-  // Ensure loops are in simplified form which is a pre-requisite for loop data
-  // prefetch pass. Added only for new PM since the legacy PM has already added
-  // LoopSimplify pass as a dependency.
-  bool Changed = false;
-  for (auto &L : *LI) {
-    Changed |= simplifyLoop(L, DT, LI, SE, AC, nullptr, false);
-  }
-
-  LoopDataPrefetch LDP(AA, AC, DT, LI, SE, TTI, ORE);
-  Changed |= LDP.run();
+  LoopDataPrefetch LDP(AC, DT, LI, SE, TTI, ORE);
+  bool Changed = LDP.run();
 
   if (Changed) {
     PreservedAnalyses PA;
@@ -887,7 +196,6 @@ bool LoopDataPrefetchLegacyPass::runOnFunction(Function &F) {
   if (skipFunction(F))
     return false;
 
-  AliasAnalysis *AA = &getAnalysis<AAResultsWrapperPass>().getAAResults();
   DominatorTree *DT = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
   LoopInfo *LI = &getAnalysis<LoopInfoWrapperPass>().getLoopInfo();
   ScalarEvolution *SE = &getAnalysis<ScalarEvolutionWrapperPass>().getSE();
@@ -898,7 +206,7 @@ bool LoopDataPrefetchLegacyPass::runOnFunction(Function &F) {
   const TargetTransformInfo *TTI =
       &getAnalysis<TargetTransformInfoWrapperPass>().getTTI(F);
 
-  LoopDataPrefetch LDP(AA, AC, DT, LI, SE, TTI, ORE);
+  LoopDataPrefetch LDP(AC, DT, LI, SE, TTI, ORE);
   return LDP.run();
 }
 
@@ -906,8 +214,7 @@ bool LoopDataPrefetch::run() {
   // If PrefetchDistance is not set, don't run the pass.  This gives an
   // opportunity for targets to run this pass for selected subtargets only
   // (whose TTI sets PrefetchDistance and CacheLineSize).
-  if (getPrefetchDistance() == 0 ||
-      (TTI->getCacheLineSize() == 0 && CachelineSize == 0)) {
+  if (getPrefetchDistance() == 0 || TTI->getCacheLineSize() == 0) {
     LLVM_DEBUG(dbgs() << "Please set both PrefetchDistance and CacheLineSize "
                          "for loop data prefetch.\n");
     return false;
@@ -1116,114 +423,6 @@ bool LoopDataPrefetch::runOnLoop(Loop *L) {
 
     MadeChange = true;
   }
-
-  if (!IndirectLoadPrefetch)
-    return MadeChange;
-
-  if (!canDoIndirectPrefetch(L))
-    return MadeChange;
-
-  // List of valid phi nodes that indirect loads can depend on.
-  SmallPtrSet<Instruction *, 4> LoopAuxIndPHINodes;
-  // Map of valid phi node to its bound value in the preheader.
-  ValueMap<PHINode *, Value *> AuxIndBounds;
-  // Candidate memory loads in the loop.
-  SmallVector<Instruction *, 4> CandidateMemoryLoads;
-  // List of instruction from phi to load.
-  std::vector<SmallSetVector<Instruction *, 8>> DependentInstList;
-  // List of store instr in the loop.
-  SmallVector<Value *, 4> LoopStorePtrs;
-
-  // Get loop induction and auxilary induction phis. (Thye will be candidates
-  // for phi node matching during constrution of the candidate instructions.)
-  // And we use the phi nodes to determine the loop upperbound.
-  Value *NumIterations =
-      getLoopIterationNumber(L, LoopAuxIndPHINodes, AuxIndBounds);
-  if (NumIterations == nullptr)
-    return MadeChange;
-  else
-    MadeChange = true;
-
-  // Find candidate auxiliary induction variables which could be a dependent for
-  // the indirect load.
-  for (auto &I : *(L->getHeader()))
-    if (PHINode *PHI = dyn_cast<PHINode>(&I)) {
-      InductionDescriptor IndDesc;
-      if (InductionDescriptor::isInductionPHI(PHI, L, SE, IndDesc) &&
-          L->getInductionVariable(*SE) != PHI) {
-        canGetAuxIndVarBound(L, PHI, LoopAuxIndPHINodes);
-      }
-    }
-
-  // WIll search for candidates in the parent loop of the current inner most
-  // loop. This will capture more opportunities in the outer loop.
-  SmallVector<BasicBlock *, 8> BBList;
-  for (auto &BB : L->blocks())
-    BBList.push_back(BB);
-  if (L->getParentLoop())
-    for (auto &BB : L->getParentLoop()->blocks()) {
-      // We don't want to repeat blocks in the case of nested loops.
-      if (L->contains(BB))
-        continue;
-      BBList.push_back(BB);
-    }
-
-  // Iterate through the loop and keep track of the memory loads and the
-  // instruction list they dependd on.
-  for (const auto BB : BBList) {
-    for (auto &I : *BB)
-      if (LoadInst *LoadI = dyn_cast<LoadInst>(&I)) {
-        SmallSetVector<Instruction *, 8> InstList;
-        SmallSet<Instruction *, 8> InstSet;
-        InstList.insert(LoadI);
-        InstSet.insert(LoadI);
-        if (findCandidateMemoryLoads(LoadI, InstList, InstSet,
-                                     CandidateMemoryLoads, DependentInstList,
-                                     LoopAuxIndPHINodes, L)) {
-          LLVM_DEBUG(dbgs() << "Found load candidate " << *LoadI << "\n");
-          CandidateMemoryLoads.push_back(LoadI);
-          DependentInstList.push_back(InstList);
-        }
-      } else if (StoreInst *StoreI = dyn_cast<StoreInst>(&I)) {
-        // Keep track of store insts to avoid conflict.
-        LoopStorePtrs.push_back(StoreI->getPointerOperand());
-      }
-  }
-
-  // Keep track of previously transformed instrs for offset load and target
-  // loads so we can resuse them.
-  SmallVector<DenseMap<Value *, Value *>> Transforms;
-  for (unsigned i = 0; i < CandidateMemoryLoads.size(); i++) {
-    SmallSetVector<Instruction *, 8> DependentInsts = DependentInstList[i];
-    unsigned NumLoads = 0;
-    bool NoConflict = true;
-    // Find candidate that contains indirect loads and check load for offset
-    // doesn't alias with other stores.
-    for (auto DependentInst : DependentInsts) {
-      if (LoadInst *LoadI = dyn_cast<LoadInst>(DependentInst)) {
-        NumLoads++;
-        // For the load of target address offset, we avoid the load being
-        // conflict with stores in the same loop.
-        if (NumLoads == IndirectionLevel) {
-          Value *LoadPtr = LoadI->getPointerOperand();
-          for (Value *StorePtr : LoopStorePtrs)
-            if (AA->isMustAlias(LoadPtr, StorePtr)) {
-              NoConflict = false;
-              break;
-            }
-        }
-      }
-    }
-
-    // Prefetch all indirect load without conflict to the offset load.
-    if (NumLoads == IndirectionLevel && NoConflict) {
-      MadeChange |= insertPrefetcherForIndirectLoad(
-          L, i, NumIterations, CandidateMemoryLoads, DependentInsts,
-          AuxIndBounds, Transforms, ItersAhead);
-    }
-  }
-
-  cleanLoopIterationNumber(NumIterations);
 
   return MadeChange;
 }
