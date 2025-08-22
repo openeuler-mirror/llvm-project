@@ -45,6 +45,10 @@ static cl::opt<unsigned>
                      cl::desc("Max number of promotions for a single indirect "
                               "call callsite"));
 
+cl::opt<unsigned> MaxNumVTableAnnotations(
+    "icp-max-num-vtables", cl::init(6), cl::Hidden,
+    cl::desc("Max number of vtables annotated for a vtable load instruction."));
+
 ICallPromotionAnalysis::ICallPromotionAnalysis() {
   ValueDataArray = std::make_unique<InstrProfValueData[]>(MaxNumPromotions);
 }
@@ -83,17 +87,17 @@ uint32_t ICallPromotionAnalysis::getProfitablePromotionCandidates(
   return I;
 }
 
-ArrayRef<InstrProfValueData>
+MutableArrayRef<InstrProfValueData>
 ICallPromotionAnalysis::getPromotionCandidatesForInstruction(
-    const Instruction *I, uint32_t &NumVals, uint64_t &TotalCount,
-    uint32_t &NumCandidates) {
-  bool Res =
+    const Instruction *I, uint64_t &TotalCount, uint32_t &NumCandidates) {
+  uint32_t NumVals;
+  auto Res =
       getValueProfDataFromInst(*I, IPVK_IndirectCallTarget, MaxNumPromotions,
                                ValueDataArray.get(), NumVals, TotalCount);
   if (!Res) {
     NumCandidates = 0;
-    return ArrayRef<InstrProfValueData>();
+    return MutableArrayRef<InstrProfValueData>();
   }
   NumCandidates = getProfitablePromotionCandidates(I, NumVals, TotalCount);
-  return ArrayRef<InstrProfValueData>(ValueDataArray.get(), NumVals);
+  return MutableArrayRef<InstrProfValueData>(ValueDataArray.get(), NumVals);
 }

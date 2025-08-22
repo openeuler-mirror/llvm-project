@@ -6,6 +6,8 @@
 |*
 \*===----------------------------------------------------------------------===*/
 
+#include <stddef.h>
+
 #include "InstrProfiling.h"
 #include "InstrProfilingInternal.h"
 
@@ -13,12 +15,14 @@
 
 #if defined(_MSC_VER)
 /* Merge read-write sections into .data. */
-#pragma comment(linker, "/MERGE:.lprfc=.data")
+#pragma comment(linker, "/MERGE:.lprfb=.data")
 #pragma comment(linker, "/MERGE:.lprfd=.data")
 #pragma comment(linker, "/MERGE:.lprfv=.data")
 #pragma comment(linker, "/MERGE:.lprfnd=.data")
 /* Do *NOT* merge .lprfn and .lcovmap into .rdata. llvm-cov must be able to find
  * after the fact.
+ * Do *NOT* merge .lprfc .rdata. When binary profile correlation is enabled,
+ * llvm-cov must be able to find after the fact.
  */
 
 /* Allocate read-only section bounds. */
@@ -30,6 +34,8 @@
 #pragma section(".lprfd$Z", read, write)
 #pragma section(".lprfc$A", read, write)
 #pragma section(".lprfc$Z", read, write)
+#pragma section(".lprfb$A", read, write)
+#pragma section(".lprfb$Z", read, write)
 #pragma section(".lorderfile$A", read, write)
 #pragma section(".lprfnd$A", read, write)
 #pragma section(".lprfnd$Z", read, write)
@@ -43,6 +49,8 @@ const char COMPILER_RT_SECTION(".lprfn$Z") NamesEnd = '\0';
 
 char COMPILER_RT_SECTION(".lprfc$A") CountersStart;
 char COMPILER_RT_SECTION(".lprfc$Z") CountersEnd;
+char COMPILER_RT_SECTION(".lprfb$A") BitmapStart;
+char COMPILER_RT_SECTION(".lprfb$Z") BitmapEnd;
 uint32_t COMPILER_RT_SECTION(".lorderfile$A") OrderFileStart;
 
 ValueProfNode COMPILER_RT_SECTION(".lprfnd$A") VNodesStart;
@@ -53,11 +61,30 @@ const __llvm_profile_data *__llvm_profile_begin_data(void) {
 }
 const __llvm_profile_data *__llvm_profile_end_data(void) { return &DataEnd; }
 
+// Type profiling isn't implemented under MSVC ABI, so return NULL (rather than
+// implementing linker magic on Windows) to make it more explicit. To elaborate,
+// the current type profiling implementation maps a profiled vtable address to a
+// vtable variable through vtables mangled name. Under MSVC ABI, the variable
+// name for vtables might not be the mangled name (see
+// MicrosoftCXXABI::getAddrOfVTable in MicrosoftCXXABI.cpp for more details on
+// how a vtable name is computed). Note the mangled name is still in the vtable
+// IR (just not variable name) for mapping purpose, but more implementation work
+// is required.
+const VTableProfData *__llvm_profile_begin_vtables(void) { return NULL; }
+const VTableProfData *__llvm_profile_end_vtables(void) { return NULL; }
+
 const char *__llvm_profile_begin_names(void) { return &NamesStart + 1; }
 const char *__llvm_profile_end_names(void) { return &NamesEnd; }
 
+// Type profiling isn't supported on Windows, so return NULl to make it more
+// explicit.
+const char *__llvm_profile_begin_vtabnames(void) { return NULL; }
+const char *__llvm_profile_end_vtabnames(void) { return NULL; }
+
 char *__llvm_profile_begin_counters(void) { return &CountersStart + 1; }
 char *__llvm_profile_end_counters(void) { return &CountersEnd; }
+char *__llvm_profile_begin_bitmap(void) { return &BitmapStart + 1; }
+char *__llvm_profile_end_bitmap(void) { return &BitmapEnd; }
 uint32_t *__llvm_profile_begin_orderfile(void) { return &OrderFileStart; }
 
 ValueProfNode *__llvm_profile_begin_vnodes(void) { return &VNodesStart + 1; }

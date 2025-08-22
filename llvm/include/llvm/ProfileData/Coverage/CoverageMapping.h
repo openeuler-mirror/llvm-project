@@ -75,7 +75,8 @@ inline std::error_code make_error_code(coveragemap_error E) {
 
 class CoverageMapError : public ErrorInfo<CoverageMapError> {
 public:
-  CoverageMapError(coveragemap_error Err) : Err(Err) {
+  CoverageMapError(coveragemap_error Err, const Twine &ErrStr = Twine())
+      : Err(Err), Msg(ErrStr.str()) {
     assert(Err != coveragemap_error::success && "Not an error");
   }
 
@@ -93,6 +94,7 @@ public:
 
 private:
   coveragemap_error Err;
+  std::string Msg;
 };
 
 /// A Counter is an abstract value that describes how to compute the
@@ -810,7 +812,7 @@ template <class FuncRecordTy, support::endianness Endian>
 Error getFuncNameViaRef(const FuncRecordTy *Record,
                         InstrProfSymtab &ProfileNames, StringRef &FuncName) {
   uint64_t NameRef = getFuncNameRef<FuncRecordTy, Endian>(Record);
-  FuncName = ProfileNames.getFuncName(NameRef);
+  FuncName = ProfileNames.getFuncOrVarName(NameRef);
   return Error::success();
 }
 
@@ -1023,7 +1025,9 @@ enum CovMapVersion {
   // Compilation directory is stored separately and combined with relative
   // filenames to produce an absolute file path.
   Version6 = 5,
-  // The current version is Version6.
+  // Branch regions extended and Decision Regions added for MC/DC.
+  Version7 = 6,
+  // The current version is Version7.
   CurrentVersion = INSTR_PROF_COVMAP_VERSION
 };
 

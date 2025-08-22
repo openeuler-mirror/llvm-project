@@ -19,6 +19,7 @@
 #include "llvm/ProfileData/InstrProf.h"
 #include "llvm/ProfileData/MemProf.h"
 #include "llvm/ProfileData/ProfileCommon.h"
+#include "llvm/Support/Compression.h"
 #include "llvm/Support/Endian.h"
 #include "llvm/Support/EndianStream.h"
 #include "llvm/Support/Error.h"
@@ -131,6 +132,8 @@ public:
       M += sizeof(uint64_t); // The function hash
       M += sizeof(uint64_t); // The size of the Counts vector
       M += ProfRecord.Counts.size() * sizeof(uint64_t);
+      M += sizeof(uint64_t); // The size of the Bitmap vector
+      M += ProfRecord.BitmapBytes.size() * sizeof(uint64_t);
 
       // Value data
       M += ValueProfData::getSize(ProfileData.second);
@@ -160,6 +163,10 @@ public:
       for (uint64_t I : ProfRecord.Counts)
         LE.write<uint64_t>(I);
 
+      LE.write<uint64_t>(ProfRecord.BitmapBytes.size());
+      for (uint64_t I : ProfRecord.BitmapBytes)
+        LE.write<uint64_t>(I);
+
       // Write value data
       std::unique_ptr<ValueProfData> VDataPtr =
           ValueProfData::serializeFrom(ProfileData.second);
@@ -174,10 +181,12 @@ public:
 
 InstrProfWriter::InstrProfWriter(bool Sparse,
                                  uint64_t TemporalProfTraceReservoirSize,
-                                 uint64_t MaxTemporalProfTraceLength)
+                                 uint64_t MaxTemporalProfTraceLength,
+                                 bool WritePrevVersion)
     : Sparse(Sparse), MaxTemporalProfTraceLength(MaxTemporalProfTraceLength),
       TemporalProfTraceReservoirSize(TemporalProfTraceReservoirSize),
-      InfoObj(new InstrProfRecordWriterTrait()) {}
+      InfoObj(new InstrProfRecordWriterTrait()),
+      WritePrevVersion(WritePrevVersion) {}
 
 InstrProfWriter::~InstrProfWriter() { delete InfoObj; }
 
@@ -380,6 +389,8 @@ bool InstrProfWriter::shouldEncodeData(const ProfilingData &PD) {
     const InstrProfRecord &IPR = Func.second;
     if (llvm::any_of(IPR.Counts, [](uint64_t Count) { return Count > 0; }))
       return true;
+    if (llvm::any_of(IPR.BitmapBytes, [](uint8_t Byte) { return Byte > 0; }))
+      return true;
   }
   return false;
 }
@@ -447,12 +458,11 @@ Error InstrProfWriter::writeImpl(ProfOStream &OS) {
   Header.MemProfOffset = 0;
   Header.BinaryIdOffset = 0;
   Header.TemporalProfTracesOffset = 0;
-  int N = sizeof(IndexedInstrProf::Header) / sizeof(uint64_t);
+  Header.VTableNamesOffset = 0;
 
-  // Only write out all the fields except 'HashOffset', 'MemProfOffset',
-  // 'BinaryIdOffset' and `TemporalProfTracesOffset`. We need to remember the
-  // offset of these fields to allow back patching later.
-  for (int I = 0; I < N - 4; I++)
+  // Only write out the first four fields. We need to remember the offset of the
+  // remaining fields to allow back patching later.
+  for (int I = 0; I < 4; I++)
     OS.write(reinterpret_cast<uint64_t *>(&Header)[I]);
 
   // Save the location of Header.HashOffset field in \c OS.
@@ -474,6 +484,9 @@ Error InstrProfWriter::writeImpl(ProfOStream &OS) {
   OS.write(0);
 
   uint64_t TemporalProfTracesOffset = OS.tell();
+  OS.write(0);
+
+  uint64_t VTableNamesOffset = OS.tell();
   OS.write(0);
 
   // Reserve space to write profile summary data.
@@ -589,6 +602,37 @@ Error InstrProfWriter::writeImpl(ProfOStream &OS) {
       OS.writeByte(0);
   }
 
+  uint64_t VTableNamesSectionStart = OS.tell();
+
+  if (!WritePrevVersion) {
+    std::vector<std::string> VTableNameStrs;
+    for (StringRef VTableName : VTableNames.keys())
+      VTableNameStrs.push_back(VTableName.str());
+
+    std::string CompressedVTableNames;
+    if (!VTableNameStrs.empty())
+      if (Error E = collectGlobalObjectNameStrings(
+              VTableNameStrs, compression::zlib::isAvailable(),
+              CompressedVTableNames))
+        return E;
+
+    const uint64_t CompressedStringLen = CompressedVTableNames.length();
+
+    // Record the length of compressed string.
+    OS.write(CompressedStringLen);
+
+    // Write the chars in compressed strings.
+    for (auto &c : CompressedVTableNames)
+      OS.writeByte(static_cast<uint8_t>(c));
+
+    // Pad up to a multiple of 8.
+    // InstrProfReader could read bytes according to 'CompressedStringLen'.
+    const uint64_t PaddedLength = alignTo(CompressedStringLen, 8);
+
+    for (uint64_t K = CompressedStringLen; K < PaddedLength; K++)
+      OS.writeByte(0);
+  }
+
   uint64_t TemporalProfTracesSectionStart = 0;
   if (static_cast<bool>(ProfileKind & InstrProfKind::TemporalProfile)) {
     TemporalProfTracesSectionStart = OS.tell();
@@ -632,6 +676,7 @@ Error InstrProfWriter::writeImpl(ProfOStream &OS) {
       // Patch the Header.TemporalProfTracesOffset (=0 for profiles without
       // traces).
       {TemporalProfTracesOffset, &TemporalProfTracesSectionStart, 1},
+      {VTableNamesOffset, &VTableNamesSectionStart, 1},
       // Patch the summary data.
       {SummaryOffset, reinterpret_cast<uint64_t *>(TheSummary.get()),
        (int)(SummarySize / sizeof(uint64_t))},
@@ -684,7 +729,8 @@ Error InstrProfWriter::validateRecord(const InstrProfRecord &Func) {
       std::unique_ptr<InstrProfValueData[]> VD = Func.getValueForSite(VK, S);
       DenseSet<uint64_t> SeenValues;
       for (uint32_t I = 0; I < ND; I++)
-        if ((VK != IPVK_IndirectCallTarget) && !SeenValues.insert(VD[I].Value).second)
+        if ((VK != IPVK_IndirectCallTarget && VK != IPVK_VTableTarget) &&
+            !SeenValues.insert(VD[I].Value).second)
           return make_error<InstrProfError>(instrprof_error::invalid_prof);
     }
   }
@@ -702,6 +748,17 @@ void InstrProfWriter::writeRecordInText(StringRef Name, uint64_t Hash,
   OS << "# Counter Values:\n";
   for (uint64_t Count : Func.Counts)
     OS << Count << "\n";
+
+  if (Func.BitmapBytes.size() > 0) {
+    OS << "# Num Bitmap Bytes:\n$" << Func.BitmapBytes.size() << "\n";
+    OS << "# Bitmap Byte Values:\n";
+    for (uint8_t Byte : Func.BitmapBytes) {
+      OS << "0x";
+      OS.write_hex(Byte);
+      OS << "\n";
+    }
+    OS << "\n";
+  }
 
   uint32_t NumValueKinds = Func.getNumValueKinds();
   if (!NumValueKinds) {
@@ -721,8 +778,8 @@ void InstrProfWriter::writeRecordInText(StringRef Name, uint64_t Hash,
       OS << ND << "\n";
       std::unique_ptr<InstrProfValueData[]> VD = Func.getValueForSite(VK, S);
       for (uint32_t I = 0; I < ND; I++) {
-        if (VK == IPVK_IndirectCallTarget)
-          OS << Symtab.getFuncNameOrExternalSymbol(VD[I].Value) << ":"
+        if (VK == IPVK_IndirectCallTarget || VK == IPVK_VTableTarget)
+          OS << Symtab.getFuncOrVarNameIfDefined(VD[I].Value) << ":"
              << VD[I].Count << "\n";
         else
           OS << VD[I].Value << ":" << VD[I].Count << "\n";
@@ -743,6 +800,8 @@ Error InstrProfWriter::writeText(raw_fd_ostream &OS) {
   if (static_cast<bool>(ProfileKind &
                         InstrProfKind::FunctionEntryInstrumentation))
     OS << "# Always instrument the function entry block\n:entry_first\n";
+  if (static_cast<bool>(ProfileKind & InstrProfKind::SingleByteCoverage))
+    OS << "# Instrument block coverage\n:single_byte_coverage\n";
   InstrProfSymtab Symtab;
 
   using FuncPair = detail::DenseMapPair<uint64_t, InstrProfRecord>;
@@ -757,6 +816,10 @@ Error InstrProfWriter::writeText(raw_fd_ostream &OS) {
         OrderedFuncData.push_back(std::make_pair(I.getKey(), Func));
     }
   }
+
+  for (const auto &VTableName : VTableNames)
+    if (Error E = Symtab.addVTableName(VTableName.getKey()))
+      return E;
 
   if (static_cast<bool>(ProfileKind & InstrProfKind::TemporalProfile))
     writeTextTemporalProfTraceData(OS, Symtab);
@@ -790,7 +853,7 @@ void InstrProfWriter::writeTextTemporalProfTraceData(raw_fd_ostream &OS,
   for (auto &Trace : TemporalProfTraces) {
     OS << "# Weight:\n" << Trace.Weight << "\n";
     for (auto &NameRef : Trace.FunctionNameRefs)
-      OS << Symtab.getFuncName(NameRef) << ",";
+      OS << Symtab.getFuncOrVarName(NameRef) << ",";
     OS << "\n";
   }
   OS << "\n";

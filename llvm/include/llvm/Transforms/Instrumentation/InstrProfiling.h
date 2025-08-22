@@ -50,18 +50,25 @@ private:
     uint32_t NumValueSites[IPVK_Last + 1];
     GlobalVariable *RegionCounters = nullptr;
     GlobalVariable *DataVar = nullptr;
+    GlobalVariable *RegionBitmaps = nullptr;
 
     PerFunctionProfileData() {
       memset(NumValueSites, 0, sizeof(uint32_t) * (IPVK_Last + 1));
     }
   };
   DenseMap<GlobalVariable *, PerFunctionProfileData> ProfileDataMap;
+  // Key is virtual table variable, value is 'VTableProfData' in the form of
+  // GlobalVariable.
+  DenseMap<GlobalVariable *, GlobalVariable *> VTableDataMap;
   /// If runtime relocation is enabled, this maps functions to the load
   /// instruction that produces the profile relocation bias.
   DenseMap<const Function *, LoadInst *> FunctionToProfileBiasMap;
   std::vector<GlobalValue *> CompilerUsedVars;
   std::vector<GlobalValue *> UsedVars;
   std::vector<GlobalVariable *> ReferencedNames;
+  // The list of virtual table variables of which the VTableProfData is
+  // collected.
+  std::vector<GlobalVariable *> ReferencedVTables;
   GlobalVariable *NamesVar;
   size_t NamesSize;
 
@@ -105,22 +112,67 @@ private:
   /// Force emitting of name vars for unused functions.
   void lowerCoverageData(GlobalVariable *CoverageNamesVar);
 
+  /// Replace instrprof.mcdc.tvbitmask.update with a shift and or instruction
+  /// using the index represented by the a temp value into a bitmap.
+  void lowerMCDCTestVectorBitmapUpdate(InstrProfMCDCTVBitmapUpdate *Ins);
+
+  /// Replace instrprof.mcdc.temp.update with a shift and or instruction using
+  /// the corresponding condition ID.
+  void lowerMCDCCondBitmapUpdate(InstrProfMCDCCondBitmapUpdate *Ins);
+
   /// Compute the address of the counter value that this profiling instruction
   /// acts on.
-  Value *getCounterAddress(InstrProfInstBase *I);
+  Value *getCounterAddress(InstrProfCntrInstBase *I);
 
   /// Get the region counters for an increment, creating them if necessary.
   ///
   /// If the counter array doesn't yet exist, the profile data variables
   /// referring to them will also be created.
-  GlobalVariable *getOrCreateRegionCounters(InstrProfInstBase *Inc);
+  GlobalVariable *getOrCreateRegionCounters(InstrProfCntrInstBase *Inc);
 
   /// Create the region counters.
-  GlobalVariable *createRegionCounters(InstrProfInstBase *Inc, StringRef Name,
+  GlobalVariable *createRegionCounters(InstrProfCntrInstBase *Inc,
+                                       StringRef Name,
                                        GlobalValue::LinkageTypes Linkage);
+
+  /// Compute the address of the test vector bitmap that this profiling
+  /// instruction acts on.
+  Value *getBitmapAddress(InstrProfMCDCTVBitmapUpdate *I);
+
+  /// Get the region bitmaps for an increment, creating them if necessary.
+  ///
+  /// If the bitmap array doesn't yet exist, the profile data variables
+  /// referring to them will also be created.
+  GlobalVariable *getOrCreateRegionBitmaps(InstrProfMCDCBitmapInstBase *Inc);
+
+  /// Create the MC/DC bitmap as a byte-aligned array of bytes associated with
+  /// an MC/DC Decision region. The number of bytes required is indicated by
+  /// the intrinsic used (type InstrProfMCDCBitmapInstBase).  This is called
+  /// as part of setupProfileSection() and is conceptually very similar to
+  /// what is done for profile data counters in createRegionCounters().
+  GlobalVariable *createRegionBitmaps(InstrProfMCDCBitmapInstBase *Inc,
+                                      StringRef Name,
+                                      GlobalValue::LinkageTypes Linkage);
+
+  /// Set Comdat property of GV, if required.
+  void maybeSetComdat(GlobalVariable *GV, GlobalObject *GO, StringRef VarName);
+
+  /// Setup the sections into which counters and bitmaps are allocated.
+  GlobalVariable *setupProfileSection(InstrProfInstBase *Inc,
+                                      InstrProfSectKind IPSK);
+
+  /// Create INSTR_PROF_DATA variable for counters and bitmaps.
+  void createDataVariable(InstrProfCntrInstBase *Inc,
+                          InstrProfMCDCBitmapParameters *Update);
+
+  /// Get the counters for virtual table values, creating them if necessary.
+  void getOrCreateVTableProfData(GlobalVariable *GV);
 
   /// Emit the section with compressed function names.
   void emitNameData();
+
+  /// Emit the section with compressed vtable names.
+  void emitVTableNames();
 
   /// Emit value nodes section for value profiling.
   void emitVNodes();
