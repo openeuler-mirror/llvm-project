@@ -44,74 +44,136 @@ static cl::opt<bool>
                                cl::init(false), cl::Hidden);
 
 namespace {
-class TailFoldingKind {
-private:
-  uint8_t Bits = 0; // Currently defaults to disabled.
+class TailFoldingOption {
+  // These bitfields will only ever be set to something non-zero in operator=,
+  // when setting the -sve-tail-folding option. This option should always be of
+  // the form (default|simple|all|disable)[+(Flag1|Flag2|etc)], where here
+  // InitialBits is one of (disabled|all|simple). EnableBits represents
+  // additional flags we're enabling, and DisableBits for those flags we're
+  // disabling. The default flag is tracked in the variable NeedsDefault, since
+  // at the time of setting the option we may not know what the default value
+  // for the CPU is.
+  TailFoldingOpts InitialBits = TailFoldingOpts::Disabled;
+  TailFoldingOpts EnableBits = TailFoldingOpts::Disabled;
+  TailFoldingOpts DisableBits = TailFoldingOpts::Disabled;
+
+  // This value needs to be initialised to true in case the user does not
+  // explicitly set the -sve-tail-folding option.
+  bool NeedsDefault = true;
+
+  void setInitialBits(TailFoldingOpts Bits) { InitialBits = Bits; }
+
+  void setNeedsDefault(bool V) { NeedsDefault = V; }
+
+  void setEnableBit(TailFoldingOpts Bit) {
+    EnableBits |= Bit;
+    DisableBits &= ~Bit;
+  }
+
+  void setDisableBit(TailFoldingOpts Bit) {
+    EnableBits &= ~Bit;
+    DisableBits |= Bit;
+  }
+
+  TailFoldingOpts getBits(TailFoldingOpts DefaultBits) const {
+    TailFoldingOpts Bits = TailFoldingOpts::Disabled;
+
+    assert((InitialBits == TailFoldingOpts::Disabled || !NeedsDefault) &&
+           "Initial bits should only include one of "
+           "(disabled|all|simple|default)");
+    Bits = NeedsDefault ? DefaultBits : InitialBits;
+    Bits |= EnableBits;
+    Bits &= ~DisableBits;
+
+    return Bits;
+  }
+
+  void reportError(std::string Opt) {
+    errs() << "invalid argument '" << Opt
+           << "' to -sve-tail-folding=; the option should be of the form\n"
+              "  (disabled|all|default|simple)[+(reductions|recurrences"
+              "|reverse|noreductions|norecurrences|noreverse)]\n";
+    report_fatal_error("Unrecognised tail-folding option");
+  }
 
 public:
-  enum TailFoldingOpts {
-    TFDisabled = 0x0,
-    TFReductions = 0x01,
-    TFRecurrences = 0x02,
-    TFSimple = 0x80,
-    TFAll = TFReductions | TFRecurrences | TFSimple
-  };
 
   void operator=(const std::string &Val) {
-    if (Val.empty())
+    // If the user explicitly sets -sve-tail-folding= then treat as an error.
+    if (Val.empty()) {
+      reportError("");
       return;
-    SmallVector<StringRef, 6> TailFoldTypes;
+    }
+
+    // Since the user is explicitly setting the option we don't automatically
+    // need the default unless they require it.
+    setNeedsDefault(false);
+
+    SmallVector<StringRef, 4> TailFoldTypes;
     StringRef(Val).split(TailFoldTypes, '+', -1, false);
-    for (auto TailFoldType : TailFoldTypes) {
-      if (TailFoldType == "disabled")
-        Bits = 0;
-      else if (TailFoldType == "all")
-        Bits = TFAll;
-      else if (TailFoldType == "default")
-        Bits = 0; // Currently defaults to never tail-folding.
-      else if (TailFoldType == "simple")
-        add(TFSimple);
-      else if (TailFoldType == "reductions")
-        add(TFReductions);
-      else if (TailFoldType == "recurrences")
-        add(TFRecurrences);
-      else if (TailFoldType == "noreductions")
-        remove(TFReductions);
-      else if (TailFoldType == "norecurrences")
-        remove(TFRecurrences);
-      else {
-        errs()
-            << "invalid argument " << TailFoldType.str()
-            << " to -sve-tail-folding=; each element must be one of: disabled, "
-               "all, default, simple, reductions, noreductions, recurrences, "
-               "norecurrences\n";
-      }
+
+    unsigned StartIdx = 1;
+    if (TailFoldTypes[0] == "disabled")
+      setInitialBits(TailFoldingOpts::Disabled);
+    else if (TailFoldTypes[0] == "all")
+      setInitialBits(TailFoldingOpts::All);
+    else if (TailFoldTypes[0] == "default")
+      setNeedsDefault(true);
+    else if (TailFoldTypes[0] == "simple")
+      setInitialBits(TailFoldingOpts::Simple);
+    else {
+      StartIdx = 0;
+      setInitialBits(TailFoldingOpts::Disabled);
+    }
+
+    for (unsigned I = StartIdx; I < TailFoldTypes.size(); I++) {
+      if (TailFoldTypes[I] == "reductions")
+        setEnableBit(TailFoldingOpts::Reductions);
+      else if (TailFoldTypes[I] == "recurrences")
+        setEnableBit(TailFoldingOpts::Recurrences);
+      else if (TailFoldTypes[I] == "reverse")
+        setEnableBit(TailFoldingOpts::Reverse);
+      else if (TailFoldTypes[I] == "noreductions")
+        setDisableBit(TailFoldingOpts::Reductions);
+      else if (TailFoldTypes[I] == "norecurrences")
+        setDisableBit(TailFoldingOpts::Recurrences);
+      else if (TailFoldTypes[I] == "noreverse")
+        setDisableBit(TailFoldingOpts::Reverse);
+      else
+        reportError(Val);
     }
   }
 
-  operator uint8_t() const { return Bits; }
-
-  void add(uint8_t Flag) { Bits |= Flag; }
-  void remove(uint8_t Flag) { Bits &= ~Flag; }
+  bool satisfies(TailFoldingOpts DefaultBits, TailFoldingOpts Required) const {
+    return (getBits(DefaultBits) & Required) == Required;
+  }
 };
 } // namespace
 
-TailFoldingKind TailFoldingKindLoc;
+TailFoldingOption TailFoldingOptionLoc;
 
-cl::opt<TailFoldingKind, true, cl::parser<std::string>> SVETailFolding(
+cl::opt<TailFoldingOption, true, cl::parser<std::string>> SVETailFolding(
     "sve-tail-folding",
     cl::desc(
-        "Control the use of vectorisation using tail-folding for SVE:"
-        "\ndisabled    No loop types will vectorize using tail-folding"
-        "\ndefault     Uses the default tail-folding settings for the target "
-        "CPU"
-        "\nall         All legal loop types will vectorize using tail-folding"
-        "\nsimple      Use tail-folding for simple loops (not reductions or "
-        "recurrences)"
-        "\nreductions  Use tail-folding for loops containing reductions"
-        "\nrecurrences Use tail-folding for loops containing fixed order "
-        "recurrences"),
-    cl::location(TailFoldingKindLoc));
+        "Control the use of vectorisation using tail-folding for SVE where the"
+        " option is specified in the form (Initial)[+(Flag1|Flag2|...)]:"
+        "\ndisabled      (Initial) No loop types will vectorize using "
+        "tail-folding"
+        "\ndefault       (Initial) Uses the default tail-folding settings for "
+        "the target CPU"
+        "\nall           (Initial) All legal loop types will vectorize using "
+        "tail-folding"
+        "\nsimple        (Initial) Use tail-folding for simple loops (not "
+        "reductions or recurrences)"
+        "\nreductions    Use tail-folding for loops containing reductions"
+        "\nnoreductions  Inverse of above"
+        "\nrecurrences   Use tail-folding for loops containing fixed order "
+        "recurrences"
+        "\nnorecurrences Inverse of above"
+        "\nreverse       Use tail-folding for loops requiring reversed "
+        "predicates"
+        "\nnoreverse     Inverse of above"),
+    cl::location(TailFoldingOptionLoc));
 
 // Experimental option that will only be fully functional when the
 // code-generator is changed to use SVE instead of NEON for all fixed-width
@@ -2084,6 +2146,23 @@ InstructionCost AArch64TTIImpl::getCastInstrCost(unsigned Opcode, Type *Dst,
     { ISD::BITCAST, MVT::nxv2i16, MVT::nxv2f16, 0 },
     { ISD::BITCAST, MVT::nxv4i16, MVT::nxv4f16, 0 },
     { ISD::BITCAST, MVT::nxv2i32, MVT::nxv2f32, 0 },
+
+    // Add cost for extending to illegal -too wide- scalable vectors.
+    // zero/sign extend are implemented by multiple unpack operations,
+    // where each operation has a cost of 1.
+    { ISD::ZERO_EXTEND, MVT::nxv16i16, MVT::nxv16i8, 2},
+    { ISD::ZERO_EXTEND, MVT::nxv16i32, MVT::nxv16i8, 6},
+    { ISD::ZERO_EXTEND, MVT::nxv16i64, MVT::nxv16i8, 14},
+    { ISD::ZERO_EXTEND, MVT::nxv8i32, MVT::nxv8i16, 2},
+    { ISD::ZERO_EXTEND, MVT::nxv8i64, MVT::nxv8i16, 6},
+    { ISD::ZERO_EXTEND, MVT::nxv4i64, MVT::nxv4i32, 2},
+
+    { ISD::SIGN_EXTEND, MVT::nxv16i16, MVT::nxv16i8, 2},
+    { ISD::SIGN_EXTEND, MVT::nxv16i32, MVT::nxv16i8, 6},
+    { ISD::SIGN_EXTEND, MVT::nxv16i64, MVT::nxv16i8, 14},
+    { ISD::SIGN_EXTEND, MVT::nxv8i32, MVT::nxv8i16, 2},
+    { ISD::SIGN_EXTEND, MVT::nxv8i64, MVT::nxv8i16, 6},
+    { ISD::SIGN_EXTEND, MVT::nxv4i64, MVT::nxv4i32, 2},
   };
 
   if (const auto *Entry = ConvertCostTableLookup(ConversionTbl, ISD,
@@ -2120,6 +2199,13 @@ InstructionCost AArch64TTIImpl::getCastInstrCost(unsigned Opcode, Type *Dst,
     if (const auto *Entry = ConvertCostTableLookup(
             FP16Tbl, ISD, DstTy.getSimpleVT(), SrcTy.getSimpleVT()))
       return AdjustCost(Entry->Cost);
+
+  // The BasicTTIImpl version only deals with CCH==TTI::CastContextHint::Normal,
+  // but we also want to include the TTI::CastContextHint::Masked case too.
+  if ((ISD == ISD::ZERO_EXTEND || ISD == ISD::SIGN_EXTEND) &&
+      CCH == TTI::CastContextHint::Masked && ST->hasSVEorSME() &&
+      TLI->isTypeLegal(DstTy))
+    CCH = TTI::CastContextHint::Normal;
 
   return AdjustCost(
       BaseT::getCastInstrCost(Opcode, Dst, Src, CCH, CostKind, I));
@@ -3369,11 +3455,31 @@ InstructionCost AArch64TTIImpl::getShuffleCost(TTI::ShuffleKind Kind,
   return BaseT::getShuffleCost(Kind, Tp, Mask, CostKind, Index, SubTp);
 }
 
+static bool containsDecreasingPointers(Loop *TheLoop,
+                                       PredicatedScalarEvolution *PSE) {
+  const ValueToValueMap &Strides = ValueToValueMap();
+  for (BasicBlock *BB : TheLoop->blocks()) {
+    // Scan the instructions in the block and look for addresses that are
+    // consecutive and decreasing.
+    for (Instruction &I : *BB) {
+      if (isa<LoadInst>(&I) || isa<StoreInst>(&I)) {
+        Value *Ptr = getLoadStorePointerOperand(&I);
+        Type *AccessTy = getLoadStoreType(&I);
+        if (getPtrStride(*PSE, AccessTy, Ptr, TheLoop, Strides, /*Assume=*/true,
+                         /*ShouldCheckWrap=*/false)
+                .value_or(0) < 0)
+          return true;
+      }
+    }
+  }
+  return false;
+}
+
 bool AArch64TTIImpl::preferPredicateOverEpilogue(
     Loop *L, LoopInfo *LI, ScalarEvolution &SE, AssumptionCache &AC,
     TargetLibraryInfo *TLI, DominatorTree *DT, LoopVectorizationLegality *LVL,
     InterleavedAccessInfo *IAI) {
-  if (!ST->hasSVE() || TailFoldingKindLoc == TailFoldingKind::TFDisabled)
+  if (!ST->hasSVE())
     return false;
 
   // We don't currently support vectorisation with interleaving for SVE - with
@@ -3382,15 +3488,22 @@ bool AArch64TTIImpl::preferPredicateOverEpilogue(
   if (IAI->hasGroups())
     return false;
 
-  TailFoldingKind Required; // Defaults to 0.
+  TailFoldingOpts Required = TailFoldingOpts::Disabled;
   if (LVL->getReductionVars().size())
-    Required.add(TailFoldingKind::TFReductions);
+    Required |= TailFoldingOpts::Reductions;
   if (LVL->getFixedOrderRecurrences().size())
-    Required.add(TailFoldingKind::TFRecurrences);
-  if (!Required)
-    Required.add(TailFoldingKind::TFSimple);
+    Required |= TailFoldingOpts::Recurrences;
 
-  return (TailFoldingKindLoc & Required) == Required;
+  // We call this to discover whether any load/store pointers in the loop have
+  // negative strides. This will require extra work to reverse the loop
+  // predicate, which may be expensive.
+  if (containsDecreasingPointers(L, LVL->getPredicatedScalarEvolution()))
+    Required |= TailFoldingOpts::Reverse;
+  if (Required == TailFoldingOpts::Disabled)
+    Required |= TailFoldingOpts::Simple;
+
+  return TailFoldingOptionLoc.satisfies(ST->getSVETailFoldingDefaultOpts(),
+                                        Required);
 }
 
 InstructionCost

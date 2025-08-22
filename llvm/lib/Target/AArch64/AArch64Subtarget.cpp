@@ -271,12 +271,14 @@ void AArch64Subtarget::initializeProperties() {
     PrefFunctionLogAlignment = 4;
     PrefLoopLogAlignment = 2;
     VScaleForTuning = 2;
+    DefaultSVETFOpts = TailFoldingOpts::Simple;
     break;
   case HIP12:
     CacheLineSize = 64;
     PrefFunctionLogAlignment = 4;
     PrefLoopLogAlignment = 2;
     VScaleForTuning = 2;
+    DefaultSVETFOpts = TailFoldingOpts::Simple;
     break;
   case ThunderX3T110:
     CacheLineSize = 64;

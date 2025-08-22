@@ -130,6 +130,7 @@ protected:
   unsigned MinSVEVectorSizeInBits;
   unsigned MaxSVEVectorSizeInBits;
   unsigned VScaleForTuning = 2;
+  TailFoldingOpts DefaultSVETFOpts = TailFoldingOpts::Disabled;
 
   /// TargetTriple - What processor and OS we're targeting.
   Triple TargetTriple;
@@ -402,6 +403,10 @@ public:
   bool forceStreamingCompatibleSVE() const;
 
   unsigned getVScaleForTuning() const { return VScaleForTuning; }
+
+  TailFoldingOpts getSVETailFoldingDefaultOpts() const {
+    return DefaultSVETFOpts;
+  }
 
   const char* getChkStkName() const {
     if (isWindowsArm64EC())
