@@ -24,7 +24,7 @@ public:
   int GlobalTempCounter = 0;
   SourceLocation findSafeInsertionPoint(const CallExpr *Callee,
                                         SourceManager &SM, ASTContext &Context);
-  SourceLocation findLineStart(SourceLocation Loc, SourceManager &SM);
+  SourceLocation findPreviousLineEnd(SourceLocation Loc, SourceManager &SM);
 };
 
 } // namespace clang::tidy::BSCompatibility

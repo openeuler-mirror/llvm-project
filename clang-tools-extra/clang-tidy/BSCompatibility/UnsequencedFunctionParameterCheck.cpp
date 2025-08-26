@@ -96,57 +96,70 @@ void UnsequencedFunctionParameterCheck::check(
 
 SourceLocation UnsequencedFunctionParameterCheck::findSafeInsertionPoint(
     const CallExpr *Callee, SourceManager &SM, ASTContext &Context) {
-  auto Parents = Context.getParents(*Callee);
-  if (Parents.empty()) {
-    // Insert at line start if there are no parents.
-    return findLineStart(Callee->getBeginLoc(), SM);
-  }
+  if (!Callee) return SourceLocation();
+  
+  SourceLocation CalleeStart = Callee->getBeginLoc();
+  if (CalleeStart.isInvalid()) return SourceLocation();
 
-  const CompoundStmt *CS = nullptr;
-  for (const auto &Parent : Parents) {
-    if (const auto *CompStmt = Parent.get<CompoundStmt>()) {
-      CS = CompStmt;
+  FileID FID = SM.getFileID(CalleeStart);
+  SourceLocation FileStart = SM.getLocForStartOfFile(FID);
+
+  // Get source code before Callee.
+  const char *CalleePtr = SM.getCharacterData(CalleeStart);
+  const char *FilePtr = SM.getCharacterData(FileStart);
+  if (!CalleePtr || !FilePtr) return SourceLocation();
+
+  // Find the position after last ";", "{" or "}".
+  const char *SearchPtr = CalleePtr - 1;
+  while (SearchPtr >= FilePtr) {
+    if (*SearchPtr == ';' || *SearchPtr == '{' || *SearchPtr == '}') {
       break;
     }
+    SearchPtr--;
+  }
+  SourceLocation FoundLoc;
+  if (SearchPtr >= FilePtr) {
+    FoundLoc = FileStart.getLocWithOffset(SearchPtr - FilePtr);
+  } else {
+    FoundLoc = FileStart;
+  }
+  const char *AfterSemiBrace = SearchPtr + 1;
+  while (*AfterSemiBrace && isspace(*AfterSemiBrace)) {
+    AfterSemiBrace++;
   }
 
-  if (!CS) {
-    return findLineStart(Callee->getBeginLoc(), SM);
-  }
-
-  for (auto I = CS->body_begin(); I != CS->body_end(); ++I) {
-    if (*I == Callee) {
-      if (I != CS->body_begin()) {
-        // insert after ;
-        Stmt *Prev = *(I - 1);
-        SourceLocation EndLoc = Prev->getEndLoc();
-        SourceLocation AfterSemi = Lexer::findLocationAfterToken(
-            EndLoc, tok::semi, SM, Context.getLangOpts(), false);
-        if (AfterSemi.isValid()) {
-          return AfterSemi;
-        }
-        return EndLoc.getLocWithOffset(1);
-      } else {
-        // insert after {
-        SourceLocation LBrac = CS->getLBracLoc();
-        return LBrac.getLocWithOffset(1);
-      }
-    }
-  }
-  return CS->getLBracLoc().getLocWithOffset(1);
+  SourceLocation LastStatementEnd =
+      FileStart.getLocWithOffset(SearchPtr - FilePtr);
+  SourceLocation StatementStart =
+      FileStart.getLocWithOffset(AfterSemiBrace - FilePtr);
+  // Check if last statment ends in the same line as this statment start.
+  if (SM.getSpellingLineNumber(LastStatementEnd) !=
+      SM.getSpellingLineNumber(StatementStart))
+    return findPreviousLineEnd(StatementStart, SM);
+  else
+    return StatementStart;
 }
 
 SourceLocation
-UnsequencedFunctionParameterCheck::findLineStart(SourceLocation Loc,
-                                                 SourceManager &SM) {
+UnsequencedFunctionParameterCheck::findPreviousLineEnd(SourceLocation Loc,
+                                                       SourceManager &SM) {
   if (Loc.isInvalid())
     return Loc;
 
   unsigned Line = SM.getSpellingLineNumber(Loc);
-  FileID FID = SM.getFileID(Loc);
-  SourceLocation LineStart = SM.translateLineCol(FID, Line, 1);
+  if (Line <= 1) {
+    return SM.getLocForStartOfFile(SM.getFileID(Loc));
+  }
 
-  return LineStart.isValid() ? LineStart : Loc;
+  FileID FID = SM.getFileID(Loc);
+  SourceLocation PreviousLine = SM.translateLineCol(FID, Line - 1, 1);
+  SourceLocation CurrentLine = SM.translateLineCol(FID, Line, 1);
+  if (PreviousLine.isInvalid() || CurrentLine.isInvalid()) {
+    return Loc;
+  }
+
+  SourceLocation Ret = CurrentLine.getLocWithOffset(-1);
+  return Ret.isValid() ? Ret : Loc;
 }
 
 } // namespace clang::tidy::BSCompatibility
