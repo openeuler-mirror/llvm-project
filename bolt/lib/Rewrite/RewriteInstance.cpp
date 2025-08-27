@@ -83,6 +83,7 @@ extern cl::opt<bool> KeepNops;
 extern cl::opt<bool> Lite;
 extern cl::list<std::string> ReorderData;
 extern cl::opt<bolt::ReorderFunctions::ReorderType> ReorderFunctions;
+extern cl::opt<bool> TerminalHLT;
 extern cl::opt<bool> TerminalTrap;
 extern cl::opt<bool> TimeBuild;
 extern cl::opt<bool> TimeRewrite;
@@ -2141,7 +2142,9 @@ void RewriteInstance::adjustCommandLineOptions() {
     if (!opts::KeepNops.getNumOccurrences())
       opts::KeepNops = true;
 
-    // Linux kernel may resume execution after a trap instruction in some cases.
+    // Linux kernel may resume execution after a trap or x86 HLT instruction.
+    if (!opts::TerminalHLT.getNumOccurrences())
+      opts::TerminalHLT = false;
     if (!opts::TerminalTrap.getNumOccurrences())
       opts::TerminalTrap = false;
   }
