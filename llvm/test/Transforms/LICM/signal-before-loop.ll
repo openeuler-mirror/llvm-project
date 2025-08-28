@@ -1,5 +1,4 @@
-; REQUIRES: enable_build_for_common
-; RUN:opt -disable-move-store-ins-outside-of-loop=true -S < %s | FileCheck %s 
+; RUN:opt -disable-move-store-ins-outside-of-loop=true -S < %s | FileCheck %s
 
 @Run_Index = external global i64
 

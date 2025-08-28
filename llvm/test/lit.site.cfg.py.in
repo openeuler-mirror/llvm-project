@@ -63,7 +63,6 @@ config.dxil_tests = @LLVM_INCLUDE_DXIL_TESTS@
 config.have_llvm_driver = @LLVM_TOOL_LLVM_DRIVER_BUILD@
 config.use_classic_flang = @LLVM_ENABLE_CLASSIC_FLANG@
 config.enable_enable_autotuner = @LLVM_ENABLE_AUTOTUNER@
-config.enable_build_for_common = @LLVM_BUILD_FOR_COMMON@
 config.spirv_tools_tests = @LLVM_INCLUDE_SPIRV_TOOLS_TESTS@
 config.have_vc_rev = @LLVM_APPEND_VC_REV@
 config.force_vc_rev = "@LLVM_FORCE_VC_REVISION@"
