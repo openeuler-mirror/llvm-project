@@ -234,11 +234,9 @@ bool DwarfEHPrepare::InsertUnwindResumeCalls() {
   }
   RewindFunction = F.getParent()->getOrInsertFunction(RewindName, FTy);
 
-#if defined(BUILD_FOR_OPENEULER)
   // If -fno-plt is enabled, add NonLazyBind for this library call.
   if (F.getParent()->getRtLibUseGOT())
     (cast<Function>(RewindFunction.getCallee()))->addFnAttr(Attribute::NonLazyBind);
-#endif
 
   // Create the basic block where the _Unwind_Resume call will live.
   if (ResumesLeft == 1) {

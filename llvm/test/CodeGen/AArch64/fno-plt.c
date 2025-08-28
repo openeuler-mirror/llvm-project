@@ -1,4 +1,3 @@
-// REQUIRES: build_for_openeuler
 // RUN: clang %s -shared -fno-plt  -O2 -fno-inline  -fPIC   -o noplt.so
 // RUN: llvm-objdump -d noplt.so | FileCheck %s --check-prefix=CHECK-NO-PLT
 

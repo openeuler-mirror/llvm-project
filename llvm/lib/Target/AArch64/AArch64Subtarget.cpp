@@ -24,9 +24,7 @@
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineScheduler.h"
 #include "llvm/IR/GlobalValue.h"
-#if defined(BUILD_FOR_OPENEULER)
 #include "llvm/IR/Module.h"
-#endif
 #include "llvm/TargetParser/AArch64TargetParser.h"
 
 using namespace llvm;
@@ -443,20 +441,15 @@ unsigned AArch64Subtarget::classifyGlobalFunctionReference(
 
   // NonLazyBind goes via GOT unless we know it's available locally.
   auto *F = dyn_cast<Function>(GV);
-#if defined(BUILD_FOR_OPENEULER)
-// Check if NonLazyBind should go via GOT:
-// 1. The target is not MachO, or MachO uses NonLazyBind.
-// 2. The function's parent module requires GOT for runtime library calls.
-// 3. The symbol is not assumed to be DSO-local.
-// 4. The symbol does not have local linkage.
+
+  // Check if NonLazyBind should go via GOT:
+  // 1. The target is not MachO, or MachO uses NonLazyBind.
+  // 2. The function's parent module requires GOT for runtime library calls.
+  // 3. The symbol is not assumed to be DSO-local.
+  // 4. The symbol does not have local linkage.
   if ((!isTargetMachO() || MachOUseNonLazyBind) && F &&
       F->getParent()->getRtLibUseGOT() && 
       !(TM.shouldAssumeDSOLocal(*GV->getParent(), GV) || GV->hasLocalLinkage()))
-#else
-  if ((!isTargetMachO() || MachOUseNonLazyBind) && F &&
-      F->hasFnAttribute(Attribute::NonLazyBind) &&
-      !TM.shouldAssumeDSOLocal(*GV->getParent(), GV))
-#endif
     return AArch64II::MO_GOT;
 
   if (getTargetTriple().isOSWindows()) {
