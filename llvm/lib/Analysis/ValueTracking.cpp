@@ -1058,6 +1058,25 @@ static void computeKnownBitsFromShiftOperator(
     Known.setAllZero();
 }
 
+ConstantRange llvm::getVScaleRange(const Function *F, unsigned BitWidth) {
+  Attribute Attr = F->getFnAttribute(Attribute::VScaleRange);
+  // Without vscale_range, we only know that vscale is non-zero.
+  if (!Attr.isValid())
+    return ConstantRange(APInt(BitWidth, 1), APInt::getZero(BitWidth));
+
+  unsigned AttrMin = Attr.getVScaleRangeMin();
+  // Minimum is larger than vscale width, result is always poison.
+  if ((unsigned)llvm::bit_width(AttrMin) > BitWidth)
+    return ConstantRange::getEmpty(BitWidth);
+
+  APInt Min(BitWidth, AttrMin);
+  std::optional<unsigned> AttrMax = Attr.getVScaleRangeMax();
+  if (!AttrMax || (unsigned)llvm::bit_width(*AttrMax) > BitWidth)
+    return ConstantRange(Min, APInt::getZero(BitWidth));
+
+  return ConstantRange(Min, APInt(BitWidth, *AttrMax) + 1);
+}
+
 static void computeKnownBitsFromOperator(const Operator *I,
                                          const APInt &DemandedElts,
                                          KnownBits &Known, unsigned Depth,
@@ -1742,31 +1761,10 @@ static void computeKnownBitsFromOperator(const Operator *I,
           Known.Zero.setBitsFrom(31);
         break;
       case Intrinsic::vscale: {
-        if (!II->getParent() || !II->getFunction() ||
-            !II->getFunction()->hasFnAttribute(Attribute::VScaleRange))
+        if (!II->getParent() || !II->getFunction())
           break;
 
-        auto Attr = II->getFunction()->getFnAttribute(Attribute::VScaleRange);
-        std::optional<unsigned> VScaleMax = Attr.getVScaleRangeMax();
-
-        if (!VScaleMax)
-          break;
-
-        unsigned VScaleMin = Attr.getVScaleRangeMin();
-
-        // If vscale min = max then we know the exact value at compile time
-        // and hence we know the exact bits.
-        if (VScaleMin == VScaleMax) {
-          Known.One = VScaleMin;
-          Known.Zero = VScaleMin;
-          Known.Zero.flipAllBits();
-          break;
-        }
-
-        unsigned FirstZeroHighBit = llvm::bit_width(*VScaleMax);
-        if (FirstZeroHighBit < BitWidth)
-          Known.Zero.setBitsFrom(FirstZeroHighBit);
-
+        Known = getVScaleRange(II->getFunction(), BitWidth).toKnownBits();
         break;
       }
       }
@@ -7229,67 +7227,66 @@ static void setLimitsForBinOp(const BinaryOperator &BO, APInt &Lower,
   }
 }
 
-static void setLimitsForIntrinsic(const IntrinsicInst &II, APInt &Lower,
-                                  APInt &Upper) {
-  unsigned Width = Lower.getBitWidth();
+static ConstantRange getRangeForIntrinsic(const IntrinsicInst &II) {
+  unsigned Width = II.getType()->getScalarSizeInBits();
   const APInt *C;
   switch (II.getIntrinsicID()) {
   case Intrinsic::ctpop:
   case Intrinsic::ctlz:
   case Intrinsic::cttz:
     // Maximum of set/clear bits is the bit width.
-    assert(Lower == 0 && "Expected lower bound to be zero");
-    Upper = Width + 1;
-    break;
+    return ConstantRange(APInt::getZero(Width), APInt(Width, Width + 1));
   case Intrinsic::uadd_sat:
     // uadd.sat(x, C) produces [C, UINT_MAX].
     if (match(II.getOperand(0), m_APInt(C)) ||
         match(II.getOperand(1), m_APInt(C)))
-      Lower = *C;
+      return ConstantRange::getNonEmpty(*C, APInt::getZero(Width));
     break;
   case Intrinsic::sadd_sat:
     if (match(II.getOperand(0), m_APInt(C)) ||
         match(II.getOperand(1), m_APInt(C))) {
-      if (C->isNegative()) {
+      if (C->isNegative())
         // sadd.sat(x, -C) produces [SINT_MIN, SINT_MAX + (-C)].
-        Lower = APInt::getSignedMinValue(Width);
-        Upper = APInt::getSignedMaxValue(Width) + *C + 1;
-      } else {
-        // sadd.sat(x, +C) produces [SINT_MIN + C, SINT_MAX].
-        Lower = APInt::getSignedMinValue(Width) + *C;
-        Upper = APInt::getSignedMaxValue(Width) + 1;
-      }
+        return ConstantRange::getNonEmpty(APInt::getSignedMinValue(Width),
+                                          APInt::getSignedMaxValue(Width) + *C +
+                                              1);
+
+      // sadd.sat(x, +C) produces [SINT_MIN + C, SINT_MAX].
+      return ConstantRange::getNonEmpty(APInt::getSignedMinValue(Width) + *C,
+                                        APInt::getSignedMaxValue(Width) + 1);
     }
     break;
   case Intrinsic::usub_sat:
     // usub.sat(C, x) produces [0, C].
     if (match(II.getOperand(0), m_APInt(C)))
-      Upper = *C + 1;
+      return ConstantRange::getNonEmpty(APInt::getZero(Width), *C + 1);
+
     // usub.sat(x, C) produces [0, UINT_MAX - C].
-    else if (match(II.getOperand(1), m_APInt(C)))
-      Upper = APInt::getMaxValue(Width) - *C + 1;
+    if (match(II.getOperand(1), m_APInt(C)))
+      return ConstantRange::getNonEmpty(APInt::getZero(Width),
+                                        APInt::getMaxValue(Width) - *C + 1);
     break;
   case Intrinsic::ssub_sat:
     if (match(II.getOperand(0), m_APInt(C))) {
-      if (C->isNegative()) {
+      if (C->isNegative())
         // ssub.sat(-C, x) produces [SINT_MIN, -SINT_MIN + (-C)].
-        Lower = APInt::getSignedMinValue(Width);
-        Upper = *C - APInt::getSignedMinValue(Width) + 1;
-      } else {
-        // ssub.sat(+C, x) produces [-SINT_MAX + C, SINT_MAX].
-        Lower = *C - APInt::getSignedMaxValue(Width);
-        Upper = APInt::getSignedMaxValue(Width) + 1;
-      }
+        return ConstantRange::getNonEmpty(APInt::getSignedMinValue(Width),
+                                          *C - APInt::getSignedMinValue(Width) +
+                                              1);
+
+      // ssub.sat(+C, x) produces [-SINT_MAX + C, SINT_MAX].
+      return ConstantRange::getNonEmpty(*C - APInt::getSignedMaxValue(Width),
+                                        APInt::getSignedMaxValue(Width) + 1);
     } else if (match(II.getOperand(1), m_APInt(C))) {
-      if (C->isNegative()) {
+      if (C->isNegative())
         // ssub.sat(x, -C) produces [SINT_MIN - (-C), SINT_MAX]:
-        Lower = APInt::getSignedMinValue(Width) - *C;
-        Upper = APInt::getSignedMaxValue(Width) + 1;
-      } else {
-        // ssub.sat(x, +C) produces [SINT_MIN, SINT_MAX - C].
-        Lower = APInt::getSignedMinValue(Width);
-        Upper = APInt::getSignedMaxValue(Width) - *C + 1;
-      }
+        return ConstantRange::getNonEmpty(APInt::getSignedMinValue(Width) - *C,
+                                          APInt::getSignedMaxValue(Width) + 1);
+
+      // ssub.sat(x, +C) produces [SINT_MIN, SINT_MAX - C].
+      return ConstantRange::getNonEmpty(APInt::getSignedMinValue(Width),
+                                        APInt::getSignedMaxValue(Width) - *C +
+                                            1);
     }
     break;
   case Intrinsic::umin:
@@ -7302,19 +7299,15 @@ static void setLimitsForIntrinsic(const IntrinsicInst &II, APInt &Lower,
 
     switch (II.getIntrinsicID()) {
     case Intrinsic::umin:
-      Upper = *C + 1;
-      break;
+      return ConstantRange::getNonEmpty(APInt::getZero(Width), *C + 1);
     case Intrinsic::umax:
-      Lower = *C;
-      break;
+      return ConstantRange::getNonEmpty(*C, APInt::getZero(Width));
     case Intrinsic::smin:
-      Lower = APInt::getSignedMinValue(Width);
-      Upper = *C + 1;
-      break;
+      return ConstantRange::getNonEmpty(APInt::getSignedMinValue(Width),
+                                        *C + 1);
     case Intrinsic::smax:
-      Lower = *C;
-      Upper = APInt::getSignedMaxValue(Width) + 1;
-      break;
+      return ConstantRange::getNonEmpty(*C,
+                                        APInt::getSignedMaxValue(Width) + 1);
     default:
       llvm_unreachable("Must be min/max intrinsic");
     }
@@ -7323,13 +7316,20 @@ static void setLimitsForIntrinsic(const IntrinsicInst &II, APInt &Lower,
     // If abs of SIGNED_MIN is poison, then the result is [0..SIGNED_MAX],
     // otherwise it is [0..SIGNED_MIN], as -SIGNED_MIN == SIGNED_MIN.
     if (match(II.getOperand(1), m_One()))
-      Upper = APInt::getSignedMaxValue(Width) + 1;
-    else
-      Upper = APInt::getSignedMinValue(Width) + 1;
-    break;
+      return ConstantRange(APInt::getZero(Width),
+                           APInt::getSignedMaxValue(Width) + 1);
+
+    return ConstantRange(APInt::getZero(Width),
+                         APInt::getSignedMinValue(Width) + 1);
+  case Intrinsic::vscale:
+    if (!II.getParent() || !II.getFunction())
+      break;
+    return getVScaleRange(II.getFunction(), Width);
   default:
     break;
   }
+
+  return ConstantRange::getFull(Width);
 }
 
 static void setLimitsForSelectPattern(const SelectInst &SI, APInt &Lower,
@@ -7418,18 +7418,28 @@ ConstantRange llvm::computeConstantRange(const Value *V, bool ForSigned,
 
   InstrInfoQuery IIQ(UseInstrInfo);
   unsigned BitWidth = V->getType()->getScalarSizeInBits();
-  APInt Lower = APInt(BitWidth, 0);
-  APInt Upper = APInt(BitWidth, 0);
-  if (auto *BO = dyn_cast<BinaryOperator>(V))
+  ConstantRange CR = ConstantRange::getFull(BitWidth);
+  if (auto *BO = dyn_cast<BinaryOperator>(V)) {
+    APInt Lower = APInt(BitWidth, 0);
+    APInt Upper = APInt(BitWidth, 0);
+    // TODO: Return ConstantRange.
     setLimitsForBinOp(*BO, Lower, Upper, IIQ, ForSigned);
-  else if (auto *II = dyn_cast<IntrinsicInst>(V))
-    setLimitsForIntrinsic(*II, Lower, Upper);
-  else if (auto *SI = dyn_cast<SelectInst>(V))
+    CR = ConstantRange::getNonEmpty(Lower, Upper);
+  } else if (auto *II = dyn_cast<IntrinsicInst>(V))
+    CR = getRangeForIntrinsic(*II);
+  else if (auto *SI = dyn_cast<SelectInst>(V)) {
+    APInt Lower = APInt(BitWidth, 0);
+    APInt Upper = APInt(BitWidth, 0);
+    // TODO: Return ConstantRange.
     setLimitsForSelectPattern(*SI, Lower, Upper, IIQ);
-  else if (isa<FPToUIInst>(V) || isa<FPToSIInst>(V))
+    CR = ConstantRange::getNonEmpty(Lower, Upper);
+  } else if (isa<FPToUIInst>(V) || isa<FPToSIInst>(V)) {
+    APInt Lower = APInt(BitWidth, 0);
+    APInt Upper = APInt(BitWidth, 0);
+    // TODO: Return ConstantRange.
     setLimitForFPToI(cast<Instruction>(V), Lower, Upper);
-
-  ConstantRange CR = ConstantRange::getNonEmpty(Lower, Upper);
+    CR = ConstantRange::getNonEmpty(Lower, Upper);
+  }
 
   if (auto *I = dyn_cast<Instruction>(V))
     if (auto *Range = IIQ.getMetadata(I, LLVMContext::MD_range))

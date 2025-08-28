@@ -799,6 +799,9 @@ def AArch64mrs : SDNode<"AArch64ISD::MRS",
                         SDTypeProfile<1, 1, [SDTCisVT<0, i64>, SDTCisVT<1, i32>]>,
                         [SDNPHasChain, SDNPOutGlue]>;
 
+def AArch64CttzElts : SDNode<"AArch64ISD::CTTZ_ELTS", SDTypeProfile<1, 1,
+                             [SDTCisInt<0>, SDTCisVec<1>]>, []>;
+
 // Match add node and also treat an 'or' node is as an 'add' if the or'ed operands
 // have no common bits.
 def add_and_or_is_add : PatFrags<(ops node:$lhs, node:$rhs),

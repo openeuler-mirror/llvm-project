@@ -495,7 +495,6 @@ getCopyToParts(SelectionDAG &DAG, const SDLoc &DL, SDValue Val, SDValue *Parts,
     return getCopyToPartsVector(DAG, DL, Val, Parts, NumParts, PartVT, V,
                                 CallConv);
 
-  unsigned PartBits = PartVT.getSizeInBits();
   unsigned OrigNumParts = NumParts;
   assert(DAG.getTargetLoweringInfo().isTypeLegal(PartVT) &&
          "Copying to an illegal type!");
@@ -511,6 +510,7 @@ getCopyToParts(SelectionDAG &DAG, const SDLoc &DL, SDValue Val, SDValue *Parts,
     return;
   }
 
+  unsigned PartBits = PartVT.getSizeInBits();
   if (NumParts * PartBits > ValueVT.getSizeInBits()) {
     // If the parts cover more bits than the value has, promote the value.
     if (PartVT.isFloatingPoint() && ValueVT.isFloatingPoint()) {
@@ -7284,6 +7284,96 @@ void SelectionDAGBuilder::visitIntrinsicCall(const CallInst &I,
     SDValue SetCC = DAG.getSetCC(sdl, CCVT, VectorInduction,
                                  VectorTripCount, ISD::CondCode::SETULT);
     setValue(&I, SetCC);
+    return;
+  }
+  case Intrinsic::experimental_get_vector_length: {
+    assert(cast<ConstantInt>(I.getOperand(1))->getSExtValue() > 0 &&
+           "Expected positive VF");
+    unsigned VF = cast<ConstantInt>(I.getOperand(1))->getZExtValue();
+    bool IsScalable = cast<ConstantInt>(I.getOperand(2))->isOne();
+
+    SDValue Count = getValue(I.getOperand(0));
+    EVT CountVT = Count.getValueType();
+
+    if (!TLI.shouldExpandGetVectorLength(CountVT, VF, IsScalable)) {
+      visitTargetIntrinsic(I, Intrinsic);
+      return;
+    }
+
+    // Expand to a umin between the trip count and the maximum elements the type
+    // can hold.
+    EVT VT = TLI.getValueType(DAG.getDataLayout(), I.getType());
+
+    // Extend the trip count to at least the result VT.
+    if (CountVT.bitsLT(VT)) {
+      Count = DAG.getNode(ISD::ZERO_EXTEND, sdl, VT, Count);
+      CountVT = VT;
+    }
+
+    SDValue MaxEVL = DAG.getElementCount(sdl, CountVT,
+                                         ElementCount::get(VF, IsScalable));
+
+    SDValue UMin = DAG.getNode(ISD::UMIN, sdl, CountVT, Count, MaxEVL);
+    // Clip to the result type if needed.
+    SDValue Trunc = DAG.getNode(ISD::TRUNCATE, sdl, VT, UMin);
+
+    setValue(&I, Trunc);
+    return;
+  }
+  case Intrinsic::experimental_cttz_elts: {
+    auto DL = getCurSDLoc();
+    SDValue Op = getValue(I.getOperand(0));
+    EVT OpVT = Op.getValueType();
+
+    if (!TLI.shouldExpandCttzElements(OpVT)) {
+      visitTargetIntrinsic(I, Intrinsic);
+      return;
+    }
+
+    if (OpVT.getScalarType() != MVT::i1) {
+      // Compare the input vector elements to zero & use to count trailing zeros
+      SDValue AllZero = DAG.getConstant(0, DL, OpVT);
+      OpVT = EVT::getVectorVT(*DAG.getContext(), MVT::i1,
+                              OpVT.getVectorElementCount());
+      Op = DAG.getSetCC(DL, OpVT, Op, AllZero, ISD::SETNE);
+    }
+
+    // Find the smallest "sensible" element type to use for the expansion.
+    ConstantRange CR(
+        APInt(64, OpVT.getVectorElementCount().getKnownMinValue()));
+    if (OpVT.isScalableVT())
+      CR = CR.umul_sat(getVScaleRange(I.getCaller(), 64));
+
+    // If the zero-is-poison flag is set, we can assume the upper limit
+    // of the result is VF-1.
+    if (!cast<ConstantSDNode>(getValue(I.getOperand(1)))->isZero())
+      CR = CR.subtract(APInt(64, 1));
+
+    unsigned EltWidth = I.getType()->getScalarSizeInBits();
+    EltWidth = std::min(EltWidth, (unsigned)CR.getActiveBits());
+    EltWidth = std::max(llvm::bit_ceil(EltWidth), (unsigned)8);
+
+    MVT NewEltTy = MVT::getIntegerVT(EltWidth);
+
+    // Create the new vector type & get the vector length
+    EVT NewVT = EVT::getVectorVT(*DAG.getContext(), NewEltTy,
+                                 OpVT.getVectorElementCount());
+
+    SDValue VL =
+        DAG.getElementCount(DL, NewEltTy, OpVT.getVectorElementCount());
+
+    SDValue StepVec = DAG.getStepVector(DL, NewVT);
+    SDValue SplatVL = DAG.getSplat(NewVT, DL, VL);
+    SDValue StepVL = DAG.getNode(ISD::SUB, DL, NewVT, SplatVL, StepVec);
+    SDValue Ext = DAG.getNode(ISD::SIGN_EXTEND, DL, NewVT, Op);
+    SDValue And = DAG.getNode(ISD::AND, DL, NewVT, StepVL, Ext);
+    SDValue Max = DAG.getNode(ISD::VECREDUCE_UMAX, DL, NewEltTy, And);
+    SDValue Sub = DAG.getNode(ISD::SUB, DL, NewEltTy, VL, Max);
+
+    EVT RetTy = TLI.getValueType(DAG.getDataLayout(), I.getType());
+    SDValue Ret = DAG.getZExtOrTrunc(Sub, DL, RetTy);
+
+    setValue(&I, Ret);
     return;
   }
   case Intrinsic::vector_insert: {

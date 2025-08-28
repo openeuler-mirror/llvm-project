@@ -271,6 +271,9 @@ void SCEV::print(raw_ostream &OS) const {
   case scConstant:
     cast<SCEVConstant>(this)->getValue()->printAsOperand(OS, false);
     return;
+  case scVScale:
+    OS << "vscale";
+    return;
   case scPtrToInt: {
     const SCEVPtrToIntExpr *PtrToInt = cast<SCEVPtrToIntExpr>(this);
     const SCEV *Op = PtrToInt->getOperand();
@@ -366,31 +369,9 @@ void SCEV::print(raw_ostream &OS) const {
     OS << "(" << *UDiv->getLHS() << " /u " << *UDiv->getRHS() << ")";
     return;
   }
-  case scUnknown: {
-    const SCEVUnknown *U = cast<SCEVUnknown>(this);
-    Type *AllocTy;
-    if (U->isSizeOf(AllocTy)) {
-      OS << "sizeof(" << *AllocTy << ")";
-      return;
-    }
-    if (U->isAlignOf(AllocTy)) {
-      OS << "alignof(" << *AllocTy << ")";
-      return;
-    }
-
-    Type *CTy;
-    Constant *FieldNo;
-    if (U->isOffsetOf(CTy, FieldNo)) {
-      OS << "offsetof(" << *CTy << ", ";
-      FieldNo->printAsOperand(OS, false);
-      OS << ")";
-      return;
-    }
-
-    // Otherwise just print it normally.
-    U->getValue()->printAsOperand(OS, false);
+  case scUnknown:
+    cast<SCEVUnknown>(this)->getValue()->printAsOperand(OS, false);
     return;
-  }
   case scCouldNotCompute:
     OS << "***COULDNOTCOMPUTE***";
     return;
@@ -402,6 +383,8 @@ Type *SCEV::getType() const {
   switch (getSCEVType()) {
   case scConstant:
     return cast<SCEVConstant>(this)->getType();
+  case scVScale:
+    return cast<SCEVVScale>(this)->getType();
   case scPtrToInt:
   case scTruncate:
   case scZeroExtend:
@@ -433,6 +416,7 @@ Type *SCEV::getType() const {
 ArrayRef<const SCEV *> SCEV::operands() const {
   switch (getSCEVType()) {
   case scConstant:
+  case scVScale:
   case scUnknown:
     return {};
   case scPtrToInt:
@@ -515,6 +499,18 @@ ScalarEvolution::getConstant(Type *Ty, uint64_t V, bool isSigned) {
   return getConstant(ConstantInt::get(ITy, V, isSigned));
 }
 
+const SCEV *ScalarEvolution::getVScale(Type *Ty) {
+  FoldingSetNodeID ID;
+  ID.AddInteger(scVScale);
+  ID.AddPointer(Ty);
+  void *IP = nullptr;
+  if (const SCEV *S = UniqueSCEVs.FindNodeOrInsertPos(ID, IP))
+    return S;
+  SCEV *S = new (SCEVAllocator) SCEVVScale(ID.Intern(SCEVAllocator), Ty);
+  UniqueSCEVs.InsertNode(S, IP);
+  return S;
+}
+
 SCEVCastExpr::SCEVCastExpr(const FoldingSetNodeIDRef ID, SCEVTypes SCEVTy,
                            const SCEV *op, Type *ty)
     : SCEV(ID, SCEVTy, computeExpressionSize(op)), Op(op), Ty(ty) {}
@@ -572,22 +568,6 @@ void SCEVUnknown::allUsesReplacedWith(Value *New) {
 
   // Replace the value pointer in case someone is still using this SCEVUnknown.
   setValPtr(New);
-}
-
-bool SCEVUnknown::isSizeOf(Type *&AllocTy) const {
-  if (ConstantExpr *VCE = dyn_cast<ConstantExpr>(getValue()))
-    if (VCE->getOpcode() == Instruction::PtrToInt)
-      if (ConstantExpr *CE = dyn_cast<ConstantExpr>(VCE->getOperand(0)))
-        if (CE->getOpcode() == Instruction::GetElementPtr &&
-            CE->getOperand(0)->isNullValue() &&
-            CE->getNumOperands() == 2)
-          if (ConstantInt *CI = dyn_cast<ConstantInt>(CE->getOperand(1)))
-            if (CI->isOne()) {
-              AllocTy = cast<GEPOperator>(CE)->getSourceElementType();
-              return true;
-            }
-
-  return false;
 }
 
 bool SCEVUnknown::isAlignOf(Type *&AllocTy) const {
@@ -783,6 +763,12 @@ CompareSCEVComplexity(EquivalenceClasses<const SCEV *> &EqCacheSCEV,
     if (LBitWidth != RBitWidth)
       return (int)LBitWidth - (int)RBitWidth;
     return LA.ult(RA) ? -1 : 1;
+  }
+
+  case scVScale: {
+    const auto *LTy = cast<IntegerType>(cast<SCEVVScale>(LHS)->getType());
+    const auto *RTy = cast<IntegerType>(cast<SCEVVScale>(RHS)->getType());
+    return LTy->getBitWidth() - RTy->getBitWidth();
   }
 
   case scAddRecExpr: {
@@ -4050,6 +4036,8 @@ public:
 
   RetVal visitConstant(const SCEVConstant *Constant) { return Constant; }
 
+  RetVal visitVScale(const SCEVVScale *VScale) { return VScale; }
+
   RetVal visitPtrToIntExpr(const SCEVPtrToIntExpr *Expr) { return Expr; }
 
   RetVal visitTruncateExpr(const SCEVTruncateExpr *Expr) { return Expr; }
@@ -4096,6 +4084,7 @@ public:
 static bool scevUnconditionallyPropagatesPoisonFromOperands(SCEVTypes Kind) {
   switch (Kind) {
   case scConstant:
+  case scVScale:
   case scTruncate:
   case scZeroExtend:
   case scSignExtend:
@@ -4139,6 +4128,7 @@ static bool impliesPoison(const SCEV *AssumedPoison, const SCEV *S) {
       if (!scevUnconditionallyPropagatesPoisonFromOperands(S->getSCEVType())) {
         switch (S->getSCEVType()) {
         case scConstant:
+        case scVScale:
         case scTruncate:
         case scZeroExtend:
         case scSignExtend:
@@ -4348,33 +4338,19 @@ const SCEV *ScalarEvolution::getUMinExpr(SmallVectorImpl<const SCEV *> &Ops,
 }
 
 const SCEV *
-ScalarEvolution::getSizeOfScalableVectorExpr(Type *IntTy,
-                                             ScalableVectorType *ScalableTy) {
-  Constant *NullPtr = Constant::getNullValue(ScalableTy->getPointerTo());
-  Constant *One = ConstantInt::get(IntTy, 1);
-  Constant *GEP = ConstantExpr::getGetElementPtr(ScalableTy, NullPtr, One);
-  // Note that the expression we created is the final expression, we don't
-  // want to simplify it any further Also, if we call a normal getSCEV(),
-  // we'll end up in an endless recursion. So just create an SCEVUnknown.
-  return getUnknown(ConstantExpr::getPtrToInt(GEP, IntTy));
+ScalarEvolution::getSizeOfExpr(Type *IntTy, TypeSize Size) {
+  const SCEV *Res = getConstant(IntTy, Size.getKnownMinValue());
+  if (Size.isScalable())
+    Res = getMulExpr(Res, getVScale(IntTy));
+  return Res;
 }
 
 const SCEV *ScalarEvolution::getSizeOfExpr(Type *IntTy, Type *AllocTy) {
-  if (auto *ScalableAllocTy = dyn_cast<ScalableVectorType>(AllocTy))
-    return getSizeOfScalableVectorExpr(IntTy, ScalableAllocTy);
-  // We can bypass creating a target-independent constant expression and then
-  // folding it back into a ConstantInt. This is just a compile-time
-  // optimization.
-  return getConstant(IntTy, getDataLayout().getTypeAllocSize(AllocTy));
+  return getSizeOfExpr(IntTy, getDataLayout().getTypeAllocSize(AllocTy));
 }
 
 const SCEV *ScalarEvolution::getStoreSizeOfExpr(Type *IntTy, Type *StoreTy) {
-  if (auto *ScalableStoreTy = dyn_cast<ScalableVectorType>(StoreTy))
-    return getSizeOfScalableVectorExpr(IntTy, ScalableStoreTy);
-  // We can bypass creating a target-independent constant expression and then
-  // folding it back into a ConstantInt. This is just a compile-time
-  // optimization.
-  return getConstant(IntTy, getDataLayout().getTypeStoreSize(StoreTy));
+  return getSizeOfExpr(IntTy, getDataLayout().getTypeStoreSize(StoreTy));
 }
 
 const SCEV *ScalarEvolution::getOffsetOfExpr(Type *IntTy,
@@ -5927,6 +5903,7 @@ static bool IsAvailableOnEntry(const Loop *L, DominatorTree &DT, const SCEV *S,
     bool follow(const SCEV *S) {
       switch (S->getSCEVType()) {
       case scConstant:
+      case scVScale:
       case scPtrToInt:
       case scTruncate:
       case scZeroExtend:
@@ -6314,6 +6291,8 @@ uint32_t ScalarEvolution::GetMinTrailingZerosImpl(const SCEV *S) {
   switch (S->getSCEVType()) {
   case scConstant:
     return cast<SCEVConstant>(S)->getAPInt().countTrailingZeros();
+  case scVScale:
+    return 0;
   case scTruncate: {
     const SCEVTruncateExpr *T = cast<SCEVTruncateExpr>(S);
     return std::min(GetMinTrailingZeros(T->getOperand()),
@@ -6544,6 +6523,7 @@ ScalarEvolution::getRangeRefIter(const SCEV *S,
         break;
       [[fallthrough]];
     case scConstant:
+    case scVScale:
     case scTruncate:
     case scZeroExtend:
     case scSignExtend:
@@ -6647,6 +6627,8 @@ const ConstantRange &ScalarEvolution::getRangeRef(
   switch (S->getSCEVType()) {
   case scConstant:
     llvm_unreachable("Already handled above.");
+  case scVScale:
+    return setRange(S, SignHint, getVScaleRange(&F, BitWidth));
   case scTruncate: {
     const SCEVTruncateExpr *Trunc = cast<SCEVTruncateExpr>(S);
     ConstantRange X = getRangeRef(Trunc->getOperand(), SignHint, Depth + 1);
@@ -8057,6 +8039,8 @@ const SCEV *ScalarEvolution::createSCEV(Value *V) {
         // A start_loop_iterations or llvm.annotation or llvm.prt.annotation is
         // just eqivalent to the first operand for SCEV purposes.
         return getSCEV(II->getArgOperand(0));
+      case Intrinsic::vscale:
+        return getVScale(II->getType());
       default:
         break;
       }
@@ -9762,6 +9746,7 @@ static Constant *BuildConstantFromSCEV(const SCEV *V) {
   switch (V->getSCEVType()) {
   case scCouldNotCompute:
   case scAddRecExpr:
+  case scVScale:
     return nullptr;
   case scConstant:
     return cast<SCEVConstant>(V)->getValue();
@@ -9845,6 +9830,7 @@ static Constant *BuildConstantFromSCEV(const SCEV *V) {
 const SCEV *ScalarEvolution::computeSCEVAtScope(const SCEV *V, const Loop *L) {
   switch (V->getSCEVType()) {
   case scConstant:
+  case scVScale:
     return V;
   case scAddRecExpr: {
     // If this is a loop recurrence for a loop that does not contain L, then we
@@ -9943,6 +9929,7 @@ const SCEV *ScalarEvolution::computeSCEVAtScope(const SCEV *V, const Loop *L) {
         case scSequentialUMinExpr:
           return getSequentialMinMaxExpr(V->getSCEVType(), NewOps);
         case scConstant:
+        case scVScale:
         case scAddRecExpr:
         case scUnknown:
         case scCouldNotCompute:
@@ -13705,6 +13692,7 @@ ScalarEvolution::LoopDisposition
 ScalarEvolution::computeLoopDisposition(const SCEV *S, const Loop *L) {
   switch (S->getSCEVType()) {
   case scConstant:
+  case scVScale:
     return LoopInvariant;
   case scAddRecExpr: {
     const SCEVAddRecExpr *AR = cast<SCEVAddRecExpr>(S);
@@ -13803,6 +13791,7 @@ ScalarEvolution::BlockDisposition
 ScalarEvolution::computeBlockDisposition(const SCEV *S, const BasicBlock *BB) {
   switch (S->getSCEVType()) {
   case scConstant:
+  case scVScale:
     return ProperlyDominatesBlock;
   case scAddRecExpr: {
     // This uses a "dominates" query instead of "properly dominates" query
