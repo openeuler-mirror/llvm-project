@@ -667,12 +667,19 @@ public:
 
   std::optional<UniqueBBID> getBBID() const { return BBID; }
 
-  uint64_t getHash() const { return BBID->Hash; }
+  uint64_t getHash() const {
+    if (BBID)
+      return BBID->Hash;
+    return 0;
+  }
 
   /// Returns the section ID of this basic block.
   MBBSectionID getSectionID() const { return SectionID; }
 
-  void setHash(uint64_t Hash) { BBID->Hash = Hash; }
+  void setHash(uint64_t Hash) {
+    if (BBID)
+      BBID->Hash = Hash;
+  }
 
   /// Sets the fixed BBID of this basic block.
   void setBBID(const UniqueBBID &V) {
