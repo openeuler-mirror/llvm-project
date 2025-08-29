@@ -151,7 +151,6 @@ TLI_DEFINE_ENUM_INTERNAL(under_IO_putc)
 TLI_DEFINE_STRING_INTERNAL("_IO_putc")
 TLI_DEFINE_SIG_INTERNAL(Int, Int, Ptr)
 
-#if defined(BUILD_FOR_OPENEULER)
 /// void _Unwind_Resume(_Unwind_Exception *);
 TLI_DEFINE_ENUM_INTERNAL(_Unwind_Resume)
 TLI_DEFINE_STRING_INTERNAL("_Unwind_Resume")
@@ -161,7 +160,6 @@ TLI_DEFINE_SIG_INTERNAL(Void, Ptr)
 TLI_DEFINE_ENUM_INTERNAL(terminate)
 TLI_DEFINE_STRING_INTERNAL("_ZSt9terminatev")
 TLI_DEFINE_SIG_INTERNAL(Void)
-#endif
 
 /// void operator delete[](void*);
 TLI_DEFINE_ENUM_INTERNAL(ZdaPv)
@@ -478,24 +476,20 @@ TLI_DEFINE_ENUM_INTERNAL(cospif)
 TLI_DEFINE_STRING_INTERNAL("__cospif")
 TLI_DEFINE_SIG_INTERNAL(Flt, Flt)
 
-#if defined(BUILD_FOR_OPENEULER)
 /// void * __cxa_allocate_exception(size_t thrown_size)
 TLI_DEFINE_ENUM_INTERNAL(__cxa_allocate_exception)
 TLI_DEFINE_STRING_INTERNAL("__cxa_allocate_exception")
 TLI_DEFINE_SIG_INTERNAL(Ptr, SizeT)
-#endif
 
 /// int __cxa_atexit(void (*f)(void *), void *p, void *d);
 TLI_DEFINE_ENUM_INTERNAL(cxa_atexit)
 TLI_DEFINE_STRING_INTERNAL("__cxa_atexit")
 TLI_DEFINE_SIG_INTERNAL(Int, Ptr, Ptr, Ptr)
 
-#if defined(BUILD_FOR_OPENEULER)
 /// void *__cxa_begin_catch(void *e)
 TLI_DEFINE_ENUM_INTERNAL(__cxa_begin_catch)
 TLI_DEFINE_STRING_INTERNAL("__cxa_begin_catch")
 TLI_DEFINE_SIG_INTERNAL(Ptr, Ptr)
-#endif
 
 /// void __cxa_guard_abort(guard_t *guard);
 /// guard_t is int64_t in Itanium ABI or int32_t on ARM eabi.
@@ -513,12 +507,10 @@ TLI_DEFINE_ENUM_INTERNAL(cxa_guard_release)
 TLI_DEFINE_STRING_INTERNAL("__cxa_guard_release")
 TLI_DEFINE_SIG_INTERNAL(Void, Ptr)
 
-#if defined(BUILD_FOR_OPENEULER)
 /// void __cxa_throw(void *, void *, void (*)(void *));
 TLI_DEFINE_ENUM_INTERNAL(cxa_throw)
 TLI_DEFINE_STRING_INTERNAL("__cxa_throw")
 TLI_DEFINE_SIG_INTERNAL(Void, Ptr, Ptr, Ptr)
-#endif
 
 /// double __exp10_finite(double x);
 TLI_DEFINE_ENUM_INTERNAL(exp10_finite)
