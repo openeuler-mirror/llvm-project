@@ -766,20 +766,20 @@ public:
       CodeGenFunction::CGFPOptionsRAII FPOptsRAII(CGF, Ops.FPFeatures);
       if (LHSMatTy && RHSMatTy) {
         // Note that SME only has non-widening MOPA for float32 and float64, so
-	// only these two types have native SME matmul operations. For other
-	// types, SVE version is used. We hope that SVE version is better than
-	// default NEON or scalar version.
-	auto Ty = LHSMatTy->getElementType();
-	if (!CGF.getContext().getTargetInfo().hasFeature("sme") ||
-	    !MatrixType::isValidTypeForSME(Ty))
+        // only these two types have native SME matmul operations. For other
+        // types, SVE version is used. We hope that SVE version is better than
+        // default NEON or scalar version.
+        auto Ty = LHSMatTy->getElementType();
+        if (!CGF.getContext().getTargetInfo().hasFeature("sme") ||
+            !MatrixType::isValidTypeForSME(Ty))
           return MB.CreateMatrixMultiply(
-	      Ops.LHS, Ops.RHS, LHSMatTy->getNumRows(),
-	      LHSMatTy->getNumColumns(), RHSMatTy->getNumColumns());
+              Ops.LHS, Ops.RHS, LHSMatTy->getNumRows(),
+              LHSMatTy->getNumColumns(), RHSMatTy->getNumColumns());
         assert(isa<BuiltinType>(Ty) && "SME types should be BuiltinType.");
         return MB.CreateSMEMatrixMultiply(
-	    Ops.LHS, Ops.RHS, LHSMatTy->getNumRows(), LHSMatTy->getNumColumns(),
+            Ops.LHS, Ops.RHS, LHSMatTy->getNumRows(), LHSMatTy->getNumColumns(),
             RHSMatTy->getNumColumns(),
-	    cast<BuiltinType>(Ty)->isSignedInteger());
+            cast<BuiltinType>(Ty)->isSignedInteger());
       }
       return MB.CreateScalarMultiply(Ops.LHS, Ops.RHS);
     }
@@ -4192,7 +4192,7 @@ Value *ScalarExprEmitter::EmitAdd(const BinOpInfo &op) {
     assert(isa<BuiltinType>(Ty) && "SME types should be BuiltinType.");
     return MB.CreateSMEMatrixBinOp(
         op.LHS, op.RHS, MatTy->getNumRows(), MatTy->getNumColumns(),
-	cast<BuiltinType>(Ty)->isSignedInteger(), "add");
+        cast<BuiltinType>(Ty)->isSignedInteger(), "add");
   }
 
   if (op.Ty->isUnsignedIntegerType() &&
@@ -4349,14 +4349,14 @@ Value *ScalarExprEmitter::EmitSub(const BinOpInfo &op) {
       llvm::MatrixBuilder MB(Builder);
       CodeGenFunction::CGFPOptionsRAII FPOptsRAII(CGF, op.FPFeatures);
       auto *MatTy =
-	  cast<ConstantMatrixType>(op.E->getType().getCanonicalType());
+          cast<ConstantMatrixType>(op.E->getType().getCanonicalType());
       auto Ty = MatTy->getElementType();
       if (!CGF.getContext().getTargetInfo().hasFeature("sme") ||
           !MatrixType::isValidTypeForSME(Ty))
-	return MB.CreateSub(op.LHS, op.RHS);
+        return MB.CreateSub(op.LHS, op.RHS);
       assert(isa<BuiltinType>(Ty) && "SME types should be BuiltinType.");
       return MB.CreateSMEMatrixBinOp(
-	  op.LHS, op.RHS, MatTy->getNumRows(), MatTy->getNumColumns(),
+          op.LHS, op.RHS, MatTy->getNumRows(), MatTy->getNumColumns(),
           cast<BuiltinType>(Ty)->isSignedInteger(), "sub");
     }
 

@@ -61,7 +61,11 @@ class MatrixBuilder {
     if (!isa<LoadInst>(StoredValue))
       return Addr;
 
-    return cast<LoadInst>(StoredValue)->getPointerOperand();
+    Value *Ptr = cast<LoadInst>(StoredValue)->getPointerOperand();
+    // If Ptr is used once, its memory may be altered.
+    if (!Ptr->hasNUses(1))
+      return Addr;
+    return Ptr;
   }
 
   std::pair<Value *, Value *> splatScalarOperandIfNeeded(Value *LHS,

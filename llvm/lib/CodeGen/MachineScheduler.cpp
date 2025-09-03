@@ -196,8 +196,9 @@ static cl::opt<unsigned>
 extern cl::opt<bool> EnableMatrix;
 
 static cl::opt<unsigned>
-    BigBasicBlock("schedule-big-basic-block", cl::Hidden, cl::init(200),
-                  cl::desc("The limit to use while schedule a region "));
+    BigBBThreshold("big-basic-block-threshold", cl::Hidden, cl::init(200),
+                   cl::desc("The limit to use while schedule a region when "
+                            "matrix opertion is enabled"));
 
 // DAG subtrees must have at least this many nodes.
 static const unsigned MinSubtreeSize = 8;
@@ -642,7 +643,7 @@ void MachineSchedulerBase::scheduleRegions(ScheduleDAGInstrs &Scheduler,
       MachineBasicBlock::iterator RegionEnd = R.RegionEnd;
       unsigned NumRegionInstrs = R.NumRegionInstrs;
 
-      if (EnableMatrix && NumRegionInstrs > BigBasicBlock)
+      if (EnableMatrix && NumRegionInstrs > BigBBThreshold)
         continue;
 
       // Notify the scheduler of the region, even if we may skip scheduling

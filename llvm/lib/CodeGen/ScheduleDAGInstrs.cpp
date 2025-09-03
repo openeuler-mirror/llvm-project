@@ -97,6 +97,8 @@ static cl::opt<bool> SchedPrintCycles(
 static unsigned getReductionSize() {
   // Always reduce a huge region with half of the elements, except
   // when user sets this number explicitly.
+  // When matrix operation is enabled, reduce more aggressively to reduce
+  // compile time impact.
   if (ReductionSize.getNumOccurrences() == 0) {
     if (EnableMatrix)
       return HugeRegion / 20;
