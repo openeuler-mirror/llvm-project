@@ -947,16 +947,24 @@ bool IndirectCallPromoter::shouldSkipVTable(uint64_t VTableGUID) {
 static void
 computeVirtualCallSiteTypeInfoMap(Module &M, ModuleAnalysisManager &MAM,
                                   VirtualCallSiteTypeInfoMap &VirtualCSInfo) {
-  // Right now only llvm.type.test is used to find out virtual call sites.
-  // With ThinLTO and whole-program-devirtualization, llvm.type.test and
-  // llvm.public.type.test are emitted, and llvm.public.type.test is either
-  // refined to llvm.type.test or dropped before indirect-call-promotion pass.
+  // Right now both llvm.type.test and llvm.public.type.test are used to find
+  // out virtual call sites. With ThinLTO and whole-program-devirtualization,
+  // llvm.type.test and llvm.public.type.test are emitted, and 
+  // llvm.public.type.test is either refined to llvm.type.test or dropped
+  // before the linker stage. Since the indirect-call-promotion pass is included
+  // both in the compile and linker stages pipelines, we include 
+  // llvm.public.type.test intrinsic in the analysis.
   //
   // FIXME: For fullLTO with VFE, `llvm.type.checked.load intrinsic` is emitted.
   // Find out virtual calls by looking at users of llvm.type.checked.load in
   // that case.
   Function *TypeTestFunc =
       M.getFunction(Intrinsic::getName(Intrinsic::type_test));
+
+  if (!TypeTestFunc || TypeTestFunc->use_empty())
+    TypeTestFunc =
+        M.getFunction(Intrinsic::getName(Intrinsic::public_type_test));
+
   if (!TypeTestFunc || TypeTestFunc->use_empty())
     return;
 
