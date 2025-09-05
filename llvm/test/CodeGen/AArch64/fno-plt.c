@@ -1,8 +1,8 @@
-// RUN: clang %s -shared -fno-plt  -O2 -fno-inline  -fPIC   -o noplt.so
+// RUN: clang %s -shared -fno-plt -O2 -fno-inline -fPIC --target=aarch64-linux-gnu -fuse-ld=lld -nostdlib -o noplt.so
 // RUN: llvm-objdump -d noplt.so | FileCheck %s --check-prefix=CHECK-NO-PLT
 
-// RUN: clang %s -shared  -O2 -fno-inline  -fPIC   -o plt.so
-// RUN: llvm-objdump -d plt.so | FileCheck %s --check-prefix=CHECK-PLT
+// RUN: clang %s -shared          -O2 -fno-inline -fPIC --target=aarch64-linux-gnu -fuse-ld=lld -nostdlib -o plt.so
+// RUN: llvm-objdump -d plt.so   | FileCheck %s --check-prefix=CHECK-PLT
 
 // CHECK-PLT: bar@plt
 // CHECK-PLT: bar1@plt
