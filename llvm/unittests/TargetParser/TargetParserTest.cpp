@@ -1417,14 +1417,14 @@ INSTANTIATE_TEST_SUITE_P(
                          AArch64::AEK_CRC | AArch64::AEK_AES |
                              AArch64::AEK_SHA2 | AArch64::AEK_FP |
                              AArch64::AEK_SIMD | AArch64::AEK_RAS |
-                             AArch64::AEK_LSE | AArch64::AEK_RDM |
+                             AArch64::AEK_RDM |
                              AArch64::AEK_PROFILE | AArch64::AEK_FP16 |
                              AArch64::AEK_FP16FML | AArch64::AEK_DOTPROD,
                          "8.2-A"),
         ARMCPUTestParams(
             "hip09", "armv8.5-a", "crypto-neon-fp-armv8",
             AArch64::AEK_CRC | AArch64::AEK_FP | AArch64::AEK_SIMD |
-                AArch64::AEK_RAS | AArch64::AEK_LSE | AArch64::AEK_RDM |
+                AArch64::AEK_RAS | AArch64::AEK_RDM |
                 AArch64::AEK_RCPC | AArch64::AEK_DOTPROD | AArch64::AEK_AES |
                 AArch64::AEK_SM4 | AArch64::AEK_SHA2 | AArch64::AEK_SHA3 |
                 AArch64::AEK_FP16 | AArch64::AEK_PROFILE |
@@ -1440,13 +1440,13 @@ INSTANTIATE_TEST_SUITE_P(
                 AArch64::AEK_SHA3 | AArch64::AEK_SM4 | AArch64::AEK_SSBS |
                 AArch64::AEK_SVE | AArch64::AEK_BF16 | AArch64::AEK_CRC |
                 AArch64::AEK_DOTPROD | AArch64::AEK_FP | AArch64::AEK_I8MM |
-                AArch64::AEK_LSE | AArch64::AEK_RAS | AArch64::AEK_RCPC |
+                AArch64::AEK_RAS | AArch64::AEK_RCPC |
                 AArch64::AEK_RDM | AArch64::AEK_SIMD,
             "8.5-A"),
         ARMCPUTestParams(
             "hip11", "armv9-a", "neon-fp-armv8",
             AArch64::AEK_CRC | AArch64::AEK_FP | AArch64::AEK_SIMD |
-                AArch64::AEK_RAS | AArch64::AEK_LSE | AArch64::AEK_RDM |
+                AArch64::AEK_RAS | AArch64::AEK_RDM |
                 AArch64::AEK_RCPC | AArch64::AEK_SVE | AArch64::AEK_SVE2 |
                 AArch64::AEK_DOTPROD | AArch64::AEK_MTE | AArch64::AEK_FP16FML |
                 AArch64::AEK_FP16 | AArch64::AEK_SVE2BITPERM |
