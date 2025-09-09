@@ -3976,12 +3976,18 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
         *this, E, llvm::Intrinsic::vector_reduce_and, "rdx.and"));
 
   case Builtin::BI__builtin_matrix_transpose: {
-    auto *MatrixTy = E->getArg(0)->getType()->castAs<ConstantMatrixType>();
-    Value *MatValue = EmitScalarExpr(E->getArg(0));
+    auto *MatrixValue = E->getArg(0);
+    auto *MatrixTy = MatrixValue->getType()->castAs<ConstantMatrixType>();
+    Value *MatValue = EmitScalarExpr(MatrixValue);
     MatrixBuilder MB(Builder);
-    Value *Result = MB.CreateMatrixTranspose(MatValue, MatrixTy->getNumRows(),
-                                             MatrixTy->getNumColumns());
-    return RValue::get(Result);
+
+    if (!getContext().getTargetInfo().hasFeature("sme") ||
+        !MatrixType::isValidTypeForSME(MatrixTy->getElementType()))
+      return RValue::get(MB.CreateMatrixTranspose(
+          MatValue, MatrixTy->getNumRows(), MatrixTy->getNumColumns()));
+
+    return RValue::get(MB.CreateSMEMatrixTranspose(
+        MatValue,MatrixTy->getNumRows(),MatrixTy->getNumColumns()));
   }
 
   case Builtin::BI__builtin_matrix_column_major_load: {
