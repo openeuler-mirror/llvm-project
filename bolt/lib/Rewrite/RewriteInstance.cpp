@@ -884,7 +884,7 @@ void RewriteInstance::discoverFileObjects() {
     }
   };
 
-  if (BC->isAArch64() || BC->isRISCV()) {
+  if (BC->isAArch64()) {
     addExtraDataMarkerPerSymbol();
     LastSymbol = std::stable_partition(
         SortedSymbols.begin(), SortedSymbols.end(),
