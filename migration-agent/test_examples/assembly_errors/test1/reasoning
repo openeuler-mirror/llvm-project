@@ -1,1 +1,0 @@
-The vector load instruction uses an invalid source operand 'Utv'. Replacing it with 'ldr d0, %1' fixes the error.

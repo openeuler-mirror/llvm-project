@@ -12,6 +12,6 @@ tmp*/
 build/
 dist/
 bishengai.spec
-test_examples/
+run_test_cases.sh
 
 

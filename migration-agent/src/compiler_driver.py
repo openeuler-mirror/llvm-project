@@ -91,6 +91,7 @@ class CompilerErrorHandler:
         self.new_folders = []
 
     def compile_and_repair(self, compile_targets_options):
+        logging.info(f"max_attempts: {self.max_attempts}")
         """Attempt to compile and repair errors."""
         if self.compiler not in compile_targets_options:
             command = [self.compiler] + compile_targets_options
@@ -107,6 +108,7 @@ class CompilerErrorHandler:
 
         while self.attempts < self.max_attempts:
             self.attempts += 1
+            logging.info(f"Attempt {self.attempts} to repair the error.")
             command, repair_prompt_template = self.repair(
                 command, compiler_output, prompt_template
             )
@@ -115,6 +117,7 @@ class CompilerErrorHandler:
                 self.compiler_outputs.append(compiler_output)
                 if success:
                     logging.info("Successfully fixed the error.")
+                    self.return_code = 0  # Reset return code to 0 on success
                     break
 
                 pe = PromptEngine(repair_prompt_template)
@@ -130,15 +133,16 @@ class CompilerErrorHandler:
                 FileManager.restore_files(
                     source_paths=self.source_paths, backup_path=self.backup_path
                 )
+            # self.return_code = 1
 
     def compile(self, command):
         """Call the compiler and handle errors."""
         try:
             result = subprocess.run(command, capture_output=True, text=True, check=True)
-            print(result.stdout)
+            # print("compiler output:", result.stdout)
             return result.stdout, True
         except Exception as e:
-            print(e.stderr, file=sys.stderr)
+            # print("compiler error:", e.stderr, file=sys.stderr)
             if not self.return_code:
                 self.return_code = e.returncode
             return e.stderr, False
@@ -313,8 +317,9 @@ def main():
         logging.error(f"Error occurred: {e}")
     finally:
         error_handler.clean_up()
+        # logging.info("return code: %s", error_handler.return_code)
         if error_handler.return_code:
-            return error_handler.return_code
+             sys.exit(error_handler.return_code)
         else:
             return 0
 

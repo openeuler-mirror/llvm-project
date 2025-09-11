@@ -18,9 +18,9 @@ SRC = test.cpp
 OBJ = $(SRC:.cpp=.o)
 
 # Default rule
-all: $(TARGET)
-# all:
-# 	$(CXX) $(CXXFLAGS) -c $(SRC) -o $(OBJ)
+# all: $(TARGET)
+all:
+	$(CXX) $(CXXFLAGS) -c $(SRC) -o $(OBJ)
 
 # Rule to create the executable
 $(TARGET): $(OBJ)

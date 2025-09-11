@@ -48,8 +48,8 @@ def is_auto_accept_code_change() -> bool:
 # Function to check if the compiler driver is running in development mode
 def is_development_mode() -> bool:
     """Return True if running in development mode."""
-    return bool(os.getenv("LLM_DEVELOPMENT", True))  # Default to True if not set
-
+    # return bool(os.getenv("LLM_DEVELOPMENT", True))  # Default to True if not set
+    return False
 
 # Return the LLM model ID, default to a preconfigured model
 def get_model_id() -> str:
@@ -68,6 +68,7 @@ def get_llm_retry_times() -> int:
     """Return the number of retry attempts for LLM. Default is 5, max 10."""
     try:
         retry_times = int(os.getenv("LLM_RETRY_TIMES", 5))
+        logging.info(f"LLM retry times: {retry_times}")
         return min(max(retry_times, 1), 10)  # Ensure retry times is between 1 and 10
     except ValueError:
         return 5
