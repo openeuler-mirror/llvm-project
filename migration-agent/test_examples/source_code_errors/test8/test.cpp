@@ -6,13 +6,13 @@ typedef enum RagentExectutorState {
 } RagentExectutorState;
 
 typedef struct RAgentGlobals {
-RagentExectutorState executor_state;
+  RagentExectutorState executor_state;
 } RAgentGlobals;
 
 extern RAgentGlobals* g_agent_globals;
 
 void test() {
-  RagentExectutorState curr_state;
-  curr_state = ATOMIC_READ(&g_agent_globals->executor_state);
+    RagentExectutorState curr_state;
+    curr_state = ATOMIC_READ(&g_agent_globals->executor_state);
 }
  

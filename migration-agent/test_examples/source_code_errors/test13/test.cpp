@@ -1,3 +1,3 @@
-while( !cin.eof() ) {
-	   getline(cin, input);
+while (!cin.eof()) {
+    getline(cin, input);
 }

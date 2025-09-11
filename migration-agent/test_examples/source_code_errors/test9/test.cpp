@@ -1,4 +1,4 @@
 void cuba(void) {
-  void* p;
-  p++;
+    void* p;
+    p++;
 }

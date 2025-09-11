@@ -11,8 +11,8 @@ public:
 };
 
 int main() {
-  std::cout << "starting\n";
-  B b;
-  b.~A();    //子类直接调用父类析构函数
-  std::cout << "done\n";
+    std::cout << "starting\n";
+    B b;
+    b.~A();    // 子类直接调用父类析构函数
+    std::cout << "done\n";
 }

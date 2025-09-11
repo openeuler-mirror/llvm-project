@@ -1,19 +1,19 @@
 #include <iostream>
-  class CommonName {
-  int x;
+class CommonName {
+    int x;
 };
-  namespace ns::CommonName {
+namespace ns::CommonName {
 class C {
 public:
-  void print() {
-    std::cout << "Hello, world" << std::endl;
-  }
+    void print() {
+        std::cout << "Hello, world" << std::endl;
+    }
 };
 } // namespace ns::CommonName
-  using namespace ns;
-  int main() {
-  // ns::CommonName::C c;
-  CommonName::C c;
-  c.print();
-  return 0;
+using namespace ns;
+    int main() {
+    // ns::CommonName::C c;
+    CommonName::C c;
+    c.print();
+    return 0;
 }

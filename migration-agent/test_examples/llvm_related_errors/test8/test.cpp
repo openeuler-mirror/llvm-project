@@ -5,10 +5,10 @@ public:
   A *FromWebContents2();
 };
 template <typename T> class B : A {
-  void FromWebContents() {
+    void FromWebContents() {
     auto guest = A::FromWebContents();
     guest ? guest->As<T>() : nullptr;
     auto guest2 = A::FromWebContents2();
     guest2 ? guest2->As<T>() : nullptr;
-  }
+    }
 }

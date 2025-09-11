@@ -3,10 +3,16 @@
 LLM for code migration project
 
 #Steps to use compiler_driver.py
-## 1. Build the executable binary but running
+## 1.  environment
+```./insatll_environment.sh```
+
+## 2.  run llama.cpp
+```./run_llama_cpp.sh```
+
+## 3. Build the executable binary but running
 ```source setup_compiler_driver.sh```
 
-## 2. Evaluate on the test cases
+## 4. Evaluate on the test cases
 Go to test_examples
 set into the folder of each test case
 then run

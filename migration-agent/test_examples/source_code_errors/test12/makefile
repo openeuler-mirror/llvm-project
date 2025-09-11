@@ -18,7 +18,6 @@ SRC = test.cpp
 OBJ = $(SRC:.cpp=.o)
 
 # Default rule
-# all: $(TARGET)
 all:
 	$(CXX) $(CXXFLAGS) -c $(SRC) -o $(OBJ)
 

@@ -27,6 +27,6 @@ public:
 };
 template <typename T1>
 int test() {
-	MyClass2 x(new MyClass());
+    MyClass2 x(new MyClass());
     return 0;    
 }

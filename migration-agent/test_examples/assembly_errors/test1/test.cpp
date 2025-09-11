@@ -5,7 +5,6 @@ typedef __attribute__((neon_vector_type(16))) int8_t int8x16_t;
 
 typedef union {
     int8x16_t vect_s8;
-
 } __m128i;
 
 typedef __m128i m128;
