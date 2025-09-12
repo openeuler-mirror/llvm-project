@@ -1,4 +1,3 @@
-// REQUIRES: build_for_openeuler
 // RUN: %clang -### -fgcc-compatible -Wa,--generate-missing-build-notes=yes %s 2>&1 | FileCheck -check-prefix=CHECK-NO-ERROR %s
 // RUN: %clang -### -fgcc-compatible -Wa,--generate-missing-build-notes=no %s 2>&1 | FileCheck -check-prefix=CHECK-NO-ERROR %s
 // RUN: %clang -### -fGNU-compatibility -Wa,--generate-missing-build-notes=no %s 2>&1 | FileCheck -check-prefix=CHECK-NO-ERROR %s

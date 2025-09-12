@@ -1,4 +1,3 @@
-// REQUIRES: build_for_openeuler
 // RUN: %clang -### -znow 2>&1 | FileCheck -check-prefix=CHECK-LINKER %s
 // CHECK-LINKER: "-z" "now"
 
