@@ -1978,7 +1978,8 @@ public:
   }
 
   /// Print each annotation attached to \p Inst.
-  void printAnnotations(const MCInst &Inst, raw_ostream &OS) const;
+  void printAnnotations(const MCInst &Inst, raw_ostream &OS,
+                        bool PrintMemData = false) const;
 
   /// Remove annotation with a given \p Index.
   ///
