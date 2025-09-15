@@ -1323,10 +1323,8 @@ public:
     return false;
   }
 
-#if defined(BUILD_FOR_OPENEULER)
   /// Check whether this ABI Name is the default one for GNU/GCC Compatibility
   virtual bool isDefaultABI(const std::string &Name) {return false;}
-#endif
 
   /// Use the specified unit for FP math.
   ///

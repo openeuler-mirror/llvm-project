@@ -2766,12 +2766,10 @@ static void CollectArgsForIntegratedAssembler(Compilation &C,
         CmdArgs.push_back(Value.data());
       } else if (Value == "--version") {
         D.PrintVersion(C, llvm::outs());
-    #ifdef BUILD_FOR_OPENEULER
       } else if (Value.startswith("--generate-missing-build-notes=") &&
-      Args.hasFlag(options::OPT_fgcc_compatible,
-      options::OPT_fno_gcc_compatible, false)) {
-      // Do nothing.
-    #endif
+                 Args.hasFlag(options::OPT_fgcc_compatible,
+                              options::OPT_fno_gcc_compatible, false)) {
+        // Do nothing.
       } else {
         D.Diag(diag::err_drv_unsupported_option_argument)
             << A->getSpelling() << Value;
@@ -4721,7 +4719,6 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back("-triple");
   CmdArgs.push_back(Args.MakeArgString(TripleStr));
 
-#ifdef BUILD_FOR_OPENEULER
   if (Args.hasFlag(options::OPT_fgcc_compatible,
                    options::OPT_fno_gcc_compatible, false)) {
     if (Args.hasArg(options::OPT_nostdinc) && !Args.hasArg(options::OPT_iprefix)) {
@@ -4748,7 +4745,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     CmdArgs.push_back("-Wno-error=return-type-c-linkage");
     // By default, clang reports errors, but gcc reports warnings.
     // when -Werror is passed don't add -Wno-error=*.
-    if(!D.getDiags().getWarningsAsErrors()) {
+    if (!D.getDiags().getWarningsAsErrors()) {
       CmdArgs.push_back("-Wno-error=implicit-function-declaration");
       CmdArgs.push_back("-Wno-error=incompatible-function-pointer-types");
       CmdArgs.push_back("-Wno-error=register");
@@ -4758,7 +4755,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back("-Wno-error=return-type");
       CmdArgs.push_back("-Wno-error=reserved-user-defined-literal");
     }
-    //other warnings
+    // Other warnings
     CmdArgs.push_back("-Wno-error=cast-align");
     CmdArgs.push_back("-Wno-error=enum-conversion");
     CmdArgs.push_back("-Wno-error=switch");
@@ -4769,7 +4766,6 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
     CmdArgs.push_back("-fgcc-compatible");
   }
-#endif
 
   if (const Arg *MJ = Args.getLastArg(options::OPT_MJ)) {
     DumpCompilationDatabase(C, MJ->getValue(), TripleStr, Output, Input, Args);
