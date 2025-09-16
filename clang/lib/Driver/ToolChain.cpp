@@ -1152,6 +1152,10 @@ ToolChain::UnwindLibType ToolChain::GetUnwindLibType(
     unwindLibType = GetDefaultUnwindLibType();
   }
 
+  const llvm::Triple::ArchType Arch = getArch();
+  if (Arch == llvm::Triple::aarch64 && Args.hasArg(options::OPT_fenable_matrix))
+    unwindLibType = ToolChain::UNW_CompilerRT;
+
   return *unwindLibType;
 }
 
