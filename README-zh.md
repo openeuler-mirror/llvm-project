@@ -63,7 +63,7 @@ sudo usermod -aG docker ${USER}
 
 * 社区参与者的[行为规范](https://llvm.org/docs/CodeOfConduct.html).
 
-### 4.1、openEuler社区Compiler SIG
+### 4.2、openEuler社区Compiler SIG
 几种方式：
 * 订阅[Compiler SIG邮件列表](https://mailweb.openeuler.org/postorius/lists/compiler@openeuler.org/)
 * 在[openEuler论坛](https://forum.openeuler.org/?locale=zh_CN)发帖讨论。
