@@ -13,7 +13,7 @@ PR格式
 - [ ] PR标题简要总结修改内容
 - [ ] commit message是否使用模板，请配置`git config commit.template .gitee/commit_message`
 - [ ] PR是否关联issue
-- [ ] PR是否设置审查人员（主要成员为[@cf-zhao](https://gitee.com/cf-zhao),[@eastb233](https://gitee.com/eastb233),[@liyunfei33](https://gitee.com/liyunfei33),[@wangqiang95](https://gitee.com/wangqiang95)）
+- [ ] PR是否设置审查人员（主要成员为[@cf-zhao](https://gitee.com/cf-zhao),[@eastb233](https://gitee.com/eastb233),[@liyunfei33](https://gitee.com/liyunfei33),[@wangqiang95](https://gitee.com/wangqiang95),[@chenzheng1030](https://gitee.com/chenzheng1030)）
 
 功能验证
 - 修改涉及后端架构
