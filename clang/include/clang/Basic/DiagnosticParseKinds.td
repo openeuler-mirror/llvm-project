@@ -389,6 +389,11 @@ def warn_cxx11_compat_decltype_auto_type_specifier : Warning<
 def ext_auto_type : Extension<
   "'__auto_type' is a GNU extension">,
   InGroup<GNUAutoType>;
+def warn_cxx11_compat_pseudo_destructor_auto : Warning<
+  "'~auto' only available with '-std=c++14 or -std=gnu++14'">,
+  InGroup<CXX11Compat>, DefaultIgnore;
+def err_requires_gnu_compatibility_for_auto_dtor : Error<
+  "'~auto' pseudo-destructor requires -fGNU-compatibility flag">;
 def ext_for_range : ExtWarn<
   "range-based for loop is a C++11 extension">, InGroup<CXX11>;
 def warn_cxx98_compat_for_range : Warning<
