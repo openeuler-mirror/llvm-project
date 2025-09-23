@@ -6,17 +6,21 @@ target triple = "x86_64-apple-darwin10.0.0"
 
 declare void @use_vec(<2 x i64>)
 
-; Bitcasts between vectors and scalars are valid.
-; PR4487
-define i32 @test1(i64 %a) {
+; Bitcasts from vectors to scalars are invalid.
+
+define i64 @test1(i64 %a, i64 %b) {
 ; CHECK-LABEL: @test1(
-; CHECK-NEXT:    ret i32 0
+; CHECK-NEXT:    [[T1:%.*]] = bitcast i64 [[A:%.*]] to <2 x i32>
+; CHECK-NEXT:    [[T2:%.*]] = bitcast i64 [[B:%.*]] to <2 x i32>
+; CHECK-NEXT:    [[T3:%.*]] = xor <2 x i32> [[T1]], [[T2]]
+; CHECK-NEXT:    [[T4:%.*]] = bitcast <2 x i32> [[T3]] to i64
+; CHECK-NEXT:    ret i64 [[T4]]
 ;
   %t1 = bitcast i64 %a to <2 x i32>
-  %t2 = bitcast i64 %a to <2 x i32>
+  %t2 = bitcast i64 %b to <2 x i32>
   %t3 = xor <2 x i32> %t1, %t2
-  %t4 = extractelement <2 x i32> %t3, i32 0
-  ret i32 %t4
+  %t4 = bitcast <2 x i32> %t3 to i64
+  ret i64 %t4
 }
 
 ; Perform the bitwise logic in the source type of the operands to eliminate bitcasts.

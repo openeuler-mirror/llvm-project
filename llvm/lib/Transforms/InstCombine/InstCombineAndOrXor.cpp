@@ -1769,6 +1769,11 @@ Instruction *InstCombinerImpl::foldCastedBitwiseLogic(BinaryOperator &I) {
   if (CastOpcode != Cast1->getOpcode())
     return nullptr;
 
+  // If the cast from a scalar to a vector, don't fold it, so that we can
+  // ensure the use of vector operations instead of scalar operations.
+  if (!SrcTy->isVectorTy() && DestTy->isVectorTy())
+    return nullptr;
+
   // If the source types do not match, but the casts are matching extends, we
   // can still narrow the logic op.
   if (SrcTy != Cast1->getSrcTy()) {
