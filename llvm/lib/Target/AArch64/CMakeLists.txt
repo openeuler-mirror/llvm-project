@@ -87,6 +87,8 @@ add_llvm_target(AArch64CodeGen
   SMEABIPass.cpp
   SVEIntrinsicOpts.cpp
   AArch64SIMDInstrOpt.cpp
+  WeakConsistencyPass.cpp
+  WeakConsistencyAllowlist.cpp
 
   DEPENDS
   intrinsics_gen
