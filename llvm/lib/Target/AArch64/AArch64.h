@@ -54,6 +54,7 @@ FunctionPass *createFalkorHWPFFixPass();
 FunctionPass *createFalkorMarkStridedAccessesPass();
 FunctionPass *createAArch64BranchTargetsPass();
 FunctionPass *createAArch64MIPeepholeOptPass();
+FunctionPass *createWeakConsistencyPass();
 
 FunctionPass *createAArch64CleanupLocalDynamicTLSPass();
 
