@@ -54,6 +54,7 @@ FunctionPass *createAArch64PointerAuthPass();
 FunctionPass *createAArch64BranchTargetsPass();
 FunctionPass *createAArch64MIPeepholeOptPass();
 FunctionPass *createAArch64PostCoalescerPass();
+FunctionPass *createWeakConsistencyPass();
 
 FunctionPass *createAArch64CleanupLocalDynamicTLSPass();
 
