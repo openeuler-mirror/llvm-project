@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #ifdef _MSC_VER
 /* For _alloca. */
 #include <malloc.h>
@@ -92,6 +93,7 @@ static lprofFilename lprofCurFilename = {0,   0, 0, {0}, NULL,
                                          {0}, 0, 0, 0,   PNS_unknown};
 
 static int ProfileMergeRequested = 0;
+static struct sigaction OldAction;
 static int getProfileFileSizeForMerging(FILE *ProfileFile,
                                         uint64_t *ProfileFileSize);
 
@@ -1064,14 +1066,64 @@ void __llvm_profile_initialize_file(void) {
   parseAndSetFilename(SelectedPat, PNS, 0);
 }
 
+COMPILER_RT_VISIBILITY
+int __llvm_profile_get_reset_signum() {
+  const char *EnvName = "LLVM_PROFILE_RESET_SIGNUM";
+  char *EnvValueString = getenv(EnvName);
+
+  if (EnvValueString == NULL || strlen(EnvValueString) == 0) {
+    return 0;
+  }
+
+  long ResetSignum = atoi(EnvValueString);
+  return ResetSignum;
+}
+
+/* A tesfunction for sigaction in llvm-runtime.
+ * See __llvm_profile_initialize.
+ */
+COMPILER_RT_VISIBILITY
+void __llvm_profile_reset_signal_handler(int ResetSignum, siginfo_t *SignalInfo,
+                                         void *Context) {
+  // this method can NOT prevent our reset function from replaced by handlers
+  // define by user. So the instrumented program shouldn't register a new
+  // SIG_RST_CNT signal handler function without calling
+  // `__llvm_profile_reset_signal handler` inside the function.
+  if (OldAction.sa_handler != SIG_DFL && OldAction.sa_handler != SIG_IGN) {
+    if (OldAction.sa_flags & SA_SIGINFO) {
+      OldAction.sa_sigaction(ResetSignum, SignalInfo, Context);
+    }
+  }
+
+  if (ResetSignum >= SIGUSR1 && ResetSignum <= SIGRTMAX)
+    __llvm_profile_reset_counters();
+}
+
+/* This method is invoked by `__llvm_profile_initialize`
+ * Used to register signal handler function.
+ */
+COMPILER_RT_VISIBILITY
+void __llvm_profile_initialize_reset_signal_handler(int ResetSignum) {
+  struct sigaction ResetAction;
+  sigemptyset(&ResetAction.sa_mask);
+  ResetAction.sa_sigaction = __llvm_profile_reset_signal_handler;
+  ResetAction.sa_flags = SA_SIGINFO;
+  sigaction(ResetSignum, &ResetAction, &OldAction);
+}
+
 /* This method is invoked by the runtime initialization hook
  * InstrProfilingRuntime.o if it is linked in.
  */
 COMPILER_RT_VISIBILITY
 void __llvm_profile_initialize(void) {
+  int SignalNumber;
+
   __llvm_profile_initialize_file();
   if (!__llvm_profile_is_continuous_mode_enabled())
     __llvm_profile_register_write_file_atexit();
+  SignalNumber = __llvm_profile_get_reset_signum();
+  if (SignalNumber)
+    __llvm_profile_initialize_reset_signal_handler(SignalNumber);
 }
 
 /* This API is directly called by the user application code. It has the
