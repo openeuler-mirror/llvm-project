@@ -291,6 +291,9 @@ public:
   /// Name of the profile file to use as input for -fprofile-instr-use
   std::string ProfileInstrumentUsePath;
 
+  /// Name of the profile directory to use as input for -fprofile-instr-use-dir and -fprofile-use-dir
+  std::string ProfileInstrumentUseDirPath;
+
   /// Name of the profile remapping file to apply to the profile data supplied
   /// by -fprofile-sample-use or -fprofile-instr-use.
   std::string ProfileRemappingFile;

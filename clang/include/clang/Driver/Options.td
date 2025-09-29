@@ -1792,6 +1792,10 @@ def fprofile_instr_use : Flag<["-"], "fprofile-instr-use">, Group<f_Group>,
 def fprofile_instr_use_EQ : Joined<["-"], "fprofile-instr-use=">,
     Group<f_Group>, Visibility<[ClangOption, CLOption]>,
     HelpText<"Use instrumentation data for profile-guided optimization">;
+def fprofile_instr_use_dir_EQ : Joined<["-"], "fprofile-instr-use-dir=">,
+    Group<f_Group>, Visibility<[ClangOption, CLOption]>,
+    MetaVarName<"<pathname>">,
+    HelpText<"Use instrumentation data in the directory for profile-guided optimization">;
 def fprofile_remapping_file_EQ : Joined<["-"], "fprofile-remapping-file=">,
     Group<f_Group>, Visibility<[ClangOption, CC1Option, CLOption]>,
     MetaVarName<"<file>">,
@@ -1838,6 +1842,11 @@ def fprofile_use_EQ : Joined<["-"], "fprofile-use=">,
     Visibility<[ClangOption, CLOption]>,
     MetaVarName<"<pathname>">,
     HelpText<"Use instrumentation data for profile-guided optimization. If pathname is a directory, it reads from <pathname>/default.profdata. Otherwise, it reads from file <pathname>.">;
+def fprofile_use_dir_EQ : Joined<["-"], "fprofile-use-dir=">,
+    Group<f_Group>,
+    Visibility<[ClangOption, CLOption]>,
+    MetaVarName<"<directoryname>">,
+    HelpText<"Use instrumentation data in the directory for profile-guided optimization">;
 def fno_profile_instr_generate : Flag<["-"], "fno-profile-instr-generate">,
     Group<f_Group>, Visibility<[ClangOption, CLOption]>,
     HelpText<"Disable generation of profile instrumentation.">;
@@ -7365,6 +7374,10 @@ def fprofile_instrument_use_path_EQ :
     Joined<["-"], "fprofile-instrument-use-path=">,
     HelpText<"Specify the profile path in PGO use compilation">,
     MarshallingInfoString<CodeGenOpts<"ProfileInstrumentUsePath">>;
+def fprofile_instrument_use_dir_path_EQ :
+    Joined<["-"],"fprofile-instrument-use-dir-path=">,
+    HelpText<"Specify the profraw directory path in auto-merge PGO use compilation">,
+    MarshallingInfoString<CodeGenOpts<"ProfileInstrumentUseDirPath">>;
 def flto_visibility_public_std:
     Flag<["-"], "flto-visibility-public-std">,
     HelpText<"Use public LTO visibility for classes in std and stdext namespaces">,

@@ -691,6 +691,15 @@ static void addPGOAndCoverageFlags(const ToolChain &TC, Compilation &C,
         llvm::sys::path::append(Path, "default.profdata");
       CmdArgs.push_back(
           Args.MakeArgString(Twine("-fprofile-instrument-use-path=") + Path));
+    } else if (ProfileUseArg->getOption().matches(
+                   options::OPT_fprofile_use_dir_EQ)||
+                   ProfileUseArg->getOption().matches(options::OPT_fprofile_instr_use_dir_EQ)) {
+      SmallString<128> Path(
+          ProfileUseArg->getNumValues() == 0 ? "" : ProfileUseArg->getValue());
+      if (Path.empty() || llvm::sys::fs::is_directory(Path))
+        llvm::sys::path::append(Path, ".");
+      CmdArgs.push_back(Args.MakeArgString(
+          Twine("-fprofile-instrument-use-dir-path=") + Path));
     }
   }
 

@@ -141,6 +141,9 @@ config.substitutions.append(
     ("%clang_profuse=", build_invocation(clang_cflags) + " -fprofile-instr-use=")
 )
 config.substitutions.append(
+    ("%clang_profusedir=", build_invocation(clang_cflags) + " -fprofile-instr-use-dir=")
+)
+config.substitutions.append(
     ("%clangxx_profuse=", build_invocation(clang_cxxflags) + " -fprofile-instr-use=")
 )
 

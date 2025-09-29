@@ -3,6 +3,7 @@
 // RUN: llvm-profdata merge -o %t.profdata %t.profraw
 // RUN: llvm-profdata show --all-functions %t.profdata | FileCheck %s --check-prefix=PROFCNT
 // RUN: %clang_profuse=%t.profdata -o - -S -emit-llvm %s | FileCheck %s --check-prefix=COMMON --check-prefix=ORIG
+// RUN: %clang_profuse=%t.profraw -o - -S -emit-llvm %s | FileCheck %s --check-prefix=COMMON --check-prefix=ORIG
 //
 // RUN: rm -fr %t.dir1
 // RUN: mkdir -p %t.dir1
@@ -11,6 +12,7 @@
 // RUN: llvm-profdata merge -o %t.em.profdata %t.dir1
 // RUN: llvm-profdata show --all-functions %t.em.profdata | FileCheck %s --check-prefix=PROFCNT
 // RUN: %clang_profuse=%t.em.profdata -o - -S -emit-llvm %s | FileCheck %s --check-prefix=COMMON --check-prefix=MERGE
+// RUN: %clang_profusedir=%t.dir1 -o - -S -emit-llvm %s | FileCheck %s --check-prefix=COMMON --check-prefix=MERGE
 //
 // RUN: rm -fr %t.dir2
 // RUN: mkdir -p %t.dir2
