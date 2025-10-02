@@ -1956,6 +1956,9 @@ void AArch64DAGToDAGISel::SelectMultiVectorLuti(SDNode *Node,
     Ops.push_back(Node->getOperand(3));
     Ops.push_back(Node->getOperand(4));
   }
+  // Preserve the chain so LUTI nodes that only differ in the chain operand
+  // are not incorrectly CSE'd.
+  Ops.push_back(Node->getOperand(0));
   SDLoc DL(Node);
   EVT VT = Node->getValueType(0);
 
