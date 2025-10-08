@@ -187,6 +187,13 @@ namespace llvm {
 }
 
 namespace llvm {
+namespace AArch64TLBIP {
+#define GET_TLBIPTable_IMPL
+#include "AArch64GenSystemOperands.inc"
+} // namespace AArch64TLBIP
+} // namespace llvm
+
+namespace llvm {
   namespace AArch64SVCR {
 #define GET_SVCR_IMPL
 #include "AArch64GenSystemOperands.inc"
