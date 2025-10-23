@@ -220,6 +220,10 @@ def HasSVEAES2      : Predicate<"Subtarget->hasSVEAES2()">,
                                  AssemblerPredicateWithAll<(all_of FeatureSVEAES2), "sve-aes2">;
 def HasSVE_F16F32MM : Predicate<"Subtarget->isSVEAvailable() && Subtarget->hasSVE_F16F32MM()">,
                                  AssemblerPredicateWithAll<(all_of FeatureSVE_F16F32MM), "sve-f16f32mm">;
+def HasF16MM        : Predicate<"Subtarget->hasF16MM()">,
+                                 AssemblerPredicateWithAll<(all_of FeatureF16MM), "f16mm">;
+def HasF16F32MM     : Predicate<"Subtarget->hasF16F32MM()">,
+                                 AssemblerPredicateWithAll<(all_of FeatureF16F32MM), "f16f32mm">;
 // A subset of SVE(2) instructions are legal in Streaming SVE execution mode,
 // they should be enabled if either has been specified.
 def HasSVEorSME
@@ -9472,8 +9476,14 @@ let Predicates = [HasCMPBR] in {
  defm : CmpBranchWRegisterAlias<"cbhlt", "CBHGT">;
 } // HasCMPBR
 
+let Predicates = [HasF16MM] in
+  defm FMMLA : SIMDThreeSameVectorFMLA<"fmmla">;
+
+let Predicates = [HasF16F32MM] in
+  defm FMMLA : SIMDThreeSameVectorFMLAWiden<"fmmla">;
+
 let Uses = [FPMR, FPCR] in
-defm FMMLA : SIMDThreeSameVectorFP8MatrixMul<"fmmla">;
+  defm FMMLA : SIMDThreeSameVectorFP8MatrixMul<"fmmla">;
 
 include "AArch64InstrAtomics.td"
 include "AArch64SVEInstrInfo.td"

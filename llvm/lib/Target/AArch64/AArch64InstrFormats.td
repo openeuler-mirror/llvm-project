@@ -6255,6 +6255,16 @@ multiclass SIMDThreeSameVectorMLAL<bit Q, bits<2> sz, string asm>{
                                          V128, v4f32, v16i8, null_frag>;
 }
 
+multiclass SIMDThreeSameVectorFMLA<string asm> {
+  def v8f16_v8f16 : BaseSIMDThreeSameVectorDot<0b1, 0b0, 0b11, 0b1101, asm, ".8h", ".8h",
+                                          V128, v8f16, v8f16, null_frag>;
+}
+
+multiclass SIMDThreeSameVectorFMLAWiden<string asm> {
+  def v8f16_v4f32 : BaseSIMDThreeSameVectorDot<0b1, 0b0, 0b01, 0b1101, asm, ".4s", ".8h",
+                                          V128, v4f32, v8f16, null_frag>;
+}
+
 // FP8 assembly/disassembly classes
 
 //----------------------------------------------------------------------------
