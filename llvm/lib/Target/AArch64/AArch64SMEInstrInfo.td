@@ -1036,3 +1036,14 @@ let Predicates = [HasSME_MOP4, HasSMEF64F64] in {
 let Predicates = [HasSME_MOP4, HasSMEF8F32] in {
   defm FMOP4A : sme2_fmop4a_fp8_fp32_4way<"fmop4a", "int_aarch64_sme_fp8_fmop4a_za32">;
 }
+
+//===----------------------------------------------------------------------===//
+// SME2.3 instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasSME2p3] in {
+  def LUTI6_ZTZ       : sme2_lut_single<"luti6">;
+  def LUTI6_4ZT3Z     : sme2_luti6_zt_consecutive<"luti6">;
+  def LUTI6_S_4ZT3Z   : sme2_luti6_zt_strided<"luti6">;
+  def LUTI6_4Z2Z2ZI   : sme2_luti6_vector_vg4_consecutive<"luti6">;
+  def LUTI6_S_4Z2Z2ZI : sme2_luti6_vector_vg4_strided<"luti6">;
+} // [HasSME2p3]
