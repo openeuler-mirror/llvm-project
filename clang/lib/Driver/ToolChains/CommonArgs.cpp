@@ -1721,7 +1721,8 @@ Arg *tools::getLastProfileUseArg(const ArgList &Args) {
   auto *ProfileUseArg = Args.getLastArg(
       options::OPT_fprofile_instr_use, options::OPT_fprofile_instr_use_EQ,
       options::OPT_fprofile_use, options::OPT_fprofile_use_EQ,
-      options::OPT_fno_profile_instr_use);
+      options::OPT_fno_profile_instr_use,
+      options::OPT_fprofile_instr_use_dir_EQ, options::OPT_fprofile_use_dir_EQ);
 
   if (ProfileUseArg &&
       ProfileUseArg->getOption().matches(options::OPT_fno_profile_instr_use))

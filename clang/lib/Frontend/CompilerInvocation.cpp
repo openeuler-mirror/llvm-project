@@ -66,10 +66,13 @@
 #include "llvm/Option/OptSpecifier.h"
 #include "llvm/Option/OptTable.h"
 #include "llvm/Option/Option.h"
+#include "llvm/ProfileData/InstrProf.h"
 #include "llvm/ProfileData/InstrProfReader.h"
+#include "llvm/ProfileData/InstrProfWriter.h"
 #include "llvm/Remarks/HotnessThresholdParser.h"
 #include "llvm/Support/CodeGen.h"
 #include "llvm/Support/Compiler.h"
+#include "llvm/Support/Errc.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/ErrorOr.h"
@@ -80,6 +83,7 @@
 #include "llvm/Support/Path.h"
 #include "llvm/Support/Process.h"
 #include "llvm/Support/Regex.h"
+#include "llvm/Support/Signals.h"
 #include "llvm/Support/VersionTuple.h"
 #include "llvm/Support/VirtualFileSystem.h"
 #include "llvm/Support/raw_ostream.h"
@@ -1475,7 +1479,107 @@ static std::string serializeXRayInstrumentationBundle(const XRayInstrSet &S) {
   return Buffer;
 }
 
-// Set the profile kind using fprofile-instrument-use-path.
+static bool isProfRawFile(const Twine Path, llvm::vfs::FileSystem &FS) {
+  auto ReaderOrErr = llvm::InstrProfReader::create(Path, FS);
+  if (auto Err = ReaderOrErr.takeError()) {
+    llvm::consumeError(std::move(Err));
+    return false;
+  }
+
+  auto *Reader = ReaderOrErr->get();
+  if (dynamic_cast<llvm::RawInstrProfReader32 *>(Reader) != nullptr 
+  || dynamic_cast<llvm::RawInstrProfReader64 *>(Reader) != nullptr) {
+    return true;
+  }
+  return false;
+}
+
+static Expected<std::string>
+mergeAll(const SmallVectorImpl<StringRef> &FileNames, llvm::vfs::FileSystem &FS,
+         DiagnosticsEngine &Diags) {
+  std::error_code EC;
+  llvm::InstrProfWriter Writer;
+
+  for (StringRef FileName : FileNames) {
+    auto ReaderOrErr = llvm::InstrProfReader::create(FileName, FS);
+    if (llvm::Error E = ReaderOrErr.takeError()) {
+      Diags.Report(diag::err_automerge_profraw) << llvm::toString(std::move(E));
+      return E;
+    }
+    auto Reader = std::move(ReaderOrErr.get());
+    if (llvm::Error E = Writer.mergeProfileKind(Reader->getProfileKind())) {
+      Diags.Report(diag::err_automerge_profraw)
+          << FileName << " can't be auto-merged, abort.";
+      return E;
+    }
+    for (auto I : *Reader) {
+      Writer.addRecord(std::move(I), [&](llvm::Error E) {
+        Diags.Report(diag::err_automerge_profraw) << FileName;
+        return;
+      });
+    }
+    std::vector<llvm::object::BuildID> BinaryIds;
+    if (llvm::Error E = Reader->readBinaryIds(BinaryIds)) {
+      Diags.Report(diag::err_automerge_profraw) << " failed to read binary id";
+      return llvm::errorCodeToError(llvm::errc::no_such_file_or_directory);
+    }
+    Writer.addBinaryIds(BinaryIds); // TODO: Add memprof format support.
+  }
+
+  int FD;
+  llvm::SmallString<128> TempFileName;
+  EC = llvm::sys::fs::createUniqueFile("./autoconv-temp-%%%%%%.profdata", FD,
+                                       TempFileName);
+  if(EC)
+    return llvm::errorCodeToError(EC);
+  llvm::raw_fd_ostream OF(FD, true);
+  llvm::sys::RemoveFileOnSignal(TempFileName);
+
+  if (llvm::Error E = Writer.write(OF)) {
+    Diags.Report(diag::err_automerge_profraw)
+        << " failed to write to profdata file.";
+    return E;
+  }
+
+  return std::string(TempFileName.begin(), TempFileName.end());
+}
+
+static Expected<std::string> mergeSingleProfRawFile(const Twine &ProfRawName,
+                                                    llvm::vfs::FileSystem &FS,
+                                                    DiagnosticsEngine &Diags) {
+  return mergeAll(llvm::SmallVector<StringRef, 1>({ProfRawName.str()}), FS,
+                  Diags);
+}
+
+static Expected<std::string> mergeAllFromDirectory(const Twine &ProfileDirName,
+                                                   llvm::vfs::FileSystem &FS,
+                                                   DiagnosticsEngine &Diags) {
+  llvm::SmallVector<std::string, 64> filenames;
+  llvm::SmallVector<StringRef, 64> filenameRefs;
+
+  llvm::sys::fs::file_status Status;
+  llvm::sys::fs::status(ProfileDirName,Status);
+  if(!llvm::sys::fs::exists(Status)){
+    Diags.Report(diag::err_automerge_profraw)<<" no such directory: "<<ProfileDirName.str();
+    return llvm::errorCodeToError(llvm::errc::no_such_file_or_directory);
+  }
+
+  if (llvm::sys::fs::is_directory(Status)) {
+    std::error_code EC;
+    for (llvm::sys::fs::recursive_directory_iterator F(ProfileDirName, EC), E;
+         F != E && !EC; F.increment(EC)) {
+      if (llvm::sys::fs::is_regular_file(F->path())) {
+        filenames.push_back(F->path());
+        filenameRefs.push_back(filenames.back());
+      }
+    }
+    if (EC)
+      return llvm::errorCodeToError(llvm::errc::io_error);
+  }
+
+  return mergeAll(filenameRefs, FS, Diags);
+}
+
 static void setPGOUseInstrumentor(CodeGenOptions &Opts,
                                   const Twine &ProfileName,
                                   llvm::vfs::FileSystem &FS,
@@ -4923,9 +5027,36 @@ bool CompilerInvocation::CreateFromArgsImpl(
     auto FS =
         createVFSFromOverlayFiles(Res.getHeaderSearchOpts().VFSOverlayFiles,
                                   Diags, llvm::vfs::getRealFileSystem());
-    setPGOUseInstrumentor(Res.getCodeGenOpts(),
-                          Res.getCodeGenOpts().ProfileInstrumentUsePath, *FS,
-                          Diags);
+    // Use an auxiliary function to pre-merge if profraw or directory is
+    // provided with.
+    std::string ProfileName;
+    if (isProfRawFile(Res.getCodeGenOpts().ProfileInstrumentUsePath, *FS)) {
+      auto ProfileNameOrErr = mergeSingleProfRawFile(
+          Res.getCodeGenOpts().ProfileInstrumentUsePath, *FS, Diags);
+      if (llvm::Error E = ProfileNameOrErr.takeError()) {
+        ProfileName = Res.getCodeGenOpts().ProfileInstrumentUsePath;
+      } else {
+        ProfileName = ProfileNameOrErr.get();
+        Res.getCodeGenOpts().ProfileInstrumentUsePath = ProfileName;
+      }
+    } else {
+      ProfileName = Res.getCodeGenOpts().ProfileInstrumentUsePath;
+    }
+
+    setPGOUseInstrumentor(Res.getCodeGenOpts(), ProfileName, *FS, Diags);
+  } else if (!Res.getCodeGenOpts().ProfileInstrumentUseDirPath.empty()) {
+    auto FS =
+        createVFSFromOverlayFiles(Res.getHeaderSearchOpts().VFSOverlayFiles,
+                                  Diags, llvm::vfs::getRealFileSystem());
+    auto ProfileNameOrErr = mergeAllFromDirectory(
+        Res.getCodeGenOpts().ProfileInstrumentUseDirPath, *FS, Diags);
+    std::string ProfileName;
+    if (llvm::Error E = ProfileNameOrErr.takeError()) {
+      llvm::consumeError(std::move(E));
+    } else {
+      ProfileName = ProfileNameOrErr.get();
+      Res.getCodeGenOpts().ProfileInstrumentUsePath = ProfileName;
+    }
   }
 
   FixupInvocation(Res, Diags, Args, DashX);

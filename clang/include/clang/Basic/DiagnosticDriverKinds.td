@@ -827,4 +827,12 @@ def err_drv_triple_version_invalid : Error<
 
 def warn_missing_include_dirs : Warning<
   "no such include directory: '%0'">, InGroup<MissingIncludeDirs>, DefaultIgnore;
+
+def err_automerge_profraw : Error<
+  "error occurred when tried to auto merge profraw files"
+>;
+
+def warn_automerge_profraw : Warning<
+  "failed to open file when auto merging"
+>;
 }
