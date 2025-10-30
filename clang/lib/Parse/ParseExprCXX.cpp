@@ -1884,6 +1884,24 @@ Parser::ParseCXXPseudoDestructor(Expr *Base, SourceLocation OpLoc,
   assert(Tok.is(tok::tilde) && "ParseOptionalCXXScopeSpecifier fail");
   SourceLocation TildeLoc = ConsumeToken();
 
+  if (Tok.is(tok::kw_auto) && !FirstTypeName.isValid()) {
+    if (!getLangOpts().GccCompatible) {
+      Diag(Tok, diag::err_requires_gnu_compatibility_for_auto_dtor);
+      return ExprError();
+    } else {
+      if (!getLangOpts().CPlusPlus14)
+        Diag(Tok, diag::warn_cxx11_compat_pseudo_destructor_auto);
+    }
+
+    ConsumeToken();
+    UnqualifiedId SecondTypeName;
+    SecondTypeName.setIdentifier(nullptr, SourceLocation());
+
+   return Actions.ActOnPseudoDestructorExpr(getCurScope(), Base, OpLoc, OpKind,
+                                            SS, FirstTypeName, CCLoc, TildeLoc,
+                                            SecondTypeName);
+  }
+
   if (Tok.is(tok::kw_decltype) && !FirstTypeName.isValid()) {
     DeclSpec DS(AttrFactory);
     ParseDecltypeSpecifier(DS);

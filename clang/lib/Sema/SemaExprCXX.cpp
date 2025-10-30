@@ -8195,7 +8195,9 @@ ExprResult Sema::ActOnPseudoDestructorExpr(Scope *S, Expr *Base,
   QualType DestructedType;
   TypeSourceInfo *DestructedTypeInfo = nullptr;
   PseudoDestructorTypeStorage Destructed;
-  if (SecondTypeName.getKind() == UnqualifiedIdKind::IK_Identifier) {
+  if (!SecondTypeName.Identifier) {
+    DestructedType = ObjectType;
+  } else if (SecondTypeName.getKind() == UnqualifiedIdKind::IK_Identifier) {
     ParsedType T = getTypeName(*SecondTypeName.Identifier,
                                SecondTypeName.StartLocation,
                                S, &SS, true, false, ObjectTypePtrForLookup,
