@@ -65,13 +65,24 @@
 
 #include "AArch64ExpandImm.h"
 #include "AArch64InstrInfo.h"
+#include "AArch64Subtarget.h"
 #include "MCTargetDesc/AArch64AddressingModes.h"
+#include "llvm/ADT/SetVector.h"
 #include "llvm/CodeGen/MachineDominators.h"
 #include "llvm/CodeGen/MachineLoopInfo.h"
 
 using namespace llvm;
 
 #define DEBUG_TYPE "aarch64-mi-peephole-opt"
+
+static cl::opt<bool> EnableSVELoopAddressChainOpt(
+    "aarch64-sve-loop-address-chain-opt", cl::init(false), cl::Hidden,
+    cl::desc(
+        "Enable simplification of SVE address computation chains in loops"));
+
+static cl::opt<bool> EnableSVEIndexMultiplyOpt(
+    "aarch64-sve-simplify-index-multiply", cl::init(false), cl::Hidden,
+    cl::desc("Enable simplification of SVE svindex+svmul patterns in loops"));
 
 namespace {
 
@@ -94,6 +105,12 @@ struct AArch64MIPeepholeOpt : public MachineFunctionPass {
   using BuildMIFunc =
       std::function<void(MachineInstr &, OpcodePair, unsigned, unsigned,
                          Register, Register, Register)>;
+  using InstAndOffset = std::pair<MachineInstr *, int64_t>;
+  using ChainKey = std::tuple<Register, Register, Register>;
+  using ChainMap = DenseMap<ChainKey, SmallVector<InstAndOffset>>;
+  using ConstOffsetKey = std::pair<MachineBasicBlock *, int64_t>;
+  // Define an enum for the SVE offset type.
+  enum class SVEOffsetType { NOT_APPLICABLE, SXTW, UXTW, D64 };
 
   /// For instructions where an immediate operand could be split into two
   /// separate immediate instructions, use the splitTwoPartImm two handle the
@@ -127,6 +144,29 @@ struct AArch64MIPeepholeOpt : public MachineFunctionPass {
   bool visitINSERT(MachineInstr &MI);
   bool visitINSviGPR(MachineInstr &MI, unsigned Opc);
   bool visitINSvi64lane(MachineInstr &MI);
+  bool isLoopInvariant(Register Reg, MachineLoop *L);
+  bool isConstantVector(Register Reg, int64_t &Value);
+  bool isInvariantBroadcastGPR(Register VecReg, MachineLoop *L, Register &GPR);
+  unsigned getElementSizeInBytes(const MachineInstr &MI,
+                                 SVEOffsetType *OffsetKind);
+  void traceIndexChain(Register IndexReg, Register &RootIndex,
+                       int64_t &AccumulatedOffset, Register &InvariantGPROffset,
+                       MachineLoop *L,
+                       SmallVectorImpl<MachineInstr *> &ChainsInsts);
+  void collectOptimizationCandidates(MachineLoop *L, ChainMap &Chains,
+                       SetVector<MachineInstr *> &CandidateDeadInsts);
+  Register getGPRBase(
+      MachineBasicBlock *MBB, Register BaseReg, Register InvariantGPROffset,
+      MachineInstr &UseMI,
+      DenseMap<MachineBasicBlock *, Register> &BlockToGPRBaseMap);
+  Register getFinalBase(MachineInstr &MI, int64_t ElemOffset,
+                       Register BaseForConst,
+                       DenseMap<ConstOffsetKey, Register> &FinalBaseMap);
+  bool rewriteConstantAddressComputations(MachineLoop *L,
+                                          const ChainMap &Chains);
+  bool cleanupDeadSVECode(SetVector<MachineInstr *> &CandidateDeadInsts);
+  bool simplifySVEIndexMultiply(MachineLoop *L);
+  bool processSVELoopAddressing(MachineLoop *L);
   bool runOnMachineFunction(MachineFunction &MF) override;
 
   StringRef getPassName() const override {
@@ -670,6 +710,891 @@ bool AArch64MIPeepholeOpt::visitINSvi64lane(MachineInstr &MI) {
   return true;
 }
 
+// Check if Reg is a loop invariant to Loop L
+bool AArch64MIPeepholeOpt::isLoopInvariant(Register Reg, MachineLoop *L) {
+  if (!Reg.isVirtual())
+    return false;
+  MachineInstr *Def = MRI->getVRegDef(Reg);
+  if (!Def)
+    return true;
+  return !L->contains(Def->getParent());
+}
+
+// Check if a vector register represents a constant value
+// and retrieve that constant value if it exists
+bool AArch64MIPeepholeOpt::isConstantVector(Register Reg, int64_t &Value) {
+  if (!Reg.isVirtual())
+    return false;
+
+  MachineInstr *Def = MRI->getVRegDef(Reg);
+  if (!Def)
+    return false;
+
+  // Match the DUP instruction pattern: %Def = DUP_ZI_S Imm, 0
+  // This instruction broadcasts the immediate value to all vector elements
+  unsigned DupOp = Def->getOpcode();
+  if (DupOp == AArch64::DUP_ZI_S || DupOp == AArch64::DUP_ZI_D) {
+    Value = Def->getOperand(1).getImm();
+    return true;
+  }
+  return false;
+}
+
+// Checks if a vector register is broadcasted from a loop-invariant GPR
+// Matches instruction pattern: %VecReg = DUP_ZR_S/D %GPR
+// Where %GPR is loop-invariant to loop L
+bool AArch64MIPeepholeOpt::isInvariantBroadcastGPR(Register VecReg,
+                                                   MachineLoop *L,
+                                                   Register &GPR) {
+  if (!VecReg.isVirtual())
+    return false;
+
+  MachineInstr *Def = MRI->getVRegDef(VecReg);
+  if (!Def)
+    return false;
+
+  unsigned DupOp = Def->getOpcode();
+  if (DupOp == AArch64::DUP_ZR_S || DupOp == AArch64::DUP_ZR_D) {
+    Register SrcGPR = Def->getOperand(1).getReg();
+    if (isLoopInvariant(SrcGPR, L)) {
+      GPR = SrcGPR;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Returns element size in bytes for gather/scatter instructions
+// Returns 0 for non-gather/scatter instructions
+unsigned
+AArch64MIPeepholeOpt::getElementSizeInBytes(const MachineInstr &MI,
+                                            SVEOffsetType *OffsetKind) {
+  static constexpr unsigned HalfWordSize = 2;
+  static constexpr unsigned WordSize = 4;
+  static constexpr unsigned DoubleWordSize = 8;
+
+  switch (MI.getOpcode()) {
+  // --- Element Size: 2 Bytes (Half-Word) ---
+  case AArch64::GLD1H_D_SCALED:
+  case AArch64::GLD1SH_D_SCALED:
+  case AArch64::GLDFF1H_D_SCALED:
+  case AArch64::GLDFF1SH_D_SCALED:
+  case AArch64::LDNT1H_ZZR_D_REAL:
+  case AArch64::LDNT1SH_ZZR_D_REAL:
+  case AArch64::SST1H_D_SCALED:
+  case AArch64::STNT1H_ZZR_D_REAL:
+    *OffsetKind = SVEOffsetType::D64;
+    return HalfWordSize;
+  case AArch64::GLD1H_S_SXTW_SCALED:
+  case AArch64::GLD1SH_S_SXTW_SCALED:
+  case AArch64::GLDFF1H_S_SXTW_SCALED:
+  case AArch64::GLDFF1SH_S_SXTW_SCALED:
+  case AArch64::SST1H_S_SXTW_SCALED:
+    *OffsetKind = SVEOffsetType::SXTW;
+    return HalfWordSize;
+  case AArch64::GLD1H_S_UXTW_SCALED:
+  case AArch64::GLD1SH_S_UXTW_SCALED:
+  case AArch64::GLDFF1H_S_UXTW_SCALED:
+  case AArch64::GLDFF1SH_S_UXTW_SCALED:
+  case AArch64::SST1H_S_UXTW_SCALED:
+    *OffsetKind = SVEOffsetType::UXTW;
+    return HalfWordSize;
+
+  // --- Element Size: 4 Bytes (Word) ---
+  case AArch64::GLD1SW_D_SCALED:
+  case AArch64::GLD1W_D_SCALED:
+  case AArch64::GLDFF1SW_D_SCALED:
+  case AArch64::GLDFF1W_D_SCALED:
+  case AArch64::LDNT1SW_ZZR_D_REAL:
+  case AArch64::LDNT1W_ZZR_D_REAL:
+  case AArch64::SST1W_D_SCALED:
+  case AArch64::STNT1W_ZZR_D_REAL:
+    *OffsetKind = SVEOffsetType::D64;
+    return WordSize;
+  case AArch64::GLD1W_SXTW_SCALED:
+  case AArch64::GLDFF1W_SXTW_SCALED:
+  case AArch64::PRFW_S_SXTW_SCALED:
+  case AArch64::SST1W_SXTW_SCALED:
+    *OffsetKind = SVEOffsetType::SXTW;
+    return WordSize;
+  case AArch64::GLD1W_UXTW_SCALED:
+  case AArch64::GLDFF1W_UXTW_SCALED:
+  case AArch64::PRFW_S_UXTW_SCALED:
+  case AArch64::SST1W_UXTW_SCALED:
+    *OffsetKind = SVEOffsetType::UXTW;
+    return WordSize;
+
+  // --- Element Size: 8 Bytes (Double-Word) ---
+  case AArch64::GLD1D_SCALED:
+  case AArch64::GLDFF1D_SCALED:
+  case AArch64::LDNT1D_ZZR_D_REAL:
+  case AArch64::PRFW_D_SCALED:
+  case AArch64::SST1D_SCALED:
+  case AArch64::STNT1D_ZZR_D_REAL:
+    *OffsetKind = SVEOffsetType::D64;
+    return DoubleWordSize;
+  case AArch64::GLD1D_SXTW_SCALED:
+  case AArch64::SST1D_SXTW_SCALED:
+    *OffsetKind = SVEOffsetType::SXTW;
+    return DoubleWordSize;
+  case AArch64::GLD1D_UXTW_SCALED:
+  case AArch64::SST1D_UXTW_SCALED:
+    *OffsetKind = SVEOffsetType::UXTW;
+    return DoubleWordSize;
+  default:
+    StringRef InstName = TII->getName(MI.getOpcode());
+    if (InstName.startswith("GLD") || InstName.startswith("SST") ||
+        InstName.startswith("LDNT") || InstName.startswith("STNT") ||
+        InstName.startswith("PRFW")) {
+      LLVM_DEBUG(dbgs() << "SVELoopAddressHoisting: Unhandled SVE "
+                           "gather/scatter-like instruction found: "
+                        << MI);
+    }
+
+    *OffsetKind = SVEOffsetType::NOT_APPLICABLE;
+    return 0;
+  }
+}
+
+// Traces index chain to discover:
+// - Root index register
+// - Accumulated constant offset
+// - Loop-invariant GPR offset component
+// - And collects the chain instructions for potential deletion
+void AArch64MIPeepholeOpt::traceIndexChain(
+    Register IndexReg, Register &RootIndex, int64_t &AccumulatedOffset,
+    Register &InvariantGPROffset, MachineLoop *L,
+    SmallVectorImpl<MachineInstr *> &ChainInsts) {
+  AccumulatedOffset = 0;
+  InvariantGPROffset = Register(0);
+  Register CurrentReg = IndexReg;
+
+  while (true) {
+    if (!CurrentReg.isVirtual())
+      break;
+
+    MachineInstr *Def = MRI->getVRegDef(CurrentReg);
+    // Index must be defined within loop as induction variable
+    if (!Def || !L->contains(Def->getParent()))
+      break;
+
+    // Match svadd index increment pattern:
+    // %index = ADD_ZI_[S/D] %prev_index, %offset, %pg
+    // %index = ADD_ZZZ_D %prev_index, %offset
+    // %index = ADD_ZPZZ_[S/D]_ZERO %pg, %prev_index, %offset
+    unsigned IndexOp = Def->getOpcode();
+    if (IndexOp == AArch64::ADD_ZI_S || IndexOp == AArch64::ADD_ZI_D) {
+      int64_t ConstValue = Def->getOperand(2).getImm();
+      AccumulatedOffset += ConstValue;
+      CurrentReg = Def->getOperand(1).getReg();
+      ChainInsts.push_back(Def);
+      continue;
+    }
+
+    Register AddzOp1, AddzOp2;
+    if (IndexOp == AArch64::ADD_ZZZ_S || IndexOp == AArch64::ADD_ZZZ_D) {
+      static constexpr unsigned AddOp1Idx = 1, AddOp2Idx = 2;
+      AddzOp1 = Def->getOperand(AddOp1Idx).getReg();
+      AddzOp2 = Def->getOperand(AddOp2Idx).getReg();
+    } else if (IndexOp == AArch64::ADD_ZPZZ_S_ZERO ||
+               IndexOp == AArch64::ADD_ZPZZ_D_ZERO ||
+               IndexOp == AArch64::ADD_ZPmZ_S ||
+               IndexOp == AArch64::ADD_ZPmZ_D) {
+      static constexpr unsigned AddOp1Idx = 2, AddOp2Idx = 3;
+      AddzOp1 = Def->getOperand(AddOp1Idx).getReg();
+      AddzOp2 = Def->getOperand(AddOp2Idx).getReg();
+    } else {
+      break;
+    }
+
+    int64_t ConstValue;
+    Register InvariantGPR;
+
+    // Addz Op2 case 1: Constant vector offset
+    if (isConstantVector(AddzOp2, ConstValue)) {
+      AccumulatedOffset += ConstValue;
+      CurrentReg = AddzOp1;
+      ChainInsts.push_back(MRI->getVRegDef(AddzOp2));
+      ChainInsts.push_back(Def);
+      continue;
+    }
+
+    // Addz Op2 case 2: Loop-invariant GPR broadcast offset
+    if (isInvariantBroadcastGPR(AddzOp2, L, InvariantGPR)) {
+      if (InvariantGPROffset != 0) {
+        LLVM_DEBUG(
+            dbgs() << "Found multiple GPR invariants, aborting trace.\n");
+        break;
+      }
+      InvariantGPROffset = InvariantGPR;
+      CurrentReg = AddzOp1;
+      ChainInsts.push_back(MRI->getVRegDef(AddzOp2));
+      ChainInsts.push_back(Def);
+      continue;
+    }
+
+    // Addz Op1 case 1: Constant vector offset
+    if (isConstantVector(AddzOp1, ConstValue)) {
+      AccumulatedOffset += ConstValue;
+      CurrentReg = AddzOp2;
+      ChainInsts.push_back(MRI->getVRegDef(AddzOp1));
+      ChainInsts.push_back(Def);
+      continue;
+    }
+
+    // Addz Op1 case 2: Loop-invariant GPR broadcast offset
+    if (isInvariantBroadcastGPR(AddzOp1, L, InvariantGPR)) {
+      if (InvariantGPROffset != 0) {
+        LLVM_DEBUG(
+            dbgs() << "Found multiple GPR invariants, aborting trace.\n");
+        break;
+      }
+      InvariantGPROffset = InvariantGPR;
+      CurrentReg = AddzOp2;
+      ChainInsts.push_back(MRI->getVRegDef(AddzOp1));
+      ChainInsts.push_back(Def);
+      continue;
+    }
+    break;
+  }
+
+  RootIndex = CurrentReg;
+}
+
+// Collects all optimizable gather/scatter instructions
+// and groups them into chains.
+void AArch64MIPeepholeOpt::collectOptimizationCandidates(
+    MachineLoop *L, ChainMap &Chains,
+    SetVector<MachineInstr *> &CandidateDeadInsts) {
+  for (MachineBasicBlock *MBB : L->getBlocks()) {
+    for (MachineInstr &MI : *MBB) {
+      SVEOffsetType OffsetType;
+      unsigned ElementSize = getElementSizeInBytes(MI, &OffsetType);
+      if (ElementSize == 0)
+        continue;
+
+      // Verify instruction format:
+      // Gather:  DstZPR, PredicatePPR, BaseGPR, IndexZPR
+      // Scatter: SrcZPR, PredicatePPR, BaseGPR, IndexZPR
+      static constexpr unsigned MinGatherScatterOperands = 4;
+      if (MI.getNumOperands() < MinGatherScatterOperands)
+        continue;
+
+      static constexpr unsigned BaseRegOpIdx = 2;
+      static constexpr unsigned IndexRegOpIdx = 3;
+      Register BaseReg = MI.getOperand(BaseRegOpIdx).getReg();
+      Register IndexReg = MI.getOperand(IndexRegOpIdx).getReg();
+      // Only optimize loop-invariant base addresses
+      if (!isLoopInvariant(BaseReg, L))
+        continue;
+
+      Register RootIndex, InvariantGPROffset;
+      int64_t ElemOffset;
+      SmallVector<MachineInstr *> TmpChainInsts; // Store chain for this MI
+
+      // Trace index computation chain
+      traceIndexChain(IndexReg, RootIndex, ElemOffset, InvariantGPROffset, L,
+                      TmpChainInsts);
+
+      // If the chain is empty, there's nothing to optimize or delete.
+      if (TmpChainInsts.empty() && InvariantGPROffset == 0 && ElemOffset == 0)
+        continue;
+
+      LLVM_DEBUG(dbgs() << "Found candidate instruction: "; MI.dump();
+                 dbgs() << "  BaseReg: " << printReg(BaseReg)
+                        << ", IndexReg: " << printReg(IndexReg)
+                        << " -> RootIndex: " << printReg(RootIndex)
+                        << ", ElemOffset: " << ElemOffset
+                        << ", InvariantGPROffset: "
+                        << printReg(InvariantGPROffset) << "\n");
+
+      Chains[{BaseReg, RootIndex, InvariantGPROffset}].push_back(
+          {&MI, ElemOffset});
+
+      // Add the identified chain instructions to the master set of candidates.
+      CandidateDeadInsts.insert(TmpChainInsts.begin(), TmpChainInsts.end());
+    }
+  }
+}
+
+// Get or create a shared base register for the (Base + GPR) calculation
+// It ensures the calculation is only generated once per block
+//
+// @param BaseReg The original, loop-invariant base register
+// @param InvariantGPROffset The loop-invariant GPR used as an offset
+// @param UseMI The memory instruction that will ultimately use this base
+// @param BlockToGPRBaseMap The cache mapping a block to its computed GPR-base
+// @return A register holding the result of `BaseReg + (InvariantGPROffset << scale)`.
+//         If no GPR offset exists, it returns the original `BaseReg`
+Register AArch64MIPeepholeOpt::getGPRBase(
+    MachineBasicBlock *MBB, Register BaseReg, Register InvariantGPROffset,
+    MachineInstr &UseMI,
+    DenseMap<MachineBasicBlock *, Register> &BlockToGPRBaseMap) {
+  // If we've already computed the GPR base for this block, return it
+  if (BlockToGPRBaseMap.count(MBB)) {
+    return BlockToGPRBaseMap[MBB];
+  }
+
+  // If there's no GPR offset, the base is simply the original BaseReg
+  if (InvariantGPROffset == 0) {
+    BlockToGPRBaseMap[MBB] = BaseReg;
+    return BaseReg;
+  }
+
+  // This is the first time for this block, so we generate the ADD instruction
+  // Insert the calculation at the beginning of the block
+  DebugLoc DL = UseMI.getDebugLoc();
+  SVEOffsetType OffsetType;
+  unsigned ElementSize = getElementSizeInBytes(UseMI, &OffsetType);
+  unsigned ShiftAmt = Log2_64(ElementSize);
+  unsigned AddOp, ShiftExtender;
+
+  const TargetRegisterClass *RC = MRI->getRegClass(InvariantGPROffset);
+  if (AArch64::GPR32RegClass.hasSubClassEq(RC)) {
+    ShiftExtender =
+        (OffsetType == SVEOffsetType::SXTW)
+            ? AArch64_AM::getArithExtendImm(AArch64_AM::SXTW, ShiftAmt)
+            : AArch64_AM::getArithExtendImm(AArch64_AM::UXTW, ShiftAmt);
+    AddOp = AArch64::ADDXrx;
+  } else {
+    ShiftExtender = AArch64_AM::getShifterImm(AArch64_AM::LSL, ShiftAmt);
+    AddOp = AArch64::ADDXrs;
+  }
+
+  Register GPROffsetBaseReg =
+      MRI->createVirtualRegister(&AArch64::GPR64RegClass);
+  BuildMI(*MBB, MBB->getFirstNonPHI(), DL, TII->get(AddOp), GPROffsetBaseReg)
+      .addReg(BaseReg)
+      .addReg(InvariantGPROffset)
+      .addImm(ShiftExtender);
+
+  LLVM_DEBUG(dbgs() << "  In BB:" << MBB->getName()
+                    << ", created shared GPR base: "
+                    << printReg(GPROffsetBaseReg) << "\n");
+
+  // Cache and return the new base
+  BlockToGPRBaseMap[MBB] = GPROffsetBaseReg;
+  return GPROffsetBaseReg;
+}
+
+// Get or create the final base register (Base + GPR + Const)
+//
+// @param MI The memory instruction that will use this final base
+// @param ElemOffset The constant element offset extracted from the address chain.
+// @param BaseForConst The base register to add the constant offset to. This is
+//                     typically the result from `getGPRBase`.
+// @param FinalBaseMap The cache mapping a `{Block, Offset}` key to BaseForConst 's final base
+// @return A register holding the result of `BaseForConst + (ElemOffset * scale)`.
+//         If `ElemOffset` is zero, it returns `BaseForConst` directly
+Register AArch64MIPeepholeOpt::getFinalBase(
+    MachineInstr &MI, int64_t ElemOffset, Register BaseForConst,
+    DenseMap<ConstOffsetKey, Register> &FinalBaseMap) {
+
+  MachineBasicBlock *MBB = MI.getParent();
+  ConstOffsetKey Key = {MBB, ElemOffset};
+
+  // If we've already computed the final base for this key, return it
+  if (FinalBaseMap.count(Key)) {
+    return FinalBaseMap.lookup(Key);
+  }
+
+  // If there's no constant offset, the final base is the one passed in
+  if (ElemOffset == 0) {
+    FinalBaseMap[Key] = BaseForConst;
+    return BaseForConst;
+  }
+
+  // This is the first time for this key, generate the ADD instruction
+  DebugLoc DL = MI.getDebugLoc();
+  SVEOffsetType OffsetType;
+  unsigned ElementSize = getElementSizeInBytes(MI, &OffsetType);
+  int64_t ByteOffset = ElemOffset * ElementSize;
+
+  Register ConstOffsetBase =
+      MRI->createVirtualRegister(&AArch64::GPR64RegClass);
+  BuildMI(*MBB, MI.getIterator(), DL, TII->get(AArch64::ADDXri),
+          ConstOffsetBase)
+      .addReg(BaseForConst)
+      .addImm(ByteOffset)
+      .addImm(0);
+
+  LLVM_DEBUG(dbgs() << "  Created new base for ElemOffset " << ElemOffset
+                    << " (ByteOffset " << ByteOffset << ") into "
+                    << printReg(ConstOffsetBase) << "\n");
+
+  // Cache and return the new final base.
+  FinalBaseMap[Key] = ConstOffsetBase;
+  return ConstOffsetBase;
+}
+
+bool AArch64MIPeepholeOpt::rewriteConstantAddressComputations(
+    MachineLoop *L, const ChainMap &Chains) {
+  bool Changed = false;
+  static constexpr unsigned MinMIsForChain = 2;
+
+  for (auto &ChainInfo : Chains) {
+    auto &Addressings = ChainInfo.second;
+    static constexpr unsigned InvariantGPROffsetIndex = 2;
+    Register InvariantGPROffset = std::get<InvariantGPROffsetIndex>(ChainInfo.first);
+    int64_t FirstElemOffset = Addressings[0].second;
+    // Skip chains without optimizable offsets
+    if (Addressings.size() < MinMIsForChain && InvariantGPROffset == 0 &&
+        FirstElemOffset == 0)
+      continue;
+
+    Register BaseReg = std::get<0>(ChainInfo.first);
+    Register RootIndex = std::get<1>(ChainInfo.first);
+
+    LLVM_DEBUG(dbgs() << "Optimizing chain with BaseReg: " << printReg(BaseReg)
+                      << ", RootIndex: " << printReg(RootIndex)
+                      << ", InvariantGPROffset: "
+                      << printReg(InvariantGPROffset) << "\n");
+
+    // Maps a Basic Block to the register holding the (Base + GPR) calculation
+    // for that block
+    DenseMap<MachineBasicBlock *, Register> BlockToGPRBaseMap;
+
+    // Maps a (Basic Block, Const Offset) pair to the final base register
+    // We need the BB in the key to ensure correctness across different blocks
+    DenseMap<ConstOffsetKey, Register> ConstOffsetToFinalBaseMap;
+
+    for (auto &AddressInfo : Addressings) {
+      MachineInstr *MI = AddressInfo.first;
+      MachineBasicBlock *MBB = MI->getParent();
+      int64_t ElemOffset = AddressInfo.second;
+
+      // Get the shared (Base + GPR) base for this instruction's block
+      Register BaseForConsts = getGPRBase(
+          MBB, BaseReg, InvariantGPROffset, *MI, BlockToGPRBaseMap);
+
+      // Get the final base, creating the const offset ADD if needed
+      Register FinalBaseReg = getFinalBase(
+          *MI, ElemOffset, BaseForConsts, ConstOffsetToFinalBaseMap);
+
+      // Rewrite the memory instruction
+      static constexpr unsigned BaseOpIdx = 2, RootIndexOpIdx = 3;
+      MI->getOperand(BaseOpIdx).setReg(FinalBaseReg);
+      MI->getOperand(RootIndexOpIdx).setReg(RootIndex);
+
+      LLVM_DEBUG(dbgs() << "  Rewrote instruction: "; MI->dump());
+      Changed = true;
+    }
+  }
+  return Changed;
+}
+
+bool AArch64MIPeepholeOpt::cleanupDeadSVECode(
+    SetVector<MachineInstr *> &CandidateDeadInsts) {
+  if (CandidateDeadInsts.empty())
+    return false;
+
+  bool Changed = false;
+  LLVM_DEBUG(dbgs() << "--- Cleaning up dead instructions ---\n");
+  for (MachineInstr *MI : llvm::reverse(CandidateDeadInsts)) {
+    bool IsDead = true;
+    for (const MachineOperand &MO : MI->operands()) {
+      if (MO.isReg() && MO.isDef() && MO.getReg().isVirtual()) {
+        if (!MRI->use_empty(MO.getReg())) {
+          IsDead = false;
+          break;
+        }
+      }
+    }
+
+    if (!IsDead)
+      continue;
+
+    LLVM_DEBUG(dbgs() << "Deleting dead instruction: "; MI->dump());
+    MI->eraseFromParent();
+    Changed = true;
+  }
+  return Changed;
+}
+
+// Processes a single machine loop to find and rewrite optimizable
+// SVE address computation chains for gather/scatter-like instructions.
+//
+// The core idea is to identify cases where the vector index used by a memory
+// instruction is calculated by adding a loop-invariant offset to a base index
+// (the root induction variable). Such computations are redundant within the
+// loop. This optimization rewrites the address calculation to make the
+// invariant part easily hoistable by MachineLICM.
+//
+// Specifically, it targets the following pattern example:
+//
+// =============================== BEFORE ===============================
+// // In a loop, a complex index `z_idx` is computed before being used.
+// // The offset can be a constant, a loop-invariant GPR, or both.
+//
+//   ...
+//   dup    z_offset, invariant_gpr
+//   add    z_idx, z_root_idx, z_offset
+//   gather z_data, pg, [x_base, z_idx, <shifter>]
+//   ...
+//
+// =============================== AFTER ================================
+// // The pass sinks the invariant address calculation to just before the use,
+// // exposing it to MachineLICM. The original `add` chain is replaced.
+// // MachineLICM will then decide whether hoisting is profitable.
+//
+//   ...
+//   // --- Instructions created by this pass, to be hoisted by MachineLICM ---
+//   add    x_new_base, x_base, invariant_gpr, <shifter>
+//   gather z_data, pg, [x_new_base, z_root_idx, <shifter>]
+//   ...
+//
+bool AArch64MIPeepholeOpt::processSVELoopAddressing(MachineLoop *L) {
+  MachineBasicBlock *Preheader = L->getLoopPreheader();
+  if (!Preheader)
+    return false;
+
+  bool Changed = false;
+  LLVM_DEBUG(dbgs() << "********** Processing Loop in Function: "
+                    << L->getHeader()->getParent()->getName()
+                    << " (Loop Header: " << L->getHeader()->getName()
+                    << ") **********\n");
+
+  // Collect all candadate instructions and their addressing chains
+  ChainMap Chains;
+  SetVector<MachineInstr *> CandidateDeadInsts;
+  collectOptimizationCandidates(L, Chains, CandidateDeadInsts);
+
+  if (Chains.empty())
+    return false;
+
+  // rewrite the instructions in the loop
+  Changed |= rewriteConstantAddressComputations(L, Chains);
+
+  // Clean up the original, now-dead, address computation instructions
+  if (Changed)
+    Changed |= cleanupDeadSVECode(CandidateDeadInsts);
+  return Changed;
+}
+
+// This optimization identifies a common pattern where a vector of indices,
+// generated from a loop induction variable, is immediately multiplied by a
+// constant. This is a computationally expensive operation inside a loop.
+// The pass transforms this pattern by replacing the expensive vector multiply
+// with a cheaper vector add. It achieves this by creating a new induction
+// variable system and a pre-computed offset vector.
+//
+// =============================== BEFORE ===============================
+// The pass targets a MUL instruction whose operands form a specific chain.
+/// In SVE intrinsics, this typically looks like:
+//  --------------------------------------------
+//     mov z2.s, #3
+//   .LBB0_2:                     // %for.body
+//     index z3.s, w8, #1
+//     whilelt p0.s, w8, w0
+//     add w8, w8, w9
+//     sel z3.s, p0, z3.s, z1.s
+//     mul z3.s, p0/m, z3.s, z2.s // Expensive svmul !
+//  --------------------------------------------
+// This corresponds to the following MachineIR pattern:
+//   `z_result = MUL (SEL(pg, z_indices, 0), DUP(Multiplier))`
+//   where `z_indices` is defined by an `INDEX` instruction using a PHI-defined
+//   induction variable.
+//
+// =============================== AFTER ================================
+// The transformation is based on the distributive property:
+//   `(jp + k*IndexStep) * Multiplier = (jp*Multiplier) +
+//   k*(IndexStep*Multiplier)`
+//
+// The pass creates a new scalar induction variable `base_iv` to track the
+// `(jp * Multiplier)` term, and a constant vector `offset_vec` to represent
+// the `k * (IndexStep * Multiplier)` term. The expensive multiply in the loop
+// is replaced by a simple vector add, this typically looks like:
+//  --------------------------------------------
+//     mov w11, #3
+//     index z2.s, #0, #3         // Hoisted const index offset
+//     cntw x10, all, mul #3     // New IV step
+//     mul w2, wzr, w11          // New IV initial val
+// .LBB0_2:                      // %for.body
+//     mov z1.s, w2
+//     whilelt p0.s, w8, w0
+//     add w8, w8, w9
+//     add w2, w2, w10           // Update new IV
+//     add z1.s, z2.s, z1.s      // Replace svmul to svadd
+//  --------------------------------------------
+bool AArch64MIPeepholeOpt::simplifySVEIndexMultiply(MachineLoop *L) {
+  MachineBasicBlock *Preheader = L->getLoopPreheader();
+  if (!Preheader)
+    return false;
+
+  MachineBasicBlock *Header = L->getHeader();
+  MachineBasicBlock *Latch = L->getLoopLatch();
+  if (!Header || !Latch)
+    return false;
+
+  for (MachineBasicBlock *MBB : L->getBlocks()) {
+    for (MachineInstr &MI : *MBB) {
+      // --- Start of the SVE MUL_Z Pattern Match ---
+      if (MI.getOpcode() != AArch64::MUL_ZPmZ_S &&
+          MI.getOpcode() != AArch64::MUL_ZPmZ_D) {
+        continue;
+      }
+
+      LLVM_DEBUG(dbgs() << "Found candidate MUL: "; MI.dump());
+
+      // Set up the specific AArch64 opcodes based on whether we have a 32-bit
+      // or 64-bit operation.
+      bool is64Bit = (MI.getOpcode() == AArch64::MUL_ZPmZ_D);
+      unsigned SelOpc = is64Bit ? AArch64::SEL_ZPZZ_D : AArch64::SEL_ZPZZ_S;
+      unsigned IndexRiOpc = is64Bit ? AArch64::INDEX_RI_D : AArch64::INDEX_RI_S;
+      unsigned AddZzzOpc = is64Bit ? AArch64::ADD_ZZZ_D : AArch64::ADD_ZZZ_S;
+      unsigned DupZrOpc = is64Bit ? AArch64::DUP_ZR_D : AArch64::DUP_ZR_S;
+      unsigned IndexIiOpc = is64Bit ? AArch64::INDEX_II_D : AArch64::INDEX_II_S;
+      unsigned DupZiOpc = is64Bit ? AArch64::DUP_ZI_D : AArch64::DUP_ZI_S;
+      unsigned AddGprOpc = is64Bit ? AArch64::ADDXrr : AArch64::ADDWrr;
+      unsigned CntOpc = is64Bit ? AArch64::CNTD_XPiI : AArch64::CNTW_XPiI;
+      unsigned MaddGprOpc = is64Bit ? AArch64::MADDXrrr : AArch64::MADDWrrr;
+      unsigned MovImmOpc = is64Bit ? AArch64::MOVi64imm : AArch64::MOVi32imm;
+      unsigned ZeroReg = is64Bit ? AArch64::XZR : AArch64::WZR;
+
+      const TargetRegisterClass *GprRegClass =
+          is64Bit ? &AArch64::GPR64RegClass : &AArch64::GPR32RegClass;
+      const TargetRegisterClass *GprAllRegClass =
+          is64Bit ? &AArch64::GPR64allRegClass : &AArch64::GPR32allRegClass;
+      const TargetRegisterClass *ZprRegClass = &AArch64::ZPRRegClass;
+
+      // Deconstruct the multiply instruction to see if it matches our target
+      // pattern. The matched pattern is: MUL(SEL(Pred, INDEX(IV, IdxStep),
+      // Zero), DUP(Multiplier))
+      MachineInstr *SelMI = MRI->getVRegDef(MI.getOperand(2).getReg());
+      if (!SelMI || (SelMI->getOpcode() != SelOpc))
+        continue;
+
+      // The second operand of the select should be an index operation.
+      MachineInstr *IndexMI = MRI->getVRegDef(SelMI->getOperand(2).getReg());
+      if (!IndexMI)
+        continue;
+
+      Register IVReg;
+      int64_t IndexStep;
+      // Detect the two index generated ways
+      if (IndexMI->getOpcode() == IndexRiOpc) {
+        // Case 1: INDEX_RI (reg, imm)
+        IVReg = IndexMI->getOperand(1).getReg();
+        if (!IVReg.isVirtual())
+          continue;
+        static constexpr unsigned IndexStepOpIdx = 2;
+        IndexStep = IndexMI->getOperand(IndexStepOpIdx).getImm();
+      } else if (IndexMI->getOpcode() == AddZzzOpc) {
+        // Case 2: ADD(INDEX_II(0, imm), DUP(reg))
+        static constexpr unsigned AddOpIdx1 = 1, AddOpIdx2 = 2;
+        MachineInstr *AddOp1 = MRI->getVRegDef(IndexMI->getOperand(AddOpIdx1).getReg());
+        MachineInstr *AddOp2 = MRI->getVRegDef(IndexMI->getOperand(AddOpIdx2).getReg());
+        if (!AddOp1 || !AddOp2)
+          continue;
+
+        auto MatchIndexAddPattern = [&](MachineInstr *A, MachineInstr *B) {
+          return (A->getOpcode() == IndexIiOpc && B->getOpcode() == DupZrOpc &&
+                  A->getOperand(1).getImm() == 0);
+        };
+
+        if (MatchIndexAddPattern(AddOp1, AddOp2)) {
+          static constexpr unsigned IndexStepOpIdx = 2, IVRegOpIdx = 1;
+          IndexStep = AddOp1->getOperand(IndexStepOpIdx).getImm();
+          IVReg = AddOp2->getOperand(IVRegOpIdx).getReg();
+        } else if (MatchIndexAddPattern(AddOp2, AddOp1)) {
+          static constexpr unsigned IndexStepOpIdx = 1, IVRegOpIdx = 2;
+          IndexStep = AddOp2->getOperand(IndexStepOpIdx).getImm();
+          IVReg = AddOp1->getOperand(IVRegOpIdx).getReg();
+        } else {
+          continue;
+        }
+      } else {
+        continue;
+      }
+
+      // The third operand of the multiply should be a duplicated immediate
+      // value.
+      static constexpr unsigned MultiplierOpIdx = 3;
+      MachineInstr *MultiplierMI = MRI->getVRegDef(MI.getOperand(MultiplierOpIdx).getReg());
+      if (!MultiplierMI || !isLoopInvariant(MI.getOperand(MultiplierOpIdx).getReg(), L) ||
+          (MultiplierMI->getOpcode() != DupZiOpc))
+        continue;
+      int64_t MultiplierVal = MultiplierMI->getOperand(1).getImm();
+
+      // Check if the identified register is a basic loop induction variable.
+      MachineInstr *IVPhi = MRI->getVRegDef(IVReg);
+      if (!IVPhi || !IVPhi->isPHI() || IVPhi->getParent() != Header)
+        continue;
+
+      // Find the instruction that updates the induction variable (usually an
+      // ADD in the latch).
+      Register IVInitReg = Register(0), IVNextReg = Register(0);
+      static constexpr unsigned PhiOperandPairSize = 2;
+      for (unsigned i = 1; i < IVPhi->getNumOperands(); i += PhiOperandPairSize) {
+        if (IVPhi->getOperand(i + 1).getMBB() == Preheader) {
+          IVInitReg = IVPhi->getOperand(i).getReg();
+          break;
+        }
+      }
+      for (unsigned i = 1; i < IVPhi->getNumOperands(); i += PhiOperandPairSize) {
+        if (IVPhi->getOperand(i + 1).getMBB() == Latch) {
+          IVNextReg = IVPhi->getOperand(i).getReg();
+          break;
+        }
+      }
+      if (!IVInitReg || !IVNextReg)
+        continue;
+
+      // Get the definition of the next value of the induction variable.
+      MachineInstr *IVUpdateMI = MRI->getVRegDef(IVNextReg);
+      if (!IVUpdateMI)
+        continue;
+      if (IVUpdateMI->getOpcode() == AArch64::COPY)
+        IVUpdateMI = MRI->getVRegDef(IVUpdateMI->getOperand(1).getReg());
+      if (IVUpdateMI->getOpcode() != AddGprOpc)
+        continue;
+
+      // Determine the step of the induction variable.
+      Register IVStepReg;
+      static constexpr unsigned AddOp1Idx = 1, AddOp2Idx = 2;
+      if (IVUpdateMI->getOperand(AddOp1Idx).getReg() == IVReg)
+        IVStepReg = IVUpdateMI->getOperand(AddOp2Idx).getReg();
+      else if (IVUpdateMI->getOperand(AddOp2Idx).getReg() == IVReg)
+        IVStepReg = IVUpdateMI->getOperand(AddOp1Idx).getReg();
+      else
+        continue;
+
+      LLVM_DEBUG(
+          dbgs() << "Sve Mul Strength reduction pattern matched for MUL: ";
+          MI.dump(););
+
+      // --- Start of the Transformation ---
+      auto PreheaderInsertPt = Preheader->getFirstTerminator();
+      DebugLoc DL = MI.getDebugLoc();
+
+      // In the preheader, create a new offset = index(0, IndexStep *
+      // MultiplierVal)
+      Register OffsetVecReg = MRI->createVirtualRegister(ZprRegClass);
+      BuildMI(*MBB, MI.getIterator(), DL, TII->get(IndexIiOpc), OffsetVecReg)
+          .addImm(0)
+          .addImm(IndexStep * MultiplierVal)
+          .addReg(AArch64::VG, RegState::Implicit);
+
+      // In the preheader, calculate the new step value for our new induction
+      // variable. This is: NewStep = IVStep * MultiplierVal
+      MachineInstr *IVStepDef = MRI->getVRegDef(IVStepReg);
+      if (IVStepDef->getOpcode() == AArch64::COPY)
+        IVStepDef = MRI->getVRegDef(IVStepDef->getOperand(1).getReg());
+
+      // Check if the original IV step is the vector length (vl).
+      static constexpr unsigned CntAllPattern = 31;
+      bool isStepVL =
+          IVStepDef && IVStepDef->getOpcode() == CntOpc &&
+          IVStepDef->getOperand(1).getImm() == CntAllPattern && // Pattern for 'all'
+          IVStepDef->getOperand(2).getImm() == 1;    // Multiplier of 1
+      Register NewStepReg = MRI->createVirtualRegister(GprRegClass);
+
+      // If the step is 'vl' and the multiplier is small, we can use a more
+      // efficient 'cnt' instruction.
+      static constexpr unsigned MaxMultiplier = 15;
+      if (isStepVL && MultiplierVal <= MaxMultiplier) {
+        Register NewStep64Reg =
+            MRI->createVirtualRegister(&AArch64::GPR64RegClass);
+        LLVM_DEBUG(dbgs() << "IV Step is vl, using CNT[W/D] for new step.\n");
+        BuildMI(*Preheader, PreheaderInsertPt, DL, TII->get(CntOpc),
+                NewStep64Reg)
+            .addImm(CntAllPattern) // Pattern 'all' for vl
+            .addImm(MultiplierVal)
+            .addReg(AArch64::VG, RegState::Implicit);
+        if (!is64Bit) {
+          BuildMI(*Preheader, PreheaderInsertPt, DL, TII->get(AArch64::COPY),
+                  NewStepReg)
+              .addReg(NewStep64Reg, 0, AArch64::sub_32);
+        }
+      } else {
+        // Otherwise, we use a general multiplication.
+        LLVM_DEBUG(
+            dbgs() << "IV Step is not vl, using generic MUL for new step.\n");
+        Register MultReg = MRI->createVirtualRegister(GprRegClass);
+        BuildMI(*Preheader, PreheaderInsertPt, DL, TII->get(MovImmOpc), MultReg)
+            .addImm(MultiplierVal);
+        BuildMI(*Preheader, PreheaderInsertPt, DL, TII->get(MaddGprOpc),
+                NewStepReg)
+            .addReg(IVStepReg)
+            .addReg(MultReg)
+            .addReg(ZeroReg);
+      }
+
+      // In the preheader, calculate the initial value for the new base IV.
+      // BaseIVInit = IVInit * MultiplierVal
+      Register BaseIVInitReg = MRI->createVirtualRegister(GprAllRegClass);
+      Register MultRegForInit = MRI->createVirtualRegister(GprRegClass);
+      BuildMI(*Preheader, PreheaderInsertPt, DL, TII->get(MovImmOpc),
+              MultRegForInit)
+          .addImm(MultiplierVal);
+      BuildMI(*Preheader, PreheaderInsertPt, DL, TII->get(MaddGprOpc),
+              BaseIVInitReg)
+          .addReg(IVInitReg)
+          .addReg(MultRegForInit)
+          .addReg(ZeroReg);
+
+      // Create a new PHI node in the header
+      // for our new base induction variable.
+      Register BaseIVReg = MRI->createVirtualRegister(GprAllRegClass);
+      Register NextBaseIVReg = MRI->createVirtualRegister(GprAllRegClass);
+      auto BaseIVPhi = BuildMI(*Header, Header->getFirstNonPHI(), DL,
+                               TII->get(AArch64::PHI), BaseIVReg);
+      BaseIVPhi.addReg(BaseIVInitReg).addMBB(Preheader);
+
+      // In the loop latch, update our new base induction variable
+      // by adding the new step
+      BuildMI(*Latch, Latch->getFirstTerminator(), DL, TII->get(AddGprOpc),
+              NextBaseIVReg)
+          .addReg(BaseIVReg)
+          .addReg(NewStepReg);
+
+      BaseIVPhi.addReg(NextBaseIVReg).addMBB(Latch);
+
+      // Now, replace the original multiply operation in the loop body
+      // with a new add operation
+      auto BodyInsertPt = MI.getIterator();
+
+      // Broadcast the new base IV into a vector register.
+      Register BaseVecReg = MRI->createVirtualRegister(ZprRegClass);
+      BuildMI(*MI.getParent(), BodyInsertPt, DL, TII->get(DupZrOpc), BaseVecReg)
+          .addReg(BaseIVReg);
+
+      // Perform the vector addition: NewResult = OffsetVector + BaseVector
+      Register AddTmpReg = MRI->createVirtualRegister(ZprRegClass);
+      BuildMI(*MI.getParent(), BodyInsertPt, DL, TII->get(AddZzzOpc), AddTmpReg)
+          .addReg(OffsetVecReg)
+          .addReg(BaseVecReg);
+
+      // Replace all uses of the original multiplication result
+      // with our new addition result
+      MRI->replaceRegWith(MI.getOperand(0).getReg(), AddTmpReg);
+
+      // Clean up the now-dead instructions from the old calculation
+      MI.eraseFromParent();
+      if (MRI->use_empty(SelMI->getOperand(0).getReg()))
+        SelMI->eraseFromParent();
+      if (MRI->use_empty(IndexMI->getOperand(0).getReg())) {
+        if (IndexMI->getOpcode() == AddZzzOpc) {
+          MachineInstr *Op1 = MRI->getVRegDef(IndexMI->getOperand(1).getReg());
+          MachineInstr *Op2 = MRI->getVRegDef(IndexMI->getOperand(2).getReg());
+          if (MRI->use_empty(Op1->getOperand(0).getReg()))
+            Op1->eraseFromParent();
+          if (MRI->use_empty(Op2->getOperand(0).getReg()))
+            Op2->eraseFromParent();
+        }
+        IndexMI->eraseFromParent();
+      }
+      if (MRI->use_empty(MultiplierMI->getOperand(0).getReg()))
+        MultiplierMI->eraseFromParent();
+
+      LLVM_DEBUG(dbgs() << "Successfully applied strength reduction.\n");
+
+      return true;
+    }
+  }
+  return false;
+}
+
 bool AArch64MIPeepholeOpt::runOnMachineFunction(MachineFunction &MF) {
   if (skipFunction(MF.getFunction()))
     return false;
@@ -752,6 +1677,25 @@ bool AArch64MIPeepholeOpt::runOnMachineFunction(MachineFunction &MF) {
     }
   }
 
+  if (EnableSVELoopAddressChainOpt &&
+      MF.getSubtarget<AArch64Subtarget>().hasSVE()) {
+    for (MachineLoop *L : *MLI) {
+      for (MachineLoop *SubL : *L) {
+        Changed |= processSVELoopAddressing(SubL);
+      }
+      Changed |= processSVELoopAddressing(L);
+    }
+  }
+
+  if (EnableSVEIndexMultiplyOpt &&
+      MF.getSubtarget<AArch64Subtarget>().hasSVE()) {
+    for (MachineLoop *L : *MLI) {
+      for (MachineLoop *SubL : *L) {
+        Changed |= simplifySVEIndexMultiply(SubL);
+      }
+      Changed |= simplifySVEIndexMultiply(L);
+    }
+  }
   return Changed;
 }
 
