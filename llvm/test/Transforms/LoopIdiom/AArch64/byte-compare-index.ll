@@ -1019,7 +1019,7 @@ define void @compare_bytes_cleanup_block(ptr %src1, ptr %src2) {
 ; LOOP-DEL-NEXT:    [[TMP5:%.*]] = icmp ne i8 [[TMP2]], [[TMP4]]
 ; LOOP-DEL-NEXT:    [[TMP6]] = add i32 [[MISMATCH_INDEX]], 1
 ; LOOP-DEL-NEXT:    [[TMP7:%.*]] = icmp eq i32 [[TMP6]], 0
-; LOOP-DEL-NEXT:    [[OR_COND:%.*]] = select i1 [[TMP5]], i1 true, i1 [[TMP7]]
+; LOOP-DEL-NEXT:    [[OR_COND:%.*]] = or i1 [[TMP5]], [[TMP7]]
 ; LOOP-DEL-NEXT:    br i1 [[OR_COND]], label [[COMMON_RET:%.*]], label [[MISMATCH_LOOP]]
 ; LOOP-DEL:       common.ret:
 ; LOOP-DEL-NEXT:    ret void
