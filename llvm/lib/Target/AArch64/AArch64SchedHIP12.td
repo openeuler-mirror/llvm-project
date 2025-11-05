@@ -216,8 +216,12 @@ def : InstRW<[HIP12Write_1c_1B_1ALU14], (instrs BLR)>;
 //===----------------------------------------------------------------------===//
 
 // ALU, basic
-// instrs ADD, ADC, AND, BIC, EON, EOR, ORN, ORR, SUB, SBC
+// instrs ADD, AND, BIC, EON, EOR, ORN, ORR, SUB
 def : SchedAlias<WriteI, HIP12Write_1c_1ALU>;
+
+// ALU, basic
+// instr ADC, SBC
+def : InstRW<[HIP12Write_1c_1ALU14], (instregex "^(ADC|SBC)[WX]r$")>;
 
 // ALU, basic, flagset
 // instrs ADDS, ADCS, ANDS, BICS, SUBS, SBCS
@@ -826,12 +830,12 @@ def : InstRW<[HIP12Write_6c_2V], (instregex "^[SU](MAX|MIN)Vv4i32v$")>;
 
 // ASIMD max/min, reduce, H form
 // instrs SMAXV, SMINV, UMAXV, UMINV
-def : InstRW<[HIP12Write_6c_2V], (instregex "^[SU](MAX|MIN)Vv4i16v$",
+def : InstRW<[HIP12Write_9c_3V], (instregex "^[SU](MAX|MIN)Vv4i16v$",
                                                 "^[SU](MAX|MIN)Vv8i16v$")>;
 
 // ASIMD max/min, reduce, B form
 // instrs SMAXV, SMINV, UMAXV, UMINV
-def : InstRW<[HIP12Write_6c_2V], (instregex "^[SU](MAX|MIN)Vv8i8v$",
+def : InstRW<[HIP12Write_12c_4V], (instregex "^[SU](MAX|MIN)Vv8i8v$",
                                                 "^[SU](MAX|MIN)Vv16i8v$")>;
 
 // ASIMD multiply, B/H/S form
@@ -1013,6 +1017,12 @@ def : InstRW<[HIP12Write_7c_2V], (instrs FSQRTv4f32)>;
 // ASIMD FP square root, Q-form, F64
 // instrs FSQRT
 def : InstRW<[HIP12Write_9c_2V], (instrs FSQRTv2f64)>;
+
+// ASIMD FP complex multiply-add
+def : InstRW<[HIP12Write_4c_1V], (instregex "^FCMLAv")>;
+ 
+// ASIMD FP complex add
+def : InstRW<[HIP12Write_3c_1V], (instregex "^FCADDv")>;
 
 // ASIMD FP max/min
 // instrs FMAX, FMAXNM, FMIN, FMINNM,
@@ -2623,7 +2633,7 @@ def : InstRW<[HIP12Write_2c_2V], (instrs RDFFRS_PPz)>;
 
 // Write to first fault register
 // instrs WRFFR
-def : InstRW<[HIP12Write_9c_36V_18ALU25], (instrs SETFFR, WRFFR)>;
+def : InstRW<[HIP12Write_10c_40V_20ALU25], (instrs SETFFR, WRFFR)>;
 
 //===----------------------------------------------------------------------===//
 // Prefetch
