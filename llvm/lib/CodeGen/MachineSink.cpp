@@ -106,6 +106,8 @@ static cl::opt<unsigned> SinkIntoCycleLimit(
     cl::desc("The maximum number of instructions considered for cycle sinking."),
     cl::init(50), cl::Hidden);
 
+extern cl::opt<bool> DoNotSinkPtrAddPostLoad;
+
 STATISTIC(NumSunk,      "Number of machine instructions sunk");
 STATISTIC(NumCycleSunk,  "Number of machine instructions sunk into a cycle");
 STATISTIC(NumSplit,     "Number of critical edges split");
@@ -237,6 +239,9 @@ namespace {
     void FindCycleSinkCandidates(MachineCycle *Cycle, MachineBasicBlock *BB,
                                  SmallVectorImpl<MachineInstr *> &Candidates);
     bool SinkIntoCycle(MachineCycle *Cycle, MachineInstr &I);
+
+    bool isProfitablePtrAddPostLoad(Register Reg, MachineInstr &MI,
+                                    MachineBasicBlock *MBB);
 
     bool isProfitableToSinkTo(Register Reg, MachineInstr &MI,
                               MachineBasicBlock *MBB,
@@ -772,6 +777,45 @@ MachineSinking::getBBRegisterPressure(MachineBasicBlock &MBB) {
   return It.first->second;
 }
 
+/// isProfitablePtrAddPostLoad - Return true if MI is not a post load PtrAdd.
+/// When a pointer post-increment after loads to it in a loop. It may not be
+/// profitable to sink the PtrAdd, which makes the distance between the load to
+/// it closer and causes stall.
+bool MachineSinking::isProfitablePtrAddPostLoad(Register Reg, MachineInstr &MI,
+                                                MachineBasicBlock *MBB) {
+  // Check if MI is inside a loop.
+  MachineCycle *MCycle = CI->getCycle(MBB);
+  if (!MCycle)
+    return true;
+  // Check if MI is a PtrAdd Instruction
+  const MCInstrDesc &InstrDesc = MI.getDesc();
+  if (!InstrDesc.isAsCheapAsAMove() && !InstrDesc.isAdd())
+    return true;
+
+  // Collect Phi nodes take this PtrAdd as their incoming values.
+  SmallDenseSet<Register, 2> Phis;
+  for (MachineInstr &UseInst : MRI->use_nodbg_instructions(Reg))
+    if (UseInst.getOpcode() == TargetOpcode::COPY)
+      for (MachineInstr &UseInst2 :
+           MRI->use_nodbg_instructions(UseInst.getOperand(0).getReg()))
+        if (UseInst2.isPHI())
+          Phis.insert(UseInst2.getOperand(0).getReg());
+  if (Phis.empty())
+    return true;
+
+  // Check if any operand of MI takes value from Phi nodes and used by loads.
+  for (MachineOperand &MO : MI.all_uses())
+    for (MachineInstr &UseInst : MRI->use_nodbg_instructions(MO.getReg()))
+      if (UseInst.mayLoad() && CI->getCycle(UseInst.getParent()))
+        for (MachineOperand &MO2 : UseInst.all_uses())
+          if (Phis.count(MO2.getReg())) {
+            LLVM_DEBUG(dbgs() << "PtrAdd post load, not profitable.\n");
+            return false;
+          }
+
+  return true;
+}
+
 /// isProfitableToSinkTo - Return true if it is profitable to sink MI.
 bool MachineSinking::isProfitableToSinkTo(Register Reg, MachineInstr &MI,
                                           MachineBasicBlock *MBB,
@@ -781,6 +825,10 @@ bool MachineSinking::isProfitableToSinkTo(Register Reg, MachineInstr &MI,
 
   if (MBB == SuccToSinkTo)
     return false;
+
+  if (DoNotSinkPtrAddPostLoad)
+    if (!isProfitablePtrAddPostLoad(Reg, MI, MBB))
+      return false;
 
   // It is profitable if SuccToSinkTo does not post dominate current block.
   if (!PDT->dominates(SuccToSinkTo, MBB))
