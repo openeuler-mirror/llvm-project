@@ -13043,6 +13043,16 @@ Value *CodeGenFunction::EmitAArch64BuiltinExpr(unsigned BuiltinID,
   case NEON::BI__builtin_neon_vdotq_f32_mf8_fpm:
     return EmitFP8NeonFDOTCall(Intrinsic::aarch64_neon_fp8_fdot4, false,
                                FloatTy, Ops, E, "fdot4");
+  case NEON::BI__builtin_neon_vmmlaq_f16_mf8_fpm:
+    return EmitFP8NeonCall(Intrinsic::aarch64_neon_fmmla,
+                           {llvm::FixedVectorType::get(HalfTy, 8),
+                            llvm::FixedVectorType::get(Int8Ty, 16)},
+                           Ops, E, "fmmla");
+  case NEON::BI__builtin_neon_vmmlaq_f32_mf8_fpm:
+    return EmitFP8NeonCall(Intrinsic::aarch64_neon_fmmla,
+                           {llvm::FixedVectorType::get(FloatTy, 4),
+                            llvm::FixedVectorType::get(Int8Ty, 16)},
+                           Ops, E, "fmmla");
   case NEON::BI__builtin_neon_vdot_lane_f32_mf8_fpm:
   case NEON::BI__builtin_neon_vdotq_lane_f32_mf8_fpm:
     ExtendLaneArg = true;
