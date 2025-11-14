@@ -12,6 +12,7 @@ Clang-Tidy Checks
    android/*
    boost/*
    bugprone/*
+   BSCompatibility/*
    cert/*
    clang-analyzer/*
    concurrency/*
@@ -75,6 +76,13 @@ Clang-Tidy Checks
    :doc:`android-cloexec-pipe2 <android/cloexec-pipe2>`, "Yes"
    :doc:`android-cloexec-socket <android/cloexec-socket>`, "Yes"
    :doc:`android-comparison-in-temp-failure-retry <android/comparison-in-temp-failure-retry>`,
+   :doc:`BSCompatibility-dependent-template-keyword <BSCompatibility/dependent-template-keyword>`, "Yes"
+   :doc:`BSCompatibility-forbidden-builtin-exit <BSCompatibility/forbidden-builtin-exit>`, "Yes"
+   :doc:`BSCompatibility-move-explicit-instantiation-after-defs <BSCompatibility/move-explicit-instantiation-after-defs>`, "Yes"
+   :doc:`BSCompatibility-non-void-function-return-void <BSCompatibility/non-void-function-return-void.html>`_, "Yes"
+   :doc:`BSCompatibility-redundant-default-template-arg <BSCompatibility/redundant-default-template-arg>`, "Yes"
+   :doc:`BSCompatibility-thread-storage-unify <BSCompatibility/thread-storage-unify>`, "Yes"
+   :doc:`BSCompatibility-unsequenced-function-parameter <BSCompatibility/unsequenced-function-parameter>`, "Yes"
    :doc:`boost-use-ranges <boost/use-ranges>`, "Yes"
    :doc:`boost-use-to-string <boost/use-to-string>`, "Yes"
    :doc:`bugprone-argument-comment <bugprone/argument-comment>`, "Yes"

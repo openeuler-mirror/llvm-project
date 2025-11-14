@@ -120,7 +120,12 @@ public:
   StringRef getFilePath() const { return FilePath; }
   unsigned getOffset() const { return ReplacementRange.getOffset(); }
   unsigned getLength() const { return ReplacementRange.getLength(); }
+  unsigned getFileLine() const { return FileLine; }
+  unsigned getFileCol() const { return FileCol; }
   StringRef getReplacementText() const { return ReplacementText; }
+  StringRef getOriginalText() const { return OriginalText; }
+  StringRef getWholeLineText() const { return WholeLineText; }
+  bool isDetail() const { return Detail;}
   /// @}
 
   /// Applies the replacement on the Rewriter.
@@ -128,6 +133,8 @@ public:
 
   /// Returns a human readable string representation.
   std::string toString() const;
+
+  void setDetail(bool flag) { Detail = flag; }
 
 private:
   void setFromSourceLocation(const SourceManager &Sources, SourceLocation Start,
@@ -139,7 +146,14 @@ private:
 
   std::string FilePath;
   Range ReplacementRange;
+  unsigned int FileLine;
+  unsigned int FileCol;
   std::string ReplacementText;
+  std::string OriginalText;
+  std::string WholeLineText;
+
+  /// If output with details.
+  bool Detail = false;
 };
 
 enum class replacement_error {

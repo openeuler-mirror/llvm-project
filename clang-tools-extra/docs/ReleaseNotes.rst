@@ -172,6 +172,43 @@ Improvements to clang-tidy
 New checks
 ^^^^^^^^^^
 
+- New :doc:`BSCompatibility-dependent-template-keyword
+  <clang-tidy/checks/BSCompatibility/dependent-template-keyword>` check.
+
+  Detect if template is missing when calling a dependent template function
+  and add template keyword if so.
+
+- New :doc:`BSCompatibility-forbidden-builtin-exit
+  <clang-tidy/checks/BSCompatibility/forbidden-builtin-exit>` check.
+
+  Detect the use of __builtin_exit and propose warning.
+
+- New :doc:`BSCompatibility-move-explicit-instantiation-after-defs
+  <clang-tidy/checks/BSCompatibility/move-explicit-instantiation-after-defs>` check.
+
+  Detect the explicit instantiation before any defs and move it after the last def.
+
+- New :doc:`BSCompatibility-non-void-function-return-void
+  <clang-tidy/checks/BSCompatibility/non-void-function-return-void>` check.
+
+  Check if a non-void function hasn't return statement.
+
+- New :doc:`BSCompatibility-redundant-default-template-arg
+  <clang-tidy/checks/BSCompatibility/redundant-default-template-arg>` check.
+
+  Detect redundant default template arguments for template function.
+
+- New :doc:`BSCompatibility-thread-storage-unify
+  <clang-tidy/checks/BSCompatibility/thread-storage-unify>` check.
+
+  detect the mixed use of __thread and thread_local.
+
+- New :doc:`BSCompatibility-unsequenced-function-parameter
+  <clang-tidy/checks/BSCompatibility/unsequenced-function-parameter>` check.
+
+  Detect multiple function parameters and provides suggestions for extracting
+  parameters from the function call.
+
 - New :doc:`boost-use-ranges
   <clang-tidy/checks/boost/use-ranges>` check.
 
