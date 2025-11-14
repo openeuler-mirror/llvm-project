@@ -41,6 +41,9 @@ static cl::opt<unsigned> PredictableBranchThreshold(
     "predictable-branch-threshold", cl::init(99), cl::Hidden,
     cl::desc(
         "Use this to override the target's predictable branch threshold (%)."));
+static cl::opt<unsigned> MinPageSize(
+    "min-page-size", cl::init(0), cl::Hidden,
+    cl::desc("Use this to override the target's minimum page size."));
 
 namespace {
 /// No-op implementation of the TTI interface using the utility base
@@ -744,6 +747,11 @@ TargetTransformInfo::getCacheSize(CacheLevel Level) const {
 std::optional<unsigned>
 TargetTransformInfo::getCacheAssociativity(CacheLevel Level) const {
   return TTIImpl->getCacheAssociativity(Level);
+}
+
+std::optional<unsigned> TargetTransformInfo::getMinPageSize() const {
+  return MinPageSize.getNumOccurrences() > 0 ? MinPageSize
+                                             : TTIImpl->getMinPageSize();
 }
 
 unsigned TargetTransformInfo::getPrefetchDistance() const {

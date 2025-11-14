@@ -597,6 +597,9 @@ class SCEVUnknown final : public SCEV, private CallbackVH {
 public:
   Value *getValue() const { return getValPtr(); }
 
+  bool isAlignOf(Type *&AllocTy) const;
+  bool isOffsetOf(Type *&STy, Constant *&FieldNo) const;
+
   Type *getType() const { return getValPtr()->getType(); }
 
   /// Methods for support type inquiry through isa, cast, and dyn_cast:
