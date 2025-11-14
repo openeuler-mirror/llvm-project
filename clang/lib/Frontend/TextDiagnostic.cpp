@@ -997,6 +997,7 @@ static std::string buildFixItInsertionLine(FileID FID,
                                            const SourceManager &SM,
                                            const DiagnosticOptions *DiagOpts) {
   std::string FixItInsertionLine;
+  std::string FixItInsertionMultiLine;
   if (Hints.empty() || !DiagOpts->ShowFixits)
     return FixItInsertionLine;
   unsigned PrevHintEndCol = 0;
@@ -1006,12 +1007,16 @@ static std::string buildFixItInsertionLine(FileID FID,
       continue;
 
     // We have an insertion hint. Determine whether the inserted
-    // code contains no newlines and is on the same line as the caret.
+    // code is on the same line as the caret.
     std::pair<FileID, unsigned> HintLocInfo =
         SM.getDecomposedExpansionLoc(H.RemoveRange.getBegin());
     if (FID == HintLocInfo.first &&
-        LineNo == SM.getLineNumber(HintLocInfo.first, HintLocInfo.second) &&
-        StringRef(H.CodeToInsert).find_first_of("\n\r") == StringRef::npos) {
+        LineNo == SM.getLineNumber(HintLocInfo.first, HintLocInfo.second)) {
+      // If contains newlines, insert to the end.
+      if (StringRef(H.CodeToInsert).find_first_of("\n\r") != StringRef::npos) {
+        llvm::copy(H.CodeToInsert, std::back_inserter(FixItInsertionMultiLine));
+        continue;
+      }
       // Insert the new code into the line just below the code
       // that the user wrote.
       // Note: When modifying this function, be very careful about what is a
@@ -1050,6 +1055,9 @@ static std::string buildFixItInsertionLine(FileID FID,
   }
 
   expandTabs(FixItInsertionLine, DiagOpts->TabStop);
+
+  if (!FixItInsertionMultiLine.empty())
+    FixItInsertionLine += '\n' + FixItInsertionMultiLine;
 
   return FixItInsertionLine;
 }
@@ -1259,6 +1267,11 @@ void TextDiagnostic::emitSnippetAndCaret(
         OS.resetColor();
     }
 
+    auto split = StringRef(FixItInsertionLine).find_first_of("\n\r");
+    std::string FixItInsertionMultiLine =
+        FixItInsertionLine.substr(split + 1, FixItInsertionLine.size());
+    FixItInsertionLine = FixItInsertionLine.substr(0, split);
+
     if (!FixItInsertionLine.empty()) {
       indentForLineNumbers();
       if (DiagOpts->ShowColors)
@@ -1269,6 +1282,26 @@ void TextDiagnostic::emitSnippetAndCaret(
       OS << FixItInsertionLine << '\n';
       if (DiagOpts->ShowColors)
         OS.resetColor();
+    }
+
+    if (split != StringRef::npos) {
+      unsigned start = 0;
+      auto end = StringRef(FixItInsertionMultiLine).find_first_of("\n\r");
+      while (end != StringRef::npos) {
+        indentForLineNumbers();
+        if (DiagOpts->ShowColors)
+          // Print fixit line in color
+          OS.changeColor(fixitColor, false);
+        if (DiagOpts->ShowSourceRanges)
+          OS << ' ';
+        OS << FixItInsertionMultiLine.substr(start, end - start + 1);
+        start = end + 1;
+        end = StringRef(FixItInsertionMultiLine).find_first_of("\n\r", start);
+        if (DiagOpts->ShowColors)
+          OS.resetColor();
+      }
+      indentForLineNumbers();
+      OS << '\n';
     }
   }
 

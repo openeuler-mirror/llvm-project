@@ -34,7 +34,15 @@ struct FileByteRange {
 
   std::string FilePath;
   unsigned FileOffset;
+  unsigned FileLine;
+  unsigned FileCol;
   unsigned Length;
+  std::string Text;
+  std::string WholeText;
+  unsigned MainLine;
+
+  /// If output with details.
+  bool isDetail = false;
 };
 
 /// Represents the diagnostic message with the error message associated
@@ -54,6 +62,10 @@ struct DiagnosticMessage {
   std::string Message;
   std::string FilePath;
   unsigned FileOffset;
+  unsigned FileLine;
+  unsigned FileCol;
+  std::string WholeText;
+  unsigned MainLine;
 
   /// Fixes for this diagnostic, grouped by file path.
   llvm::StringMap<Replacements> Fix;
@@ -61,6 +73,9 @@ struct DiagnosticMessage {
   /// Extra source ranges associated with the note, in addition to the location
   /// of the Message itself.
   llvm::SmallVector<FileByteRange, 1> Ranges;
+
+  /// If output with details.
+  bool isDetail = false;
 };
 
 /// Represents the diagnostic with the level of severity and possible

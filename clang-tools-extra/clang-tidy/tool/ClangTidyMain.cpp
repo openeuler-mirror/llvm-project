@@ -271,6 +271,12 @@ code with clang-apply-replacements.
                                         cl::value_desc("filename"),
                                         cl::cat(ClangTidyCategory));
 
+static cl::opt<std::string> ExportDetails("export-details", desc(R"(
+YAML file to store the details of errors.
+)"),
+                                        cl::value_desc("filename"),
+                                        cl::cat(ClangTidyCategory));
+
 static cl::opt<bool> Quiet("quiet", desc(R"(
 Run clang-tidy in quiet mode. This suppresses
 printing statistics about ignored warnings and
@@ -687,6 +693,16 @@ int clangTidyMain(int argc, const char **argv) {
       return 1;
     }
     exportReplacements(FilePath.str(), Errors, OS);
+  }
+
+  if (!ExportDetails.empty() && !Errors.empty()) {
+    std::error_code EC;
+    llvm::raw_fd_ostream OS(ExportDetails, EC, llvm::sys::fs::OF_None);
+    if (EC) {
+      llvm::errs() << "Error opening output file: " << EC.message() << '\n';
+      return 1;
+    }
+    exportDetails(FilePath.str(), Errors, OS);
   }
 
   if (!Quiet) {

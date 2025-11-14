@@ -119,6 +119,12 @@ void exportReplacements(StringRef MainFilePath,
                         const std::vector<ClangTidyError> &Errors,
                         raw_ostream &OS);
 
+/// Serializes Details into YAML and writes them to the specified
+/// output stream.
+void exportDetails(StringRef MainFilePath,
+                        const std::vector<ClangTidyError> &Errors,
+                        raw_ostream &OS);
+
 } // end namespace tidy
 } // end namespace clang
 

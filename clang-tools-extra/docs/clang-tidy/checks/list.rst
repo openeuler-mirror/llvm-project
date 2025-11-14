@@ -12,6 +12,7 @@ Clang-Tidy Checks
    android/*
    boost/*
    bugprone/*
+   BSCompatibility/*
    cert/*
    clang-analyzer/*
    concurrency/*
@@ -75,6 +76,13 @@ Clang-Tidy Checks
    `android-cloexec-pipe2 <android/cloexec-pipe2.html>`_, "Yes"
    `android-cloexec-socket <android/cloexec-socket.html>`_, "Yes"
    `android-comparison-in-temp-failure-retry <android/comparison-in-temp-failure-retry.html>`_,
+   `BSCompatibility-dependent-template-keyword <BSCompatibility/dependent-template-keyword>`, "Yes"
+   `BSCompatibility-forbidden-builtin-exit <BSCompatibility/forbidden-builtin-exit>`, "Yes"
+   `BSCompatibility-move-explicit-instantiation-after-defs <BSCompatibility/move-explicit-instantiation-after-defs>`, "Yes"
+   `BSCompatibility-non-void-function-return-void <BSCompatibility/non-void-function-return-void.html>`_, "Yes"
+   `BSCompatibility-redundant-default-template-arg <BSCompatibility/redundant-default-template-arg>`, "Yes"
+   `BSCompatibility-thread-storage-unify <BSCompatibility/thread-storage-unify>`, "Yes"
+   `BSCompatibility-unsequenced-function-parameter <BSCompatibility/unsequenced-function-parameter>`, "Yes"
    `boost-use-to-string <boost/use-to-string.html>`_, "Yes"
    `bugprone-argument-comment <bugprone/argument-comment.html>`_, "Yes"
    `bugprone-assert-side-effect <bugprone/assert-side-effect.html>`_,
