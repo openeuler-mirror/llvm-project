@@ -196,6 +196,10 @@ static cl::opt<bool> AllowDropSolutionIfLessProfitable(
     "lsr-drop-solution", cl::Hidden, cl::init(false),
     cl::desc("Attempt to drop solution if it is less profitable"));
 
+cl::opt<bool> DoNotSinkPtrAddPostLoad(
+    "no-sink-ptradd-post-load", cl::Hidden, cl::init(false),
+    cl::desc("Avoid sinking post load PtrAdds to the loop latches"));
+
 STATISTIC(NumTermFold,
           "Number of terminating condition fold recognized and performed");
 
@@ -2873,6 +2877,35 @@ bool IVChain::isProfitableIncrement(const SCEV *OperExpr,
   return !isHighCostExpansion(IncExpr, Processed, SE);
 }
 
+/// Return true if the IVChain is incomplete or there is no relevant load
+/// instruction exist before the IVOperand of the tail Phi.
+/// When a pointer post-increment after loads to it in a loop. It may not be
+/// profitable to sink it to the latch of the loop even with register saving,
+/// which makes the distance between the PtrAdd closer to the load instructions
+/// and causes stall.
+static bool isProfitablePtrAddPostLoad(IVChain &Chain, DominatorTree &DT) {
+  // Only care about complete chains which GenerateIVChain may place the PtrAdd
+  // of its Phi to the latch of the loop.
+  IVInc &Tail = Chain.Incs.back();
+  if (!isa<PHINode>(Tail.UserInst))
+    return true;
+
+  if (Tail.IncExpr->isZero())
+    return true;
+
+  GetElementPtrInst *PtrAdd = dyn_cast<GetElementPtrInst>(Tail.IVOperand);
+  if (!PtrAdd)
+    return true;
+
+  unsigned NumLoadPrePtrAdd = 0;
+  for (const IVInc &Inc : Chain.Incs)
+    if (isa<LoadInst>(Inc.UserInst) && DT.dominates(Inc.UserInst, PtrAdd))
+      ++NumLoadPrePtrAdd;
+  LLVM_DEBUG(dbgs() << "Chain: " << *Chain.Incs[0].UserInst
+                    << " NumLoadPrePtrAdd: " << NumLoadPrePtrAdd << "\n");
+  return NumLoadPrePtrAdd == 0;
+}
+
 /// Return true if the number of registers needed for the chain is estimated to
 /// be less than the number required for the individual IV users. First prohibit
 /// any IV users that keep the IV live across increments (the Users set should
@@ -2886,7 +2919,8 @@ bool IVChain::isProfitableIncrement(const SCEV *OperExpr,
 static bool isProfitableChain(IVChain &Chain,
                               SmallPtrSetImpl<Instruction *> &Users,
                               ScalarEvolution &SE,
-                              const TargetTransformInfo &TTI) {
+                              const TargetTransformInfo &TTI,
+                              DominatorTree &DT) {
   if (StressIVChain)
     return true;
 
@@ -2918,6 +2952,10 @@ static bool isProfitableChain(IVChain &Chain,
 
   if (TTI.isProfitableLSRChainElement(Chain.Incs[0].UserInst))
     return true;
+
+  if (DoNotSinkPtrAddPostLoad)
+    if (!isProfitablePtrAddPostLoad(Chain, DT))
+      return false;
 
   for (const IVInc &Inc : Chain) {
     if (TTI.isProfitableLSRChainElement(Inc.UserInst))
@@ -3152,7 +3190,7 @@ void LSRInstance::CollectChains() {
   for (unsigned UsersIdx = 0, NChains = IVChainVec.size();
        UsersIdx < NChains; ++UsersIdx) {
     if (!isProfitableChain(IVChainVec[UsersIdx],
-                           ChainUsersVec[UsersIdx].FarUsers, SE, TTI))
+                           ChainUsersVec[UsersIdx].FarUsers, SE, TTI, DT))
       continue;
     // Preserve the chain at UsesIdx.
     if (ChainIdx != UsersIdx)
