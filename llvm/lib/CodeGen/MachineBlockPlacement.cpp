@@ -2216,13 +2216,6 @@ MachineBlockPlacement::findBestLoopExit(const MachineLoop &L,
         continue;
       if (Succ == MBB)
         continue;
-      BlockChain &SuccChain = *BlockToChain[Succ];
-      // Don't split chains, either this chain or the successor's chain.
-      if (&Chain == &SuccChain) {
-        LLVM_DEBUG(dbgs() << "    exiting: " << getBlockName(MBB) << " -> "
-                          << getBlockName(Succ) << " (chain conflict)\n");
-        continue;
-      }
 
       auto SuccProb = MBPI->getEdgeProbability(MBB, Succ);
       if (LoopBlockSet.count(Succ)) {
@@ -2322,12 +2315,29 @@ MachineBlockPlacement::hasViableTopFallthrough(
   return false;
 }
 
-/// Attempt to rotate an exiting block to the bottom of the loop.
-///
-/// Once we have built a chain, try to rotate it to line up the hot exit block
-/// with fallthrough out of the loop if doing so doesn't introduce unnecessary
-/// branches. For example, if the loop has fallthrough into its header and out
-/// of its bottom already, don't rotate it.
+// Compute the fallthrough gains via rotating loop, and rotate only when gains > 0
+//
+// In following diagram, B0,B1...,Bn is a previously built loop chain,
+// Bk is the new bottom found by findBestLoopExit, edges markd as "-" are reduced fallthrough,
+// edges marked as "+" are increased fallthrough, this function computes
+//
+//    SUM(increased fallthrough) - SUM(decreased fallthrough)
+//
+//            |
+//            | -
+//            V
+//      --->  B0
+//      |     B1
+//      |     .   +
+//      |     Bk --->
+//     +|     |-
+//      |     V
+//      |     Bk+1
+//      |     .
+//      |     Bn-1
+//      ---   Bn <---
+//            |-
+//
 void MachineBlockPlacement::rotateLoop(BlockChain &LoopChain,
                                        const MachineBasicBlock *ExitingBB,
                                        BlockFrequency ExitFreq,
@@ -2346,57 +2356,53 @@ void MachineBlockPlacement::rotateLoop(BlockChain &LoopChain,
   if (Top->isEntryBlock())
     return;
 
-  bool ViableTopFallthrough = hasViableTopFallthrough(Top, LoopBlockSet);
+  // ignore when bottom's successors is bigger than 2 (similar to find BestLoopTop)
+  if (Bottom->succ_size() > 2)
+    return;
+  
+  BlockFrequency FallThrough2Exit = BlockFrequency(0);
 
-  // If the header has viable fallthrough, check whether the current loop
-  // bottom is a viable exiting block. If so, bail out as rotating will
-  // introduce an unnecessary branch.
-  if (ViableTopFallthrough) {
-    for (MachineBasicBlock *Succ : Bottom->successors()) {
-      BlockChain *SuccChain = BlockToChain[Succ];
-      if (!LoopBlockSet.count(Succ) &&
-          (!SuccChain || Succ == *SuccChain->begin()))
-        return;
-    }
-
-    // Rotate will destroy the top fallthrough, we need to ensure the new exit
-    // frequency is larger than top fallthrough.
-    BlockFrequency FallThrough2Top = TopFallThroughFreq(Top, LoopBlockSet);
-    if (FallThrough2Top >= ExitFreq)
-      return;
+  if (Bottom->succ_size() == 2) {
+    MachineBasicBlock *Succ = *Bottom->succ_begin();
+    if (Succ == Top)
+      Succ = *Bottom->succ_rbegin();
+    BlockChain *SuccChain = BlockToChain[Succ];
+    // fallthrough2exit exits only when succ is not in current loop and succ is in a chain's head
+    if (!LoopBlockSet.count(Succ) &&
+        (!SuccChain || Succ == *SuccChain->begin()))
+      FallThrough2Exit =
+          MBFI->getBlockFreq(Bottom) * MBPI->getEdgeProbability(Bottom, Succ);
   }
 
   BlockChain::iterator ExitIt = llvm::find(LoopChain, ExitingBB);
   if (ExitIt == LoopChain.end())
     return;
+  
+  assert(std::next(ExitIt) != LoopChain.end() && "Exit should not be last BB");
+  MachineBasicBlock *NextBlockInChain = *std::next(ExitIt);
 
-  // Rotating a loop exit to the bottom when there is a fallthrough to top
-  // trades the entry fallthrough for an exit fallthrough.
-  // If there is no bottom->top edge, but the chosen exit block does have
-  // a fallthrough, we break that fallthrough for nothing in return.
+  BlockFrequency FallThroughFromPred = BlockFrequency(0);
+  BlockFrequency BackEdgeFreq = BlockFrequency(0);
 
-  // Let's consider an example. We have a built chain of basic blocks
-  // B1, B2, ..., Bn, where Bk is a ExitingBB - chosen exit block.
-  // By doing a rotation we get
-  // Bk+1, ..., Bn, B1, ..., Bk
-  // Break of fallthrough to B1 is compensated by a fallthrough from Bk.
-  // If we had a fallthrough Bk -> Bk+1 it is broken now.
-  // It might be compensated by fallthrough Bn -> B1.
-  // So we have a condition to avoid creation of extra branch by loop rotation.
-  // All below must be true to avoid loop rotation:
-  //   If there is a fallthrough to top (B1)
-  //   There was fallthrough from chosen exit block (Bk) to next one (Bk+1)
-  //   There is no fallthrough from bottom (Bn) to top (B1).
-  // Please note that there is no exit fallthrough from Bn because we checked it
-  // above.
-  if (ViableTopFallthrough) {
-    assert(std::next(ExitIt) != LoopChain.end() &&
-           "Exit should not be last BB");
-    MachineBasicBlock *NextBlockInChain = *std::next(ExitIt);
-    if (ExitingBB->isSuccessor(NextBlockInChain))
-      if (!Bottom->isSuccessor(Top))
-        return;
-  }
+  // fallthrough from bk to bk+1
+  if (ExitingBB->isSuccessor(NextBlockInChain))
+    FallThroughFromPred = MBFI->getBlockFreq(ExitingBB) *
+                          MBPI->getEdgeProbability(ExitingBB, NextBlockInChain);
+  
+  // fallthrough from bottom to top
+  if (Bottom->isSuccessor(Top))
+    BackEdgeFreq =
+        MBFI->getBlockFreq(Bottom) * MBPI->getEdgeProbability(Bottom, Top);
+    
+  BlockFrequency NewFreq = ExitFreq;
+  BlockFrequency FallThrough2Top = TopFallThroughFreq(Top, LoopBlockSet);
+
+  BlockFrequency Gains = BackEdgeFreq + NewFreq;
+  BlockFrequency Lost =
+    FallThrough2Top + FallThrough2Exit + FallThroughFromPred;
+  
+  if (Lost >= Gains)
+    return;
 
   LLVM_DEBUG(dbgs() << "Rotating loop to put exit " << getBlockName(ExitingBB)
                     << " at bottom\n");

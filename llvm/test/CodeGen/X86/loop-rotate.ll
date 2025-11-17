@@ -38,9 +38,9 @@ define void @do_rotate() {
 ; CHECK: %entry
 ; CHECK: %then
 ; CHECK: %else
+; CHECK: %header
 ; CHECK: %latch1
 ; CHECK: %latch2
-; CHECK: %header
 ; CHECK: %end
 entry:
   %val0 = call i1 @foo()
@@ -76,10 +76,10 @@ define void @do_rotate2() {
 ; CHECK-LABEL: do_rotate2
 ; CHECK: %entry
 ; CHECK: %then
+; CHECK: %header
 ; CHECK: %middle
 ; CHECK: %latch1
 ; CHECK: %latch2
-; CHECK: %header
 ; CHECK: %exit
 entry:
   %val0 = call i1 @foo()
