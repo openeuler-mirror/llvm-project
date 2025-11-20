@@ -235,6 +235,7 @@ enum NodeType : unsigned {
   // Extended vector element extraction
   VEXTRACT_SEXT_ELT,
   VEXTRACT_ZEXT_ELT,
+  RTID,
 
   VTRUNCST = ISD::FIRST_TARGET_MEMORY_OPCODE
 };

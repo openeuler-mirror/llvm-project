@@ -367,6 +367,8 @@ const char *Sw64TargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "Sw64ISD::VBROADCAST_LD";
   case Sw64ISD::VTRUNCST:
     return "Sw64ISD::VTRUNCST";
+  case Sw64ISD::RTID:
+    return "Sw64ISD::RTID";
   }
 
   return nullptr;
@@ -2116,6 +2118,10 @@ SDValue Sw64TargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
   case Intrinsic::sw64_vshfw:
     return DAG.getNode(Sw64ISD::VSHF, dl, Op->getValueType(0),
                        Op->getOperand(1), Op->getOperand(2), Op->getOperand(3));
+  case Intrinsic::thread_pointer: {
+    EVT PtrVT = getPointerTy(DAG.getDataLayout());
+    return DAG.getNode(Sw64ISD::RTID, dl, PtrVT);
+  }
   }
   return Op;
 }

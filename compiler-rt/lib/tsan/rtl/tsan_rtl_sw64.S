@@ -11,7 +11,8 @@ ASM_HIDDEN(__tsan_setjmp)
 .globl ASM_SYMBOL_INTERCEPTOR(setjmp)
 ASM_TYPE_FUNCTION(ASM_SYMBOL_INTERCEPTOR(setjmp))
 ASM_SYMBOL_INTERCEPTOR(setjmp):
-  ldgp $r29, 0($r27)
+  ldih $r29, 0($r27)
+  ldi $r29, 0($r29)
   CFI_STARTPROC
 
   // Save frame/link register
@@ -38,7 +39,8 @@ ASM_SYMBOL_INTERCEPTOR(setjmp):
   //ldi $r27, ASM_SYMBOL(__tsan_setjmp)($r29) !gprellow
   ldl $r27, ASM_SYMBOL(__tsan_setjmp)($r29) !literal
   call $r26, ($r27), 0
-  ldgp $r29, 0($r26)
+  ldih $r29, 0($r26)
+  ldi $r29, 0($r29)
 
   // Restore env parameter
   ldl $r16, 16($sp)
@@ -55,7 +57,7 @@ ASM_SYMBOL_INTERCEPTOR(setjmp):
   // tail jump to libc setjmp
   ldl $r27, _ZN14__interception11real_setjmpE($r29) !literal
   ldl $r27, 0($r27)
-  jmp $r31, ($r27)
+  jmp $r31, ($r27), 0
 
   CFI_ENDPROC
 ASM_SIZE(ASM_SYMBOL_INTERCEPTOR(setjmp))
@@ -65,7 +67,8 @@ ASM_HIDDEN(__tsan_setjmp)
 .globl ASM_SYMBOL_INTERCEPTOR(_setjmp)
 ASM_TYPE_FUNCTION(ASM_SYMBOL_INTERCEPTOR(_setjmp))
 ASM_SYMBOL_INTERCEPTOR(_setjmp):
-  ldgp $r29, 0($r27)
+  ldih $r29, 0($r27)
+  ldi $r29, 0($r29)
   CFI_STARTPROC
 
   // Save frame/link register
@@ -92,7 +95,8 @@ ASM_SYMBOL_INTERCEPTOR(_setjmp):
   //ldi $r27, ASM_SYMBOL(__tsan_setjmp)($r29) !gprellow
   ldl $r27, ASM_SYMBOL(__tsan_setjmp)($r29) !literal
   call $r26, ($r27), 0
-  ldgp $r29, 0($r26)
+  ldih $r29, 0($r26)
+  ldi $r29, 0($r29)
 
   // Restore env parameter
   ldl $r16, 16($sp)
@@ -109,7 +113,7 @@ ASM_SYMBOL_INTERCEPTOR(_setjmp):
   // tail jump to libc setjmp
   ldl $r27, _ZN14__interception12real__setjmpE($r29) !literal
   ldl $r27, 0($r27)
-  jmp $r31, ($r27)
+  jmp $r31, ($r27), 0
 
   CFI_ENDPROC
 ASM_SIZE(ASM_SYMBOL_INTERCEPTOR(_setjmp))
@@ -119,7 +123,8 @@ ASM_HIDDEN(__tsan_setjmp)
 .globl ASM_SYMBOL_INTERCEPTOR(sigsetjmp)
 ASM_TYPE_FUNCTION(ASM_SYMBOL_INTERCEPTOR(sigsetjmp))
 ASM_SYMBOL_INTERCEPTOR(sigsetjmp):
-  ldgp $r29, 0($r27)
+  ldih $r29, 0($r27)
+  ldi $r29, 0($r29)
   CFI_STARTPROC
 
   // Save frame/link register
@@ -148,7 +153,8 @@ ASM_SYMBOL_INTERCEPTOR(sigsetjmp):
   //ldi $r27, ASM_SYMBOL(__tsan_setjmp)($r29) !gprellow
   ldl $r27, ASM_SYMBOL(__tsan_setjmp)($r29) !literal
   call $r26, ($r27), 0
-  ldgp $r29, 0($r26)
+  ldih $r29, 0($r26)
+  ldi $r29, 0($r29)
 
   // Restore env parameter
   ldl $r16, 16($sp)
@@ -167,7 +173,7 @@ ASM_SYMBOL_INTERCEPTOR(sigsetjmp):
   // tail jump to libc setjmp
   ldl $r27, _ZN14__interception14real_sigsetjmpE($r29) !literal
   ldl $r27, 0($r27)
-  jmp $r31, ($r27)
+  jmp $r31, ($r27), 0
 
   CFI_ENDPROC
 ASM_SIZE(ASM_SYMBOL_INTERCEPTOR(sigsetjmp))
@@ -177,7 +183,8 @@ ASM_HIDDEN(__tsan_setjmp)
 .globl ASM_SYMBOL_INTERCEPTOR(__sigsetjmp)
 ASM_TYPE_FUNCTION(ASM_SYMBOL_INTERCEPTOR(__sigsetjmp))
 ASM_SYMBOL_INTERCEPTOR(__sigsetjmp):
-  ldgp $r29, 0($r27)
+  ldih $r29, 0($r27)
+  ldi $r29, 0($r29)
   CFI_STARTPROC
 
   // Save frame/link register
@@ -206,7 +213,8 @@ ASM_SYMBOL_INTERCEPTOR(__sigsetjmp):
   //ldi $r27, ASM_SYMBOL(__tsan_setjmp)($r29) !gprellow
   ldl $r27, ASM_SYMBOL(__tsan_setjmp)($r29) !literal
   call $r26, ($r27), 0
-  ldgp $r29, 0($r26)
+  ldih $r29, 0($r26)
+  ldi $r29, 0($r29)
 
   // Restore env parameter
   ldl $r16, 16($sp)
@@ -225,7 +233,7 @@ ASM_SYMBOL_INTERCEPTOR(__sigsetjmp):
   // tail jump to libc setjmp
   ldl $r27, _ZN14__interception16real___sigsetjmpE($r29) !literal
   ldl $r27, 0($r27)
-  jmp $r31, ($r27)
+  jmp $r31, ($r27), 0
 
   CFI_ENDPROC
 ASM_SIZE(ASM_SYMBOL_INTERCEPTOR(__sigsetjmp))

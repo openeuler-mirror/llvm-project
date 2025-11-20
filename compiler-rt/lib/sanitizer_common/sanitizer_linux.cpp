@@ -1538,7 +1538,8 @@ uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
                        "ldi $sp,32($sp);\n"
 
                        "call $26,($27),0;\n"
-                       "ldgp  $29, 0($26);\n"
+                       "ldih  $29, 0($26);\n"
+                       "ldi  $29, 0($29);\n"
 
                        /* Call _exit($v0). */
                        "mov $0,$16;\n"
