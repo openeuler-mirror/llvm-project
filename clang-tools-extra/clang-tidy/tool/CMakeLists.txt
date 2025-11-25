@@ -67,8 +67,6 @@ install(PROGRAMS run-clang-tidy.py
   DESTINATION "${CMAKE_INSTALL_BINDIR}"
   COMPONENT clang-tidy
   RENAME run-clang-tidy)
-if(LLVM_BSPUB_COMMON)
-  install(PROGRAMS clang-tidy-stats.py
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/clang"
-    COMPONENT clang-tidy)
-endif()
+install(PROGRAMS clang-tidy-stats.py
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/clang"
+  COMPONENT clang-tidy)
