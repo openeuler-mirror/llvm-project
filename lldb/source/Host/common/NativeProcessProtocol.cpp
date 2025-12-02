@@ -500,6 +500,7 @@ NativeProcessProtocol::EnableSoftwareBreakpoint(lldb::addr_t addr,
 llvm::Expected<llvm::ArrayRef<uint8_t>>
 NativeProcessProtocol::GetSoftwareBreakpointTrapOpcode(size_t size_hint) {
   static const uint8_t g_aarch64_opcode[] = {0x00, 0x00, 0x20, 0xd4};
+  static const uint8_t g_sw_64_opcode[] = {0x80, 0x00, 0x00, 0x00};
   static const uint8_t g_i386_opcode[] = {0xCC};
   static const uint8_t g_mips64_opcode[] = {0x00, 0x00, 0x00, 0x0d};
   static const uint8_t g_mips64el_opcode[] = {0x0d, 0x00, 0x00, 0x00};
@@ -516,6 +517,9 @@ NativeProcessProtocol::GetSoftwareBreakpointTrapOpcode(size_t size_hint) {
   case llvm::Triple::aarch64:
   case llvm::Triple::aarch64_32:
     return llvm::ArrayRef(g_aarch64_opcode);
+
+  case llvm::Triple::sw_64:
+    return llvm::ArrayRef(g_sw_64_opcode);
 
   case llvm::Triple::x86:
   case llvm::Triple::x86_64:
@@ -563,6 +567,7 @@ size_t NativeProcessProtocol::GetSoftwareBreakpointPCOffset() {
   case llvm::Triple::x86:
   case llvm::Triple::x86_64:
   case llvm::Triple::systemz:
+  case llvm::Triple::sw_64:
     // These architectures report increment the PC after breakpoint is hit.
     return cantFail(GetSoftwareBreakpointTrapOpcode(0)).size();
 

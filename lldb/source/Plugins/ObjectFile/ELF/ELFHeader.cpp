@@ -202,6 +202,11 @@ unsigned ELFHeader::GetRelocationJumpSlotType() const {
   case EM_AARCH64:
     slot = R_AARCH64_JUMP_SLOT;
     break;
+#ifndef LHX20240718
+  case EM_SW64:
+    slot = R_SW_64_JMP_SLOT;
+    break;
+#endif
   case EM_MIPS:
     slot = R_MIPS_JUMP_SLOT;
     break;

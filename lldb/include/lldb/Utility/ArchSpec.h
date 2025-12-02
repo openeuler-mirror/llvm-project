@@ -113,6 +113,12 @@ public:
     eLoongArchSubType_loongarch64,
   };
 
+#ifndef LHX20240718
+  enum SW64SubType {
+    eSW64SubType_sw_64,
+  };
+#endif
+
   enum Core {
     eCore_arm_generic,
     eCore_arm_armv4,
@@ -149,6 +155,10 @@ public:
     eCore_arm_arm64e,
     eCore_arm_arm64_32,
     eCore_arm_aarch64,
+
+#ifndef LHX20240726
+    eCore_sw_64,
+#endif
 
     eCore_mips32,
     eCore_mips32r2,
@@ -256,6 +266,11 @@ public:
     kCore_hexagon_first = eCore_hexagon_generic,
     kCore_hexagon_last = eCore_hexagon_hexagonv5,
 
+#ifndef LHX20240718
+    kCore_sw_64_first = eCore_sw_64,
+    kCore_sw_64_last = eCore_sw_64,
+#endif
+
     kCore_mips32_first = eCore_mips32,
     kCore_mips32_last = eCore_mips32r6,
 
@@ -313,6 +328,8 @@ public:
   ///
   ///  \return a boolean value.
   bool IsMIPS() const;
+
+  bool IsSw64() const;
 
   /// Returns a string representing current architecture as a target CPU for
   /// tools like compiler, disassembler etc.

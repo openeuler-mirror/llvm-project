@@ -1002,6 +1002,12 @@ ArchSpec ProcessElfCore::GetArchitecture() {
     return target_arch;
   }
 
+#ifndef LHX20240725
+  if (target_arch.IsSw64()) {
+    return target_arch;
+  }
+#endif
+
   return arch;
 }
 

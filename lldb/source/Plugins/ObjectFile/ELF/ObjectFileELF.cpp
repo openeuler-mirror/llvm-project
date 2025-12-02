@@ -338,6 +338,10 @@ static uint32_t subTypeFromElfHeader(const elf::ELFHeader &header) {
     return mipsVariantFromElfFlags(header);
   else if (header.e_machine == llvm::ELF::EM_PPC64)
     return ppc64VariantFromElfFlags(header);
+#ifndef LHX20240718
+  else if (header.e_machine == llvm::ELF::EM_SW64)
+    return ArchSpec::eSW64SubType_sw_64;
+#endif
   else if (header.e_machine == llvm::ELF::EM_RISCV)
     return riscvVariantFromElfFlags(header);
   else if (header.e_machine == llvm::ELF::EM_LOONGARCH)
@@ -1176,6 +1180,12 @@ ObjectFileELF::RefineModuleDetailsFromNote(lldb_private::DataExtractor &data,
           arch_spec.GetTriple().getOS() == llvm::Triple::OSType::UnknownOS)
         // The note.n_name == LLDB_NT_OWNER_GNU is valid for Linux platform
         arch_spec.GetTriple().setOS(llvm::Triple::OSType::Linux);
+#ifndef LHX20240725
+      if (arch_spec.IsSw64() &&
+          arch_spec.GetTriple().getOS() == llvm::Triple::OSType::UnknownOS)
+        // The note.n_name == LLDB_NT_OWNER_GNU is valid for Linux platform
+        arch_spec.GetTriple().setOS(llvm::Triple::OSType::Linux);
+#endif
     }
     // Process NetBSD ELF executables and shared libraries
     else if ((note.n_name == LLDB_NT_OWNER_NETBSD) &&
@@ -1273,6 +1283,11 @@ ObjectFileELF::RefineModuleDetailsFromNote(lldb_private::DataExtractor &data,
           // In case of MIPSR6, the LLDB_NT_OWNER_GNU note is missing for some
           // cases (e.g. compile with -nostdlib) Hence set OS to Linux
           arch_spec.GetTriple().setOS(llvm::Triple::OSType::Linux);
+#ifndef LHX20240725
+        if (arch_spec.IsSw64() &&
+            arch_spec.GetTriple().getOS() == llvm::Triple::OSType::UnknownOS)
+          arch_spec.GetTriple().setOS(llvm::Triple::OSType::Linux);
+#endif
       }
     }
 

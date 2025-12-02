@@ -31,7 +31,11 @@
 // Define these constants from Linux mman.h for use when targeting remote linux
 // systems even when host has different values.
 #define MAP_PRIVATE 2
+#ifdef __sw_64__
+#define MAP_ANON 0x10
+#else
 #define MAP_ANON 0x20
+#endif
 
 using namespace lldb;
 using namespace lldb_private;
@@ -123,7 +127,7 @@ PlatformLinux::PlatformLinux(bool is_host)
         {llvm::Triple::x86_64, llvm::Triple::x86, llvm::Triple::arm,
          llvm::Triple::aarch64, llvm::Triple::mips64, llvm::Triple::mips64,
          llvm::Triple::hexagon, llvm::Triple::mips, llvm::Triple::mips64el,
-         llvm::Triple::mipsel, llvm::Triple::msp430, llvm::Triple::systemz},
+         llvm::Triple::mipsel, llvm::Triple::msp430, llvm::Triple::sw_64, llvm::Triple::systemz},
         llvm::Triple::Linux);
   }
 }

@@ -110,6 +110,13 @@ static const CoreDefinition g_core_definitions[] = {
     {eByteOrderLittle, 8, 4, 4, llvm::Triple::aarch64,
      ArchSpec::eCore_arm_aarch64, "aarch64"},
 
+#ifndef LHX20240726
+    // The index order must be same with enum Core in include/lldb/Utility/ArchSpec.h
+    // i.e. the branch of sw_64 needs follow with aarch64
+    {eByteOrderLittle, 8, 4, 4, llvm::Triple::sw_64,
+     ArchSpec::eCore_sw_64, "sw_64"},
+#endif
+
     // mips32, mips32r2, mips32r3, mips32r5, mips32r6
     {eByteOrderBig, 4, 2, 4, llvm::Triple::mips, ArchSpec::eCore_mips32,
      "mips"},
@@ -376,6 +383,11 @@ static const ArchDefinitionEntry g_elf_arch_entries[] = {
      0xFFFFFFFFu, 0xFFFFFFFFu}, // ARM
     {ArchSpec::eCore_arm_aarch64, llvm::ELF::EM_AARCH64, LLDB_INVALID_CPUTYPE,
      0xFFFFFFFFu, 0xFFFFFFFFu}, // ARM64
+#ifndef LHX20240718
+    {ArchSpec::eCore_sw_64, llvm::ELF::EM_SW64,
+    ArchSpec::eSW64SubType_sw_64, 0xFFFFFFFFu, 0xFFFFFFFFu},
+    //LLDB_INVALID_CPUTYPE, 0xFFFFFFFFu, 0xFFFFFFFFu}, // SW64
+#endif
     {ArchSpec::eCore_s390x_generic, llvm::ELF::EM_S390, LLDB_INVALID_CPUTYPE,
      0xFFFFFFFFu, 0xFFFFFFFFu}, // SystemZ
     {ArchSpec::eCore_sparc9_generic, llvm::ELF::EM_SPARCV9,
@@ -558,6 +570,8 @@ const char *ArchSpec::GetArchitectureName() const {
 
 bool ArchSpec::IsMIPS() const { return GetTriple().isMIPS(); }
 
+bool ArchSpec::IsSw64() const { return GetTriple().isSw64(); }
+
 std::string ArchSpec::GetTargetABI() const {
 
   std::string abi;
@@ -637,6 +651,21 @@ std::string ArchSpec::GetClangTargetCPU() const {
     case ArchSpec::eCore_mips64r6:
     case ArchSpec::eCore_mips64r6el:
       cpu = "mips64r6";
+      break;
+    default:
+      break;
+    }
+  }
+
+  if (IsSw64()) {
+    switch (m_core) {
+    case ArchSpec::eCore_sw_64:
+// This cpu name must same with clang/lib/Driver/ToolChains/Arch/Sw64.cpp
+#ifdef __sw_64_sw8a__
+      cpu = "sw8a";
+#else
+      cpu = "sw6b";
+#endif
       break;
     default:
       break;
@@ -1263,6 +1292,15 @@ static bool cores_match(const ArchSpec::Core core1, const ArchSpec::Core core2,
   case ArchSpec::eCore_arm_arm64_32:
     if (!enforce_exact_match) {
       if (core2 == ArchSpec::eCore_arm_generic)
+        return true;
+      try_inverse = false;
+    }
+    break;
+
+  case ArchSpec::eCore_sw_64:
+    if (!enforce_exact_match) {
+      if (core2 >= ArchSpec::kCore_sw_64_first &&
+          core2 <= ArchSpec::kCore_sw_64_last)
         return true;
       try_inverse = false;
     }

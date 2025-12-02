@@ -70,6 +70,9 @@ llvm::Triple::ArchType stringTo<llvm::Triple::ArchType>(llvm::StringRef Str) {
   return llvm::StringSwitch<Triple::ArchType>(Str)
       .Case("arm", Triple::arm)
       .Cases("arm64", "arm64e", Triple::aarch64)
+#ifndef LHX20240718
+      .Case("sw_64", Triple::sw_64)
+#endif
       .Case("mips", Triple::mips)
       .Case("msp430", Triple::msp430)
       .Case("ppc", Triple::ppc)

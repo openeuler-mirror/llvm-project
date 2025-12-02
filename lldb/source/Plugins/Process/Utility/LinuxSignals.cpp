@@ -58,10 +58,17 @@ void LinuxSignals::Reset() {
   AddSignal(5,      "SIGTRAP",      true,     true,   true,   "trace trap (not reset when caught)");
   AddSignal(6,      "SIGABRT",      false,    true,   true,   "abort()/IOT trap", "SIGIOT");
 
+#ifndef __sw_64__
   AddSignal(7,      "SIGBUS",       false,    true,   true,   "bus error");
   ADD_SIGCODE(SIGBUS, 7, BUS_ADRALN, 1, "illegal alignment");
   ADD_SIGCODE(SIGBUS, 7, BUS_ADRERR, 2, "illegal address");
   ADD_SIGCODE(SIGBUS, 7, BUS_OBJERR, 3, "hardware error");
+#else
+  AddSignal(10,      "SIGBUS",       false,    true,   true,   "bus error");
+  ADD_SIGCODE(SIGBUS, 10, BUS_ADRALN, 1, "illegal alignment");
+  ADD_SIGCODE(SIGBUS, 10, BUS_ADRERR, 2, "illegal address");
+  ADD_SIGCODE(SIGBUS, 10, BUS_OBJERR, 3, "hardware error");
+#endif
 
   AddSignal(8,      "SIGFPE",       false,    true,   true,   "floating point exception");
   ADD_SIGCODE(SIGFPE, 8, FPE_INTDIV, 1, "integer divide by zero");
