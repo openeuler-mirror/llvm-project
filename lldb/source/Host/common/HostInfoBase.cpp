@@ -342,6 +342,7 @@ void HostInfoBase::ComputeHostArchitectureSupport(ArchSpec &arch_32,
     arch_32.SetTriple(triple.get32BitArchVariant());
     break;
 
+  case llvm::Triple::sw_64:
   case llvm::Triple::mips64:
   case llvm::Triple::mips64el:
   case llvm::Triple::sparcv9:

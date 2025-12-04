@@ -1496,6 +1496,11 @@ DisassemblerLLVMC::DisassemblerLLVMC(const ArchSpec &arch,
   case ArchSpec::eCore_mips64r6el:
     cpu = "mips64r6";
     break;
+#ifndef LHX20240725
+  case ArchSpec::eCore_sw_64:
+    cpu = "sw_64";
+    break;
+#endif
   default:
     cpu = "";
     break;

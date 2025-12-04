@@ -319,7 +319,11 @@ ELFLinuxPrPsInfo::ELFLinuxPrPsInfo() {
 
 size_t ELFLinuxPrPsInfo::GetSize(const lldb_private::ArchSpec &arch) {
   constexpr size_t mips_linux_pr_psinfo_size_o32_n32 = 128;
+#ifndef LHX20240725
+  if (arch.IsMIPS() || arch.IsSw64()) {
+#else
   if (arch.IsMIPS()) {
+#endif
     uint8_t address_byte_size = arch.GetAddressByteSize();
     if (address_byte_size == 8)
       return sizeof(ELFLinuxPrPsInfo);
@@ -362,7 +366,11 @@ Status ELFLinuxPrPsInfo::Parse(const DataExtractor &data,
 
   pr_flag = data.GetAddress(&offset);
 
+#ifndef LHX20210811
+  if (arch.IsMIPS() || arch.IsSw64()) {
+#else
   if (arch.IsMIPS()) {
+#endif
     // The pr_uid and pr_gid is always 32 bit irrespective of platforms
     pr_uid = data.GetU32(&offset);
     pr_gid = data.GetU32(&offset);
@@ -393,6 +401,8 @@ ELFLinuxSigInfo::ELFLinuxSigInfo() { memset(this, 0, sizeof(ELFLinuxSigInfo)); }
 
 size_t ELFLinuxSigInfo::GetSize(const lldb_private::ArchSpec &arch) {
   if (arch.IsMIPS())
+    return sizeof(ELFLinuxSigInfo);
+  if (arch.IsSw64())
     return sizeof(ELFLinuxSigInfo);
   switch (arch.GetCore()) {
   case lldb_private::ArchSpec::eCore_x86_64_x86_64:
