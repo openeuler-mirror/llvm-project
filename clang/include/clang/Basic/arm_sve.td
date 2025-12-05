@@ -2057,8 +2057,27 @@ def SVFCLAMP_BF   : SInst<"svclamp[_{d}]", "dddd", "b", MergeNone, "aarch64_sve_
 // SME intrinsics which operate only on vectors and do not require ZA should be added here,
 // as they could possibly become SVE instructions in the future.
 
+multiclass BfSingleMultiVector<string name> {
+  def NAME # _SINGLE_X2 : SInst<"sv" # name # "[_single_{d}_x2]", "22d", "b", MergeNone, "aarch64_sve_f" # name # "_single_x2", [IsStreaming], []>;
+  def NAME # _SINGLE_X4 : SInst<"sv" # name # "[_single_{d}_x4]", "44d", "b", MergeNone, "aarch64_sve_f" # name # "_single_x4", [IsStreaming], []>;
+
+  def NAME # _X2 : SInst<"sv" # name # "[_{d}_x2]", "222", "b", MergeNone, "aarch64_sve_f" # name # "_x2", [IsStreaming], []>;
+  def NAME # _X4 : SInst<"sv" # name # "[_{d}_x4]", "444", "b", MergeNone, "aarch64_sve_f" # name # "_x4", [IsStreaming], []>;
+}
+
+let SVETargetGuard = InvalidMode, SMETargetGuard = "sme2,sve-bfscale" in {
+  // BFMUL
+  defm SVBFMUL : BfSingleMultiVector<"mul">;
+  // BFSCALE
+  def SVBFSCALE_SINGLE_X2 : SInst<"svscale[_single_{d}_x2]", "22x", "b", MergeNone, "aarch64_sve_fscale_single_x2", [IsStreaming], []>;
+  def SVBFSCALE_SINGLE_X4 : SInst<"svscale[_single_{d}_x4]", "44x", "b", MergeNone, "aarch64_sve_fscale_single_x4", [IsStreaming], []>;
+
+  def SVBFSCALE_X2 : SInst<"svscale[_{d}_x2]", "222.x", "b", MergeNone, "aarch64_sve_fscale_x2", [IsStreaming], []>;
+  def SVBFSCALE_X4 : SInst<"svscale[_{d}_x4]", "444.x", "b", MergeNone, "aarch64_sve_fscale_x4", [IsStreaming], []>;
+}
+
 let SVETargetGuard = InvalidMode, SMETargetGuard = "sme2" in {
-// == ADD (vectors) ==
+  // == ADD (vectors) ==
   def SVADD_SINGLE_X2 : SInst<"svadd[_single_{d}_x2]", "22d", "cUcsUsiUilUl", MergeNone, "aarch64_sve_add_single_x2", [IsStreaming], []>;
   def SVADD_SINGLE_X4 : SInst<"svadd[_single_{d}_x4]", "44d", "cUcsUsiUilUl", MergeNone, "aarch64_sve_add_single_x4", [IsStreaming], []>;
 }
