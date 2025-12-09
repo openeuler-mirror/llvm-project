@@ -658,8 +658,8 @@ std::string Linux::getDynamicLinker(const ArgList &Args) const {
     Loader = "ld-linux.so.2";
     break;
   case llvm::Triple::sw_64:
-    LibDir = "lib";
-    Loader = "ld-linux.so.2";
+    LibDir = "lib64";
+    Loader = "ld-linux-sw-64.so.2";
     break;
   case llvm::Triple::systemz:
     LibDir = "lib";

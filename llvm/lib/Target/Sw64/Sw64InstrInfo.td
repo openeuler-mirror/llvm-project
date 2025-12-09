@@ -1742,7 +1742,16 @@ let RB = 31 in {
 def RPCC : MfcForm<0x06, 0x0020,(ins), (outs GPRC:$RA), "rtc", "$RA">; //Read process cycle counter
 //4.7.4 read cpu core id
 def RCID : MfcForm<0x06, 0x0040,(ins), (outs GPRC:$RA), "rcid", "$RA">;
+
+def RTID : MfcForm<0x06, 0x1040,(ins), (outs GPRC:$RA), "rtid", "$RA">;
 }
+
+def SDT_ZRtid : SDTypeProfile<1, 0, [
+  SDTCisPtrTy<0>,
+]>;
+def Sw64_rtid: SDNode<"Sw64ISD::RTID", SDT_ZRtid, []>;
+def : Pat<(Sw64_rtid), (RTID)>;
+
 //4.7.6 atom operate instruction
 
 let mayLoad = 1 in {
