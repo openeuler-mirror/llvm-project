@@ -48,6 +48,14 @@ uintptr_t GetCurrentProcess(void);
 #include <unistd.h>
 #endif
 
+#if defined(__linux__) && defined(__sw_64__)
+#include <sys/syscall.h>
+#include <unistd.h>
+//FIXME
+#define __PNR_cacheflush        -10104
+#define __NR_cacheflush         __PNR_cacheflush
+#endif
+
 #if defined(__linux__) && defined(__riscv)
 // to get platform-specific syscall definitions
 #include <linux/unistd.h>
@@ -93,6 +101,10 @@ void __clear_cache(void *start, void *end) {
 #endif
 #elif defined(__linux__) && defined(__loongarch__)
   __asm__ volatile("ibar 0");
+#elif defined(__linux__) && defined(__sw_64__)
+  const uintptr_t start_int = (uintptr_t)start;
+  const uintptr_t end_int = (uintptr_t)end;
+  syscall(__NR_cacheflush, start, (end_int - start_int));
 #elif defined(__mips__)
   const uintptr_t start_int = (uintptr_t)start;
   const uintptr_t end_int = (uintptr_t)end;
