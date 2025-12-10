@@ -329,7 +329,8 @@ PerfReaderBase::create(ProfiledBinary *Binary, PerfInputFile &PerfInput,
   }
 
   // For perf data input, we need to convert them into perf script first.
-  if (PerfInput.Format == PerfFormat::PerfData)
+  if (PerfInput.Format == PerfFormat::PerfData ||
+      PerfInput.Format == PerfFormat::SPEPerfData)
     PerfInput =
         PerfScriptReader::convertPerfDataToTrace(Binary, PerfInput, PIDFilter);
 
@@ -343,6 +344,8 @@ PerfReaderBase::create(ProfiledBinary *Binary, PerfInputFile &PerfInput,
         new HybridPerfReader(Binary, PerfInput.InputFile, PIDFilter));
   } else if (PerfInput.Content == PerfContent::LBR) {
     PerfReader.reset(new LBRPerfReader(Binary, PerfInput.InputFile, PIDFilter));
+  } else if (PerfInput.Content == PerfContent::SPE) {
+    PerfReader.reset(new SPEPerfReader(Binary, PerfInput.InputFile, PIDFilter));
   } else {
     exitWithError("Unsupported perfscript!");
   }
@@ -396,8 +399,9 @@ PerfScriptReader::convertPerfDataToTrace(ProfiledBinary *Binary,
 
   // Run perf script again to retrieve events for PIDs collected above
   StringRef ScriptSampleArgs[] = {PerfPath, "script",     "--show-mmap-events",
-                                  "-F",     "ip,brstack", "--pid",
-                                  PIDs,     "-i",         PerfData};
+                                  "-F",     "event,ip,brstack",
+                                  "--pid",  PIDs, 
+                                  "-i",     PerfData};
   sys::ExecuteAndWait(PerfPath, ScriptSampleArgs, std::nullopt, Redirects);
 
   return {PerfTraceFile, PerfFormat::PerfScript, PerfContent::UnknownContent};
@@ -888,6 +892,13 @@ void PerfScriptReader::computeCounterFromLBR(const PerfSample *Sample,
   }
 }
 
+void PerfScriptReader::computeCounterFromSPE(const PerfSample *Sample,
+                                             uint64_t Repeat) {
+  SampleCounter &Counter = SampleCounters.begin()->second;
+  for (const uint64_t LLCMissAddress : Sample->SPEStack)
+    Counter.recordSPECount(LLCMissAddress, Repeat);
+}
+
 void LBRPerfReader::parseSample(TraceStream &TraceIt, uint64_t Count) {
   std::shared_ptr<PerfSample> Sample = std::make_shared<PerfSample>();
   // Parsing LBR stack and populate into PerfSample.LBRStack
@@ -896,6 +907,29 @@ void LBRPerfReader::parseSample(TraceStream &TraceIt, uint64_t Count) {
     // Record LBR only samples by aggregation
     AggregatedSamples[Hashable<PerfSample>(Sample)] += Count;
   }
+}
+
+void SPEPerfReader::parseSample(TraceStream &TraceIt, uint64_t Count) {
+  std::shared_ptr<PerfSample> Sample = std::make_shared<PerfSample>();
+  SmallVector<StringRef, 2> Records;
+  TraceIt.getCurrentLine().trim().split(Records, " ", -1, false);
+  if (Records[0] != "llc-miss:") {
+    TraceIt.advance();
+    return;
+  }
+  uint64_t Addr = 0;
+  if (Records[1].getAsInteger(16, Addr)) {
+    TraceIt.advance();
+    return;
+  }
+  Addr = Binary->canonicalizeVirtualAddress(Addr);
+  if (!Binary->addressIsCode(Addr)) {
+    TraceIt.advance();
+    return;
+  }
+  Sample->SPEStack.emplace_back(Addr);
+  AggregatedSamples[Hashable<PerfSample>(Sample)]++;
+  TraceIt.advance();
 }
 
 void PerfScriptReader::generateUnsymbolizedProfile() {
@@ -909,6 +943,7 @@ void PerfScriptReader::generateUnsymbolizedProfile() {
   for (const auto &Item : AggregatedSamples) {
     const PerfSample *Sample = Item.first.getPtr();
     computeCounterFromLBR(Sample, Item.second);
+    computeCounterFromSPE(Sample, Item.second);
   }
 }
 
@@ -1023,6 +1058,12 @@ bool PerfScriptReader::isMMap2Event(StringRef Line) {
   return Line.contains("PERF_RECORD_MMAP2");
 }
 
+bool PerfScriptReader::isSPESample(StringRef Line) {
+  if (Line.empty())
+    return false;
+  return Line.contains("llc-miss:");
+}
+
 // The raw hybird sample is like
 // e.g.
 // 	          4005dc    # call stack leaf
@@ -1055,6 +1096,9 @@ PerfContent PerfScriptReader::checkPerfScriptType(StringRef FileName) {
         else
           return PerfContent::LBR;
       }
+	
+      if (isSPESample(TraceIt.getCurrentLine()))
+        return PerfContent::SPE;
       TraceIt.advance();
     }
   }
@@ -1093,6 +1137,9 @@ void PerfScriptReader::warnInvalidRange() {
 
   for (const auto &Item : AggregatedSamples) {
     const PerfSample *Sample = Item.first.getPtr();
+    // No range to check.
+    if (!Sample->SPEStack.empty())
+      return;
     uint64_t Count = Item.second;
     uint64_t EndAddress = 0;
     for (const LBREntry &LBR : Sample->LBRStack) {

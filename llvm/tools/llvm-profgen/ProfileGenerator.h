@@ -169,6 +169,10 @@ private:
   populateBoundarySamplesForAllFunctions(const BranchSample &BranchCounters);
   void
   populateBodySamplesWithProbesForAllFunctions(const RangeSample &RangeCounter);
+  void initPGOConfig(const std::vector<std::pair<uint64_t, uint64_t>> &Vec);
+  void updatePGOConfig(const std::vector<std::pair<uint64_t, uint64_t>> &Vec);
+  void populateSPESamplesForAllFunctions(
+			const std::unordered_map<uint64_t, uint64_t> &SPECounter);
   void populateBoundarySamplesWithProbesForAllFunctions(
       const BranchSample &BranchCounters);
   void postProcessProfiles();

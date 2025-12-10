@@ -67,6 +67,12 @@ static cl::opt<std::string> DebugBinPath(
              "from it instead of the executable binary."),
     cl::cat(ProfGenCategory));
 
+static cl::opt<std::string> SPEPerfDataFilename(
+    "spe-perfdata", cl::value_desc("spe-perfdata"),
+    cl::desc("Path of raw perf data created by Linux perf tool (it should be "
+             "profiled with -e arm_spe_0)"),
+    cl::cat(ProfGenCategory));
+
 extern cl::opt<bool> ShowDisassemblyOnly;
 extern cl::opt<bool> ShowSourceLocations;
 extern cl::opt<bool> SkipSymbolization;
@@ -84,15 +90,18 @@ static void validateCommandLine() {
     bool HasUnsymbolizedProfile =
         UnsymbolizedProfFilename.getNumOccurrences() > 0;
     bool HasSampleProfile = SampleProfFilename.getNumOccurrences() > 0;
+    bool HasSPEPerfData = SPEPerfDataFilename.getNumOccurrences() > 0;
     uint16_t S =
-        HasPerfData + HasPerfScript + HasUnsymbolizedProfile + HasSampleProfile;
+        HasPerfData + HasPerfScript + HasUnsymbolizedProfile +
+        HasSampleProfile + HasSPEPerfData;
     if (S != 1) {
       std::string Msg =
           S > 1
-              ? "`--perfscript`, `--perfdata` and `--unsymbolized-profile` "
-                "cannot be used together."
+              ? "`--perfscript`, `--perfdata`, `--unsymbolized-profile` "
+                "and `--spe-perfdata` cannot be used together."
               : "Perf input file is missing, please use one of `--perfscript`, "
-                "`--perfdata` and `--unsymbolized-profile` for the input.";
+                "`--perfdata`, `--unsymbolized-profile` and `--spe-perfdata` "
+                "for the input.";
       exitWithError(Msg);
     }
 
@@ -107,6 +116,7 @@ static void validateCommandLine() {
     CheckFileExists(HasPerfScript, PerfScriptFilename);
     CheckFileExists(HasUnsymbolizedProfile, UnsymbolizedProfFilename);
     CheckFileExists(HasSampleProfile, SampleProfFilename);
+    CheckFileExists(HasSPEPerfData, SPEPerfDataFilename);
   }
 
   if (!llvm::sys::fs::exists(BinaryPath)) {
@@ -134,6 +144,9 @@ static PerfInputFile getPerfInputFile() {
   } else if (UnsymbolizedProfFilename.getNumOccurrences()) {
     File.InputFile = UnsymbolizedProfFilename;
     File.Format = PerfFormat::UnsymbolizedProfile;
+  } else if (SPEPerfDataFilename.getNumOccurrences()) { 
+    File.InputFile = SPEPerfDataFilename;
+    File.Format = PerfFormat::SPEPerfData;
   }
   return File;
 }

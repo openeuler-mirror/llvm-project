@@ -85,6 +85,12 @@ static cl::opt<bool> NoDiscriminators(
     "no-discriminators", cl::init(false),
     cl::desc("Disable generation of discriminator information."));
 
+// Command line option to toggle discriminator generation for memory
+// operations. Used to keep upstream tests happy.
+static cl::opt<bool> MemOpDiscriminators(
+    "discriminate-memops", cl::init(true),
+    cl::desc("Generate unique debug info for each load/store instruction."));
+
 static bool shouldHaveDiscriminator(const Instruction *I) {
   return !isa<IntrinsicInst>(I) || isa<MemIntrinsic>(I);
 }
@@ -210,12 +216,14 @@ static bool addDiscriminators(Function &F) {
   // a same source line for correct profile annotation.
   for (BasicBlock &B : F) {
     LocationSet CallLocations;
+    LocationSet MemoryOpLocations;
     for (auto &I : B) {
       // We bypass intrinsic calls for the following two reasons:
       //  1) We want to avoid a non-deterministic assignment of
       //     discriminators.
       //  2) We want to minimize the number of base discriminators used.
-      if (!isa<InvokeInst>(I) && (!isa<CallInst>(I) || isa<IntrinsicInst>(I)))  
+      if (!isa<InvokeInst>(I) && (!isa<CallInst>(I) || isa<IntrinsicInst>(I)) &&
+          (!MemOpDiscriminators || (!isa<LoadInst>(I) && !isa<StoreInst>(I))))  
         continue;
 
       DILocation *CurrentDIL = I.getDebugLoc();
@@ -223,7 +231,10 @@ static bool addDiscriminators(Function &F) {
         continue;
       Location L =
           std::make_pair(CurrentDIL->getFilename(), CurrentDIL->getLine());
-      if (!CallLocations.insert(L).second) {
+      if (((isa<InvokeInst>(I) || isa<CallInst>(I)) &&
+          !CallLocations.insert(L).second) ||
+          (MemOpDiscriminators && (isa<LoadInst>(I) || isa<StoreInst>(I)) &&
+           !MemoryOpLocations.insert(L).second)) {
         unsigned Discriminator = ++LDM[L];
         auto NewDIL = CurrentDIL->cloneWithBaseDiscriminator(Discriminator);
         if (!NewDIL) {
