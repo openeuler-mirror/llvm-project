@@ -4690,9 +4690,6 @@ void AArch64DAGToDAGISel::SelectRead3(
     SDNode *N, SmallVector<std::pair<LoadSDNode *, int64_t>> &LD) {
   assert(N->getOpcode() == ISD::OR && "Expected OR instruction");
 
-  if (N->getValueType(0) != MVT::i32)
-    return;
-
   SDValue Addr = getLoadStoreAddrWithoutOffset(LD[0].first);
   int64_t Offset = getLoadStoreOffset(LD[0].first);
   SDValue Chain = LD[0].first->getChain();
@@ -4724,9 +4721,6 @@ void AArch64DAGToDAGISel::SelectRead3(
 void AArch64DAGToDAGISel::SelectRead6(
     SDNode *N, SmallVector<std::pair<LoadSDNode *, int64_t>> &LD) {
   assert(N->getOpcode() == ISD::OR && "Expected OR instruction");
-
-  if (N->getValueType(0) != MVT::i64)
-    return;
 
   SDValue Addr = getLoadStoreAddrWithoutOffset(LD[0].first);
   int64_t Offset = getLoadStoreOffset(LD[0].first);
@@ -4784,9 +4778,6 @@ void AArch64DAGToDAGISel::SelectRead6(
 void AArch64DAGToDAGISel::SelectRead7(
     SDNode *N, SmallVector<std::pair<LoadSDNode *, int64_t>> &LD) {
   assert(N->getOpcode() == ISD::OR && "Expected OR instruction");
-
-  if (N->getValueType(0) != MVT::i64)
-    return;
 
   SDValue Addr = getLoadStoreAddrWithoutOffset(LD[0].first);
   int64_t Offset = getLoadStoreOffset(LD[0].first);
@@ -4854,14 +4845,23 @@ bool AArch64DAGToDAGISel::tryReadOpt(SDNode *N) {
     return false;
 
   if (canCombineLoads(AllLd, 7)) {
+    if (N->getValueType(0) != MVT::i64)
+      return false;
+
     SelectRead7(N, AllLd);
     return true;
   }
   if (canCombineLoads(AllLd, 6)) {
+    if (N->getValueType(0) != MVT::i64)
+      return false;
+
     SelectRead6(N, AllLd);
     return true;
   }
   if (canCombineLoads(AllLd, 3)) {
+    if (N->getValueType(0) != MVT::i32)
+      return false;
+
     SelectRead3(N, AllLd);
     return true;
   }
