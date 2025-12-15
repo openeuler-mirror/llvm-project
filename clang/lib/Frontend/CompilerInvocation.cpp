@@ -938,9 +938,8 @@ static void addDiagnosticArgs(ArgList &Args, OptSpecifier Group,
                               OptSpecifier GroupWithValue,
                               std::vector<std::string> &Diagnostics) {
   for (auto *A : Args.filtered(Group)) {
-#ifdef BUILD_FOR_OPENEULER
-    bool  GccCompatible = Args.hasFlag(options::OPT_fgcc_compatible,
-    options::OPT_fno_gcc_compatible, false);
+    bool GccCompatible = Args.hasFlag(options::OPT_fgcc_compatible,
+                                      options::OPT_fno_gcc_compatible, false);
     if (A->getOption().getKind() == Option::FlagClass) {
       // The argument is a pure flag (such as OPT_Wall or
       // OPT_Wdeprecated). Add its name (minus the "W" or "R" at the
@@ -968,22 +967,6 @@ static void addDiagnosticArgs(ArgList &Args, OptSpecifier Group,
             Diagnostics.push_back(A->getValue());
         }
     }
-#else
-    if (A->getOption().getKind() == Option::FlagClass) {
-      // The argument is a pure flag (such as OPT_Wall or OPT_Wdeprecated). Add
-      // its name (minus the "W" or "R" at the beginning) to the diagnostics.
-      Diagnostics.push_back(
-          std::string(A->getOption().getName().drop_front(1)));
-    } else if (A->getOption().matches(GroupWithValue)) {
-      // This is -Wfoo= or -Rfoo=, where foo is the name of the diagnostic
-      // group. Add only the group name to the diagnostics.
-      Diagnostics.push_back(
-          std::string(A->getOption().getName().drop_front(1).rtrim("=-")));
-    } else {
-      // Otherwise, add its value (for OPT_W_Joined and similar).
-      Diagnostics.push_back(A->getValue());
-    }
-#endif
   }
 }
 
@@ -3962,10 +3945,8 @@ void CompilerInvocationBase::GenerateLangArgs(const LangOptions &Opts,
   if (!Opts.RandstructSeed.empty())
     GenerateArg(Consumer, OPT_frandomize_layout_seed_EQ, Opts.RandstructSeed);
 
-#ifdef BUILD_FOR_OPENEULER
   if (Opts.GccCompatible)
     GenerateArg(Consumer, OPT_fgcc_compatible);
-#endif
 }
 
 bool CompilerInvocation::ParseLangArgs(LangOptions &Opts, ArgList &Args,
@@ -4595,9 +4576,7 @@ bool CompilerInvocation::ParseLangArgs(LangOptions &Opts, ArgList &Args,
       Diags.Report(diag::err_drv_hlsl_unsupported_target) << T.str();
   }
 
-#ifdef BUILD_FOR_OPENEULER
   Opts.GccCompatible = Args.hasArg(options::OPT_fgcc_compatible);
-#endif
 
   return Diags.getNumErrors() == NumErrorsBefore;
 }
