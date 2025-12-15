@@ -9,6 +9,7 @@ buildtype=RelWithDebInfo
 backends="all"
 build_for_openeuler="0"
 enabled_projects="clang;lld;compiler-rt;openmp;clang-tools-extra"
+extra_projects=""
 embedded_toolchain="0"
 split_dwarf=on
 use_ccache="0"
@@ -59,6 +60,7 @@ Options:
   -d dir   Specify the build directory (default: "$build_dir_name").
   -j N     Allow N jobs at once (default: $threads).
   -o       Enable LLVM_INSTALL_TOOLCHAIN_ONLY=ON.
+  -p projs Add extra semi-colon-delimited LLVM projects to enable.
   -r       Delete $install_prefix and perform a clean build (default: incremental).
   -s       Strip binaries and minimize file permissions when (re-)installing.
   -t       Enable unit tests for components that support them (make check-all).
@@ -70,7 +72,7 @@ EOF
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
 containerized_opts=()
-while getopts :b:d:cCeEhiI:j:orstvfX: optchr; do
+while getopts :b:d:cCeEhiI:j:op:rstvfX: optchr; do
   case "$optchr" in
     b)
       buildtype="$OPTARG"
@@ -131,6 +133,14 @@ while getopts :b:d:cCeEhiI:j:orstvfX: optchr; do
     o)
       install_toolchain_only=1
       containerized_opts+=(-$optchr)
+      ;;
+    p)
+      if [ -z "$extra_projects" ]; then
+        extra_projects="$OPTARG"
+      else
+        extra_projects="${extra_projects%;};${OPTARG}"
+      fi
+      containerized_opts+=(-$optchr "$OPTARG")
       ;;
     r)
       clean=1
@@ -306,6 +316,23 @@ if [ $embedded_toolchain == "1" ]; then
   enabled_projects="clang;lld;compiler-rt;"
   CMAKE_OPTIONS="$CMAKE_OPTIONS \
                 -DLLVM_BUILD_FOR_EMBEDDED=ON"
+fi
+
+if [ -n "$extra_projects" ]; then
+  enabled_projects="${enabled_projects%;}"
+  IFS=';' read -r -a _extra_projects_arr <<< "${extra_projects%;}"
+  for _p in "${_extra_projects_arr[@]}"; do
+    if [ -z "$_p" ]; then
+      continue
+    fi
+    case ";$enabled_projects;" in
+      *";$_p;"*)
+        ;;
+      *)
+        enabled_projects="${enabled_projects};${_p}"
+        ;;
+    esac
+  done
 fi
 
 # When set LLVM_INSTALL_TOOLCHAIN_ONLY to On it removes many of the LLVM development
