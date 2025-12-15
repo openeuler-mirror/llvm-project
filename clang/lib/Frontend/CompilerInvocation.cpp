@@ -5057,6 +5057,8 @@ bool CompilerInvocation::CreateFromArgsImpl(
       ProfileName = ProfileNameOrErr.get();
       Res.getCodeGenOpts().ProfileInstrumentUsePath = ProfileName;
     }
+
+    setPGOUseInstrumentor(Res.getCodeGenOpts(), ProfileName, *FS, Diags);
   }
 
   FixupInvocation(Res, Diags, Args, DashX);
