@@ -24,6 +24,33 @@ entry:
   ret i32 %or6
 }
 
+;; Check for not crash.
+define i64 @test_read_3_second(ptr %b) {
+; CHECK-LABEL: test_read_3_second:
+; CHECK:       // %bb.0: // %entry
+; CHECK-NEXT:    ldrb    w8, [x0]
+; CHECK-NEXT:    ldrb    w9, [x0, #1]
+; CHECK-NEXT:    ldrb    w10, [x0, #2]
+; CHECK-NEXT:    lsl     x8, x8, #16
+; CHECK-NEXT:    orr     x8, x8, x9, lsl #8
+; CHECK-NEXT:    orr     x0, x8, x10
+; CHECK-NEXT:    ret
+entry:
+  %0 = load i8, ptr %b, align 1
+  %conv = zext i8 %0 to i64
+  %shl = shl nuw nsw i64 %conv, 16
+  %arrayidx1 = getelementptr inbounds i8, ptr %b, i64 1
+  %1 = load i8, ptr %arrayidx1, align 1
+  %conv2 = zext i8 %1 to i64
+  %shl3 = shl nuw nsw i64 %conv2, 8
+  %or = or i64 %shl3, %shl
+  %arrayidx4 = getelementptr inbounds i8, ptr %b, i64 2
+  %2 = load i8, ptr %arrayidx4, align 1
+  %conv5 = zext i8 %2 to i64
+  %or6 = or i64 %or, %conv5
+  ret i64 %or6
+}
+
 define i64 @test_read_6(ptr %b) {
 ; CHECK-LABEL: test_read_6:
 ; CHECK:       // %bb.0: // %entry
