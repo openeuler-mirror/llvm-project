@@ -60,6 +60,11 @@ static cl::opt<bool>
     KernelBinary("kernel",
                  cl::desc("Generate the profile for Linux kernel binary."));
 
+static cl::opt<uint64_t>
+    Pagesize("page-size",
+                 cl::desc("page size"), cl::init(0x1000),
+                 cl::desc("target system pagee size."));
+
 extern cl::opt<bool> ShowDetailedWarning;
 extern cl::opt<bool> InferMissingFrames;
 
@@ -326,7 +331,7 @@ void ProfiledBinary::setPreferredTextSegmentAddresses(const ELFFile<ELFT> &Obj,
   // However such info isn't available at post-processing time, assuming
   // 4K page now. Note that we don't use EXEC_PAGESIZE from <linux/param.h>
   // because we may build the tools on non-linux.
-  uint64_t PageSize = 0x1000;
+  uint64_t PageSize = Pagesize;
   for (const typename ELFT::Phdr &Phdr : PhdrRange) {
     if (Phdr.p_type == ELF::PT_LOAD) {
       if (!FirstLoadableAddress)
