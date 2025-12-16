@@ -1043,13 +1043,8 @@ def Xopenmp_target : Separate<["-"], "Xopenmp-target">, Group<CompileOnly_Group>
 def Xopenmp_target_EQ : JoinedAndSeparate<["-"], "Xopenmp-target=">, Group<CompileOnly_Group>,
   HelpText<"Pass <arg> to the target offloading toolchain identified by <triple>.">,
   MetaVarName<"<triple> <arg>">;
-#ifdef BUILD_FOR_OPENEULER
 def z : JoinedOrSeparate<["-"], "z">, Flags<[LinkerInput]>,
   HelpText<"Pass -z<arg> or -z <arg> to the linker">, MetaVarName<"<arg>">,
-#else
-def z : Separate<["-"], "z">, Flags<[LinkerInput]>,
-  HelpText<"Pass -z <arg> to the linker">, MetaVarName<"<arg>">,
-#endif
   Group<Link_Group>;
 def offload_link : Flag<["--"], "offload-link">, Group<Link_Group>,
   HelpText<"Use the new offloading linker to perform the link job.">;
@@ -2329,7 +2324,6 @@ def fmemory_profile_use_EQ : Joined<["-"], "fmemory-profile-use=">,
     HelpText<"Use memory profile for profile-guided memory optimization">,
     MarshallingInfoString<CodeGenOpts<"MemoryProfileUsePath">>;
 
-#ifdef BUILD_FOR_OPENEULER
 def fgcc_compatible : Flag<["-"], "fgcc-compatible">,
   Visibility<[ClangOption, CC1Option, FlangOption, FC1Option]>,
   MarshallingInfoFlag<DiagnosticOpts<"GccCompatible">>,
@@ -2340,7 +2334,6 @@ def fGNU_compatibility : Flag<["-"], "fGNU-compatibility">,
   HelpText<"Alias for -fgcc_compatible">;
 def fno_gcc_compatible : Flag<["-"], "fno-gcc-compatible">,
   Visibility<[ClangOption, CC1Option, FlangOption, FC1Option]>;
-#endif
 
 // Begin sanitizer flags. These should all be core options exposed in all driver
 // modes.
@@ -6484,13 +6477,11 @@ def falign_jumps_EQ : Joined<["-"], "falign-jumps=">, Group<clang_ignored_gcc_op
 // ignore it for now to avoid breaking builds that use it.
 def fdiagnostics_show_location_EQ : Joined<["-"], "fdiagnostics-show-location=">, Group<clang_ignored_f_Group>;
 
-#ifdef BUILD_FOR_OPENEULER
 def flifetime_dse_EQ : Joined<["-"], "flifetime-dse=">, Group<clang_ignored_gcc_optimization_f_Group>;
 defm peephole : BooleanFFlag<"peephole">, Group<clang_ignored_gcc_optimization_f_Group>;
 defm peephole2 : BooleanFFlag<"peephole2">, Group<clang_ignored_gcc_optimization_f_Group>;
 defm aggressive_loop_optiomizations : BooleanFFlag<"aggressive-loop-optiomizations">, Group<clang_ignored_gcc_optimization_f_Group>;
 def flto_partition_EQ : Joined<["-"], "flto-partition=">, Group<clang_ignored_gcc_optimization_f_Group>;
-#endif
 
 defm check_new : BoolOption<"f", "check-new",
   LangOpts<"CheckNew">, DefaultFalse,

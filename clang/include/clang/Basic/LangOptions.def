@@ -525,9 +525,7 @@ BENIGN_LANGOPT(CheckConstexprFunctionBodies, 1, 1,
 
 LANGOPT(BoundsSafety, 1, 0, "Bounds safety extension for C")
 
-#ifdef BUILD_FOR_OPENEULER
-LANGOPT(GccCompatible, 1, 0, "Enable gcc compatibility for openEuler.")
-#endif
+LANGOPT(GccCompatible, 1, 0, "Enable gcc compatible compilation")
 
 #undef LANGOPT
 #undef COMPATIBLE_LANGOPT

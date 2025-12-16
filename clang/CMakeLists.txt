@@ -355,7 +355,7 @@ if (LLVM_COMPILER_IS_GCC_COMPATIBLE)
   endif ()
 endif ()
 
-option(BUILD_FOR_OPENEULER "Add gcc compatible options for openEuler toolchain" OFF)
+option(BUILD_FOR_OPENEULER "Build support for openeuler" OFF)
 if (BUILD_FOR_OPENEULER)
   add_definitions( -DBUILD_FOR_OPENEULER )
 endif()

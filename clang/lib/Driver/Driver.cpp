@@ -1531,13 +1531,11 @@ Compilation *Driver::BuildCompilation(ArrayRef<const char *> ArgList) {
   // Populate the tool chains for the offloading devices, if any.
   CreateOffloadingDeviceToolChains(*C, Inputs);
 
-#ifdef BUILD_FOR_OPENEULER
   if(C->getArgs().hasFlag(options::OPT_fgcc_compatible,
                           options::OPT_fno_gcc_compatible, false)) {
     getDiags().setDiagnosticGroupWarningAsError("unused-command-line-argument", 0);
     getDiags().setDiagnosticGroupWarningAsError("ignored-optimization-argument", 0);
   }
-#endif
 
   // Construct the list of abstract actions to perform for this compilation. On
   // MachO targets this uses the driver-driver and universal actions.
@@ -2551,7 +2549,6 @@ void Driver::BuildUniversalActions(Compilation &C, const ToolChain &TC,
   }
 }
 
-#ifdef BUILD_FOR_OPENEULER
 llvm::DenseSet<StringRef> ZArgsList{
   "defs", "muldefs", "execstack", "noexecstack", "globalaudit", "combreloc",
   "nocombreloc", "global", "initfirst", "interpose", "lazy", "loadfltr",
@@ -2559,7 +2556,6 @@ llvm::DenseSet<StringRef> ZArgsList{
   "origin", "relro", "norelro", "separate-code", "noseparate-code", "common",
   "nocommon", "text", "notext", "textoff"
 };
-#endif
 
 bool Driver::DiagnoseInputExistence(const DerivedArgList &Args, StringRef Value,
                                     types::ID Ty, bool TypoCorrect) const {
@@ -2632,13 +2628,11 @@ bool Driver::DiagnoseInputExistence(const DerivedArgList &Args, StringRef Value,
   if (IsCLMode() && Ty == types::TY_Object && !Value.starts_with("/"))
     return true;
 
-#ifdef BUILD_FOR_OPENEULER
   if (ZArgsList.find(Value) != ZArgsList.end() ||
       Value.starts_with("common-page-size=") ||
       Value.starts_with("max-page-size=") ||
       Value.starts_with("stack-size="))
     return true;
-#endif
 
   Diag(clang::diag::err_drv_no_such_file) << Value;
   return false;
