@@ -2075,6 +2075,7 @@ class LSRInstance {
   void GenerateAllReuseFormulae();
 
   void FilterOutUndesirableDedicatedRegisters();
+  void FilterOutChainsWithPointerIncPostLoads();
 
   size_t EstimateSearchSpaceComplexity() const;
   void NarrowSearchSpaceByDetectingSupersets();
@@ -2877,35 +2878,6 @@ bool IVChain::isProfitableIncrement(const SCEV *OperExpr,
   return !isHighCostExpansion(IncExpr, Processed, SE);
 }
 
-/// Return true if the IVChain is incomplete or there is no relevant load
-/// instruction exist before the IVOperand of the tail Phi.
-/// When a pointer post-increment after loads to it in a loop. It may not be
-/// profitable to sink it to the latch of the loop even with register saving,
-/// which makes the distance between the PtrAdd closer to the load instructions
-/// and causes stall.
-static bool isProfitablePtrAddPostLoad(IVChain &Chain, DominatorTree &DT) {
-  // Only care about complete chains which GenerateIVChain may place the PtrAdd
-  // of its Phi to the latch of the loop.
-  IVInc &Tail = Chain.Incs.back();
-  if (!isa<PHINode>(Tail.UserInst))
-    return true;
-
-  if (Tail.IncExpr->isZero())
-    return true;
-
-  GetElementPtrInst *PtrAdd = dyn_cast<GetElementPtrInst>(Tail.IVOperand);
-  if (!PtrAdd)
-    return true;
-
-  unsigned NumLoadPrePtrAdd = 0;
-  for (const IVInc &Inc : Chain.Incs)
-    if (isa<LoadInst>(Inc.UserInst) && DT.dominates(Inc.UserInst, PtrAdd))
-      ++NumLoadPrePtrAdd;
-  LLVM_DEBUG(dbgs() << "Chain: " << *Chain.Incs[0].UserInst
-                    << " NumLoadPrePtrAdd: " << NumLoadPrePtrAdd << "\n");
-  return NumLoadPrePtrAdd == 0;
-}
-
 /// Return true if the number of registers needed for the chain is estimated to
 /// be less than the number required for the individual IV users. First prohibit
 /// any IV users that keep the IV live across increments (the Users set should
@@ -2919,8 +2891,7 @@ static bool isProfitablePtrAddPostLoad(IVChain &Chain, DominatorTree &DT) {
 static bool isProfitableChain(IVChain &Chain,
                               SmallPtrSetImpl<Instruction *> &Users,
                               ScalarEvolution &SE,
-                              const TargetTransformInfo &TTI,
-                              DominatorTree &DT) {
+                              const TargetTransformInfo &TTI) {
   if (StressIVChain)
     return true;
 
@@ -2952,10 +2923,6 @@ static bool isProfitableChain(IVChain &Chain,
 
   if (TTI.isProfitableLSRChainElement(Chain.Incs[0].UserInst))
     return true;
-
-  if (DoNotSinkPtrAddPostLoad)
-    if (!isProfitablePtrAddPostLoad(Chain, DT))
-      return false;
 
   for (const IVInc &Inc : Chain) {
     if (TTI.isProfitableLSRChainElement(Inc.UserInst))
@@ -3190,7 +3157,7 @@ void LSRInstance::CollectChains() {
   for (unsigned UsersIdx = 0, NChains = IVChainVec.size();
        UsersIdx < NChains; ++UsersIdx) {
     if (!isProfitableChain(IVChainVec[UsersIdx],
-                           ChainUsersVec[UsersIdx].FarUsers, SE, TTI, DT))
+                           ChainUsersVec[UsersIdx].FarUsers, SE, TTI))
       continue;
     // Preserve the chain at UsesIdx.
     if (ChainIdx != UsersIdx)
@@ -4611,6 +4578,125 @@ void LSRInstance::FilterOutUndesirableDedicatedRegisters() {
   });
 }
 
+// Delete formulas from IVChains with pointer increments post loads.
+// Implementing such formulas could bring loop-carried dependencies closer.
+void LSRInstance::FilterOutChainsWithPointerIncPostLoads() {
+  SmallPtrSet<const SCEV *, 4> PointerIncsPostLoad;
+#ifndef NDEBUG
+  bool ChangedFormulae = false;
+#endif
+
+  // First, collect all IVChains which have pointer increment GEP post loads.
+  for (IVChain &Chain : IVChainVec) {
+    IVInc &Tail = Chain.Incs.back();
+    if (Tail.IncExpr->isZero())
+      continue;
+
+    if (GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(Tail.IVOperand))
+      for (const IVInc &Inc : Chain.Incs)
+        if (isa<LoadInst>(Inc.UserInst) && DT.dominates(Inc.UserInst, GEP)) {
+          LLVM_DEBUG(dbgs() << "Filtering for IVChain: "
+                            << *Chain.Incs[0].UserInst << "\n");
+          Instruction *UserInst = Chain.tailUserInst();
+          if (SE.isSCEVable(UserInst->getType()))
+            PointerIncsPostLoad.insert(SE.getSCEV(UserInst));
+          break;
+        }
+  }
+  if (PointerIncsPostLoad.empty())
+    return;
+
+  // Second, match and delete Formulas with the IVChain collection.
+  for (size_t LUIdx = 0, NumUses = Uses.size(); LUIdx != NumUses; ++LUIdx) {
+    LSRUse &LU = Uses[LUIdx];
+
+    // Only consider Address uses for loads and stores.
+    if (LU.Kind != LSRUse::Address)
+      continue;
+
+    // Helper function to match the given formula with the IVChains. Return true
+    // if the formula is relevant to any of the IVChain in the collection.
+    auto IsDerivedFromPointerIncPostLoadChain = [&](const Formula &F) {
+      auto HasSameARCharacteristic = [&](const SCEVAddRecExpr *AAR,
+                                         const SCEVAddRecExpr *PAR) {
+        return AAR != nullptr && PAR != nullptr &&
+               AAR->getLoop() == PAR->getLoop() &&
+               AAR->getStepRecurrence(SE) == PAR->getStepRecurrence(SE);
+      };
+      // Direct match the expression of the ScaledReg.
+      if (PointerIncsPostLoad.count(F.ScaledReg))
+        return true;
+      for (const SCEV *BaseReg : F.BaseRegs) {
+        // Direct match the expression of the BaseReg.
+        if (PointerIncsPostLoad.count(BaseReg))
+          return true;
+        if (const SCEVAddRecExpr *AAR = dyn_cast<SCEVAddRecExpr>(BaseReg))
+          for (const SCEV *PS : PointerIncsPostLoad) {
+            const SCEVAddRecExpr *PAR = dyn_cast<SCEVAddRecExpr>(PS);
+            if (HasSameARCharacteristic(AAR, PAR)) {
+              const SCEV *ABase = AAR->getStart();
+              const SCEV *PBase = PAR->getStart();
+              // Variant match the same AddRec with different constant offset.
+              if (isa<SCEVConstant>(SE.getMinusSCEV(ABase, PBase)))
+                return true;
+            }
+          }
+      }
+      if (const SCEV *ScaledReg = F.ScaledReg) {
+        if (const SCEVAddRecExpr *AAR = dyn_cast<SCEVAddRecExpr>(ScaledReg))
+          for (const SCEV *PS : PointerIncsPostLoad) {
+            const SCEVAddRecExpr *PAR = dyn_cast<SCEVAddRecExpr>(PS);
+            if (HasSameARCharacteristic(AAR, PAR)) {
+              const SCEV *ABase = AAR->getStart();
+              const SCEV *PBase = PAR->getStart();
+              // Variant match the same AddRec with different constant offset.
+              if (isa<SCEVConstant>(SE.getMinusSCEV(ABase, PBase)))
+                return true;
+
+              // Decomposed match when ScaledReg is counter, BaseReg is base.
+              for (const SCEV *BaseReg : F.BaseRegs) {
+                if (BaseReg == PBase)
+                  return true;
+                if (const SCEVAddExpr *PAdd = dyn_cast<SCEVAddExpr>(PBase))
+                  for (const SCEV *Op : PAdd->operands())
+                    if (BaseReg == Op)
+                      return true;
+              }
+            }
+          }
+      }
+      return false;
+    };
+
+    bool Any = false;
+    for (size_t FIdx = 0, NumForms = LU.Formulae.size(); FIdx != NumForms;
+         ++FIdx) {
+      Formula &F = LU.Formulae[FIdx];
+
+      if (IsDerivedFromPointerIncPostLoadChain(F)) {
+        LLVM_DEBUG(dbgs() << "  Filtering out formula "; F.print(dbgs());
+                   dbgs() << "\n");
+#ifndef NDEBUG
+        ChangedFormulae = true;
+#endif
+        LU.DeleteFormula(F);
+        --FIdx;
+        --NumForms;
+        Any = true;
+      }
+    }
+
+    if (Any)
+      LU.RecomputeRegs(LUIdx, RegUses);
+  }
+
+  LLVM_DEBUG(if (ChangedFormulae) {
+    dbgs() << "\n"
+              "After filtering out undesirable candidates:\n";
+    print_uses(dbgs());
+  });
+}
+
 /// Estimate the worst-case number of solutions the solver might have to
 /// consider. It almost never considers this many solutions because it prune the
 /// search space, but the pruning isn't always sufficient.
@@ -5983,6 +6069,8 @@ LSRInstance::LSRInstance(Loop *L, IVUsers &IU, ScalarEvolution &SE,
   GenerateAllReuseFormulae();
 
   FilterOutUndesirableDedicatedRegisters();
+  if (DoNotSinkPtrAddPostLoad)
+    FilterOutChainsWithPointerIncPostLoads();
   NarrowSearchSpaceUsingHeuristics();
 
   SmallVector<const Formula *, 8> Solution;
