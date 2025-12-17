@@ -1511,8 +1511,8 @@ mergeAll(const SmallVectorImpl<StringRef> &FileNames, llvm::vfs::FileSystem &FS,
 
   int FD;
   llvm::SmallString<128> TempFileName;
-  EC = llvm::sys::fs::createUniqueFile("./autoconv-temp-%%%%%%.profdata", FD,
-                                       TempFileName);
+  EC = llvm::sys::fs::createTemporaryFile("autoconv-temp", "profdata", FD,
+                                          TempFileName);
   if(EC)
     return llvm::errorCodeToError(EC);
   llvm::raw_fd_ostream OF(FD, true);
