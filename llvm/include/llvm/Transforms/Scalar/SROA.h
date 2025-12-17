@@ -123,8 +123,9 @@ class SROAPass : public PassInfoMixin<SROAPass> {
   SetVector<AllocaInst *, SmallVector<AllocaInst *, 16>> PostPromotionWorklist;
 
   /// A collection of alloca instructions we can directly promote.
-  std::vector<AllocaInst *> PromotableAllocas;
-
+  SetVector<AllocaInst *, SmallVector<AllocaInst *>,
+            SmallPtrSet<AllocaInst *, 16>, 16>
+      PromotableAllocas;
   /// A worklist of PHIs to speculate prior to promoting allocas.
   ///
   /// All of these PHIs have been checked for the safety of speculation and by
