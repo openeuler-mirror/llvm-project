@@ -9,7 +9,9 @@
 # CHECK: w func_1
 # CHECK: {{0+}}[[#%x,ADDR:]] W func_2
 
-# CHECK: {{.*}} <.rodata>:
+# CHECK: Disassembly of section .rodata:
+# CHECK-EMPTY:
+# CHECK-NEXT: {{.*}} <{{.*}}>:
 # CHECK-NEXT: {{.*}} .word 0x00000000
 # CHECK-NEXT: {{.*}} .word 0x00000000
 # CHECK-NEXT: {{.*}} .word 0x{{[0]+}}[[#ADDR]]
