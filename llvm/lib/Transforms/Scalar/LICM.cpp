@@ -86,6 +86,9 @@
 #include "llvm/Transforms/Utils/SSAUpdater.h"
 #include <algorithm>
 #include <utility>
+// feat licm 
+#include "llvm/IR/InlineAsm.h"
+
 using namespace llvm;
 
 namespace llvm {
@@ -1157,6 +1160,66 @@ static MemoryAccess *getClobberingMemoryAccess(MemorySSA &MSSA,
   return Source;
 }
 
+
+// feat licm
+static bool canHoistGlobalLoadDespiteInlineAsm(LoadInst *LI, Loop *CurLoop) {
+  Value *Ptr = LI->getPointerOperand()->stripPointerCasts();
+  
+  // 工具函数：判断 V 是 global 还是 global load 的 GEP
+  auto IsGlobalOrGlobalGEP = [&](Value *V) -> bool {
+    V = V->stripPointerCasts();
+    // 情况 1：本身就是 global
+    if (isa<GlobalObject>(V))
+      return true;
+    // 情况 2：GEP(load global)
+    if (auto *GEP = dyn_cast<GetElementPtrInst>(V)) {
+      Value *Base = GEP->getPointerOperand()->stripPointerCasts();
+      if (auto *LI = dyn_cast<LoadInst>(Base)) {
+        Value *Ptr = LI->getPointerOperand()->stripPointerCasts();
+          if (isa<GlobalObject>(Ptr))
+            return true;
+      }
+    }
+    return false;
+  };
+
+  if (IsGlobalOrGlobalGEP(Ptr) && CurLoop->isLoopInvariant(Ptr)) {
+    // 是否有 inline assembly
+    bool isInlineAsmChecked = false;
+    // inline assembly 是否有memory clobber
+    bool HasVolatileAsmWithMemoryClobber = false;
+    
+    for (BasicBlock *BB : CurLoop->blocks()) {
+      for (Instruction &I : *BB) {
+        auto *CB = dyn_cast<CallBase>(&I);
+        if (!CB || !CB->isInlineAsm())
+          continue;
+        // 只关心 asm volatile
+        if (!CB->mayHaveSideEffects())
+          continue;
+        isInlineAsmChecked = true;
+        auto *IA = cast<InlineAsm>(CB->getCalledOperand());
+        StringRef Constraints = IA->getConstraintString();
+        // 如果有 memory clobber，必须保守
+        if (Constraints.contains("~{memory}")) {
+          HasVolatileAsmWithMemoryClobber = true;
+          break;
+        }
+      } 
+
+      if (HasVolatileAsmWithMemoryClobber)
+        break;
+    }
+
+  // 如果 loop 中的 asm volatile 都不 clobber memory → 允许 LICM
+  if (isInlineAsmChecked && !HasVolatileAsmWithMemoryClobber)
+    return true;
+  }
+
+  return false;
+}
+
+
 bool llvm::canSinkOrHoistInst(Instruction &I, AAResults *AA, DominatorTree *DT,
                               Loop *CurLoop, MemorySSAUpdater &MSSAU,
                               bool TargetExecutesOncePerLoop,
@@ -1186,6 +1249,10 @@ bool llvm::canSinkOrHoistInst(Instruction &I, AAResults *AA, DominatorTree *DT,
     if (isLoadInvariantInLoop(LI, DT, CurLoop))
       return true;
 
+    // feat licm
+    if (canHoistGlobalLoadDespiteInlineAsm(LI, CurLoop))
+      return true;
+      
     auto MU = cast<MemoryUse>(MSSA->getMemoryAccess(LI));
 
     bool InvariantGroup = LI->hasMetadata(LLVMContext::MD_invariant_group);
