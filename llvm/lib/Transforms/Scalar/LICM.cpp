@@ -66,6 +66,7 @@
 #include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Dominators.h"
+#include "llvm/IR/InlineAsm.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/IRBuilder.h"
@@ -86,8 +87,6 @@
 #include "llvm/Transforms/Utils/SSAUpdater.h"
 #include <algorithm>
 #include <utility>
-// feat licm 
-#include "llvm/IR/InlineAsm.h"
 
 using namespace llvm;
 
@@ -1162,61 +1161,67 @@ static MemoryAccess *getClobberingMemoryAccess(MemorySSA &MSSA,
 
 
 // feat licm
-static bool canHoistGlobalLoadDespiteInlineAsm(LoadInst *LI, Loop *CurLoop) {
-  Value *Ptr = LI->getPointerOperand()->stripPointerCasts();
-  
-  // 工具函数：判断 V 是 global 还是 global load 的 GEP
-  auto IsGlobalOrGlobalGEP = [&](Value *V) -> bool {
-    V = V->stripPointerCasts();
-    // 情况 1：本身就是 global
-    if (isa<GlobalObject>(V))
-      return true;
-    // 情况 2：GEP(load global)
-    if (auto *GEP = dyn_cast<GetElementPtrInst>(V)) {
-      Value *Base = GEP->getPointerOperand()->stripPointerCasts();
-      if (auto *LI = dyn_cast<LoadInst>(Base)) {
-        Value *Ptr = LI->getPointerOperand()->stripPointerCasts();
-          if (isa<GlobalObject>(Ptr))
+static bool canHoistGlobalLoadDespiteInlineAsm(LoadInst *LI, 
+                                               Loop *CurLoop)
+{
+    Value *Ptr = LI->getPointerOperand()->stripPointerCasts();
+
+    // Returns true if V is a global or a GEP derived from a global.
+    auto IsGlobalOrGlobalGEP = [&](Value *V) -> bool {
+        V = V->stripPointerCasts();
+        
+        // case 1: global
+        if (isa<GlobalObject>(V))
             return true;
-      }
-    }
-    return false;
+        
+        // case 2：GEP(load global)
+        if (auto *GEP = dyn_cast<GetElementPtrInst>(V)) {
+            Value *Base = GEP->getPointerOperand()->stripPointerCasts();
+            if (auto *LI = dyn_cast<LoadInst>(Base)) {
+                Value *Ptr = LI->getPointerOperand()->stripPointerCasts();
+                    if (isa<GlobalObject>(Ptr))
+                        return true;
+            }
+        }
+        
+        return false;
   };
 
-  if (IsGlobalOrGlobalGEP(Ptr) && CurLoop->isLoopInvariant(Ptr)) {
-    // 是否有 inline assembly
-    bool isInlineAsmChecked = false;
-    // inline assembly 是否有memory clobber
-    bool HasVolatileAsmWithMemoryClobber = false;
+    if (IsGlobalOrGlobalGEP(Ptr) && CurLoop->isLoopInvariant(Ptr)) {
     
-    for (BasicBlock *BB : CurLoop->blocks()) {
-      for (Instruction &I : *BB) {
-        auto *CB = dyn_cast<CallBase>(&I);
-        if (!CB || !CB->isInlineAsm())
-          continue;
-        // 只关心 asm volatile
-        if (!CB->mayHaveSideEffects())
-          continue;
-        isInlineAsmChecked = true;
-        auto *IA = cast<InlineAsm>(CB->getCalledOperand());
-        StringRef Constraints = IA->getConstraintString();
-        // 如果有 memory clobber，必须保守
-        if (Constraints.contains("~{memory}")) {
-          HasVolatileAsmWithMemoryClobber = true;
-          break;
-        }
-      } 
+        // Tracks whether the loop contains any inline asm with side effects.
+        bool isInlineAsmChecked = false;
+    
+        // Set to true if a volatile inline asm clobbers memory.
+        bool HasVolatileAsmWithMemoryClobber = false;
+    
+        for (BasicBlock *BB : CurLoop->blocks()) {
+            for (Instruction &I : *BB) {
+                auto *CB = dyn_cast<CallBase>(&I);
+                if (!CB || !CB->isInlineAsm())
+                    continue;
+                if (!CB->mayHaveSideEffects())
+                    continue;
+                isInlineAsmChecked = true;
+                auto *IA = cast<InlineAsm>(CB->getCalledOperand());
+                StringRef Constraints = IA->getConstraintString();
+                // If there is a memory clobber, we must be conservative.
+                if (Constraints.contains("~{memory}")) {
+                    HasVolatileAsmWithMemoryClobber = true;
+                    break;
+                }
+            } 
 
-      if (HasVolatileAsmWithMemoryClobber)
-        break;
+            if (HasVolatileAsmWithMemoryClobber)
+                break;
+        }
+
+    // If there are no inline asm with memory clobbers in the loop, allow LICM
+    if (isInlineAsmChecked && !HasVolatileAsmWithMemoryClobber)
+        return true;
     }
 
-  // 如果 loop 中的 asm volatile 都不 clobber memory → 允许 LICM
-  if (isInlineAsmChecked && !HasVolatileAsmWithMemoryClobber)
-    return true;
-  }
-
-  return false;
+    return false;
 }
 
 
@@ -1249,10 +1254,9 @@ bool llvm::canSinkOrHoistInst(Instruction &I, AAResults *AA, DominatorTree *DT,
     if (isLoadInvariantInLoop(LI, DT, CurLoop))
       return true;
 
-    // feat licm
     if (canHoistGlobalLoadDespiteInlineAsm(LI, CurLoop))
       return true;
-      
+
     auto MU = cast<MemoryUse>(MSSA->getMemoryAccess(LI));
 
     bool InvariantGroup = LI->hasMetadata(LLVMContext::MD_invariant_group);
