@@ -4,34 +4,35 @@
 C_COMPILER_PATH=gcc
 CXX_COMPILER_PATH=g++
 
-# Initialize our own variables:
+# Initialize our own variables.
+backends="all"
+build_for_embedded="0"
+build_for_openeuler="0"
+buildtype="RelWithDebInfo"
+clean="0"
+containerize="0"
+containerize_needed="0"
+container="openEuler"
+docker=$(type -p docker)
+do_install="0"
 enable_acpo="1"
 enable_autotuner="1"
 enable_bolt="1"
-buildtype=RelWithDebInfo
-backends="all"
-build_for_openeuler="0"
-enabled_projects="clang;lld;openmp;clang-tools-extra"
-embedded_toolchain="0"
-split_dwarf=on
-use_ccache="0"
 enable_classic_flang="0"
-do_install="0"
-clean=0
-containerize=0
-docker=$(type -p docker)
+enabled_projects="clang;lld;openmp;clang-tools-extra"
 host_arch="$(uname -m)"
-unit_test=""
 install="install"
 install_toolchain_only="0"
+split_dwarf="on"
+unit_test=""
+use_ccache="0"
 verbose=""
+
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 build_dir_name="build"
 install_dir_name="install"
 build_prefix="$dir/$build_dir_name"
 install_prefix="$dir/$install_dir_name"
-container=openEuler
-containerize_needed=0
 
 # Use 8 threads for builds and tests by default. Use more threads if possible,
 # but avoid overloading the system by using up to 50% of available cores.
@@ -60,21 +61,21 @@ Options:
   -b type  Specify CMake build type (default: $buildtype).
   -c       Use ccache (default: $use_ccache).
   -C       Containerize the build for compatibility.
+  -d dir   Specify build directory name (default: "$build_dir_name").
   -D env   Use openEuler/CentOS docker container for containerize build (default: $container).
   -e       Build for embedded cross tool chain.
   -E       Build for openEuler.
+  -f       Enable classic flang.
   -h       Display this help message.
   -i       Install the build (default: $do_install).
   -I name  Specify install directory name (default: "$install_dir_name").
-  -d dir   Specify the build directory (default: "$build_dir_name").
   -j N     Allow N jobs at once (default: $threads).
   -o       Enable LLVM_INSTALL_TOOLCHAIN_ONLY=ON.
-  -O       Do not build BOLT(binary optimization tool).
+  -O       Do not build BOLT (binary optimization tool).
   -r       Delete $install_prefix and perform a clean build (default: incremental).
   -s       Strip binaries and minimize file permissions when (re-)installing.
   -t       Enable unit tests for components that support them (make check-all).
   -v       Enable verbose build output (default: quiet).
-  -f       Enable classic flang.
   -X archs Build only the specified semi-colon-delimited list of backends (default: "$backends").
 EOF
 }
@@ -82,7 +83,7 @@ EOF
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
 containerized_opts=()
-while getopts :aAb:cCd:D:eEhiI:j:oOrstvfX: optchr; do
+while getopts :aAb:cCd:D:eEfhiI:j:oOrstvX: optchr; do
   case "$optchr" in
     a)
       enable_autotuner="0"
@@ -141,16 +142,16 @@ while getopts :aAb:cCd:D:eEhiI:j:oOrstvfX: optchr; do
           ;;
       esac
       ;;
-    f)
-      enable_classic_flang="1"
-      containerized_opts+=(-$optchr)
-      ;;
     e)
-      embedded_toolchain="1"
+      build_for_embedded="1"
       containerized_opts+=(-$optchr)
       ;;
     E)
       build_for_openeuler="1"
+      containerized_opts+=(-$optchr)
+      ;;
+    f)
+      enable_classic_flang="1"
       containerized_opts+=(-$optchr)
       ;;
     h)
@@ -341,31 +342,17 @@ else
   incdir=$(realpath --canonicalize-existing $(dirname $gold)/../include)
   if [ -z "$incdir" -o ! -f "$incdir/plugin-api.h" ]; then
     echo "$0: plugin-api.h not found; required to build LLVMgold.so"
+    echo "$0: Try 'yum install binutils-devel', 'apt install binutils-dev', etc"
     exit 1
   fi
   llvm_binutils_incdir="-DLLVM_BINUTILS_INCDIR=$incdir"
 fi
 
-# Warning: the -DLLVM_ENABLE_PROJECTS option is specified with cmake
-# to avoid issues with nested quotation marks
 if [ $use_ccache == "1" ]; then
   echo "Build using ccache"
   CMAKE_OPTIONS="$CMAKE_OPTIONS \
                 -DCMAKE_C_COMPILER_LAUNCHER=ccache \
                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache "
-fi
-
-if [ $enable_classic_flang == "1" ]; then
-  echo "Enable classic flang"
-  CMAKE_OPTIONS="$CMAKE_OPTIONS \
-                -DLLVM_ENABLE_CLASSIC_FLANG=on"
-fi
-
-if [ $embedded_toolchain == "1" ]; then
-  echo "Build for embedded cross tool chain"
-  enabled_projects="clang;lld;"
-  CMAKE_OPTIONS="$CMAKE_OPTIONS \
-                -DLLVM_BUILD_FOR_EMBEDDED=ON"
 fi
 
 # When set LLVM_INSTALL_TOOLCHAIN_ONLY to On it removes many of the LLVM development
@@ -375,32 +362,60 @@ if [ $install_toolchain_only == "1" ]; then
   CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON"
 fi
 
-if [ $build_for_openeuler == "1" ]; then
-  echo "Build for openEuler"
-  CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_FOR_OPENEULER=ON"
-fi
+# Process the enabling of features.
 
 if [ $enable_autotuner == "1" ]; then
-  echo "enable BiSheng-Autotuner"
+  echo "Enable BiSheng-Autotuner"
   CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_ENABLE_AUTOTUNER=ON"
 fi
 
 if [ $enable_acpo == "1" ]; then
-  echo "enable ACPO"
+  echo "Enable ACPO"
   export CFLAGS="-Wp,-DENABLE_ACPO ${CFLAGS}"
   export CXXFLAGS="-Wp,-DENABLE_ACPO ${CXXFLAGS}"
+  # Actually we do not support '-DENABLE_ACPO=ON' cmake option now.
+  # CMAKE_OPTIONS="$CMAKE_OPTIONS -DENABLE_ACPO=ON"
 fi
 
-
 if [ $enable_bolt == "1" ]; then
-  echo "enable BOLT"
-  #There is internal error when linking with gold while compiling BOLT.
+  echo "Enable BOLT"
+  # There is an internal error when linking with gold while compiling BOLT.
   unset llvm_use_linker
   enabled_projects+=";bolt"
   EXE_LINKER_FLAGS="-Wl,--compress-debug-sections=zlib" 
 else
   llvm_use_linker="-DLLVM_USE_LINKER=gold"
   EXE_LINKER_FLAGS="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" 
+fi
+
+if [ $enable_classic_flang == "1" ]; then
+  echo "Enable classic flang"
+  CMAKE_OPTIONS="$CMAKE_OPTIONS \
+                -DLLVM_ENABLE_CLASSIC_FLANG=on"
+fi
+
+# Process the enabling of platforms.
+
+if [ $build_for_embedded == "1" ]; then
+  echo "Build for embedded cross tool chain"
+  echo "Only enable clang and lld in '-DLLVM_ENABLE_PROJECTS'"
+  # Rewrite enabled_projects to enable clang and lld only,
+  # drop bolt that may exist.
+  enabled_projects="clang;lld"
+  CMAKE_OPTIONS="$CMAKE_OPTIONS \
+                -DLLVM_BUILD_FOR_EMBEDDED=ON"
+fi
+
+if [ $build_for_openeuler == "1" ]; then
+  echo "Build for openEuler"
+  CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_FOR_OPENEULER=ON"
+fi
+
+if [ -n "$verbose" ]; then
+  CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_VERBOSE_MAKEFILE=ON"
+  LIT_ARGS="-vv"
+else
+  LIT_ARGS="-sv"
 fi
 
 # Build and install
@@ -415,51 +430,49 @@ fi
 
 mkdir -p "$build_prefix" && cd "$build_prefix"
 cmake $CMAKE_OPTIONS \
-      -DCOMPILER_RT_BUILD_SANITIZERS=on \
-      -DLLVM_ENABLE_PROJECTS=$enabled_projects \
-      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind" \
-      $llvm_use_linker \
-      -DLLVM_LIT_ARGS="-sv -j$threads" \
-      -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
-      -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO=$EXE_LINKER_FLAGS \
-      -DCMAKE_EXE_LINKER_FLAGS_DEBUG=$EXE_LINKER_FLAGS \
       -DBUILD_SHARED_LIBS=OFF \
-      -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
-      -DLLVM_ENABLE_ZLIB=ON \
-      -DLLVM_BUILD_RUNTIME=ON \
-      -DLLVM_INCLUDE_TOOLS=ON \
-      -DLLVM_BUILD_TOOLS=ON \
-      -DLLVM_INCLUDE_TESTS=ON \
-      -DLLVM_BUILD_TESTS=ON \
-      -DLLVM_INCLUDE_EXAMPLES=ON \
-      -DLLVM_BUILD_EXAMPLES=OFF \
       -DCLANG_DEFAULT_PIE_ON_LINUX=ON \
+      -DCLANG_DEFAULT_UNWINDLIB=libgcc \
       -DCLANG_ENABLE_ARCMT=ON \
       -DCLANG_ENABLE_STATIC_ANALYZER=ON \
       -DCLANG_PLUGIN_SUPPORT=ON \
-      -DLLVM_DYLIB_COMPONENTS="all" \
-      -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+      -DCMAKE_EXE_LINKER_FLAGS_DEBUG=$EXE_LINKER_FLAGS \
+      -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO=$EXE_LINKER_FLAGS \
       -DCMAKE_SKIP_RPATH=ON \
-      -DLLVM_ENABLE_FFI=ON \
-      -DLLVM_ENABLE_RTTI=ON \
-      -DLLVM_USE_PERF=ON \
-      -DLLVM_INSTALL_GTEST=ON \
-      -DLLVM_INCLUDE_UTILS=ON \
-      -DLLVM_INSTALL_UTILS=ON \
-      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DCOMPILER_RT_BUILD_SANITIZERS=on \
       -DENABLE_LINKER_BUILD_ID=ON \
-      -DLLVM_ENABLE_EH=ON \
-      -DCLANG_DEFAULT_UNWINDLIB=libgcc \
-      -DLIBCXX_STATICALLY_LINK_ABI_IN_STATIC_LIBRARY=ON \
       -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=ON \
+      -DLIBCXX_STATICALLY_LINK_ABI_IN_STATIC_LIBRARY=ON \
       -DLIBOMP_INSTALL_ALIASES=OFF \
+      -DLLVM_BUILD_EXAMPLES=OFF \
+      -DLLVM_BUILD_RUNTIME=ON \
+      -DLLVM_BUILD_TESTS=ON \
+      -DLLVM_BUILD_TOOLS=ON \
+      -DLLVM_DYLIB_COMPONENTS="all" \
+      -DLLVM_ENABLE_EH=ON \
+      -DLLVM_ENABLE_FFI=ON \
+      -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+      -DLLVM_ENABLE_PROJECTS=$enabled_projects \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind" \
       -DLLVM_ENABLE_TERMINFO=NO \
-      -DENABLE_ACPO=$enable_acpo \
+      -DLLVM_ENABLE_ZLIB=ON \
+      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_INCLUDE_EXAMPLES=ON \
+      -DLLVM_INCLUDE_TESTS=ON \
+      -DLLVM_INCLUDE_TOOLS=ON \
+      -DLLVM_INCLUDE_UTILS=ON \
+      -DLLVM_INSTALL_GTEST=ON \
+      -DLLVM_INSTALL_UTILS=ON \
+      -DLLVM_LIT_ARGS="$LIT_ARGS -j$threads" \
+      -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
+      -DLLVM_USE_PERF=ON \
+      -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
       $llvm_binutils_incdir \
-      $verbose \
+      $llvm_use_linker \
       ../llvm
 
-make -j$threads
+make -j$threads $verbose
 if [ $do_install == "1" ]; then
   make -j$threads $verbose $install
 fi
@@ -471,38 +484,36 @@ if pushd runtimes > /dev/null 2>&1; then
   if [ ! -f "$build_prefix"/projects/libcxx/CMakeCache.txt ]; then
     mkdir -p "$build_prefix/projects/libcxx" && cd "$build_prefix/projects/libcxx"
     cmake -Wno-dev \
-	  -DCMAKE_BUILD_TYPE=$buildtype \
-	  -DCMAKE_INSTALL_PREFIX="$install_prefix" \
-	  -DCMAKE_C_COMPILER="$c_compiler" \
-	  -DCMAKE_CXX_COMPILER="$cxx_compiler" \
-	  -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
-	  -DLIBCXX_ENABLE_ASSERTIONS=OFF \
-	  -DLLVM_LIT_ARGS="-sv -j$threads" \
-	  -DBUILD_SHARED_LIBS=OFF \
-	  -DCMAKE_SKIP_RPATH=ON \
-          $llvm_use_linker\
-	  -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
-	  ../../../runtimes
+          -DBUILD_SHARED_LIBS=OFF \
+          -DCMAKE_BUILD_TYPE=$buildtype \
+          -DCMAKE_C_COMPILER="$c_compiler" \
+          -DCMAKE_CXX_COMPILER="$cxx_compiler" \
+          -DCMAKE_INSTALL_PREFIX="$install_prefix" \
+          -DCMAKE_SKIP_RPATH=ON \
+          -DLIBCXX_ENABLE_ASSERTIONS=OFF \
+          -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
+          -DLLVM_LIT_ARGS="$LIT_ARGS -j$threads" \
+          -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
+          $llvm_use_linker \
+          ../../../runtimes
   else
     cd "$build_prefix"/projects/libcxx
   fi
-  install_libcxx=${install/\/strip/-strripped}
+  install_libcxx=${install/\/strip/-stripped}
   make -j$threads $verbose \
-	  ${install_libcxx/install/install-cxx} ${install_libcxx/install/install-cxxabi} ${install_libcxx/install/install-cxxabi-headers}
+    ${install_libcxx/install/install-cxx} ${install_libcxx/install/install-cxxabi} ${install_libcxx/install/install-cxxabi-headers}
   if [ -n "$unit_test" ]; then
-	  make -j$threads $verbose ${unit_test/all/cxx} ${unit_test/all/cxxabi}
+    make -j$threads $verbose ${unit_test/all/cxx} ${unit_test/all/cxxabi}
   fi
   popd > /dev/null 2>&1
 else
-  echo "$0: directory not found: libcxx"
+  echo "$0: directory not found: runtimes"
   exit 1
 fi
 
 if [ -n "$unit_test" ]; then
   make -j$threads $verbose check-all
 fi
-
-cd ..
 
 # When building official deliverables, minimize file permissions under the
 # installation directory.
