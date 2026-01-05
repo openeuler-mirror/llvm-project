@@ -10,7 +10,6 @@ backends="all"
 build_for_openeuler="0"
 enabled_projects="clang;lld;compiler-rt;openmp;clang-tools-extra"
 extra_projects=""
-embedded_toolchain="0"
 split_dwarf=on
 use_ccache="0"
 do_install="0"
@@ -53,7 +52,6 @@ Options:
   -b type  Specify CMake build type (default: $buildtype).
   -c       Use ccache (default: $use_ccache).
   -C       Containerize the build for openEuler compatibility.
-  -e       Build for embedded cross tool chain.
   -E       Build for openEuler.
   -i       Install the build (default: $do_install).
   -I name  Specify install directory name (default: "$install_dir_name").
@@ -72,7 +70,7 @@ EOF
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
 containerized_opts=()
-while getopts :b:d:cCeEhiI:j:op:rstvfX: optchr; do
+while getopts :b:d:cCEhiI:j:op:rstvX: optchr; do
   case "$optchr" in
     b)
       buildtype="$OPTARG"
@@ -104,10 +102,6 @@ while getopts :b:d:cCeEhiI:j:op:rstvfX: optchr; do
       build_dir_name="$OPTARG"
       build_prefix="$dir/$build_dir_name"
       containerized_opts+=(-$optchr "$OPTARG")
-      ;;
-    e)
-      embedded_toolchain="1"
-      containerized_opts+=(-$optchr)
       ;;
     E)
       build_for_openeuler="1"
@@ -311,13 +305,6 @@ if [ $use_ccache == "1" ]; then
                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache "
 fi
 
-if [ $embedded_toolchain == "1" ]; then
-  echo "Build for embedded cross tool chain"
-  enabled_projects="clang;lld;compiler-rt;"
-  CMAKE_OPTIONS="$CMAKE_OPTIONS \
-                -DLLVM_BUILD_FOR_EMBEDDED=ON"
-fi
-
 if [ -n "$extra_projects" ]; then
   enabled_projects="${enabled_projects%;}"
   IFS=';' read -r -a _extra_projects_arr <<< "${extra_projects%;}"
@@ -410,8 +397,6 @@ if [ -n "$unit_test" ]; then
   make -j$threads $verbose check-all
 fi
 
-cd ..
-
 # When building official deliverables, minimize file permissions under the
 # installation directory.
 if [ "$install" = "install/strip" ]; then
@@ -419,8 +404,7 @@ if [ "$install" = "install/strip" ]; then
   find $install_prefix -type f -exec chmod a-w {} \;
 fi
 
-# In openEuler embedded building system, it need wrap llvm-readelf
-# to replace binutils-readelf.
+# Wrap llvm-readobj by llvm-readelf.
 if [ -e "$install_prefix/bin/llvm-readobj" ]; then
   ln -sf llvm-readobj $install_prefix/bin/llvm-readelf
 fi
