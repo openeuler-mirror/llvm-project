@@ -49,6 +49,20 @@ sudo usermod -aG docker ${USER}
 
 Note: When you perform a containerized build for the first time, the script automatically pulls the `llvm-build-deps container image` from the image repository.
 
+### 2.3. Build extra projects
+
+The openEuler LLVM project provides support for building extra projects. You can specify the projects to be built using the `-p` option of the `build.sh` script. For example:
+
+```
+./build.sh -r -b release -X X86 -j 8 -p easy-jit
+```
+
+The above command will build LLVM and the easy-jit project.
+When building multiple extra projects, use semicolons to separate them.
+
+Currently supported extra projects:
+* easy-jit: A lightweight JIT compilation framework for invoking LLVM JIT directly from C++ code.
+
 ## 3. Contribution guidance
 
 1. Fork This Warehouse

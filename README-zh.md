@@ -43,6 +43,17 @@ sudo usermod -aG docker ${USER}
 ```
 注意：第一次执行容器化构建时，脚本会自动从镜像仓库拉取llvm-build-deps容器镜像。
 
+### 2.3、构建额外项目
+openEuler LLVM项目提供了构建额外项目的支持。通过`build.sh`脚本的`-p`选项可以指定要构建的项目，例如：
+```
+./build.sh -r -b release -X X86 -j 8 -p easy-jit
+```
+上述命令会构建LLVM本体和easy-jit项目。
+需要构建多个额外项目时，可以使用分号分隔。
+
+目前支持的额外项目有：
+* easy-jit： 轻量级JIT编译框架，用于实现从C++代码直接对LLVM JIT的调用。
+
 ## 3、贡献指导
 
 1、Fork 本仓库  
