@@ -26,6 +26,8 @@ build_dir_name="build"
 install_dir_name="install"
 build_prefix="$dir/$build_dir_name"
 install_prefix="$dir/$install_dir_name"
+container=openEuler
+containerize_needed=0
 
 # Use 8 threads for builds and tests by default. Use more threads if possible,
 # but avoid overloading the system by using up to 50% of available cores.
@@ -52,7 +54,9 @@ Options:
   -b type  Specify CMake build type (default: $buildtype).
   -c       Use ccache (default: $use_ccache).
   -C       Containerize the build for openEuler compatibility.
+  -D env   Use openEuler/CentOS docker container for containerize build (default: $container).
   -E       Build for openEuler.
+  -h       Display this help message.
   -i       Install the build (default: $do_install).
   -I name  Specify install directory name (default: "$install_dir_name").
   -d dir   Specify the build directory (default: "$build_dir_name").
@@ -70,7 +74,7 @@ EOF
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
 containerized_opts=()
-while getopts :b:d:cCEhiI:j:op:rstvX: optchr; do
+while getopts :b:d:cCD:EhiI:j:op:rstvX: optchr; do
   case "$optchr" in
     b)
       buildtype="$OPTARG"
@@ -102,6 +106,24 @@ while getopts :b:d:cCEhiI:j:op:rstvX: optchr; do
       build_dir_name="$OPTARG"
       build_prefix="$dir/$build_dir_name"
       containerized_opts+=(-$optchr "$OPTARG")
+      ;;
+    D)
+      container="$OPTARG"
+      containerize_needed=1
+      case "${container}" in
+        openEuler)
+          ;;
+        CentOS)
+          if [ "$(uname -m)" != "aarch64" ]; then
+            echo "$0: CentOS container only support AArch64 for now"
+            exit 1
+          fi
+          ;;
+        *)
+          echo "$0: invalid container env '$container'"
+          exit 1
+          ;;
+      esac
       ;;
     E)
       build_for_openeuler="1"
@@ -204,6 +226,10 @@ if [ $containerize -eq 0 ]; then
   trap 'handle_abort 129 HUP' SIGHUP
   trap 'handle_abort 130 INT' SIGINT
   trap 'handle_abort 143 TERM' SIGTERM
+  if [ $containerize_needed -eq 1 ]; then
+    echo "$0: -C is needed for containerize build"
+    exit 1
+  fi
 else
   cmd=$(readlink --canonicalize-existing $0)
 
@@ -242,7 +268,11 @@ else
   trap 'docker_cleanup 130 INT' SIGINT
   trap 'docker_cleanup 143 TERM' SIGTERM
 
-  DOCKER_IMAGE="llvm-build-deps:latest"
+  if [ "$container" == "CentOS" ]; then
+    DOCKER_IMAGE="swr.cn-north-4.myhuaweicloud.com/llvm4oe/llvm-build-dep-centos7.6:latest"
+  else
+    DOCKER_IMAGE="hub.oepkgs.net/openeuler/llvm-build-deps:latest"
+  fi
   docker_opts="--rm
     --cap-add=SYS_ADMIN
     --cap-add=SYS_PTRACE
@@ -256,7 +286,7 @@ else
     -v $passwd:/etc/passwd
     -v $group:/etc/group
     -e BINUTILS_INCDIR=/usr/local/include
-    hub.oepkgs.net/openeuler/${DOCKER_IMAGE}"
+    ${DOCKER_IMAGE}"
 
   if [ -t 1 ]; then
     $docker run -it $docker_opts ${cmd} ${containerized_opts[@]}
