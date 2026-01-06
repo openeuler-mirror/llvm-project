@@ -30,9 +30,15 @@ python3-setuptools python-wheel texinfo binutils-devel libatomic
 
 ### 2.2、容器化构建
 
-为了解决由于开发环境差异导致的构建失败和构建产物二进制差异问题，openEuler LLVM项目提供了容器化构建方法。得益于[openEuler容器镜像项目](https://gitee.com/openeuler/openeuler-docker-images)，提前制作了[llvm-build-deps容器镜像](https://gitee.com/openeuler/openeuler-docker-images/tree/master/llvm-build-deps)。开发者可以通过`build.sh`脚本的`-C`选项启用容器化构建，例如：
+为了解决由于开发环境差异导致的构建失败和构建产物二进制差异问题，openEuler LLVM项目提供了容器化构建方法。得益于[openEuler容器镜像项目](https://atomgit.com/openeuler/openeuler-docker-images)，提前制作了[llvm-build-deps容器镜像](https://atomgit.com/openeuler/openeuler-docker-images/tree/master/AI/llvm-build-deps)。开发者可以通过`build.sh`脚本的`-C`选项启用容器化构建，例如：
 ```
 ./build.sh -C -r -b release -X X86 -j 8   // 添加了-C选项
+```
+
+为解决其他操作系统下（CentOS等）的glibc兼容性问题，openEuler LLVM项目同时提供可选的CentOS构建镜像（当前仅支持AArch64架构）。建议仅在目标系统使用的glibc版本满足 >=2.17 且 <2.34 时使用此镜像。开发者可以通过`build.sh`脚本的`-D`选项切换使用的构建容器，例如：
+
+```
+./build.sh -C -D CentOS -r -b release -X AArch64 -j 8   // 添加了-D CentOS
 ```
 
 相关依赖：
@@ -68,7 +74,7 @@ openEuler LLVM项目提供了构建额外项目的支持。通过`build.sh`脚�
 
 * 社区参与者的[行为规范](https://llvm.org/docs/CodeOfConduct.html).
 
-### 4.1、openEuler社区Compiler SIG
+### 4.2、openEuler社区Compiler SIG
 几种方式：
 * 订阅[Compiler SIG邮件列表](https://mailweb.openeuler.org/postorius/lists/compiler@openeuler.org/)
 * 在[openEuler论坛](https://forum.openeuler.org/?locale=zh_CN)发帖讨论。

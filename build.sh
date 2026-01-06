@@ -4,24 +4,26 @@
 C_COMPILER_PATH=gcc
 CXX_COMPILER_PATH=g++
 
-# Initialize our own variables:
-buildtype=RelWithDebInfo
+# Initialize our own variables.
 backends="all"
 build_for_openeuler="0"
+buildtype="RelWithDebInfo"
+clean="0"
+containerize="0"
+containerize_needed="0"
+container="openEuler"
+docker=$(type -p docker)
+do_install="0"
 enabled_projects="clang;lld;compiler-rt;openmp;clang-tools-extra"
 extra_projects=""
-embedded_toolchain="0"
-split_dwarf=on
-use_ccache="0"
-do_install="0"
-clean=0
-containerize=0
-docker=$(type -p docker)
 host_arch="$(uname -m)"
-unit_test=""
 install="install"
 install_toolchain_only="0"
+split_dwarf="on"
+unit_test=""
+use_ccache="0"
 verbose=""
+
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 build_dir_name="build"
 install_dir_name="install"
@@ -53,11 +55,12 @@ Options:
   -b type  Specify CMake build type (default: $buildtype).
   -c       Use ccache (default: $use_ccache).
   -C       Containerize the build for openEuler compatibility.
-  -e       Build for embedded cross tool chain.
+  -d dir   Specify the build directory (default: "$build_dir_name").
+  -D env   Use openEuler/CentOS docker container for containerize build (default: $container).
   -E       Build for openEuler.
+  -h       Display this help message.
   -i       Install the build (default: $do_install).
   -I name  Specify install directory name (default: "$install_dir_name").
-  -d dir   Specify the build directory (default: "$build_dir_name").
   -j N     Allow N jobs at once (default: $threads).
   -o       Enable LLVM_INSTALL_TOOLCHAIN_ONLY=ON.
   -p projs Add extra semi-colon-delimited LLVM projects to enable.
@@ -72,7 +75,7 @@ EOF
 # Process command-line options. Remember the options for passing to the
 # containerized build script.
 containerized_opts=()
-while getopts :b:d:cCeEhiI:j:op:rstvfX: optchr; do
+while getopts :b:cCd:D:EhiI:j:op:rstvX: optchr; do
   case "$optchr" in
     b)
       buildtype="$OPTARG"
@@ -105,9 +108,23 @@ while getopts :b:d:cCeEhiI:j:op:rstvfX: optchr; do
       build_prefix="$dir/$build_dir_name"
       containerized_opts+=(-$optchr "$OPTARG")
       ;;
-    e)
-      embedded_toolchain="1"
-      containerized_opts+=(-$optchr)
+    D)
+      container="$OPTARG"
+      containerize_needed=1
+      case "${container}" in
+        openEuler)
+          ;;
+        CentOS)
+          if [ "$(uname -m)" != "aarch64" ]; then
+            echo "$0: CentOS container only support AArch64 for now"
+            exit 1
+          fi
+          ;;
+        *)
+          echo "$0: invalid container env '$container'"
+          exit 1
+          ;;
+      esac
       ;;
     E)
       build_for_openeuler="1"
@@ -210,6 +227,10 @@ if [ $containerize -eq 0 ]; then
   trap 'handle_abort 129 HUP' SIGHUP
   trap 'handle_abort 130 INT' SIGINT
   trap 'handle_abort 143 TERM' SIGTERM
+  if [ $containerize_needed -eq 1 ]; then
+    echo "$0: -C is needed for containerize build"
+    exit 1
+  fi
 else
   cmd=$(readlink --canonicalize-existing $0)
 
@@ -248,7 +269,11 @@ else
   trap 'docker_cleanup 130 INT' SIGINT
   trap 'docker_cleanup 143 TERM' SIGTERM
 
-  DOCKER_IMAGE="llvm-build-deps:latest"
+  if [ "$container" == "CentOS" ]; then
+    DOCKER_IMAGE="swr.cn-north-4.myhuaweicloud.com/llvm4oe/llvm-build-dep-centos7.6:latest"
+  else
+    DOCKER_IMAGE="hub.oepkgs.net/openeuler/llvm-build-deps:latest"
+  fi
   docker_opts="--rm
     --cap-add=SYS_ADMIN
     --cap-add=SYS_PTRACE
@@ -262,7 +287,7 @@ else
     -v $passwd:/etc/passwd
     -v $group:/etc/group
     -e BINUTILS_INCDIR=/usr/local/include
-    hub.oepkgs.net/openeuler/${DOCKER_IMAGE}"
+    ${DOCKER_IMAGE}"
 
   if [ -t 1 ]; then
     $docker run -it $docker_opts ${cmd} ${containerized_opts[@]}
@@ -297,6 +322,7 @@ else
   incdir=$(realpath --canonicalize-existing $(dirname $gold)/../include)
   if [ -z "$incdir" -o ! -f "$incdir/plugin-api.h" ]; then
     echo "$0: plugin-api.h not found; required to build LLVMgold.so"
+    echo "$0: Try 'yum install binutils-devel', 'apt install binutils-dev', etc"
     exit 1
   fi
   llvm_binutils_incdir="-DLLVM_BINUTILS_INCDIR=$incdir"
@@ -311,11 +337,11 @@ if [ $use_ccache == "1" ]; then
                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache "
 fi
 
-if [ $embedded_toolchain == "1" ]; then
-  echo "Build for embedded cross tool chain"
-  enabled_projects="clang;lld;compiler-rt;"
-  CMAKE_OPTIONS="$CMAKE_OPTIONS \
-                -DLLVM_BUILD_FOR_EMBEDDED=ON"
+# When set LLVM_INSTALL_TOOLCHAIN_ONLY to On it removes many of the LLVM development
+# and testing tools as well as component libraries from the default install target.
+if [ $install_toolchain_only == "1" ]; then
+  echo "Only install toolchain"
+  CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON"
 fi
 
 if [ -n "$extra_projects" ]; then
@@ -335,16 +361,20 @@ if [ -n "$extra_projects" ]; then
   done
 fi
 
-# When set LLVM_INSTALL_TOOLCHAIN_ONLY to On it removes many of the LLVM development
-# and testing tools as well as component libraries from the default install target.
-if [ $install_toolchain_only == "1" ]; then
-  echo "Only install toolchain"
-  CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON"
-fi
+# Process the enabling of features.
+
+# Process the enabling of platforms.
 
 if [ $build_for_openeuler == "1" ]; then
   echo "Build for openEuler"
   CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_FOR_OPENEULER=ON"
+fi
+
+if [ -n "$verbose" ]; then
+  CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_VERBOSE_MAKEFILE=ON"
+  LIT_ARGS="-vv"
+else
+  LIT_ARGS="-sv"
 fi
 
 # Build and install
@@ -359,49 +389,48 @@ fi
 
 mkdir -p "$build_prefix" && cd "$build_prefix"
 cmake $CMAKE_OPTIONS \
-      -DCOMPILER_RT_BUILD_SANITIZERS=on \
-      -DLLVM_ENABLE_PROJECTS=$enabled_projects \
-      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
-      -DLLVM_USE_LINKER=gold \
-      -DLLVM_LIT_ARGS="-sv -j$threads" \
-      -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
-      -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
-      -DCMAKE_EXE_LINKER_FLAGS_DEBUG="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
       -DBUILD_SHARED_LIBS=OFF \
-      -DLLVM_ENABLE_LIBCXX=OFF \
-      -DLLVM_ENABLE_ZLIB=ON \
-      -DLLVM_BUILD_RUNTIME=ON \
-      -DLLVM_INCLUDE_TOOLS=ON \
-      -DLLVM_BUILD_TOOLS=ON \
-      -DLLVM_INCLUDE_TESTS=ON \
-      -DLLVM_BUILD_TESTS=ON \
-      -DLLVM_INCLUDE_EXAMPLES=ON \
-      -DLLVM_BUILD_EXAMPLES=OFF \
       -DCLANG_DEFAULT_PIE_ON_LINUX=ON \
+      -DCLANG_DEFAULT_UNWINDLIB=libgcc \
       -DCLANG_ENABLE_ARCMT=ON \
       -DCLANG_ENABLE_STATIC_ANALYZER=ON \
       -DCLANG_PLUGIN_SUPPORT=ON \
-      -DLLVM_DYLIB_COMPONENTS="all" \
-      -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+      -DCMAKE_EXE_LINKER_FLAGS_DEBUG="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
+      -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO="-Wl,--gdb-index -Wl,--compress-debug-sections=zlib" \
       -DCMAKE_SKIP_RPATH=ON \
-      -DLLVM_ENABLE_FFI=ON \
-      -DLLVM_ENABLE_RTTI=ON \
-      -DLLVM_USE_PERF=ON \
-      -DLLVM_INSTALL_GTEST=ON \
-      -DLLVM_INCLUDE_UTILS=ON \
-      -DLLVM_INSTALL_UTILS=ON \
-      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DCOMPILER_RT_BUILD_SANITIZERS=on \
       -DENABLE_LINKER_BUILD_ID=ON \
-      -DLLVM_ENABLE_EH=ON \
-      -DCLANG_DEFAULT_UNWINDLIB=libgcc \
-      -DLIBCXX_STATICALLY_LINK_ABI_IN_STATIC_LIBRARY=ON \
       -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=ON \
+      -DLIBCXX_STATICALLY_LINK_ABI_IN_STATIC_LIBRARY=ON \
       -DLIBOMP_INSTALL_ALIASES=OFF \
+      -DLLVM_BUILD_EXAMPLES=OFF \
+      -DLLVM_BUILD_RUNTIME=ON \
+      -DLLVM_BUILD_TESTS=ON \
+      -DLLVM_BUILD_TOOLS=ON \
+      -DLLVM_DYLIB_COMPONENTS="all" \
+      -DLLVM_ENABLE_EH=ON \
+      -DLLVM_ENABLE_FFI=ON \
+      -DLLVM_ENABLE_LIBCXX=OFF \
+      -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+      -DLLVM_ENABLE_PROJECTS=$enabled_projects \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+      -DLLVM_ENABLE_ZLIB=ON \
+      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_INCLUDE_EXAMPLES=ON \
+      -DLLVM_INCLUDE_TESTS=ON \
+      -DLLVM_INCLUDE_TOOLS=ON \
+      -DLLVM_INCLUDE_UTILS=ON \
+      -DLLVM_INSTALL_GTEST=ON \
+      -DLLVM_INSTALL_UTILS=ON \
+      -DLLVM_LIT_ARGS="$LIT_ARGS -j$threads" \
+      -DLLVM_USE_LINKER=gold \
+      -DLLVM_USE_PERF=ON \
+      -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
       $llvm_binutils_incdir \
-      $verbose \
       ../llvm
 
-make -j$threads
+make -j$threads $verbose
 if [ $do_install == "1" ]; then
   make -j$threads $verbose $install
 fi
@@ -410,8 +439,6 @@ if [ -n "$unit_test" ]; then
   make -j$threads $verbose check-all
 fi
 
-cd ..
-
 # When building official deliverables, minimize file permissions under the
 # installation directory.
 if [ "$install" = "install/strip" ]; then
@@ -419,8 +446,7 @@ if [ "$install" = "install/strip" ]; then
   find $install_prefix -type f -exec chmod a-w {} \;
 fi
 
-# In openEuler embedded building system, it need wrap llvm-readelf
-# to replace binutils-readelf.
+# Wrap llvm-readobj by llvm-readelf.
 if [ -e "$install_prefix/bin/llvm-readobj" ]; then
   ln -sf llvm-readobj $install_prefix/bin/llvm-readelf
 fi
