@@ -203,19 +203,19 @@ static bool isDeInterleaveMask(ArrayRef<int> Mask, unsigned &Factor,
 /// I.e. <0, LaneLen, ... , LaneLen*(Factor - 1), 1, LaneLen + 1, ...>
 /// E.g. For a Factor of 2 (LaneLen=4): <0, 4, 1, 5, 2, 6, 3, 7>
 static bool isReInterleaveMask(ArrayRef<int> Mask, unsigned &Factor,
-                               unsigned MaxFactor, unsigned OpNumElts) {
+                               unsigned MaxFactor, unsigned OpNumElts,
+                               bool InterleaveWithShuffles) {
   unsigned NumElts = Mask.size();
   if (NumElts < 4)
     return false;
 
-  // Check potential Factors.
-  for (Factor = 2; Factor <= MaxFactor; Factor++) {
+  auto isInterleave = [&](unsigned &Factor) {
     if (NumElts % Factor)
-      continue;
+      return false;
 
     unsigned LaneLen = NumElts / Factor;
     if (!isPowerOf2_32(LaneLen))
-      continue;
+      return false;
 
     // Check whether each element matches the general interleaved rule.
     // Ignore undef elements, as long as the defined elements match the rule.
@@ -276,15 +276,27 @@ static bool isReInterleaveMask(ArrayRef<int> Mask, unsigned &Factor,
       if (StartMask < 0)
         break;
       // We must stay within the vectors; This case can happen with undefs.
-      if (StartMask + LaneLen > OpNumElts*2)
+      if (StartMask + LaneLen > OpNumElts * 2)
         break;
     }
 
     // Found an interleaved mask of current factor.
     if (I == Factor)
       return true;
+    return false;
+  };
+  // Check potential Factors.
+  for (Factor = 2; Factor <= MaxFactor; Factor++) {
+    if (isInterleave(Factor))
+      return true;
   }
-
+  if (InterleaveWithShuffles) {
+    for (unsigned i = 1; MaxFactor * i <= 16; i *= 2) {
+      Factor = i * MaxFactor;
+      if (isInterleave(Factor))
+        return true;
+    }
+  }
   return false;
 }
 
@@ -502,7 +514,8 @@ bool InterleavedAccess::lowerInterleavedStore(
   unsigned Factor;
   unsigned OpNumElts =
       cast<FixedVectorType>(SVI->getOperand(0)->getType())->getNumElements();
-  if (!isReInterleaveMask(SVI->getShuffleMask(), Factor, MaxFactor, OpNumElts))
+  if (!isReInterleaveMask(SVI->getShuffleMask(), Factor, MaxFactor, OpNumElts,
+                          TLI->hasInterleaveWithGatherScatter()))
     return false;
 
   LLVM_DEBUG(dbgs() << "IA: Found an interleaved store: " << *SI << "\n");

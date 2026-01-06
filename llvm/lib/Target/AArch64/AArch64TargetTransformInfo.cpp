@@ -2728,8 +2728,35 @@ InstructionCost AArch64TTIImpl::getInterleavedMemoryOpCost(
   assert(Factor >= 2 && "Invalid interleave factor");
   auto *VecVTy = cast<FixedVectorType>(VecTy);
 
+  unsigned NumLoadStores = 1;
+  InstructionCost ShuffleCost = 0;
+  bool isInterleaveWithShuffle = false;
+  unsigned MaxSupportedFactor = TLI->getMaxSupportedInterleaveFactor();
+
+  auto *SubVecTy =
+      VectorType::get(VecVTy->getElementType(),
+                      VecVTy->getElementCount().divideCoefficientBy(Factor));
+
+  if (TLI->hasInterleaveWithGatherScatter() && Opcode == Instruction::Store &&
+      (0 == Factor % MaxSupportedFactor) && Factor > MaxSupportedFactor &&
+      DL.getTypeSizeInBits(SubVecTy) <= 128) {
+    isInterleaveWithShuffle = true;
+    SmallVector<int, 16> Mask;
+    // preparing interleave Mask.
+    for (unsigned i = 0; i < VecVTy->getElementCount().getKnownMinValue() / 2;
+         i++) {
+      for (unsigned j = 0; j < 2; j++)
+        Mask.push_back(j * Factor + i);
+    }
+
+    NumLoadStores = Factor / MaxSupportedFactor;
+    ShuffleCost =
+        (Factor * getShuffleCost(TargetTransformInfo::SK_Splice, VecVTy, Mask,
+                                 CostKind, 0, SubVecTy));
+  }
+
   if (!UseMaskForCond && !UseMaskForGaps &&
-      Factor <= TLI->getMaxSupportedInterleaveFactor()) {
+      (Factor <= MaxSupportedFactor || isInterleaveWithShuffle)) {
     unsigned NumElts = VecVTy->getNumElements();
     auto *SubVecTy =
         FixedVectorType::get(VecTy->getScalarType(), NumElts / Factor);
@@ -2740,7 +2767,10 @@ InstructionCost AArch64TTIImpl::getInterleavedMemoryOpCost(
     bool UseScalable;
     if (NumElts % Factor == 0 &&
         TLI->isLegalInterleavedAccessType(SubVecTy, DL, UseScalable))
-      return Factor * TLI->getNumInterleavedAccesses(SubVecTy, DL, UseScalable);
+      return (Factor *
+              TLI->getNumInterleavedAccesses(SubVecTy, DL, UseScalable) *
+              NumLoadStores) +
+             ShuffleCost;
   }
 
   return BaseT::getInterleavedMemoryOpCost(Opcode, VecTy, Factor, Indices,
