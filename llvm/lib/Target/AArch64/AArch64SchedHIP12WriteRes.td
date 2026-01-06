@@ -543,7 +543,7 @@ def HIP12Write_2c_2ST_2STD : SchedWriteRes<[HIP12UnitST, HIP12UnitSTD]> {
   let ResourceCycles = [2, 2];
 }
 
-let Latency = 9, NumMicroOps = 54 in
-def HIP12Write_9c_36V_18ALU25 : SchedWriteRes<[HIP12UnitV, HIP12UnitALU25]> {
-  let ResourceCycles = [36, 18];
+let Latency = 10, NumMicroOps = 60 in
+def HIP12Write_10c_40V_20ALU25 : SchedWriteRes<[HIP12UnitV, HIP12UnitALU25]> {
+  let ResourceCycles = [40, 20];
 }
