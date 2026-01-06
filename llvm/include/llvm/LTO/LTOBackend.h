@@ -23,6 +23,7 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Target/TargetOptions.h"
 #include "llvm/Transforms/IPO/FunctionImport.h"
+#include "llvm/Support/ThreadPool.h"
 
 namespace llvm {
 
@@ -52,11 +53,13 @@ Error backend(const Config &C, AddStreamFn AddStream,
 /// be mapped to memory on demand and at any given time during importing, only
 /// one source module will be kept open at the most.
 Error thinBackend(const Config &C, unsigned Task, AddStreamFn AddStream,
-                  Module &M, const ModuleSummaryIndex &CombinedIndex,
+                  Module &M, ModuleSummaryIndex &CombinedIndex,
                   const FunctionImporter::ImportMapTy &ImportList,
                   const GVSummaryMapTy &DefinedGlobals,
                   MapVector<StringRef, BitcodeModule> *ModuleMap,
-                  const std::vector<uint8_t> &CmdArgs = std::vector<uint8_t>());
+                  std::vector<std::vector<SmallString<0>>> &bufPart,
+                  const std::vector<uint8_t> &CmdArgs = std::vector<uint8_t>(),
+                  ThreadPool *PartitionThreadPool = nullptr);
 
 Error finalizeOptimizationRemarks(
     std::unique_ptr<ToolOutputFile> DiagOutputFile);

@@ -1072,8 +1072,57 @@ Error LTO::run(AddStreamFn AddStream, FileCache Cache) {
   std::unique_ptr<ToolOutputFile> StatsFile = std::move(StatsFileOrErr.get());
 
   Error Result = runRegularLTO(AddStream);
+  std::vector<std::vector<SmallString<0>>> bufPart(getMaxTasks());
   if (!Result)
-    Result = runThinLTO(AddStream, Cache, GUIDPreservedSymbols);
+    Result = runThinLTO(AddStream, Cache, GUIDPreservedSymbols, bufPart);
+
+  if (StatsFile)
+    PrintStatisticsJSON(StatsFile->os());
+
+  return Result;
+}
+
+Error LTO::run(AddStreamFn AddStream, FileCache Cache, std::vector<std::vector<SmallString<0>>> &bufPart) {
+  // Compute "dead" symbols, we don't want to import/export these!
+  DenseSet<GlobalValue::GUID> GUIDPreservedSymbols;
+  DenseMap<GlobalValue::GUID, PrevailingType> GUIDPrevailingResolutions;
+  for (auto &Res : GlobalResolutions) {
+    // Normally resolution have IR name of symbol. We can do nothing here
+    // otherwise. See comments in GlobalResolution struct for more details.
+    if (Res.second.IRName.empty())
+      continue;
+
+    GlobalValue::GUID GUID = GlobalValue::getGUID(
+        GlobalValue::dropLLVMManglingEscape(Res.second.IRName));
+
+    if (Res.second.VisibleOutsideSummary && Res.second.Prevailing)
+      GUIDPreservedSymbols.insert(GUID);
+
+    if (Res.second.ExportDynamic)
+      DynamicExportSymbols.insert(GUID);
+
+    GUIDPrevailingResolutions[GUID] =
+        Res.second.Prevailing ? PrevailingType::Yes : PrevailingType::No;
+  }
+
+  auto isPrevailing = [&](GlobalValue::GUID G) {
+    auto It = GUIDPrevailingResolutions.find(G);
+    if (It == GUIDPrevailingResolutions.end())
+      return PrevailingType::Unknown;
+    return It->second;
+  };
+  computeDeadSymbolsWithConstProp(ThinLTO.CombinedIndex, GUIDPreservedSymbols,
+                                  isPrevailing, Conf.OptLevel > 0);
+
+  // Setup output file to emit statistics.
+  auto StatsFileOrErr = setupStatsFile(Conf.StatsFile);
+  if (!StatsFileOrErr)
+    return StatsFileOrErr.takeError();
+  std::unique_ptr<ToolOutputFile> StatsFile = std::move(StatsFileOrErr.get());
+
+  Error Result = runRegularLTO(AddStream);
+  if (!Result)
+    Result = runThinLTO(AddStream, Cache, GUIDPreservedSymbols, bufPart);
 
   if (StatsFile)
     PrintStatisticsJSON(StatsFile->os());
@@ -1230,7 +1279,8 @@ public:
       const FunctionImporter::ImportMapTy &ImportList,
       const FunctionImporter::ExportSetTy &ExportList,
       const std::map<GlobalValue::GUID, GlobalValue::LinkageTypes> &ResolvedODR,
-      MapVector<StringRef, BitcodeModule> &ModuleMap) = 0;
+      MapVector<StringRef, BitcodeModule> &ModuleMap,
+      std::vector<std::vector<SmallString<0>>> &bufPart) = 0;
   virtual Error wait() = 0;
   virtual unsigned getThreadCount() = 0;
 
@@ -1262,6 +1312,7 @@ public:
 namespace {
 class InProcessThinBackend : public ThinBackendProc {
   ThreadPool BackendThreadPool;
+  ThreadPool PartitionThreadPool;
   AddStreamFn AddStream;
   FileCache Cache;
   std::set<GlobalValue::GUID> CfiFunctionDefs;
@@ -1281,7 +1332,8 @@ public:
       bool ShouldEmitIndexFiles, bool ShouldEmitImportsFiles)
       : ThinBackendProc(Conf, CombinedIndex, ModuleToDefinedGVSummaries,
                         OnWrite, ShouldEmitImportsFiles),
-        BackendThreadPool(ThinLTOParallelism), AddStream(std::move(AddStream)),
+        BackendThreadPool(ThinLTOParallelism), PartitionThreadPool(ThinLTOParallelism),
+        AddStream(std::move(AddStream)),
         Cache(std::move(Cache)), ShouldEmitIndexFiles(ShouldEmitIndexFiles) {
     for (auto &Name : CombinedIndex.cfiFunctionDefs())
       CfiFunctionDefs.insert(
@@ -1298,7 +1350,8 @@ public:
       const FunctionImporter::ExportSetTy &ExportList,
       const std::map<GlobalValue::GUID, GlobalValue::LinkageTypes> &ResolvedODR,
       const GVSummaryMapTy &DefinedGlobals,
-      MapVector<StringRef, BitcodeModule> &ModuleMap) {
+      MapVector<StringRef, BitcodeModule> &ModuleMap,
+      std::vector<std::vector<SmallString<0>>> &bufPart) {
     auto RunThinBackend = [&](AddStreamFn AddStream) {
       LTOLLVMContext BackendContext(Conf);
       Expected<std::unique_ptr<Module>> MOrErr = BM.parseModule(BackendContext);
@@ -1306,7 +1359,8 @@ public:
         return MOrErr.takeError();
 
       return thinBackend(Conf, Task, AddStream, **MOrErr, CombinedIndex,
-                         ImportList, DefinedGlobals, &ModuleMap);
+                         ImportList, DefinedGlobals, &ModuleMap,
+                         bufPart, {}, &PartitionThreadPool);
     };
 
     auto ModuleID = BM.getModuleIdentifier();
@@ -1343,7 +1397,8 @@ public:
       const FunctionImporter::ImportMapTy &ImportList,
       const FunctionImporter::ExportSetTy &ExportList,
       const std::map<GlobalValue::GUID, GlobalValue::LinkageTypes> &ResolvedODR,
-      MapVector<StringRef, BitcodeModule> &ModuleMap) override {
+      MapVector<StringRef, BitcodeModule> &ModuleMap,
+      std::vector<std::vector<SmallString<0>>> &bufPart) override {
     StringRef ModulePath = BM.getModuleIdentifier();
     assert(ModuleToDefinedGVSummaries.count(ModulePath));
     const GVSummaryMapTy &DefinedGlobals =
@@ -1355,13 +1410,14 @@ public:
             const std::map<GlobalValue::GUID, GlobalValue::LinkageTypes>
                 &ResolvedODR,
             const GVSummaryMapTy &DefinedGlobals,
-            MapVector<StringRef, BitcodeModule> &ModuleMap) {
+            MapVector<StringRef, BitcodeModule> &ModuleMap,
+            std::vector<std::vector<SmallString<0>>> &bufPart) {
           if (LLVM_ENABLE_THREADS && Conf.TimeTraceEnabled)
             timeTraceProfilerInitialize(Conf.TimeTraceGranularity,
                                         "thin backend");
           Error E = runThinLTOBackendThread(
               AddStream, Cache, Task, BM, CombinedIndex, ImportList, ExportList,
-              ResolvedODR, DefinedGlobals, ModuleMap);
+              ResolvedODR, DefinedGlobals, ModuleMap, bufPart);
           if (E) {
             std::unique_lock<std::mutex> L(ErrMu);
             if (Err)
@@ -1373,7 +1429,8 @@ public:
             timeTraceProfilerFinishThread();
         },
         BM, std::ref(CombinedIndex), std::ref(ImportList), std::ref(ExportList),
-        std::ref(ResolvedODR), std::ref(DefinedGlobals), std::ref(ModuleMap));
+        std::ref(ResolvedODR), std::ref(DefinedGlobals), std::ref(ModuleMap),
+        std::ref(bufPart));
 
     if (OnWrite)
       OnWrite(std::string(ModulePath));
@@ -1448,7 +1505,8 @@ public:
       const FunctionImporter::ImportMapTy &ImportList,
       const FunctionImporter::ExportSetTy &ExportList,
       const std::map<GlobalValue::GUID, GlobalValue::LinkageTypes> &ResolvedODR,
-      MapVector<StringRef, BitcodeModule> &ModuleMap) override {
+      MapVector<StringRef, BitcodeModule> &ModuleMap,
+      std::vector<std::vector<SmallString<0>>> &bufPart) override {
     StringRef ModulePath = BM.getModuleIdentifier();
     std::string NewModulePath =
         getThinLTOOutputFile(std::string(ModulePath), OldPrefix, NewPrefix);
@@ -1485,7 +1543,8 @@ ThinBackend lto::createWriteIndexesThinBackend(
 }
 
 Error LTO::runThinLTO(AddStreamFn AddStream, FileCache Cache,
-                      const DenseSet<GlobalValue::GUID> &GUIDPreservedSymbols) {
+                      const DenseSet<GlobalValue::GUID> &GUIDPreservedSymbols,
+                      std::vector<std::vector<SmallString<0>>> &bufPart) {
   ThinLTO.CombinedIndex.releaseTemporaryMemory();
   timeTraceProfilerBegin("ThinLink", StringRef(""));
   auto TimeTraceScopeExit = llvm::make_scope_exit([]() {
@@ -1654,7 +1713,7 @@ Error LTO::runThinLTO(AddStreamFn AddStream, FileCache Cache,
     return BackendProc->start(RegularLTO.ParallelCodeGenParallelismLevel + I,
                               Mod.second, ImportLists[Mod.first],
                               ExportLists[Mod.first], ResolvedODR[Mod.first],
-                              ThinLTO.ModuleMap);
+                              ThinLTO.ModuleMap, bufPart);
   };
 
   if (BackendProc->getThreadCount() == 1) {
