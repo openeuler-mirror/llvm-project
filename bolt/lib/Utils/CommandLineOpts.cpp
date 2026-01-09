@@ -191,6 +191,12 @@ cl::opt<unsigned>
               cl::init(0), cl::ZeroOrMore, cl::cat(BoltCategory),
               cl::sub(cl::SubCommand::getAll()));
 
+cl::opt<bool> BlockCorrection(
+  "block-correction",
+  cl::desc("capture features useful for ML model to inference the count on the binary basic block"
+           " and correct them on CFG."),
+  cl::ZeroOrMore, cl::cat(BoltOptCategory));
+
 bool processAllFunctions() {
   if (opts::AggregateOnly)
     return false;

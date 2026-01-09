@@ -74,6 +74,8 @@ extern llvm::cl::opt<bool> UpdateDebugSections;
 // dbgs() for output within DEBUG().
 extern llvm::cl::opt<unsigned> Verbosity;
 
+extern llvm::cl::opt<bool> BlockCorrection;
+
 /// Return true if we should process all functions in the binary.
 bool processAllFunctions();
 

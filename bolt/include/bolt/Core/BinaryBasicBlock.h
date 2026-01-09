@@ -15,6 +15,7 @@
 #ifndef BOLT_CORE_BINARY_BASIC_BLOCK_H
 #define BOLT_CORE_BINARY_BASIC_BLOCK_H
 
+#include "bolt/Core/BinaryBasicBlockFeature.h"
 #include "bolt/Core/FunctionLayout.h"
 #include "bolt/Core/MCPlus.h"
 #include "llvm/ADT/GraphTraits.h"
@@ -25,6 +26,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include <limits>
 #include <utility>
+#include <set>
 
 namespace llvm {
 class MCCodeEmitter;
@@ -136,6 +138,12 @@ private:
 
   /// Last computed hash value.
   mutable uint64_t Hash{0};
+
+  std::set<BinaryBasicBlock *> ChildrenSet;
+
+  std::set<BinaryBasicBlock *> ParentSet;
+
+  BinaryBasicBlockFeature BlockFeatures;
 
 private:
   BinaryBasicBlock() = delete;
@@ -375,12 +383,10 @@ public:
   /// If the basic block ends with a conditional branch (possibly followed by
   /// an unconditional branch) and thus has 2 successors, return a successor
   /// corresponding to a jump condition which could be true or false.
-  /// Return nullptr if the basic block does not have a conditional jump.
-  BinaryBasicBlock *getConditionalSuccessor(bool Condition) {
-    if (succ_size() != 2)
-      return nullptr;
-    return Successors[Condition == true ? 0 : 1];
-  }
+  /// On AArch64, also return the only successor if it's followed by an
+  /// unconditional branch (for BlockCorrection feature compatibility).
+  /// Return nullptr otherwise.
+  BinaryBasicBlock *getConditionalSuccessor(bool Condition);
 
   const BinaryBasicBlock *getConditionalSuccessor(bool Condition) const {
     return const_cast<BinaryBasicBlock *>(this)->getConditionalSuccessor(
@@ -399,6 +405,13 @@ public:
   const BinaryBasicBlock *getFallthrough() const {
     return const_cast<BinaryBasicBlock *>(this)->getFallthrough();
   }
+
+  /// Return branch info corresponding to only branch.
+  const BinaryBranchInfo &getOnlyBranchInfo() const {
+    assert(BranchInfo.size() > 0 &&
+           "could only be called for blocks with at least 1 successor");
+    return BranchInfo[0];
+  };
 
   /// Return branch info corresponding to a taken branch.
   const BinaryBranchInfo &getTakenBranchInfo() const {
@@ -808,6 +821,36 @@ public:
     OutputAddressRange.second = Address;
   }
 
+  /// Sets features of this BB.
+  void setFeatures(BinaryBasicBlockFeature BBF) {
+    BlockFeatures = BBF;
+  }
+
+  /// Gets numberic features of this BB.
+  BinaryBasicBlockFeature getFeatures() {
+    return BlockFeatures;
+  }
+
+  /// Gets children sets of this BB.
+  std::set<BinaryBasicBlock *> getChildrenSet() {
+    return ChildrenSet;
+  }
+
+  /// Gets parent sets of this BB.
+  std::set<BinaryBasicBlock *> getParentSet() {
+    return ParentSet;
+  }
+
+  /// Inserts children sets of this BB.
+  void insertChildrenSet(BinaryBasicBlock *Node) {
+    ChildrenSet.insert(Node);
+  }
+
+  /// Inserts parent sets of this BB.
+  void insertParentSet(BinaryBasicBlock *Node) {
+    ParentSet.insert(Node);
+  }
+
   /// Gets the memory address range of this BB in the input binary.
   std::pair<uint64_t, uint64_t> getInputAddressRange() const {
     return InputRange;
@@ -967,7 +1010,8 @@ private:
 #if defined(LLVM_ON_UNIX)
 /// Keep the size of the BinaryBasicBlock within a reasonable size class
 /// (jemalloc bucket) on Linux
-static_assert(sizeof(BinaryBasicBlock) <= 256);
+/// The size threshod is expanded from 256 to 2048 to contain the extra BB features
+static_assert(sizeof(BinaryBasicBlock) <= 2048, "");
 #endif
 
 bool operator<(const BinaryBasicBlock &LHS, const BinaryBasicBlock &RHS);

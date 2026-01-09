@@ -22,6 +22,7 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 #include <map>
+#include <dlfcn.h>
 #include <unordered_map>
 #include <vector>
 
@@ -42,6 +43,15 @@ inline raw_ostream &operator<<(raw_ostream &OS, const LBREntry &LBR) {
   OS << "0x" << Twine::utohexstr(LBR.From) << " -> 0x"
      << Twine::utohexstr(LBR.To);
   return OS;
+}
+
+extern "C" {
+typedef void *(*CreateONNXRunnerFunc)(const char *);
+typedef void (*DeleteONNXRunnerFunc)(void *);
+typedef std::vector<float> (*RunONNXModelFunc)(void *,
+                                               const std::vector<std::string> &,
+                                               const std::vector<int64_t> &,
+                                               const std::vector<float> &, int);
 }
 
 struct Location {
@@ -263,7 +273,8 @@ struct FuncSampleData {
 class DataReader : public ProfileReaderBase {
 public:
   explicit DataReader(StringRef Filename)
-      : ProfileReaderBase(Filename), Diag(errs()) {}
+      : ProfileReaderBase(Filename), Diag(errs()), onnxRunner(nullptr),
+        libHandle(nullptr), handleOnnxRuntime(nullptr) {}
 
   StringRef getReaderName() const override { return "branch profile reader"; }
 
@@ -282,7 +293,87 @@ public:
   /// Return all event names used to collect this profile
   StringSet<> getEventNames() const override { return EventNames; }
 
+  ~DataReader() {
+    // delete onnxrunner;
+    if (onnxRunner && libHandle && handleOnnxRuntime) {
+      DeleteONNXRunnerFunc deleteONNXRunner =
+          (DeleteONNXRunnerFunc)dlsym(libHandle, "deleteONNXRunner");
+      deleteONNXRunner(onnxRunner);
+      dlclose(libHandle);
+      dlclose(handleOnnxRuntime);
+    }
+  }
+
+  /// Initialize the onnxruntime model.
+  void initializeONNXRunner(const std::string &modelPath) {
+    if (!onnxRunner && !libHandle && !handleOnnxRuntime) {
+      handleOnnxRuntime =
+          dlopen("libonnxruntime.so", RTLD_LAZY | RTLD_GLOBAL);
+      if (handleOnnxRuntime == nullptr) {
+        outs() << "error: llvm-bolt failed during loading onnxruntime.so.\n";
+        exit(1);
+      }
+      libHandle = dlopen("libONNXRunner.so", RTLD_LAZY);
+      if (libHandle == nullptr) {
+        outs() << "error: llvm-bolt failed during loading libONNXRunner.so.\n";
+        exit(1);
+      }
+      CreateONNXRunnerFunc createONNXRunner =
+          (CreateONNXRunnerFunc)dlsym(libHandle, "createONNXRunner");
+      onnxRunner = createONNXRunner(modelPath.c_str());
+    }
+  }
+
+  /// Inference step for predicting the BB counts based on the BB features.
+  float ONNXInference(const std::vector<std::string> &input_string,
+                      const std::vector<int64_t> &input_int64,
+                      const std::vector<float> &input_float, int batch_size = 1) {
+    if (onnxRunner && libHandle) {
+      RunONNXModelFunc runONNXModel =
+          (RunONNXModelFunc)dlsym(libHandle, "runONNXModel");
+      std::vector<float> model_preds = runONNXModel(
+          onnxRunner, input_string, input_int64, input_float, batch_size);
+      if (model_preds.size() <= 0) {
+        outs() << "error: llvm-bolt model prediction result cannot be empty.\n";
+        exit(1);
+      }
+      float pred = model_preds[0];
+      return pred;
+    }
+    return -1.0;
+  }
+
+  /// Return the annotating threshold for the model prediction.
+  void setThreshold(float annotate_threshold) {
+    threshold = annotate_threshold;
+  }
+
 protected:
+  /// The onnxruntime model pointer read from the input model path.
+  void *onnxRunner;
+
+  /// The library handle of the ai4compiler framwork.
+  void *libHandle;
+
+  /// The library handle of the onnxruntime.
+  void *handleOnnxRuntime;
+
+  /// The annotating threshold for the model prediction.
+  float threshold;
+
+  /// Return the annotating threshold for the model prediction.
+  float getThreshold() const { return threshold; }
+
+  /// The counting value of the total modified BB-count number.
+  uint64_t modified_BB_total = 0;
+
+  /// Add the total modified BB-count number by the BB modifiied number within
+  /// the funciton.
+  void addModifiedBBTotal(uint64_t &value) { modified_BB_total += value; }
+
+  /// Return the counting value of the total modified BB-count number.
+  uint64_t getModifiedBBTotal() const { return modified_BB_total; }
+
   /// Read profile information available for the function.
   void readProfile(BinaryFunction &BF);
 
