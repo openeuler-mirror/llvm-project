@@ -397,6 +397,14 @@ void BinaryBasicBlock::adjustExecutionCount(double Ratio) {
   }
 }
 
+BinaryBasicBlock *BinaryBasicBlock::getConditionalSuccessor(bool Condition) {
+  if (succ_size() == 2)
+    return Successors[Condition == true ? 0 : 1];
+  if (succ_size() == 1 && Function && Function->getBinaryContext().isAArch64())
+    return Successors[0];
+  return nullptr;
+}
+
 bool BinaryBasicBlock::analyzeBranch(const MCSymbol *&TBB, const MCSymbol *&FBB,
                                      MCInst *&CondBranch,
                                      MCInst *&UncondBranch) {

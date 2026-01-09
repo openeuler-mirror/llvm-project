@@ -12,13 +12,16 @@
 //===----------------------------------------------------------------------===//
 
 #include "bolt/Profile/DataReader.h"
+#include "bolt/Passes/FeatureMiner.h"
 #include "bolt/Core/BinaryFunction.h"
 #include "bolt/Passes/MCF.h"
 #include "bolt/Utils/Utils.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Errc.h"
+#include <dlfcn.h>
 #include <map>
+#include <system_error>
 
 #undef  DEBUG_TYPE
 #define DEBUG_TYPE "bolt-prof"
@@ -26,15 +29,23 @@
 using namespace llvm;
 
 namespace opts {
-
+extern cl::opt<bool> BlockCorrection;
 extern cl::OptionCategory BoltCategory;
 extern llvm::cl::opt<unsigned> Verbosity;
 
-static cl::opt<bool>
-DumpData("dump-data",
-  cl::desc("dump parsed bolt data for debugging"),
-  cl::Hidden,
-  cl::cat(BoltCategory));
+static cl::opt<std::string> InputModelFilename("model-path",
+                                               cl::desc("<model file>"),
+                                               cl::Optional,
+                                               cl::cat(BoltCategory));
+
+static cl::opt<float> AnnotateThreshold(
+    "annotate-threshold",
+    cl::desc("<the annotating threshold of the model predictions>"),
+    cl::init(0.85f), cl::Optional, cl::cat(BoltCategory));
+
+static cl::opt<bool> DumpData("dump-data",
+                              cl::desc("dump parsed bolt data for debugging"),
+                              cl::Hidden, cl::cat(BoltCategory));
 
 } // namespace opts
 
@@ -311,6 +322,17 @@ Error DataReader::readProfilePreCFG(BinaryContext &BC) {
 }
 
 Error DataReader::readProfile(BinaryContext &BC) {
+
+  if (opts::BlockCorrection) {
+    if (opts::InputModelFilename.empty()) {
+      outs() << "error: llvm-bolt expected -model-path=<model file> option.\n";
+      exit(1);
+    } else {
+      DataReader::initializeONNXRunner(opts::InputModelFilename);
+      DataReader::setThreshold(opts::AnnotateThreshold);
+    }
+  }
+
   for (auto &BFI : BC.getBinaryFunctions()) {
     BinaryFunction &Function = BFI.second;
     readProfile(Function);
@@ -323,6 +345,12 @@ Error DataReader::readProfile(BinaryContext &BC) {
       ++NumUnused;
   }
   BC.setNumUnusedProfiledObjects(NumUnused);
+
+  if (opts::BlockCorrection) {
+    uint64_t modified_total = DataReader::getModifiedBBTotal();
+    outs() << "BOLT-INFO: total modified CFG BB count number is "
+           << modified_total << ".\n";
+  }
 
   return Error::success();
 }
@@ -555,6 +583,75 @@ float DataReader::evaluateProfileData(BinaryFunction &BF,
   return MatchRatio;
 }
 
+void generateChildrenParentCount(BinaryBasicBlock *BB) {
+  typedef GraphTraits<BinaryBasicBlock *> GraphT;
+
+  for (typename GraphT::ChildIteratorType CI = GraphT::child_begin(BB),
+                                          E = GraphT::child_end(BB);
+       CI != E; ++CI) {
+    typename GraphT::NodeRef Child = *CI;
+    BB->insertChildrenSet(Child);
+    Child->insertParentSet(BB);
+  }
+}
+
+void generateChildrenParentCount(BinaryFunction &BF) {
+  for (BinaryBasicBlock &BB : BF) {
+    generateChildrenParentCount(&BB);
+  }
+}
+
+uint64_t estimateBBCount(DataReader *dataReaderRef, BinaryBasicBlock *BB,
+                         float threshold) {
+  uint64_t modified = 0;
+  if (BB->getExecutionCount() != 0) {
+    return modified;
+  }
+
+  std::vector<std::string> input_string;
+  std::vector<int64_t> input_int64;
+  std::vector<float> input_float;
+
+  BinaryBasicBlockFeature BBF = BB->getFeatures();
+  input_int64 = BBF.getInferenceFeatures();
+
+  if (input_int64.empty()) {
+    return 0;
+  }
+
+  float model_pred =
+      dataReaderRef->ONNXInference(input_string, input_int64, input_float);
+  if (model_pred >= threshold) {
+    uint64_t min_neighbor_count = std::numeric_limits<uint64_t>::max();
+    for (BinaryBasicBlock *parent : BB->getParentSet()) {
+      if (parent->getExecutionCount() > 0 &&
+          parent->getExecutionCount() < min_neighbor_count)
+        min_neighbor_count = parent->getExecutionCount();
+    }
+    for (BinaryBasicBlock *child : BB->getChildrenSet()) {
+      if (child->getExecutionCount() > 0 &&
+          child->getExecutionCount() < min_neighbor_count)
+        min_neighbor_count = child->getExecutionCount();
+    }
+    if (min_neighbor_count != std::numeric_limits<uint64_t>::max()) {
+      BB->setExecutionCount(min_neighbor_count);
+      modified = 1;
+    }
+  }
+  return modified;
+}
+
+uint64_t estimateBBCount(DataReader *dataReaderRef, BinaryFunction &BF,
+                         float threshold) {
+  uint64_t modified_total_func = 0;
+  const auto &Order = BF.dfs();
+  for (auto *BBA : Order) {
+    auto &BB = *BBA;
+    modified_total_func += estimateBBCount(dataReaderRef, &BB, threshold);
+  }
+  return modified_total_func;
+}
+
 void DataReader::readSampleData(BinaryFunction &BF) {
   FuncSampleData *SampleDataOrErr = getFuncSampleData(BF.getNames());
   if (!SampleDataOrErr)
@@ -599,6 +696,17 @@ void DataReader::readSampleData(BinaryFunction &BF) {
   }
 
   BF.ExecutionCount = TotalEntryCount;
+
+  if (opts::BlockCorrection) {
+    generateChildrenParentCount(BF);
+    std::unique_ptr<FeatureMiner> FM =
+        std::make_unique<FeatureMiner>(opts::BlockCorrection);
+    FM->inferenceFeatures(BF);
+
+    float threshold = DataReader::getThreshold();
+    uint64_t modified_total_func = estimateBBCount(this, BF, threshold);
+    DataReader::addModifiedBBTotal(modified_total_func);
+  }
 
   estimateEdgeCounts(BF);
 }
