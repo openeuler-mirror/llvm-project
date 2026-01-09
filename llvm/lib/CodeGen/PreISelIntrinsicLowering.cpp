@@ -14,6 +14,7 @@
 #include "llvm/CodeGen/PreISelIntrinsicLowering.h"
 #include "llvm/Analysis/ObjCARCInstKind.h"
 #include "llvm/Analysis/ObjCARCUtil.h"
+#include "llvm/Analysis/TargetTransformInfo.h"
 #include "llvm/CodeGen/Passes.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/IRBuilder.h"
@@ -24,6 +25,7 @@
 #include "llvm/InitializePasses.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/Casting.h"
+#include "llvm/Transforms/Utils/LowerMemIntrinsics.h"
 
 using namespace llvm;
 
@@ -133,7 +135,43 @@ static bool lowerObjCCall(Function &F, const char *NewFn,
   return true;
 }
 
-static bool lowerIntrinsics(Module &M) {
+bool expandMemIntrinsicUses(
+    Function &F, function_ref<TargetTransformInfo *(Function &)> LookupTTI) {
+  Intrinsic::ID ID = F.getIntrinsicID();
+  bool Changed = false;
+
+  for (User *U : llvm::make_early_inc_range(F.users())) {
+    Instruction *Inst = cast<Instruction>(U);
+
+    switch (ID) {
+    case Intrinsic::memcpy_inline: {
+      // Only expand llvm.memcpy.inline with non-constant length in this
+      // codepath, leaving the current SelectionDAG expansion for constant
+      // length memcpy intrinsics undisturbed.
+      auto *Memcpy = cast<MemCpyInlineInst>(Inst);
+      if (isa<ConstantInt>(Memcpy->getLength()))
+        break;
+
+      Function *ParentFunc = Memcpy->getFunction();
+      const TargetTransformInfo *TTI = LookupTTI(*ParentFunc);
+      if (TTI) {
+        expandMemCpyAsLoop(Memcpy, *TTI);
+        Changed = true;
+        Memcpy->eraseFromParent();
+      }
+      break;
+    }
+    default:
+      llvm_unreachable("unhandled intrinsic");
+    }
+  }
+
+  return Changed;
+}
+
+static bool
+lowerIntrinsics(Module &M,
+                function_ref<TargetTransformInfo *(Function &)> LookupTTI) {
   bool Changed = false;
   for (Function &F : M) {
     if (F.getName().startswith("llvm.load.relative.")) {
@@ -142,6 +180,9 @@ static bool lowerIntrinsics(Module &M) {
     }
     switch (F.getIntrinsicID()) {
     default:
+      break;
+    case Intrinsic::memcpy_inline:
+      Changed |= expandMemIntrinsicUses(F, LookupTTI);
       break;
     case Intrinsic::objc_autorelease:
       Changed |= lowerObjCCall(F, "objc_autorelease");
@@ -231,16 +272,26 @@ public:
 
   PreISelIntrinsicLoweringLegacyPass() : ModulePass(ID) {}
 
-  bool runOnModule(Module &M) override { return lowerIntrinsics(M); }
+  bool runOnModule(Module &M) override {
+    auto LookupTTI = [this](Function &F) -> TargetTransformInfo * {
+      auto *TTIP = getAnalysisIfAvailable<TargetTransformInfoWrapperPass>();
+      return TTIP ? &TTIP->getTTI(F) : nullptr;
+    };
+    return lowerIntrinsics(M, LookupTTI);
+  }
 };
 
 } // end anonymous namespace
 
 char PreISelIntrinsicLoweringLegacyPass::ID;
 
-INITIALIZE_PASS(PreISelIntrinsicLoweringLegacyPass,
-                "pre-isel-intrinsic-lowering", "Pre-ISel Intrinsic Lowering",
-                false, false)
+INITIALIZE_PASS_BEGIN(PreISelIntrinsicLoweringLegacyPass,
+                      "pre-isel-intrinsic-lowering",
+                      "Pre-ISel Intrinsic Lowering", false, false)
+INITIALIZE_PASS_DEPENDENCY(TargetTransformInfoWrapperPass)
+INITIALIZE_PASS_END(PreISelIntrinsicLoweringLegacyPass,
+                    "pre-isel-intrinsic-lowering",
+                    "Pre-ISel Intrinsic Lowering", false, false)
 
 ModulePass *llvm::createPreISelIntrinsicLoweringPass() {
   return new PreISelIntrinsicLoweringLegacyPass;
@@ -248,7 +299,13 @@ ModulePass *llvm::createPreISelIntrinsicLoweringPass() {
 
 PreservedAnalyses PreISelIntrinsicLoweringPass::run(Module &M,
                                                     ModuleAnalysisManager &AM) {
-  if (!lowerIntrinsics(M))
+  auto &FAM = AM.getResult<FunctionAnalysisManagerModuleProxy>(M).getManager();
+
+  auto LookupTTI = [&FAM](Function &F) -> TargetTransformInfo * {
+    return &FAM.getResult<TargetIRAnalysis>(F);
+  };
+
+  if (!lowerIntrinsics(M, LookupTTI))
     return PreservedAnalyses::all();
   else
     return PreservedAnalyses::none();
