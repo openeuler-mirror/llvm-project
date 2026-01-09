@@ -72,7 +72,7 @@ static cl::alias ICPMispredictThresholdAlias(
     cl::desc("alias for --indirect-call-promotion-mispredict-threshold"),
     cl::aliasopt(ICPMispredictThreshold));
 
-static cl::opt<bool> ICPUseMispredicts(
+cl::opt<bool> ICPUseMispredicts(
     "indirect-call-promotion-use-mispredicts",
     cl::desc("use misprediction frequency for determining whether or not ICP "
              "should be applied at a callsite.  The "

@@ -44,17 +44,17 @@ static cl::alias ICPAlias("icp",
 
 extern cl::opt<JumpTableSupportLevel> JumpTables;
 
-static cl::opt<bool> FixFuncCounts(
+cl::opt<bool> FixFuncCounts(
     "fix-func-counts",
     cl::desc("adjust function counts based on basic blocks execution count"),
     cl::Hidden, cl::cat(BoltOptCategory));
 
-static cl::opt<bool> FixBlockCounts(
+cl::opt<bool> FixBlockCounts(
     "fix-block-counts",
     cl::desc("adjust block counts based on outgoing branch counts"),
     cl::init(true), cl::Hidden, cl::cat(BoltOptCategory));
 
-static cl::opt<bool>
+cl::opt<bool>
     InferFallThroughs("infer-fall-throughs",
                       cl::desc("infer execution count for fall-through blocks"),
                       cl::Hidden, cl::cat(BoltOptCategory));

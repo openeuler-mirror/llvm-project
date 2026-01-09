@@ -23,6 +23,14 @@
 #include <string>
 #include <unordered_set>
 
+namespace opts {
+enum SctcModes : char {
+  SctcAlways,
+  SctcPreserveDirection,
+  SctcHeuristic
+};
+}
+
 namespace llvm {
 namespace bolt {
 

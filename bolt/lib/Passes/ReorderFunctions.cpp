@@ -91,7 +91,7 @@ static cl::opt<bool> CgIgnoreRecursiveCalls(
     cl::desc("ignore recursive calls when constructing the call graph"),
     cl::init(true), cl::cat(BoltOptCategory));
 
-static cl::opt<bool> CgUseSplitHotSize(
+cl::opt<bool> CgUseSplitHotSize(
     "cg-use-split-hot-size",
     cl::desc("use hot/cold data on basic blocks to determine hot sizes for "
              "call graph functions"),

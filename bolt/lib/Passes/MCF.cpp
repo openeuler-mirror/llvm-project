@@ -31,9 +31,14 @@ extern cl::OptionCategory BoltOptCategory;
 
 extern cl::opt<bool> TimeOpts;
 
-static cl::opt<bool> IterativeGuess(
+cl::opt<bool> IterativeGuess(
     "iterative-guess",
     cl::desc("in non-LBR mode, guess edge counts using iterative technique"),
+    cl::Hidden, cl::cat(BoltOptCategory));
+
+static cl::opt<bool> HybridGuess(
+    "hybrid-guess",
+    cl::desc("in non-LBR mode, guess edge counts using hybird estimation technique"),
     cl::Hidden, cl::cat(BoltOptCategory));
 
 static cl::opt<bool> UseRArcs(
@@ -350,6 +355,27 @@ void guessEdgeByIterativeApproach(BinaryFunction &BF) {
   }
 }
 
+void guessEdgeByHybridApproach(BinaryFunction &BF,
+                           EdgeWeightMap &PredEdgeWeights,
+                           EdgeWeightMap &SuccEdgeWeights) {
+  for (BinaryBasicBlock &BB : BF) {
+    for (BinaryBasicBlock *Pred : BB.predecessors()) {
+      double RelativeExecSucc = SuccEdgeWeights[std::make_pair(Pred, &BB)];
+      double RelativeExec = PredEdgeWeights[std::make_pair(Pred, &BB)];
+      RelativeExec *= BB.getExecutionCount();
+      RelativeExecSucc *= Pred->getExecutionCount();
+      BinaryBasicBlock::BinaryBranchInfo &BI = Pred->getBranchInfo(BB);
+      if ((static_cast<uint64_t>(RelativeExec) != 0) && (static_cast<uint64_t>(RelativeExecSucc) != 0)) {
+        BI.Count = (static_cast<uint64_t>(RelativeExec) + RelativeExecSucc) / 2;
+      } else if (static_cast<uint64_t>(RelativeExec) != 0) {
+        BI.Count = static_cast<uint64_t>(RelativeExec);
+      } else if (static_cast<uint64_t>(RelativeExecSucc) != 0) {
+        BI.Count = static_cast<uint64_t>(RelativeExecSucc);
+      }
+    }
+  }
+}
+
 /// Associate each basic block with the BinaryLoop object corresponding to the
 /// innermost loop containing this block.
 DenseMap<const BinaryBasicBlock *, const BinaryLoop *>
@@ -454,11 +480,14 @@ void estimateEdgeCounts(BinaryFunction &BF) {
     equalizeBBCounts(Info, BF);
     LLVM_DEBUG(BF.print(dbgs(), "after equalize BB counts"));
   }
-  if (opts::IterativeGuess)
+  if (opts::IterativeGuess) {
     guessEdgeByIterativeApproach(BF);
-  else
+  } else if (opts::HybridGuess) {
+    guessEdgeByHybridApproach(BF, PredEdgeWeights, SuccEdgeWeights);
+  } else {
     guessEdgeByRelHotness(BF, /*UseSuccs=*/false, PredEdgeWeights,
                           SuccEdgeWeights);
+  }
   recalculateBBCounts(BF, /*AllEdges=*/false);
 }
 
