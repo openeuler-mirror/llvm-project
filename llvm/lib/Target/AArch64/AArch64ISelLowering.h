@@ -632,6 +632,8 @@ public:
 
   bool hasPairedLoad(EVT LoadedType, Align &RequiredAligment) const override;
 
+  bool hasInterleaveWithGatherScatter() const override { return true; }
+
   unsigned getMaxSupportedInterleaveFactor() const override { return 4; }
 
   bool lowerInterleavedLoad(LoadInst *LI,
@@ -640,6 +642,9 @@ public:
                             unsigned Factor) const override;
   bool lowerInterleavedStore(StoreInst *SI, ShuffleVectorInst *SVI,
                              unsigned Factor) const override;
+
+  bool lowerInterleavedStoreWithShuffle(StoreInst *SI, ShuffleVectorInst *SVI,
+                                        unsigned Factor) const;
 
   bool isLegalAddImmediate(int64_t) const override;
   bool isLegalICmpImmediate(int64_t) const override;
