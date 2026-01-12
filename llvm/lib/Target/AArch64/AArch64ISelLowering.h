@@ -319,6 +319,7 @@ enum NodeType : unsigned {
 
   // Custom prefetch handling
   PREFETCH,
+  RANGE_PREFETCH,
 
   // {s|u}int to FP within a FP register.
   SITOF,
