@@ -215,6 +215,12 @@ def G_PREFETCH : AArch64GenericInstruction {
   let hasSideEffects = 1;
 }
 
+def G_AARCH64_RANGE_PREFETCH : AArch64GenericInstruction {
+  let OutOperandList = (outs);
+  let InOperandList = (ins type0:$imm, ptype0:$src1, type1:$src2);
+  let hasSideEffects = 1;
+}
+
 // Generic bitwise insert if true.
 def G_BIT : AArch64GenericInstruction {
   let OutOperandList = (outs type0:$dst);
@@ -257,6 +263,7 @@ def : GINodeEquiv<G_BIT, AArch64bit>;
 def : GINodeEquiv<G_EXTRACT_VECTOR_ELT, vector_extract>;
 
 def : GINodeEquiv<G_PREFETCH, AArch64Prefetch>;
+def : GINodeEquiv<G_AARCH64_RANGE_PREFETCH, AArch64RangePrefetch>;
 
 // These are patterns that we only use for GlobalISel via the importer.
 def : Pat<(f32 (fadd (vector_extract (v2f32 FPR64:$Rn), (i64 0)),
