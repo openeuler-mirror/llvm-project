@@ -3065,7 +3065,35 @@ InstructionCost AArch64TTIImpl::getInterleavedMemoryOpCost(
   if (!VecTy->isScalableTy() && (UseMaskForCond || UseMaskForGaps))
     return InstructionCost::getInvalid();
 
-  if (!UseMaskForGaps && Factor <= TLI->getMaxSupportedInterleaveFactor()) {
+  unsigned NumLoadStores = 1;
+  InstructionCost ShuffleCost = 0;
+  bool isInterleaveWithShuffle = false;
+  unsigned MaxSupportedFactor = TLI->getMaxSupportedInterleaveFactor();
+ 
+  auto *SubVecTy =
+      VectorType::get(VecVTy->getElementType(),
+                      VecVTy->getElementCount().divideCoefficientBy(Factor));
+ 
+  if (TLI->hasInterleaveWithGatherScatter() && Opcode == Instruction::Store &&
+      (0 == Factor % MaxSupportedFactor) && Factor > MaxSupportedFactor &&
+      DL.getTypeSizeInBits(SubVecTy) <= 128) {
+    isInterleaveWithShuffle = true;
+    SmallVector<int, 16> Mask;
+    // preparing interleave Mask.
+    for (unsigned i = 0; i < VecVTy->getElementCount().getKnownMinValue() / 2;
+         i++) {
+      for (unsigned j = 0; j < 2; j++)
+        Mask.push_back(j * Factor + i);
+    }
+ 
+    NumLoadStores = Factor / MaxSupportedFactor;
+    ShuffleCost =
+        (Factor * getShuffleCost(TargetTransformInfo::SK_Splice, VecVTy, Mask,
+                                 CostKind, 0, SubVecTy));
+  }
+
+  if (!UseMaskForGaps &&
+      (Factor <= MaxSupportedFactor || isInterleaveWithShuffle)) {
     unsigned MinElts = VecVTy->getElementCount().getKnownMinValue();
     auto *SubVecTy =
         VectorType::get(VecVTy->getElementType(),
@@ -3077,7 +3105,10 @@ InstructionCost AArch64TTIImpl::getInterleavedMemoryOpCost(
     bool UseScalable;
     if (MinElts % Factor == 0 &&
         TLI->isLegalInterleavedAccessType(SubVecTy, DL, UseScalable))
-      return Factor * TLI->getNumInterleavedAccesses(SubVecTy, DL, UseScalable);
+      return (Factor *
+ 	               TLI->getNumInterleavedAccesses(SubVecTy, DL, UseScalable) *
+ 	               NumLoadStores) +
+ 	              ShuffleCost;
   }
 
   return BaseT::getInterleavedMemoryOpCost(Opcode, VecTy, Factor, Indices,
