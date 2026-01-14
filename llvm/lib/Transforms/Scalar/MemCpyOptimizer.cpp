@@ -53,6 +53,7 @@
 #include "llvm/Support/MathExtras.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Utils/Local.h"
 #include <algorithm>
 #include <cassert>
@@ -66,6 +67,12 @@ using namespace llvm;
 static cl::opt<bool> EnableMemCpyOptWithoutLibcalls(
     "enable-memcpyopt-without-libcalls", cl::Hidden,
     cl::desc("Enable memcpyopt even when libcalls are disabled"));
+
+static cl::opt<unsigned> InlineMemCpyThreshold(
+    "inline-memcpy-threshold", cl::Hidden, cl::init(0),
+    cl::desc("For memcpy with statically unknown size, inline it for sizes "
+             "smaller than threshold and fall back to original memcpy with "
+             "larger size. 0 means disabled."));
 
 STATISTIC(NumMemCpyInstr, "Number of memcpy instructions deleted");
 STATISTIC(NumMemSetInfer, "Number of memsets inferred");
@@ -1445,7 +1452,8 @@ bool MemCpyOptPass::performMemCpyToMemSetOptzn(MemCpyInst *MemCpy,
 /// B to be a memcpy from X to Z (or potentially a memmove, depending on
 /// circumstances). This allows later passes to remove the first memcpy
 /// altogether.
-bool MemCpyOptPass::processMemCpy(MemCpyInst *M, BasicBlock::iterator &BBI) {
+bool MemCpyOptPass::processMemCpy(MemCpyInst *M, BasicBlock::iterator &BBI,
+                                  BasicBlock::iterator &BE) {
   // We can only optimize non-volatile memcpy's.
   if (M->isVolatile()) return false;
 
@@ -1540,6 +1548,69 @@ bool MemCpyOptPass::processMemCpy(MemCpyInst *M, BasicBlock::iterator &BBI) {
     }
   }
 
+  ConstantInt *Len = dyn_cast<ConstantInt>(M->getLength());
+  // Inline memcpy calls with sizes that unknown to be small at runtime.
+  // Here memcpy is versioned into memcpy.inline which will be lowered into
+  // SIMD load/store sequences later in PreISelIntrinsicLowering.
+  if (InlineMemCpyThreshold != 0 && !Len &&
+      VersionedMemCpy.find(M) == VersionedMemCpy.end()) {
+    Type *ArgTys[3] = {M->getRawDest()->getType(), M->getRawSource()->getType(),
+                       M->getLength()->getType()};
+    Value *Size = M->getLength();
+    IRBuilder<> Builder(M);
+    Value *Threshold =
+        ConstantInt::get(Size->getType(), InlineMemCpyThreshold, "threshold");
+    Value *Check = Builder.CreateICmpULE(Size, Threshold, "memcpy.size.cmp");
+
+    // Version memcpy and modify the control flow as follows.
+    //        Original BB:
+    //          ...
+    //          memcpy.size.cmp = icmp ule Size, Threshold
+    //          br memcpy.size.cmp, call.memcpy.inline, call.memcpy.original
+    //               /                                        \
+    //  call.memcpy.original:                          call.memcpy.inline:
+    //    memcpy(dest, src, size)                        memcpy.inline(dest,
+    //    src, size) br call.memcpy.merge                           br
+    //    call.memcpy.merge
+    //                \                                      /
+    //                            call.memcpy.merge:
+    //                              ...
+    LLVMContext &Ctx = M->getContext();
+    BasicBlock *BB = M->getParent();
+    bool IsBBStart = M == &(*BB->begin());
+    auto PrevIter = M->getPrevNode()->getIterator();
+    BasicBlock *OriginalCallBB = SplitBlock(M->getParent(), M, DT, nullptr,
+                                            MSSAU, "call.memcpy.original");
+    BasicBlock *FollowingBB = SplitBlock(OriginalCallBB, M->getNextNode(), DT,
+                                         nullptr, MSSAU, "call.memcpy.merge");
+    BasicBlock *VersionedCallBB = BasicBlock::Create(
+        Ctx, "call.memcpy.inline", M->getFunction(), FollowingBB);
+    MemCpyInst *M_Inline = cast<MemCpyInst>(M->clone());
+    Function *MemCpyInline = Intrinsic::getDeclaration(
+        M->getModule(), Intrinsic::memcpy_inline, ArgTys);
+    M_Inline->setCalledFunction(MemCpyInline);
+    M_Inline->insertInto(VersionedCallBB, VersionedCallBB->begin());
+    BranchInst::Create(FollowingBB, VersionedCallBB);
+    BranchInst::Create(VersionedCallBB, OriginalCallBB, Check,
+                       BB->getTerminator());
+    // Make sure we do not invalidate the iterator.
+    BBI = IsBBStart ? BB->begin() : PrevIter;
+    BB->getTerminator()->eraseFromParent();
+    // BE is invalidated, reset it.
+    BE = BB->end();
+
+    // Create new MemoryAccess for the inlined memcpy.
+    MemoryAccess *NewMemAcc = MSSAU->createMemoryAccessInBB(
+        M_Inline, nullptr, M_Inline->getParent(), MemorySSA::Beginning);
+    if (auto *MemDef = dyn_cast<MemoryDef>(NewMemAcc)) {
+      MSSAU->insertDef(MemDef, true);
+    }
+    // Add the processed memcpy to the set to avoid versioning the same
+    // instructions.
+    VersionedMemCpy.insert(M);
+    VersionedMemCpy.insert(M_Inline);
+    return true;
+  }
   return false;
 }
 
@@ -1669,7 +1740,7 @@ bool MemCpyOptPass::iterateOnFunction(Function &F) {
       else if (auto *M = dyn_cast<MemSetInst>(I))
         RepeatInstruction = processMemSet(M, BI);
       else if (auto *M = dyn_cast<MemCpyInst>(I))
-        RepeatInstruction = processMemCpy(M, BI);
+        RepeatInstruction = processMemCpy(M, BI, BE);
       else if (auto *M = dyn_cast<MemMoveInst>(I))
         RepeatInstruction = processMemMove(M);
       else if (auto *CB = dyn_cast<CallBase>(I)) {
@@ -1702,7 +1773,7 @@ PreservedAnalyses MemCpyOptPass::run(Function &F, FunctionAnalysisManager &AM) {
     return PreservedAnalyses::all();
 
   PreservedAnalyses PA;
-  PA.preserveSet<CFGAnalyses>();
+
   PA.preserve<MemorySSAAnalysis>();
   return PA;
 }
