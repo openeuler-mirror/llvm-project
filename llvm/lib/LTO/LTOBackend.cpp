@@ -48,6 +48,7 @@
 #include "llvm/Transforms/Utils/FunctionImportUtils.h"
 #include "llvm/Transforms/Utils/SplitModule.h"
 #include "llvm/Transforms/Utils/SplitModuleCG.h"
+#include <filesystem>
 #include <optional>
 
 using namespace llvm;
@@ -137,12 +138,18 @@ Error Config::addSaveTemps(std::string OutputFileName, bool UseInputModulePath,
       if (LinkerHook && !LinkerHook(Task, M))
         return false;
 
+      auto extract_filename = [](const std::string &path) -> std::string {
+        std::filesystem::path fs_path(path);
+        return fs_path.filename().string();
+      };
+
       std::string PathPrefix;
       // If this is the combined module (not a ThinLTO backend compile) or the
       // user hasn't requested using the input module's path, emit to a file
       // named from the provided OutputFileName with the Task ID appended.
       if (M.getModuleIdentifier() == "ld-temp.o" || !UseInputModulePath) {
         PathPrefix = OutputFileName;
+        PathPrefix += extract_filename(M.getSourceFileName()) + ".";
         if (Task != (unsigned)-1)
           PathPrefix += utostr(Task) + ".";
       } else
@@ -606,7 +613,7 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C, TargetMachine
 
               if (DoOpt) {
                 auto StartOpt = Clock::now();
-                if (!opt(C, ThreadTM.get(), task + CurrentThreadId, *MPartInCtx, /*IsThinLTO=*/true,
+                if (!opt(C, ThreadTM.get(), CurrentThreadId, *MPartInCtx, /*IsThinLTO=*/true,
                          /*ExportSummary=*/nullptr, /*ImportSummary=*/&CombinedIndex,
                          CmdArgs)) {
                   report_fatal_error("Failed to gen opt for split mod in thread.");
@@ -625,13 +632,7 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C, TargetMachine
               }
 
               auto PromotedRenames = SplitModuleCG.getPromotedRenames();
-              for (auto &F : *MPartInCtx) {
-                if (auto It = PromotedRenames.find(F.getName());
-                    It != PromotedRenames.end()) {
-                  F.setName(It->second);
-                }
-              }
-              for (auto &GV : MPartInCtx->globals()) {
+              for (auto &GV : MPartInCtx->global_values()) {
                 if (auto It = PromotedRenames.find(GV.getName());
                     It != PromotedRenames.end()) {
                   GV.setName(It->second);
@@ -663,7 +664,7 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C, TargetMachine
                     };
 
               auto StartCG = Clock::now();
-              codegen(C, ThreadTM.get(), splitStream, task + CurrentThreadId, *MPartInCtx,
+              codegen(C, ThreadTM.get(), splitStream, CurrentThreadId, *MPartInCtx,
                       CombinedIndex);
               auto EndCG = Clock::now();
               if (ThinLTODebugMpart) {
