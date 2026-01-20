@@ -38,6 +38,12 @@ void createMemCpyLoopUnknownSize(
     bool CanOverlap, const TargetTransformInfo &TTI,
     std::optional<unsigned> AtomicSize = std::nullopt);
 
+void createMemCpyAsScalableLoop(Instruction *InsertBefore, Value *SrcAddr,
+                                Value *DstAddr, Value *CopyLen, Align SrcAlign,
+                                Align DestAlign, bool SrcIsVolatile,
+                                bool DstIsVolatile, bool CanOverlap,
+                                const TargetTransformInfo &TTI);
+
 /// Emit a loop implementing the semantics of an llvm.memcpy whose size is a
 /// compile time constant. Loop is inserted at \p InsertBefore.
 void createMemCpyLoopKnownSize(
