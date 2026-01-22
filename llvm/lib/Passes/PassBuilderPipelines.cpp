@@ -285,6 +285,11 @@ static cl::opt<bool> UseLoopVersioningLICM(
     "enable-loop-versioning-licm", cl::init(false), cl::Hidden,
     cl::desc("Enable the experimental Loop Versioning LICM pass"));
 
+namespace llvm {
+cl::opt<bool> ThinLTOSplit("thinlto-split", cl::init(false),
+			   cl::desc("split module in thinlto backend."));
+}
+
 PipelineTuningOptions::PipelineTuningOptions() {
   LoopInterleaving = true;
   LoopVectorization = true;
@@ -985,13 +990,15 @@ PassBuilder::buildModuleSimplificationPipeline(OptimizationLevel Level,
                                                 PTO.EagerlyInvalidateAnalyses));
 
   if (LoadSampleProfile) {
-    // Annotate sample profile right after early FPM to ensure freshness of
-    // the debug info.
-    MPM.addPass(SampleProfileLoaderPass(PGOOpt->ProfileFile,
-                                        PGOOpt->ProfileRemappingFile, Phase));
-    // Cache ProfileSummaryAnalysis once to avoid the potential need to insert
-    // RequireAnalysisPass for PSI before subsequent non-module passes.
-    MPM.addPass(RequireAnalysisPass<ProfileSummaryAnalysis, Module>());
+    if (!ThinLTOSplit) {
+      // Annotate sample profile right after early FPM to ensure freshness of
+      // the debug info.
+      MPM.addPass(SampleProfileLoaderPass(PGOOpt->ProfileFile,
+                                          PGOOpt->ProfileRemappingFile, Phase));
+      // Cache ProfileSummaryAnalysis once to avoid the potential need to insert
+      // RequireAnalysisPass for PSI before subsequent non-module passes.
+      MPM.addPass(RequireAnalysisPass<ProfileSummaryAnalysis, Module>());
+    }
     // Do not invoke ICP in the LTOPrelink phase as it makes it hard
     // for the profile annotation to be accurate in the LTO backend.
     if (Phase != ThinOrFullLTOPhase::ThinLTOPreLink &&

@@ -17,6 +17,7 @@
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/CGSCCPassManager.h"
 #include "llvm/Analysis/ModuleSummaryAnalysis.h"
+#include "llvm/Analysis/ProfileSummaryInfo.h"
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/Bitcode/BitcodeReader.h"
 #include "llvm/Bitcode/BitcodeWriter.h"
@@ -43,6 +44,7 @@
 #include "llvm/Support/VirtualFileSystem.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/Transforms/IPO/SampleProfile.h"
 #include "llvm/Transforms/IPO/WholeProgramDevirt.h"
 #include "llvm/Transforms/Scalar/LoopPassManager.h"
 #include "llvm/Transforms/Utils/FunctionImportUtils.h"
@@ -53,6 +55,8 @@
 
 using namespace llvm;
 using namespace lto;
+
+namespace fs = std::filesystem;
 
 #define DEBUG_TYPE "lto-backend"
 
@@ -87,9 +91,6 @@ static cl::opt<bool> ThinLTOCombineOutput(
 static cl::opt<bool> ThinLTOUseCG(
     "thinlto-use-callgraph", cl::init(true),
     cl::desc("use callgraph to split module in thinlto backend."));
-static cl::opt<bool> ThinLTOSplit(
-    "thinlto-split", cl::init(true),
-    cl::desc("split module in thinlto backend."));
 static cl::opt<unsigned> ThinLTOSplitThreshold(
     "thinlto-split-threshold", cl::Hidden, cl::init(2),
     cl::desc("control the amount of whether split in thinlto backend."));
@@ -106,6 +107,7 @@ static cl::opt<bool> ThinLTODebugMpart(
 
 namespace llvm {
 extern cl::opt<bool> NoPGOWarnMismatch;
+extern cl::opt<bool> ThinLTOSplit;
 }
 
 [[noreturn]] static void reportOpenError(StringRef Path, Twine Msg) {
@@ -263,6 +265,55 @@ createTargetMachine(const Config &Conf, const Target *TheTarget, Module &M) {
       CodeModel, Conf.CGOptLevel));
   assert(TM && "Failed to create target machine");
   return TM;
+}
+
+static void runProfileLoaderPass(const Config &Conf, Module &Mod,
+		                 TargetMachine *TM) {
+  auto FS = vfs::getRealFileSystem();
+  std::optional<PGOOptions> PGOOpt;
+  if (!Conf.SampleProfile.empty())
+    PGOOpt = PGOOptions(Conf.SampleProfile, "", Conf.ProfileRemapping, FS,
+			PGOOptions::SampleUse, PGOOptions::NoCSAction, true);
+  else if (Conf.RunCSIRInstr) {
+    PGOOpt = PGOOptions("", Conf.CSIRProfile, Conf.ProfileRemapping, FS,
+			PGOOptions::IRUse, PGOOptions::CSIRInstr,
+			Conf.AddFSDiscriminator);
+  } else if (!Conf.CSIRProfile.empty()) {
+    PGOOpt = PGOOptions(Conf.CSIRProfile, "", Conf.ProfileRemapping, FS,
+		        PGOOptions::IRUse, PGOOptions::CSIRUse,
+       		        Conf.AddFSDiscriminator);
+    NoPGOWarnMismatch = !Conf.PGOWarnMismatch;
+  } else if (Conf.AddFSDiscriminator) { 
+    PGOOpt = PGOOptions("", "", "", nullptr, PGOOptions::NoAction,
+		        PGOOptions::NoCSAction, true);
+  }
+  bool HasSampleProfile = PGOOpt && (PGOOpt->Action == PGOOptions::SampleUse);
+  if (!HasSampleProfile)
+    return;
+
+  LoopAnalysisManager LAM;
+  FunctionAnalysisManager FAM;
+  CGSCCAnalysisManager CGAM;
+  ModuleAnalysisManager MAM;
+  PassInstrumentationCallbacks PIC;
+
+  PassBuilder PB(TM, Conf.PTO, PGOOpt, &PIC);
+
+  RegisterPassPlugins(Conf.PassPlugins, PB);
+
+  // Register all the basic analyses with the managers.
+  PB.registerModuleAnalyses(MAM);
+  PB.registerCGSCCAnalyses(CGAM);
+  PB.registerFunctionAnalyses(FAM);
+  PB.registerLoopAnalyses(LAM);
+  PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
+  
+  ModulePassManager MPM;
+  MPM.addPass(SampleProfileLoaderPass(PGOOpt->ProfileFile,
+			              PGOOpt->ProfileRemappingFile,
+				      ThinOrFullLTOPhase::ThinLTOPostLink));
+  MPM.addPass(RequireAnalysisPass<ProfileSummaryAnalysis, Module>());
+  MPM.run(Mod, MAM);
 }
 
 static void runNewPMPasses(const Config &Conf, Module &Mod, TargetMachine *TM,
@@ -1009,6 +1060,9 @@ Error lto::thinBackend(const Config &Conf, unsigned Task, AddStreamFn AddStream,
   Mod.setPartialSampleProfileRatio(CombinedIndex);
 
   updatePublicTypeTestCalls(Mod, CombinedIndex.withWholeProgramVisibility());
+
+  if (ThinLTOSplit)
+    runProfileLoaderPass(Conf, Mod, TM.get());
 
   if (Conf.CodeGenOnly) {
     if (ThinLTOSplit)
