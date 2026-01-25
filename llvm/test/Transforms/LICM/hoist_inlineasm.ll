@@ -1,7 +1,6 @@
 ; RUN: opt < %s -passes='mem2reg,simplifycfg,loop-simplify,lcssa,loop-mssa(licm)' -S | FileCheck %s
 
 @p = dso_local global ptr null, align 8
-
 define dso_local void @foo() {
 entry:
   %i = alloca i32, align 4
@@ -29,13 +28,9 @@ for.inc:                                          ; preds = %for.body
 for.end:                                          ; preds = %for.cond
   ret void
 }
-
 ; CHECK-LABEL: @foo(
-
 ; CHECK: entry:
 ; CHECK-NEXT:  [[P:%.*]] = load ptr, ptr @p
 ; CHECK-NEXT:  [[GEP:%.*]] = getelementptr inbounds i32, ptr [[P]], i64 0
 ; CHECK-NEXT:  [[BOUND:%.*]] = load i32, ptr [[GEP]]
 ; CHECK-NEXT:  br label [[COND:%.*]]
-
-

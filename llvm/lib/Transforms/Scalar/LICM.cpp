@@ -158,6 +158,12 @@ cl::opt<unsigned> llvm::SetLicmMssaNoAccForPromotionCap(
              "number of accesses allowed to be present in a loop in order to "
              "enable memory promotion."));
 
+ static cl::opt<bool> EnableSkipNoMemoryInlineAsm(
+ 	     "licm-skip-no-memory-inline-asm",
+ 	     cl::desc("Skip no-memory inline asm when computing clobbering memory "
+ 	              "access in LICM"),
+ 	     cl::init(true));
+
 static bool inSubLoop(BasicBlock *BB, Loop *CurLoop, LoopInfo *LI);
 static bool isNotUsedOrFoldableInLoop(const Instruction &I, const Loop *CurLoop,
                                       const LoopSafetyInfo *SafetyInfo,
@@ -1145,6 +1151,73 @@ bool isOnlyMemoryAccess(const Instruction *I, const Loop *L,
 }
 }
 
+static bool isNoMemoryInlineAsmClobber(MemoryAccess *MA) {
+  auto *MD = dyn_cast<MemoryDef>(MA);
+  if (!MD)
+    return false;
+
+  Instruction *MI = MD->getMemoryInst();
+  auto *CB = dyn_cast_or_null<CallBase>(MI);
+  if (!CB || !CB->isInlineAsm())
+    return false;
+
+  auto *IA = cast<InlineAsm>(CB->getCalledOperand());
+  StringRef Constraints = IA->getConstraintString();
+  return !Constraints.contains("~{memory}");
+}
+
+static MemoryAccess *skipNoMemoryInlineAsmClobber(MemoryAccess *MA) {
+  while (MA) {
+    if (!isNoMemoryInlineAsmClobber(MA))
+      break;
+
+    if (auto *MUD = dyn_cast<MemoryUseOrDef>(MA)) {
+      MA = MUD->getDefiningAccess();
+      continue;
+    }
+
+    break;
+  }
+
+  return MA;
+}
+
+static bool isTrivialLoopInvariantMemoryPhi(MemoryAccess *MA, Loop *L,
+                                            MemorySSA *MSSA) {
+  auto *MP = dyn_cast<MemoryPhi>(MA);
+  if (!MP)
+    return false;
+
+  for (Use &U : MP->incoming_values()) {
+    MemoryAccess *In = cast<MemoryAccess>(U.get());
+    BasicBlock *InBB = MP->getIncomingBlock(U);
+
+    if (MSSA->isLiveOnEntryDef(In))
+      continue;
+
+    if (!L->contains(InBB))
+      continue;
+
+    if (auto *MD = dyn_cast<MemoryDef>(In)) {
+      if (!isNoMemoryInlineAsmClobber(MD))
+        return false;
+      continue;
+    }
+
+    if (auto *PhiIn = dyn_cast<MemoryPhi>(In)) {
+      // FIXME: Ideally, we should recursively check nested MemoryPhis by
+      // calling isTrivialLoopInvariantMemoryPhi on their incoming values.
+      // This is currently not handled.
+      if (PhiIn == MP)
+        continue;
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
 static MemoryAccess *getClobberingMemoryAccess(MemorySSA &MSSA,
                                                BatchAAResults &BAA,
                                                SinkAndHoistLICMFlags &Flags,
@@ -1156,6 +1229,8 @@ static MemoryAccess *getClobberingMemoryAccess(MemorySSA &MSSA,
   MemoryAccess *Source =
       MSSA.getSkipSelfWalker()->getClobberingMemoryAccess(MA, BAA);
   Flags.incrementClobberingCalls();
+  if (EnableSkipNoMemoryInlineAsm)
+    Source = skipNoMemoryInlineAsmClobber(Source);
   return Source;
 }
 
@@ -2387,86 +2462,6 @@ collectPromotionCandidates(MemorySSA *MSSA, AliasAnalysis *AA, Loop *L) {
   return Result;
 }
 
-// helper for licm: check if an inline asm MemoryDef clobbers memory
-static bool isNoMemoryInlineAsmClobber(MemoryAccess *MA) {
-    auto *MD = dyn_cast<MemoryDef>(MA);
-    if (!MD)
-        return false;
-
-    Instruction *MI = MD->getMemoryInst();
-    auto *CB = dyn_cast_or_null<CallBase>(MI);
-    if (!CB || !CB->isInlineAsm())
-        return false;
-  
-    auto *IA = cast<InlineAsm>(CB->getCalledOperand());
-    StringRef Constraints = IA->getConstraintString();
-    return !Constraints.contains("~{memory}");
-}
-
-// helper for licm: skip no-memory inline asm clobbers to find the real clobber
-static MemoryAccess *
-skipNoMemoryInlineAsmClobber(MemoryAccess *MA) {
-    while (MA) {
-        if (!isNoMemoryInlineAsmClobber(MA))
-            break;
-
-        if (auto *MUD = dyn_cast<MemoryUseOrDef>(MA)) {
-            MA = MUD->getDefiningAccess();
-            continue;
-        } 
-
-        // MemoryPhi or LiveOnEntry → stop
-        break;
-  }
-
-  return MA;
-}
-
-// helper for licm: check if a MemoryPhi in a loop is trivial:
-// all incoming values are either from outside the loop (preheader),
-// from no-memory inline asm clobbers, or self-cycles.
-static bool isTrivialLoopMemoryPhi(MemoryAccess *MA,
-                                   Loop *L,
-                                   MemorySSA *MSSA) {
-    auto *MP = dyn_cast<MemoryPhi>(MA);
-    if (!MP) return false;
-
-    for (Use &U : MP->incoming_values()) {
-        MemoryAccess *In = cast<MemoryAccess>(U.get());
-        BasicBlock *InBB = MP->getIncomingBlock(U);
-
-        // LiveOnEntry, safe!!!
-        if (MSSA->isLiveOnEntryDef(In))
-            continue;
-        
-        // form preheader, safe!!!
-        if (!L->contains(InBB))
-            continue; 
-
-        // from no-memory inline asm clobber, safe!!!
-        if (auto *MD = dyn_cast<MemoryDef>(In)) {
-            if (!isNoMemoryInlineAsmClobber(MD))
-                return false;
-            continue;
-        }
-
-        // from other MemoryPhi
-        if (auto *PhiIn = dyn_cast<MemoryPhi>(In)) {
-            if (PhiIn == MP) // self-cycle, safe!!!
-                continue;
-            else
-                return false;
-        }
-        
-        // other cases, unsafe!!!
-        return false; 
-    }
-
-    return true;
-}
-
-
-
 static bool pointerInvalidatedByLoop(MemorySSA *MSSA, MemoryUse *MU,
                                      Loop *CurLoop, Instruction &I,
                                      SinkAndHoistLICMFlags &Flags,
@@ -2484,20 +2479,15 @@ static bool pointerInvalidatedByLoop(MemorySSA *MSSA, MemoryUse *MU,
 
     BatchAAResults BAA(MSSA->getAA());
     MemoryAccess *Source = getClobberingMemoryAccess(*MSSA, BAA, Flags, MU);
-
-    // skip no-memory inline asm clobber
-    Source = skipNoMemoryInlineAsmClobber(Source);
-
-    // If the source is a trivial loop memory phi, it means all incoming
-    // values are either from outside the loop, or from no-memory inline
-    // asm clobber, or self-cycle. So it's safe to hoist.
-    if(isTrivialLoopMemoryPhi(Source, CurLoop, MSSA)) {
-        return false;
+    if (EnableSkipNoMemoryInlineAsm &&
+        isTrivialLoopInvariantMemoryPhi(Source, CurLoop, MSSA)) {
+      return false;
     }
 
     return !MSSA->isLiveOnEntryDef(Source) &&
            CurLoop->contains(Source->getBlock()) &&
-           !(InvariantGroup && Source->getBlock() == CurLoop->getHeader() && isa<MemoryPhi>(Source));
+           !(InvariantGroup && Source->getBlock() == CurLoop->getHeader() &&
+             isa<MemoryPhi>(Source));
   }
 
   // For sinking, we'd need to check all Defs below this use. The getClobbering
