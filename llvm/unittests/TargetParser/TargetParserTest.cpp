@@ -1157,6 +1157,7 @@ INSTANTIATE_TEST_SUITE_P(
                       AArch64CPUTestParams("thunderxt83", "armv8-a"),
                       AArch64CPUTestParams("thunderxt88", "armv8-a"),
                       AArch64CPUTestParams("tsv110", "armv8.2-a"),
+                      AArch64CPUTestParams("hip12", "armv9.2-a"),
                       AArch64CPUTestParams("a64fx", "armv8.2-a"),
                       AArch64CPUTestParams("fujitsu-monaka", "armv9.3-a"),
                       AArch64CPUTestParams("carmel", "armv8.2-a"),
@@ -1165,7 +1166,7 @@ INSTANTIATE_TEST_SUITE_P(
     AArch64CPUTestParams::PrintToStringParamName);
 
 // Note: number of CPUs includes aliases.
-static constexpr unsigned NumAArch64CPUArchs = 82;
+static constexpr unsigned NumAArch64CPUArchs = 83;
 
 TEST(TargetParserTest, testAArch64CPUArchList) {
   SmallVector<StringRef, NumAArch64CPUArchs> List;
@@ -1278,6 +1279,31 @@ TEST(TargetParserTest, testAArch64Extension) {
   EXPECT_TRUE(testAArch64Extension("tsv110", "dotprod"));
   EXPECT_TRUE(testAArch64Extension("tsv110", "jscvt"));
   EXPECT_TRUE(testAArch64Extension("tsv110", "fcma"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "sve"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "sve2"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "sve-bitperm"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "sve-aes"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "sve2-sm4"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "sve2-sha3"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "fp16"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "profile"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "hbc"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "rcpc3"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "bf16"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "crc"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "dotprod"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "fp"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "i8mm"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "lse"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "simd"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "pauth"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "ras"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "rcpc"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "rdm"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "ls64"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "brbe"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "jscvt"));
+  EXPECT_TRUE(testAArch64Extension("hip12", "fcma"));
   EXPECT_TRUE(testAArch64Extension("a64fx", "fp16"));
   EXPECT_TRUE(testAArch64Extension("a64fx", "sve"));
   EXPECT_FALSE(testAArch64Extension("a64fx", "sve2"));
