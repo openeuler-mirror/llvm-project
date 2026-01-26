@@ -66,6 +66,7 @@
 #include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Dominators.h"
+#include "llvm/IR/InlineAsm.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/IRBuilder.h"
@@ -86,6 +87,7 @@
 #include "llvm/Transforms/Utils/SSAUpdater.h"
 #include <algorithm>
 #include <utility>
+
 using namespace llvm;
 
 namespace llvm {
@@ -155,6 +157,12 @@ cl::opt<unsigned> llvm::SetLicmMssaNoAccForPromotionCap(
              "effect. When MSSA in LICM is enabled, then this is the maximum "
              "number of accesses allowed to be present in a loop in order to "
              "enable memory promotion."));
+
+ static cl::opt<bool> EnableSkipNoMemoryInlineAsm(
+ 	     "licm-skip-no-memory-inline-asm",
+ 	     cl::desc("Skip no-memory inline asm when computing clobbering memory "
+ 	              "access in LICM"),
+ 	     cl::init(true));
 
 static bool inSubLoop(BasicBlock *BB, Loop *CurLoop, LoopInfo *LI);
 static bool isNotUsedOrFoldableInLoop(const Instruction &I, const Loop *CurLoop,
@@ -1143,6 +1151,73 @@ bool isOnlyMemoryAccess(const Instruction *I, const Loop *L,
 }
 }
 
+static bool isNoMemoryInlineAsmClobber(MemoryAccess *MA) {
+  auto *MD = dyn_cast<MemoryDef>(MA);
+  if (!MD)
+    return false;
+
+  Instruction *MI = MD->getMemoryInst();
+  auto *CB = dyn_cast_or_null<CallBase>(MI);
+  if (!CB || !CB->isInlineAsm())
+    return false;
+
+  auto *IA = cast<InlineAsm>(CB->getCalledOperand());
+  StringRef Constraints = IA->getConstraintString();
+  return !Constraints.contains("~{memory}");
+}
+
+static MemoryAccess *skipNoMemoryInlineAsmClobber(MemoryAccess *MA) {
+  while (MA) {
+    if (!isNoMemoryInlineAsmClobber(MA))
+      break;
+
+    if (auto *MUD = dyn_cast<MemoryUseOrDef>(MA)) {
+      MA = MUD->getDefiningAccess();
+      continue;
+    }
+
+    break;
+  }
+
+  return MA;
+}
+
+static bool isTrivialLoopInvariantMemoryPhi(MemoryAccess *MA, Loop *L,
+                                            MemorySSA *MSSA) {
+  auto *MP = dyn_cast<MemoryPhi>(MA);
+  if (!MP)
+    return false;
+
+  for (Use &U : MP->incoming_values()) {
+    MemoryAccess *In = cast<MemoryAccess>(U.get());
+    BasicBlock *InBB = MP->getIncomingBlock(U);
+
+    if (MSSA->isLiveOnEntryDef(In))
+      continue;
+
+    if (!L->contains(InBB))
+      continue;
+
+    if (auto *MD = dyn_cast<MemoryDef>(In)) {
+      if (!isNoMemoryInlineAsmClobber(MD))
+        return false;
+      continue;
+    }
+
+    if (auto *PhiIn = dyn_cast<MemoryPhi>(In)) {
+      // FIXME: Ideally, we should recursively check nested MemoryPhis by
+      // calling isTrivialLoopInvariantMemoryPhi on their incoming values.
+      // This is currently not handled.
+      if (PhiIn == MP)
+        continue;
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
 static MemoryAccess *getClobberingMemoryAccess(MemorySSA &MSSA,
                                                BatchAAResults &BAA,
                                                SinkAndHoistLICMFlags &Flags,
@@ -1154,6 +1229,8 @@ static MemoryAccess *getClobberingMemoryAccess(MemorySSA &MSSA,
   MemoryAccess *Source =
       MSSA.getSkipSelfWalker()->getClobberingMemoryAccess(MA, BAA);
   Flags.incrementClobberingCalls();
+  if (EnableSkipNoMemoryInlineAsm)
+    Source = skipNoMemoryInlineAsmClobber(Source);
   return Source;
 }
 
@@ -2402,9 +2479,15 @@ static bool pointerInvalidatedByLoop(MemorySSA *MSSA, MemoryUse *MU,
 
     BatchAAResults BAA(MSSA->getAA());
     MemoryAccess *Source = getClobberingMemoryAccess(*MSSA, BAA, Flags, MU);
+    if (EnableSkipNoMemoryInlineAsm &&
+        isTrivialLoopInvariantMemoryPhi(Source, CurLoop, MSSA)) {
+      return false;
+    }
+
     return !MSSA->isLiveOnEntryDef(Source) &&
            CurLoop->contains(Source->getBlock()) &&
-           !(InvariantGroup && Source->getBlock() == CurLoop->getHeader() && isa<MemoryPhi>(Source));
+           !(InvariantGroup && Source->getBlock() == CurLoop->getHeader() &&
+             isa<MemoryPhi>(Source));
   }
 
   // For sinking, we'd need to check all Defs below this use. The getClobbering
