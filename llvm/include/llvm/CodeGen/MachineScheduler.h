@@ -267,6 +267,9 @@ public:
   /// When all successor dependencies have been resolved, free this node for
   /// bottom-up scheduling.
   virtual void releaseBottomNode(SUnit *SU) = 0;
+
+  bool IsPreMemOpLd;
+  bool IsPreMemOpSt;
 };
 
 /// ScheduleDAGMI is an implementation of ScheduleDAGInstrs that simply
@@ -1069,8 +1072,8 @@ public:
   /// pickNodeBidirectional depends on these listed by decreasing priority.
   enum CandReason : uint8_t {
     NoCand, Only1, PhysReg, RegExcess, RegCritical, Stall, Cluster, Weak,
-    RegMax, ResourceReduce, ResourceDemand, BotHeightReduce, BotPathReduce,
-    TopDepthReduce, TopPathReduce, NextDefUse, NodeOrder};
+    LdStGroup, RegMax, ResourceReduce, ResourceDemand, BotHeightReduce,
+    BotPathReduce, TopDepthReduce, TopPathReduce, NextDefUse, NodeOrder};
 
 #ifndef NDEBUG
   static const char *getReasonStr(GenericSchedulerBase::CandReason Reason);
