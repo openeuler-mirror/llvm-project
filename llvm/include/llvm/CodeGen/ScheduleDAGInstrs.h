@@ -192,6 +192,8 @@ namespace llvm {
     /// applicable).
     using SUList = std::list<SUnit *>;
 
+    bool IsNCSched = false;
+
   protected:
     /// A map from ValueType to SUList, used during DAG construction, as
     /// a means of remembering which SUs depend on which memory locations.

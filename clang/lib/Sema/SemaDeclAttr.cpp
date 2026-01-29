@@ -696,6 +696,61 @@ static void checkAttrArgsAreCapabilityObjs(Sema &S, Decl *D,
 // Attribute Implementations
 //===----------------------------------------------------------------------===//
 
+static bool attrNCSchedArgCheck(Sema &S, QualType T, const ParsedAttr &AL,
+                                SourceRange AttrParmRange,
+                                SourceRange TypeRange,
+                                bool isReturnValue = false) {
+  if (!S.isValidPointerAttrType(T)) {
+    if (isReturnValue)
+      S.Diag(AL.getLoc(), diag::warn_attribute_return_pointers_only)
+          << AL << AttrParmRange << TypeRange;
+    else
+      S.Diag(AL.getLoc(), diag::warn_attribute_pointers_only)
+          << AL << AttrParmRange << TypeRange << 0;
+    return false;
+  }
+  return true;
+}
+
+static void handleNCSchedAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
+  SmallVector<ParamIdx, 8> NCSchedArgs;
+  for (unsigned I = 0; I < AL.getNumArgs(); ++ I) {
+    Expr *Ex = AL.getArgAsExpr(I);
+    ParamIdx Idx;
+    if (!checkFunctionOrMethodParameterIndex(S, D, AL, I + 1, Ex, Idx))
+      return;
+
+    if (Idx.getASTIndex() < getFunctionOrMethodNumParams(D) &&
+        !attrNCSchedArgCheck(
+            S, getFunctionOrMethodParamType(D, Idx.getASTIndex()), AL,
+            Ex->getSourceRange(),
+            getFunctionOrMethodParamRange(D, Idx.getASTIndex())))
+      continue;
+
+    NCSchedArgs.push_back(Idx);
+  }
+
+  if (NCSchedArgs.empty() && AL.getLoc().isFileID() &&
+      !S.inTemplateInstantiation()) {
+    bool AnyPointers = isFunctionOrMethodVariadic(D);
+    for (unsigned I = 0, E = getFunctionOrMethodNumParams(D);
+         I != E && !AnyPointers; ++I) {
+      QualType T = getFunctionOrMethodParamType(D, I);
+      if (T->isDependentType() || S.isValidPointerAttrType(T))
+        AnyPointers = true;
+    }
+
+    if (!AnyPointers)
+      S.Diag(AL.getLoc(),
+             diag::warn_attribute_nonnull_no_pointers);
+  }
+
+  ParamIdx *Start = NCSchedArgs.data();
+  unsigned Size = NCSchedArgs.size();
+  llvm::array_pod_sort(Start, Start + Size);
+  D->addAttr(::new (S.Context) NCSchedAttr(S.Context, AL, Start, Size));
+}
+
 static void handlePtGuardedVarAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
   if (!threadSafetyCheckIsPointer(S, D, AL))
     return;
@@ -9593,6 +9648,10 @@ ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D, const ParsedAttr &AL,
 
   case ParsedAttr::AT_UsingIfExists:
     handleSimpleAttribute<UsingIfExistsAttr>(S, D, AL);
+    break;
+
+  case ParsedAttr::AT_NCSched:
+    handleNCSchedAttr(S, D, AL);
     break;
   }
 }

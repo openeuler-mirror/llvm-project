@@ -562,6 +562,9 @@ getSchedRegions(MachineBasicBlock *MBB,
 /// Main driver for both MachineScheduler and PostMachineScheduler.
 void MachineSchedulerBase::scheduleRegions(ScheduleDAGInstrs &Scheduler,
                                            bool FixKillFlags) {
+  if (MF->getFunction().hasFnAttribute("ncsched"))
+    Scheduler.IsNCSched = true;
+
   // Visit all machine basic blocks.
   //
   // TODO: Visit blocks in global postorder or postorder within the bottom-up

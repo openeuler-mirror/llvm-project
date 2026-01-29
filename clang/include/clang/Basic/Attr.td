@@ -4123,6 +4123,22 @@ def EnforceTCBLeaf : InheritableAttr {
   bit InheritEvenIfAlreadyPresent = 1;
 }
 
+def NCSched: InheritableAttr {
+  let Spellings = [Clang<"ncsched">];
+  let Subjects = SubjectList<[Function]>;
+  let Args = [VariadicParamIdxArgument<"Args">];
+  let AdditionalMembers = [{
+    bool isNCSched(unsigned IdxAST) const {
+      if (!args_size())
+        return true;
+      return llvm::any_of(args(), [=](const ParamIdx &Idx) {
+        return Idx.getASTIndex() == IdxAST;
+      });
+    }
+  }];
+  let Documentation = [Undocumented];
+}
+
 def Error : InheritableAttr {
   let Spellings = [GCC<"error">, GCC<"warning">];
   let Accessors = [Accessor<"isError", [GCC<"error">]>,
