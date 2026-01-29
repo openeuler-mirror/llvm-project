@@ -15345,8 +15345,7 @@ bool AArch64TargetLowering::lowerInterleavedStore(StoreInst *SI,
                                                   ShuffleVectorInst *SVI,
                                                   unsigned Factor) const {
 
-  assert(Factor >= 2 && Factor <= getMaxSupportedInterleaveFactor() &&
-         "Invalid interleave factor");
+  assert(Factor >= 2 && "Invalid interleave factor");
   if (Factor > getMaxSupportedInterleaveFactor())
     return lowerInterleavedStoreWithShuffle(SI, SVI, Factor);
   auto *VecTy = cast<FixedVectorType>(SVI->getType());
