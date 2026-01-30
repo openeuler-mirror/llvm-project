@@ -704,6 +704,17 @@ def HasV9_4aOps   : SubtargetFeature<"v9.4a", "HasV9_4aOps", "true",
                                    "Support ARM v9.4a instructions",
                                    [HasV8_9aOps, HasV9_3aOps]>;
 
+// Armv9.5-A is a v9-only architecture. From v9.5-A onwards there's no mapping
+// to an equivalent v8.x version.
+def HasV9_5aOps   : SubtargetFeature<"v9.5a", "HasV9_5aOps", "true",
+                                   "Support ARM v9.5a instructions",
+                                   [HasV9_4aOps]>;
+
+// Armv9.6-A is a v9-only architecture.
+def HasV9_6aOps   : SubtargetFeature<"v9.6a", "HasV9_6aOps", "true",
+                                   "Support ARM v9.6a instructions",
+                                   [HasV9_5aOps]>;
+
 def HasV8_1MMainlineOps : SubtargetFeature<
                "v8.1m.main", "HasV8_1MMainlineOps", "true",
                "Support ARM v8-1M Mainline instructions",
@@ -1139,7 +1150,30 @@ def ARMv94a   : Architecture<"armv9.4-a", "ARMv94a",  [HasV9_4aOps,
                                                        FeatureCRC,
                                                        FeatureRAS,
                                                        FeatureDotProd]>;
-
+def ARMv95a   : Architecture<"armv9.5-a", "ARMv95a",  [HasV9_5aOps,
+                                                       FeatureAClass,
+                                                       FeatureDB,
+                                                       FeatureFPARMv8,
+                                                       FeatureNEON,
+                                                       FeatureDSP,
+                                                       FeatureTrustZone,
+                                                       FeatureMP,
+                                                       FeatureVirtualization,
+                                                       FeatureCRC,
+                                                       FeatureRAS,
+                                                       FeatureDotProd]>;
+def ARMv96a   : Architecture<"armv9.6-a", "ARMv96a",  [HasV9_6aOps,
+                                                       FeatureAClass,
+                                                       FeatureDB,
+                                                       FeatureFPARMv8,
+                                                       FeatureNEON,
+                                                       FeatureDSP,
+                                                       FeatureTrustZone,
+                                                       FeatureMP,
+                                                       FeatureVirtualization,
+                                                       FeatureCRC,
+                                                       FeatureRAS,
+                                                       FeatureDotProd]>;
 def ARMv8r    : Architecture<"armv8-r",   "ARMv8r",   [HasV8Ops,
                                                        FeatureRClass,
                                                        FeatureDB,

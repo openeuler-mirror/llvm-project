@@ -65,6 +65,7 @@ public:
         {"fixup_aarch64_ldst_imm12_scale16", 10, 12, 0},
         {"fixup_aarch64_ldr_pcrel_imm19", 5, 19, PCRelFlagVal},
         {"fixup_aarch64_movw", 5, 16, 0},
+        {"fixup_aarch64_pcrel_branch9", 5, 9,  PCRelFlagVal},
         {"fixup_aarch64_pcrel_branch14", 5, 14, PCRelFlagVal},
         {"fixup_aarch64_pcrel_branch19", 5, 19, PCRelFlagVal},
         {"fixup_aarch64_pcrel_branch26", 0, 26, PCRelFlagVal},
@@ -118,6 +119,7 @@ static unsigned getFixupKindNumBytes(unsigned Kind) {
     return 2;
 
   case AArch64::fixup_aarch64_movw:
+  case AArch64::fixup_aarch64_pcrel_branch9:
   case AArch64::fixup_aarch64_pcrel_branch14:
   case AArch64::fixup_aarch64_add_imm12:
   case AArch64::fixup_aarch64_ldst_imm12_scale1:
@@ -304,6 +306,14 @@ static uint64_t adjustFixupValue(const MCFixup &Fixup, const MCValue &Target,
     }
     return Value;
   }
+  case AArch64::fixup_aarch64_pcrel_branch9:
+    // Signed 11-bit(9bits + 2 shifts) label
+    if (!isInt<11>(SignedValue))
+      Ctx.reportError(Fixup.getLoc(), "fixup value out of range");
+    // Low two bits are not encoded (4-byte alignment assumed).
+    if (Value & 0b11)
+      Ctx.reportError(Fixup.getLoc(), "fixup not sufficiently aligned");
+    return (Value >> 2) & 0x1ff;
   case AArch64::fixup_aarch64_pcrel_branch14:
     // Signed 16-bit immediate
     if (SignedValue > 32767 || SignedValue < -32768)
@@ -370,6 +380,7 @@ unsigned AArch64AsmBackend::getFixupKindContainereSizeInBytes(unsigned Kind) con
     return 8;
 
   case AArch64::fixup_aarch64_movw:
+  case AArch64::fixup_aarch64_pcrel_branch9:
   case AArch64::fixup_aarch64_pcrel_branch14:
   case AArch64::fixup_aarch64_add_imm12:
   case AArch64::fixup_aarch64_ldst_imm12_scale1:
