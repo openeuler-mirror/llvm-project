@@ -41,6 +41,7 @@ enum {
   REGISTERS_VE,
   REGISTERS_S390X,
   REGISTERS_LOONGARCH,
+  REGISTERS_SW_64,
 };
 
 #if defined(_LIBUNWIND_TARGET_I386)
@@ -5306,6 +5307,261 @@ inline void Registers_loongarch::setVectorRegister(int, v128) {
   _LIBUNWIND_ABORT("loongarch vector support not implemented");
 }
 #endif //_LIBUNWIND_TARGET_LOONGARCH
+
+#if defined(_LIBUNWIND_TARGET_SW_64)
+/// Registers_sw_64 holds the register state of a thread in a 64-bit
+/// SW_64 process.
+class _LIBUNWIND_HIDDEN Registers_sw_64;
+extern "C" void __libunwind_Registers_sw_64_jumpto(Registers_sw_64 *);
+class _LIBUNWIND_HIDDEN Registers_sw_64 {
+public:
+  Registers_sw_64();
+  Registers_sw_64(const void *registers);
+
+  bool validRegister(int num) const;
+  uint64_t getRegister(int num) const;
+  void setRegister(int num, uint64_t value);
+  bool validFloatRegister(int num) const;
+  double getFloatRegister(int num) const;
+  void setFloatRegister(int num, double value);
+  bool validVectorRegister(int num) const;
+  v128 getVectorRegister(int num) const;
+  void setVectorRegister(int num, v128 value);
+  static const char *getRegisterName(int num);
+  void jumpto() { __libunwind_Registers_sw_64_jumpto(this); }
+  static constexpr int lastDwarfRegNum() {
+    return _LIBUNWIND_HIGHEST_DWARF_REGISTER_SW_64;
+  }
+  static int getArch() { return REGISTERS_SW_64; }
+
+  uint64_t getIP() const { return _registers.__pc; }
+  void setIP(uint64_t value) { _registers.__pc = value; }
+  uint64_t getSP() const { return _registers.__r[30]; }
+  void setSP(uint64_t value) { _registers.__r[30] = value; }
+
+private:
+  struct sw_64_thread_state_t {
+    uint64_t __r[32]; // r0-r31
+    uint64_t __pc;
+  };
+
+  sw_64_thread_state_t _registers;
+  double _floats[32];
+};
+
+inline Registers_sw_64::Registers_sw_64(const void *registers) {
+  static_assert((check_fit<Registers_sw_64, unw_context_t>::does_fit),
+                "sw_64 registers do not fit into unw_context_t");
+  memcpy(&_registers, registers, sizeof(_registers));
+  static_assert(sizeof(_registers) == 0x108,
+                "expected float registers to be at offset 264");
+  memcpy(_floats, static_cast<const uint8_t *>(registers) + sizeof(_registers),
+         sizeof(_floats));
+}
+
+inline Registers_sw_64::Registers_sw_64() {
+  memset(&_registers, 0, sizeof(_registers));
+  memset(&_floats, 0, sizeof(_floats));
+}
+
+inline bool Registers_sw_64::validRegister(int regNum) const {
+  if (regNum == UNW_REG_IP || regNum == UNW_REG_SP)
+    return true;
+  if (regNum < 0 || regNum > UNW_SW_64_F31)
+    return false;
+  return true;
+}
+
+inline uint64_t Registers_sw_64::getRegister(int regNum) const {
+  if (regNum >= UNW_SW_64_R0 && regNum <= UNW_SW_64_R31)
+    return _registers.__r[regNum - UNW_SW_64_R0];
+  if (regNum == UNW_REG_IP)
+    return _registers.__pc;
+  if (regNum == UNW_REG_SP)
+    return _registers.__r[30];
+  _LIBUNWIND_ABORT("unsupported sw_64 register");
+}
+
+inline void Registers_sw_64::setRegister(int regNum, uint64_t value) {
+  if (regNum >= UNW_SW_64_R0 && regNum <= UNW_SW_64_R31)
+    _registers.__r[regNum - UNW_SW_64_R0] = value;
+  else if (regNum == UNW_REG_IP)
+    _registers.__pc = value;
+  else if (regNum == UNW_REG_SP)
+    _registers.__r[30] = value;
+  else
+    _LIBUNWIND_ABORT("unsupported sw_64 register");
+}
+
+inline const char *Registers_sw_64::getRegisterName(int regNum) {
+  switch (regNum) {
+  case UNW_REG_IP:
+    return "$pc";
+  case UNW_REG_SP:
+    return "$sp";
+  case UNW_SW_64_R0:
+    return "$r0";
+  case UNW_SW_64_R1:
+    return "$r1";
+  case UNW_SW_64_R2:
+    return "$r2";
+  case UNW_SW_64_R3:
+    return "$r3";
+  case UNW_SW_64_R4:
+    return "$r4";
+  case UNW_SW_64_R5:
+    return "$r5";
+  case UNW_SW_64_R6:
+    return "$r6";
+  case UNW_SW_64_R7:
+    return "$r7";
+  case UNW_SW_64_R8:
+    return "$r8";
+  case UNW_SW_64_R9:
+    return "$r9";
+  case UNW_SW_64_R10:
+    return "$r10";
+  case UNW_SW_64_R11:
+    return "$r11";
+  case UNW_SW_64_R12:
+    return "$r12";
+  case UNW_SW_64_R13:
+    return "$r13";
+  case UNW_SW_64_R14:
+    return "$r14";
+  case UNW_SW_64_R15:
+    return "$r15";
+  case UNW_SW_64_R16:
+    return "$r16";
+  case UNW_SW_64_R17:
+    return "$r17";
+  case UNW_SW_64_R18:
+    return "$r18";
+  case UNW_SW_64_R19:
+    return "$r19";
+  case UNW_SW_64_R20:
+    return "$r20";
+  case UNW_SW_64_R21:
+    return "$r21";
+  case UNW_SW_64_R22:
+    return "$r22";
+  case UNW_SW_64_R23:
+    return "$r23";
+  case UNW_SW_64_R24:
+    return "$r24";
+  case UNW_SW_64_R25:
+    return "$r25";
+  case UNW_SW_64_R26:
+    return "$r26";
+  case UNW_SW_64_R27:
+    return "$r27";
+  case UNW_SW_64_R28:
+    return "$r28";
+  case UNW_SW_64_R29:
+    return "$r29";
+  case UNW_SW_64_R30:
+    return "$r30";
+  case UNW_SW_64_R31:
+    return "$r31";
+  case UNW_SW_64_F0:
+    return "$f0";
+  case UNW_SW_64_F1:
+    return "$f1";
+  case UNW_SW_64_F2:
+    return "$f2";
+  case UNW_SW_64_F3:
+    return "$f3";
+  case UNW_SW_64_F4:
+    return "$f4";
+  case UNW_SW_64_F5:
+    return "$f5";
+  case UNW_SW_64_F6:
+    return "$f6";
+  case UNW_SW_64_F7:
+    return "$f7";
+  case UNW_SW_64_F8:
+    return "$f8";
+  case UNW_SW_64_F9:
+    return "$f9";
+  case UNW_SW_64_F10:
+    return "$f10";
+  case UNW_SW_64_F11:
+    return "$f11";
+  case UNW_SW_64_F12:
+    return "$f12";
+  case UNW_SW_64_F13:
+    return "$f13";
+  case UNW_SW_64_F14:
+    return "$f14";
+  case UNW_SW_64_F15:
+    return "$f15";
+  case UNW_SW_64_F16:
+    return "$f16";
+  case UNW_SW_64_F17:
+    return "$f17";
+  case UNW_SW_64_F18:
+    return "$f18";
+  case UNW_SW_64_F19:
+    return "$f19";
+  case UNW_SW_64_F20:
+    return "$f20";
+  case UNW_SW_64_F21:
+    return "$f21";
+  case UNW_SW_64_F22:
+    return "$f22";
+  case UNW_SW_64_F23:
+    return "$f23";
+  case UNW_SW_64_F24:
+    return "$f24";
+  case UNW_SW_64_F25:
+    return "$f25";
+  case UNW_SW_64_F26:
+    return "$f26";
+  case UNW_SW_64_F27:
+    return "$f27";
+  case UNW_SW_64_F28:
+    return "$f28";
+  case UNW_SW_64_F29:
+    return "$f29";
+  case UNW_SW_64_F30:
+    return "$f30";
+  case UNW_SW_64_FPCR:
+    return "$fpcr";
+  case UNW_SW_64_PC:
+    return "$pc";
+  case UNW_SW_64_CFA:
+    return "$cfa";
+  default:
+    return "unknown register";
+  }
+}
+
+inline bool Registers_sw_64::validFloatRegister(int regNum) const {
+  if (regNum < UNW_SW_64_F0 || regNum > UNW_SW_64_F31)
+    return false;
+  return true;
+}
+
+inline double Registers_sw_64::getFloatRegister(int regNum) const {
+  assert(validFloatRegister(regNum));
+  return _floats[regNum - UNW_SW_64_F0];
+}
+
+inline void Registers_sw_64::setFloatRegister(int regNum, double value) {
+  assert(validFloatRegister(regNum));
+  _floats[regNum - UNW_SW_64_F0] = value;
+}
+
+inline bool Registers_sw_64::validVectorRegister(int) const { return false; }
+
+inline v128 Registers_sw_64::getVectorRegister(int) const {
+  _LIBUNWIND_ABORT("sw_64 vector support not implemented");
+}
+
+inline void Registers_sw_64::setVectorRegister(int, v128) {
+  _LIBUNWIND_ABORT("sw_64 vector support not implemented");
+}
+#endif //_LIBUNWIND_TARGET_SW_64
 
 } // namespace libunwind
 

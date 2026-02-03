@@ -1226,6 +1226,86 @@ DEFINE_LIBUNWIND_FUNCTION(_ZN9libunwind19Registers_loongarch6jumptoEv)
 
   jr      $ra
 
+#elif defined(__sw_64__)
+
+//
+// void libunwind::Registers_sw_64::jumpto()
+//
+// On entry:
+//  thread_state pointer is in $16
+//
+  .p2align 2
+DEFINE_LIBUNWIND_FUNCTION(__libunwind_Registers_sw_64_jumpto)
+	fldd	$f0, 264($16)
+	fldd	$f1, 272($16)
+	fldd	$f2, 280($16)
+	fldd	$f3, 288($16)
+	fldd	$f4, 296($16)
+	fldd	$f5, 304($16)
+	fldd	$f6, 312($16)
+	fldd	$f7, 320($16)
+	fldd	$f8, 328($16)
+	fldd	$f9, 336($16)
+	fldd	$f10, 344($16)
+	fldd	$f11, 352($16)
+	fldd	$f12, 360($16)
+	fldd	$f13, 368($16)
+	fldd	$f14, 376($16)
+	fldd	$f15, 384($16)
+	fldd	$f16, 392($16)
+	fldd	$f17, 400($16)
+	fldd	$f18, 408($16)
+	fldd	$f19, 416($16)
+	fldd	$f20, 424($16)
+	fldd	$f21, 432($16)
+	fldd	$f22, 440($16)
+	fldd	$f23, 448($16)
+	fldd	$f24, 456($16)
+	fldd	$f25, 464($16)
+	fldd	$f26, 472($16)
+	fldd	$f27, 480($16)
+	fldd	$f28, 488($16)
+	fldd	$f29, 496($16)
+	fldd	$f30, 504($16)
+//	fldd	$f31, 512($16) //$f31 is zero
+
+	ldl	$0, 0($16)
+	ldl	$1, 8($16)
+	ldl	$2, 16($16)
+	ldl	$3, 24($16)
+	ldl	$4, 32($16)
+	ldl	$5, 40($16)
+	ldl	$6, 48($16)
+	ldl	$7, 56($16)
+	ldl	$8, 64($16)
+	ldl	$9, 72($16)
+	ldl	$10, 80($16)
+	ldl	$11, 88($16)
+	ldl	$12, 96($16)
+	ldl	$13, 104($16)
+	ldl	$14, 112($16)
+	ldl	$15, 120($16)
+//	ldl	$16, 128($16)
+	ldl	$17, 136($16)
+	ldl	$18, 144($16)
+	ldl	$19, 152($16)
+	ldl	$20, 160($16)
+	ldl	$21, 168($16)
+	ldl	$22, 176($16)
+	ldl	$23, 184($16)
+	ldl	$24, 192($16)
+	ldl	$25, 200($16)
+//	ldl	$26, 208($16) //$26 is $ra
+	ldl	$27, 216($16)
+	ldl	$28, 224($16)
+	ldl	$29, 232($16)
+	ldl	$30, 240($16) //$30 is $sp
+//	ldl	$31, 248($16) //$31 is zero
+
+	ldl	$26, 256($16) // load new pc into $ra
+	ldl	$16, 128($16) // restore $16 last
+	ret	$31,($26),1
+
 #endif
 
 #endif /* !defined(__USING_SJLJ_EXCEPTIONS__) */

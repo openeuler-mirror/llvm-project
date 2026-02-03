@@ -1135,6 +1135,85 @@ DEFINE_LIBUNWIND_FUNCTION(__unw_getcontext)
   move     $a0, $zero  // UNW_ESUCCESS
   jr       $ra
 
+#elif defined(__sw_64__)
+
+#
+# extern int __unw_getcontext(unw_context_t* thread_state)
+#
+# On entry:
+#  thread_state pointer is in $16
+#
+DEFINE_LIBUNWIND_FUNCTION(__unw_getcontext)
+	stl	$0, 0($16)
+	stl	$1, 8($16)
+	stl	$2, 16($16)
+	stl	$3, 24($16)
+	stl	$4, 32($16)
+	stl	$5, 40($16)
+	stl	$6, 48($16)
+	stl	$7, 56($16)
+	stl	$8, 64($16)
+	stl	$9, 72($16)
+	stl	$10, 80($16)
+	stl	$11, 88($16)
+	stl	$12, 96($16)
+	stl	$13, 104($16)
+	stl	$14, 112($16)
+	stl	$15, 120($16)
+	stl	$16, 128($16)
+	stl	$17, 136($16)
+	stl	$18, 144($16)
+	stl	$19, 152($16)
+	stl	$20, 160($16)
+	stl	$21, 168($16)
+	stl	$22, 176($16)
+	stl	$23, 184($16)
+	stl	$24, 192($16)
+	stl	$25, 200($16)
+	stl	$26, 208($16) // $26 is ra/IP
+	stl	$27, 216($16)
+	stl	$28, 224($16)
+	stl	$29, 232($16)
+	stl	$30, 240($16) // $30 is SP
+	stl	$31, 248($16)
+	stl	$26, 256($16) // store return address(ra) to pc
+
+	fstd	$f0, 264($16)
+	fstd	$f1, 272($16)
+	fstd	$f2, 280($16)
+	fstd	$f3, 288($16)
+	fstd	$f4, 296($16)
+	fstd	$f5, 304($16)
+	fstd	$f6, 312($16)
+	fstd	$f7, 320($16)
+	fstd	$f8, 328($16)
+	fstd	$f9, 336($16)
+	fstd	$f10, 344($16)
+	fstd	$f11, 352($16)
+	fstd	$f12, 360($16)
+	fstd	$f13, 368($16)
+	fstd	$f14, 376($16)
+	fstd	$f15, 384($16)
+	fstd	$f16, 392($16)
+	fstd	$f17, 400($16)
+	fstd	$f18, 408($16)
+	fstd	$f19, 416($16)
+	fstd	$f20, 424($16)
+	fstd	$f21, 432($16)
+	fstd	$f22, 440($16)
+	fstd	$f23, 448($16)
+	fstd	$f24, 456($16)
+	fstd	$f25, 464($16)
+	fstd	$f26, 472($16)
+	fstd	$f27, 480($16)
+	fstd	$f28, 488($16)
+	fstd	$f29, 496($16)
+	fstd	$f30, 504($16)
+	fstd	$f31, 512($16)
+
+	ldi	$0, 0($31)	//Return UNW_ESUCCESS 0
+	ret	$31,($26),1
+
 #endif
 
   WEAK_ALIAS(__unw_getcontext, unw_getcontext)
