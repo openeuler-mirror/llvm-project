@@ -271,6 +271,7 @@ private:
   Module &M;
   CallGraph CG;
   std::unique_ptr<SimplifyCallGraph> SCG;
+  std::unique_ptr<InlineClusterEstimation> IPE = nullptr;
   CostType ModuleCost;
   DenseSet<const Function *> EntryFuncs;
   DenseSet<const Function *> LargeFuncs;
