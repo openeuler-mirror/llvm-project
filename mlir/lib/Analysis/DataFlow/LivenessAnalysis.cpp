@@ -72,7 +72,7 @@ void LivenessAnalysis::visitOperation(Operation *op,
                                       ArrayRef<Liveness *> operands,
                                       ArrayRef<const Liveness *> results) {
   // This marks values of type (1.a) liveness as "live".
-  if (!isMemoryEffectFree(op)) {
+  if (!isMemoryEffectFree(op) || op->hasTrait<OpTrait::ReturnLike>()) {
     for (auto *operand : operands)
       propagateIfChanged(operand, operand->markLive());
   }
