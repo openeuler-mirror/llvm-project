@@ -40,6 +40,7 @@ add_mlir_dialect_library(MLIRVectorTransforms
   MLIRGPUDialect
   MLIRIR
   MLIRLinalgDialect
+  MLIRLLVMDialect
   MLIRMemRefDialect
   MLIRMemRefUtils
   MLIRSCFDialect

@@ -59,6 +59,12 @@ struct VectorTransformsOptions {
     vectorTransferSplit = opt;
     return *this;
   }
+  /// Option to arm_sve lowering.
+  bool armSve = false;
+  VectorTransformsOptions &enableArmSVE(bool enableArmSve) {
+    armSve = enableArmSve;
+    return *this;
+  }
 };
 
 //===----------------------------------------------------------------------===//

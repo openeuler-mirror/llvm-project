@@ -1224,6 +1224,19 @@ static LogicalResult checkedAddLLVMFnAttribute(Location loc,
     llvmFunc->addFnAttr(key, value);
     return success();
   }
+  if (kind == llvm::Attribute::VScaleRange) {
+    llvm::AttrBuilder attr_builder(llvmFunc->getContext());
+    int result;
+    if (!value.getAsInteger(/*Radix=*/0, result))
+      attr_builder.addVScaleRangeAttr(result, std::nullopt);
+    else
+      return emitError(loc)
+             << "LLVM attribute 'vscale_range' expects an integer value";
+
+    llvmFunc->addFnAttrs(attr_builder);
+    return success();
+  }
+  
 
   if (llvm::Attribute::isIntAttrKind(kind)) {
     if (value.empty())

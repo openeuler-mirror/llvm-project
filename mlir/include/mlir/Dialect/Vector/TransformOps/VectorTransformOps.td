@@ -223,7 +223,12 @@ def ApplyLowerOuterProductPatternsOp : Op<Transform_Dialect,
     process of lowering to e.g. LLVM or NVVM.
   }];
 
-  let assemblyFormat = "attr-dict";
+  let arguments = (ins DefaultValuedAttr<BoolAttr, "false">:$isSVE
+  );
+
+  let assemblyFormat = [{
+    (`enableSVE` `=` $isSVE^)? attr-dict
+  }];
 }
 
 def ApplyLowerGatherPatternsOp : Op<Transform_Dialect,

@@ -14,6 +14,7 @@
 #include "mlir/Dialect/Affine/IR/AffineOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Arith/Utils/Utils.h"
+#include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/Dialect/Linalg/IR/Linalg.h"
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
@@ -1200,8 +1201,15 @@ FailureOr<Value> ContractionOpLowering::lowerReduction(
 ///   %x = vector.insert %.., %..[N-1]
 ///
 class OuterProductOpLowering : public OpRewritePattern<vector::OuterProductOp> {
+private:
+  vector::VectorTransformsOptions vectorTransformOptions;
+
 public:
   using OpRewritePattern::OpRewritePattern;
+  OuterProductOpLowering(vector::VectorTransformsOptions vectorTransformOptions,
+                         MLIRContext *context, PatternBenefit benefit = 1)
+      : OpRewritePattern<vector::OuterProductOp>(context, benefit),
+        vectorTransformOptions(vectorTransformOptions) {}
 
   LogicalResult matchAndRewrite(vector::OuterProductOp op,
                                 PatternRewriter &rewriter) const override {
@@ -1246,19 +1254,51 @@ public:
         loc, resType, rewriter.getZeroAttr(resType));
     for (int64_t d = 0, e = resType.getDimSize(0); d < e; ++d) {
       Value x = rewriter.create<vector::ExtractOp>(loc, op.getLhs(), d);
-      Value a = rewriter.create<vector::BroadcastOp>(loc, rhsType, x);
-      Value r = nullptr;
-      if (acc)
+       Value r = nullptr;
+       if (acc)
         r = rewriter.create<vector::ExtractOp>(loc, acc, d);
-      Value extrMask;
-      if (mask)
-        extrMask = rewriter.create<vector::ExtractOp>(loc, mask, d);
+      if (vectorTransformOptions.armSve) {
+        long sizeOfScalableVector =
+            128 /
+            mlir::LLVM::getPrimitiveTypeSizeInBits(resType.getElementType());
+        assert(d <= sizeOfScalableVector && "Unsupported index for SVE fmla");
+        Type vectype = VectorType::get({sizeOfScalableVector},
+                                       rhsType.getElementType(), 1);
+        auto udef = rewriter.create<LLVM::UndefOp>(loc, vectype);
+        auto ScalableLhs = rewriter.create<vector::ScalableInsertOp>(
+            loc, op.getLhs(), udef, 0);
+        auto i0 = rewriter.create<arith::ConstantOp>(
+            loc, rewriter.getZeroAttr(rewriter.getI64Type()));
+        StringAttr dupq = rewriter.getStringAttr("llvm.aarch64.sve.dupq.lane");
+        auto lhsdup = rewriter.create<LLVM::CallIntrinsicOp>(
+            loc, TypeRange{vectype}, dupq, ValueRange{ScalableLhs, i0});
+        auto broadcastedLHS = lhsdup.getResult(0);
+        auto rhs = rewriter.create<vector::ScalableInsertOp>(loc, op.getRhs(),
+                                                             udef, 0);
+        r = rewriter.create<vector::ScalableInsertOp>(loc, r, udef, 0);
+        auto idx = rewriter.create<arith::ConstantOp>(
+            loc, rewriter.getI32IntegerAttr(d));
+        LLVM::CallIntrinsicOp fma;
+        StringAttr fmla = rewriter.getStringAttr("llvm.aarch64.sve.fmla.lane");
+        fma = rewriter.create<LLVM::CallIntrinsicOp>(
+            loc, TypeRange{vectype}, fmla,
+            ValueRange{r, rhs, broadcastedLHS, idx});
+        auto mm = rewriter.create<vector::ScalableExtractOp>(
+            loc, rhsType, fma.getResult(0), 0);
+        result =
+            rewriter.create<vector::InsertOp>(loc, mm, result, d);
+      } else {
+        Value a = rewriter.create<vector::BroadcastOp>(loc, rhsType, x);
+        Value extrMask;
+        if (mask)
+          extrMask = rewriter.create<vector::ExtractOp>(loc, mask, d);
 
-      std::optional<Value> m = createContractArithOp(
-          loc, a, op.getRhs(), r, kind, rewriter, isInt, extrMask);
-      if (!m.has_value())
-        return failure();
-      result = rewriter.create<vector::InsertOp>(loc, *m, result, d);
+        std::optional<Value> m = createContractArithOp(
+            loc, a, op.getRhs(), r, kind, rewriter, isInt, extrMask);
+        if (!m.has_value())
+          return failure();
+        result = rewriter.create<vector::InsertOp>(loc, *m, result, d);
+      }
     }
 
     rewriter.replaceOp(rootOp, result);
@@ -1378,13 +1418,14 @@ void mlir::vector::populateVectorContractLoweringPatterns(
     RewritePatternSet &patterns, VectorTransformsOptions options,
     PatternBenefit benefit, bool disableOuterProductLowering) {
   if (!disableOuterProductLowering)
-    patterns.add<OuterProductOpLowering>(patterns.getContext(), benefit);
+    patterns.add<OuterProductOpLowering>(options, patterns.getContext(), benefit);
   patterns.add<ContractionOpLowering, ContractionOpToMatmulOpLowering,
                ContractionOpToOuterProductOpLowering>(
       options, patterns.getContext(), benefit);
 }
 
 void mlir::vector::populateVectorOuterProductLoweringPatterns(
-    RewritePatternSet &patterns, PatternBenefit benefit) {
-  patterns.add<OuterProductOpLowering>(patterns.getContext(), benefit);
+        RewritePatternSet &patterns, VectorTransformsOptions options,
+        PatternBenefit benefit) {
+      patterns.add<OuterProductOpLowering>(options, patterns.getContext(), benefit);
 }

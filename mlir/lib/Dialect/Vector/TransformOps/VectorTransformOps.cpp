@@ -129,7 +129,9 @@ void transform::ApplyLowerMultiReductionPatternsOp::populatePatterns(
 
 void transform::ApplyLowerOuterProductPatternsOp::populatePatterns(
     RewritePatternSet &patterns) {
-  populateVectorOuterProductLoweringPatterns(patterns);
+      vector::VectorTransformsOptions vectorTransformOptions;
+      vectorTransformOptions.enableArmSVE(getIsSVE());
+      populateVectorOuterProductLoweringPatterns(patterns, vectorTransformOptions);
 }
 
 void transform::ApplyLowerGatherPatternsOp::populatePatterns(
