@@ -17,6 +17,24 @@ add_mlir_dialect_library(MLIRTransformDialect
   MLIRRewrite
   MLIRSideEffectInterfaces
   MLIRTransforms
+  # Quite Odd that we need this here
+  MLIRArmSMETestPasses
+  MLIRArithTransforms
+  MLIRAsyncToLLVM
+  MLIRLinalgTransforms
+  MLIRMemRefTransforms
+  MLIRAffineTransforms
+  MLIRArithToLLVM
+  MLIROpenMPToLLVM
+  MLIRIndexToLLVM
+  MLIRComplexToLLVM
+  MLIRMathToLLVM
+  MLIRMathTransforms
+  MLIRAffineToStandard
+  MLIRReconcileUnrealizedCasts
+  MLIRAsyncTransforms
+  MLIRVectorToLLVM
+  MLIRVectorToLLVMPass
   MLIRTransformDialectInterfaces
   MLIRTransformDialectUtils
   )
