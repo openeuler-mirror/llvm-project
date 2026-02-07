@@ -170,25 +170,9 @@ combineOneSpec(DataLayoutSpecInterface spec,
   DenseMap<StringAttr, DataLayoutEntryInterface> newEntriesForID;
   spec.bucketEntriesByType(newEntriesForType, newEntriesForID);
 
-  // Try overwriting the old entries with the new ones.
-  for (auto &kvp : newEntriesForType) {
-    if (!entriesForType.count(kvp.first)) {
-      entriesForType[kvp.first] = std::move(kvp.second);
-      continue;
-    }
-
-    Type typeSample = kvp.second.front().getKey().get<Type>();
-    assert(&typeSample.getDialect() !=
-               typeSample.getContext()->getLoadedDialect<BuiltinDialect>() &&
-           "unexpected data layout entry for built-in type");
-
-    auto interface = llvm::cast<DataLayoutTypeInterface>(typeSample);
-    if (!interface.areCompatible(entriesForType.lookup(kvp.first), kvp.second))
-      return failure();
-
-    overwriteDuplicateEntries(entriesForType[kvp.first], kvp.second);
-  }
-
+  
+  // Combine non-Type DL entries first so they are visible to the
+  // `type.areCompatible` method, allowing to query global properties.
   for (const auto &kvp : newEntriesForID) {
     StringAttr id = kvp.second.getKey().get<StringAttr>();
     Dialect *dialect = id.getReferencedDialect();
@@ -197,7 +181,7 @@ combineOneSpec(DataLayoutSpecInterface spec,
       continue;
     }
 
-    // Attempt to combine the enties using the dialect interface. If the
+    // Attempt to combine the entries using the dialect interface. If the
     // dialect is not loaded for some reason, use the default combinator
     // that conservatively accepts identical entries only.
     entriesForID[id] =
@@ -207,6 +191,27 @@ combineOneSpec(DataLayoutSpecInterface spec,
                                                              kvp.second);
     if (!entriesForID[id])
       return failure();
+  }
+  // Try overwriting the old entries with the new ones.
+  for (auto &kvp : newEntriesForType) {
+    if (!entriesForType.count(kvp.first)) {
+      entriesForType[kvp.first] = std::move(kvp.second);
+      continue;
+    }
+
+    Type typeSample = cast<Type>(kvp.second.front().getKey());
+    assert(&typeSample.getDialect() !=
+               typeSample.getContext()->getLoadedDialect<BuiltinDialect>() &&
+           "unexpected data layout entry for built-in type");
+
+    auto interface = cast<DataLayoutTypeInterface>(typeSample);
+    // TODO: Revisit this method and call once
+    // https://github.com/llvm/llvm-project/issues/130321 gets resolved.
+    if (!interface.areCompatible(entriesForType.lookup(kvp.first), kvp.second,
+                                 spec, entriesForID))
+      return failure();
+
+    overwriteDuplicateEntries(entriesForType[kvp.first], kvp.second);
   }
 
   return success();
@@ -242,6 +247,12 @@ DataLayoutSpecAttr::combineWith(ArrayRef<DataLayoutSpecInterface> specs) const {
 StringAttr
 DataLayoutSpecAttr::getEndiannessIdentifier(MLIRContext *context) const {
   return Builder(context).getStringAttr(DLTIDialect::kDataLayoutEndiannessKey);
+}
+
+StringAttr DataLayoutSpecAttr::getDefaultMemorySpaceIdentifier(
+    MLIRContext *context) const {
+  return Builder(context).getStringAttr(
+      DLTIDialect::kDataLayoutDefaultMemorySpaceKey);
 }
 
 StringAttr
@@ -417,7 +428,9 @@ public:
                             << DLTIDialect::kDataLayoutEndiannessBig << "' or '"
                             << DLTIDialect::kDataLayoutEndiannessLittle << "'";
     }
-    if (entryName == DLTIDialect::kDataLayoutAllocaMemorySpaceKey ||
+
+    if (entryName == DLTIDialect::kDataLayoutDefaultMemorySpaceKey ||
+        entryName == DLTIDialect::kDataLayoutAllocaMemorySpaceKey ||
         entryName == DLTIDialect::kDataLayoutProgramMemorySpaceKey ||
         entryName == DLTIDialect::kDataLayoutGlobalMemorySpaceKey ||
         entryName == DLTIDialect::kDataLayoutStackAlignmentKey)

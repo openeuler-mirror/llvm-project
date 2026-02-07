@@ -136,6 +136,12 @@ def DataLayoutSpecInterface : AttrInterface<"DataLayoutSpecInterface"> {
       /*methodName=*/"getStackAlignmentIdentifier",
       /*args=*/(ins "::mlir::MLIRContext *":$context)
     >,
+    InterfaceMethod<
+      /*description=*/"Returns the default memory space identifier.",
+      /*retTy=*/"::mlir::StringAttr",
+      /*methodName=*/"getDefaultMemorySpaceIdentifier",
+      /*args=*/(ins "::mlir::MLIRContext *":$context)
+    >,
     // Implementations may override this if they have an efficient lookup
     // mechanism.
     InterfaceMethod<
@@ -466,6 +472,18 @@ def DataLayoutOpInterface : OpInterface<"DataLayoutOpInterface"> {
       }]
     >,
     StaticInterfaceMethod<
+      /*description=*/"Returns the memory space used by the ABI computed "
+                      "using the relevant entries. The data layout object "
+                      "can be used for recursive queries.",
+      /*retTy=*/"::mlir::Attribute",
+      /*methodName=*/"getDefaultMemorySpace",
+      /*args=*/(ins "::mlir::DataLayoutEntryInterface":$entry),
+      /*methodBody=*/"",
+      /*defaultImplementation=*/[{
+        return ::mlir::detail::getDefaultMemorySpace(entry);
+      }]
+    >,
+    StaticInterfaceMethod<
       /*description=*/"Returns the value of the property, if the property is "
                       "defined. Otherwise, it returns std::nullopt.",
       /*retTy=*/"std::optional<Attribute>",
@@ -567,7 +585,9 @@ def DataLayoutTypeInterface : TypeInterface<"DataLayoutTypeInterface"> {
       /*retTy=*/"bool",
       /*methodName=*/"areCompatible",
       /*args=*/(ins "::mlir::DataLayoutEntryListRef":$oldLayout,
-                    "::mlir::DataLayoutEntryListRef":$newLayout),
+                    "::mlir::DataLayoutEntryListRef":$newLayout,
+                    "::mlir::DataLayoutSpecInterface":$newSpec,
+                    "const ::mlir::DataLayoutIdentifiedEntryMap&":$identified),
       /*methodBody=*/"",
       /*defaultImplementation=*/[{ return true; }]
     >,

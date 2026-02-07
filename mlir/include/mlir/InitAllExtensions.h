@@ -23,6 +23,7 @@
 #include "mlir/Conversion/MemRefToLLVM/MemRefToLLVM.h"
 #include "mlir/Conversion/NVVMToLLVM/NVVMToLLVM.h"
 #include "mlir/Conversion/UBToLLVM/UBToLLVM.h"
+#include "mlir/Conversion/PtrToLLVM/PtrToLLVM.h"
 #include "mlir/Dialect/Affine/TransformOps/AffineTransformOps.h"
 #include "mlir/Dialect/Bufferization/TransformOps/BufferizationTransformOps.h"
 #include "mlir/Dialect/Func/Extensions/AllExtensions.h"
@@ -46,6 +47,7 @@
 #include "mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h"
 #include "mlir/Target/LLVMIR/Dialect/ROCDL/ROCDLToLLVMIRTranslation.h"
 
+
 #include <cstdlib>
 
 namespace mlir {
@@ -58,6 +60,7 @@ namespace mlir {
 inline void registerAllExtensions(DialectRegistry &registry) {
   // Register all conversions to LLVM extensions.
   arith::registerConvertArithToLLVMInterface(registry);
+  ptr::registerConvertPtrToLLVMInterface(registry);
   registerConvertComplexToLLVMInterface(registry);
   cf::registerConvertControlFlowToLLVMInterface(registry);
   func::registerAllExtensions(registry);

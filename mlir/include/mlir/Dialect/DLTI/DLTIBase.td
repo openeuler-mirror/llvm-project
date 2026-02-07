@@ -55,6 +55,9 @@ def DLTI_Dialect : Dialect {
 
     constexpr const static ::llvm::StringLiteral
     kDataLayoutStackAlignmentKey = "dlti.stack_alignment";
+
+    constexpr const static ::llvm::StringLiteral
+    kDataLayoutDefaultMemorySpaceKey = "dlti.default_memory_space";
   }];
 
   let useDefaultAttributePrinterParser = 1;

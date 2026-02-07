@@ -85,6 +85,7 @@ add_mlir_library(MLIRTestDialect
   MLIRLinalgDialect
   MLIRLinalgTransforms
   MLIRLLVMDialect
+  MLIRPtrDialect
   MLIRPass
   MLIRPolynomialDialect
   MLIRReduce

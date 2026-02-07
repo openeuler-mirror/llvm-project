@@ -198,8 +198,10 @@ public:
   uint64_t getPreferredAlignment(const DataLayout &dataLayout,
                                  DataLayoutEntryListRef params) const;
 
-  bool areCompatible(DataLayoutEntryListRef oldLayout,
-                     DataLayoutEntryListRef newLayout) const;
+  bool areCompatible(
+    DataLayoutEntryListRef oldLayout, DataLayoutEntryListRef newLayout,
+    DataLayoutSpecInterface newSpec,
+    const DataLayoutIdentifiedEntryMap &map) const;
 
   LogicalResult verifyEntries(DataLayoutEntryListRef entries,
                               Location loc) const;

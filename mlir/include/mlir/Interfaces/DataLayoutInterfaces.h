@@ -35,6 +35,8 @@ using DeviceIDTargetDeviceSpecPair =
     std::pair<StringAttr, TargetDeviceSpecInterface>;
 using DeviceIDTargetDeviceSpecPairListRef =
     llvm::ArrayRef<DeviceIDTargetDeviceSpecPair>;
+using DataLayoutIdentifiedEntryMap =
+    ::llvm::DenseMap<::mlir::StringAttr, ::mlir::DataLayoutEntryInterface>;
 class DataLayoutOpInterface;
 class DataLayoutSpecInterface;
 class ModuleOp;
@@ -78,6 +80,10 @@ Attribute getDefaultEndianness(DataLayoutEntryInterface entry);
 /// Default handler for alloca memory space request. Dispatches to the
 /// DataLayoutInterface if specified, otherwise returns the default.
 Attribute getDefaultAllocaMemorySpace(DataLayoutEntryInterface entry);
+
+/// Default handler for the default memory space request. Dispatches to the
+/// DataLayoutInterface if specified, otherwise returns the default.
+Attribute getDefaultMemorySpace(DataLayoutEntryInterface entry);
 
 /// Default handler for program memory space request. Dispatches to the
 /// DataLayoutInterface if specified, otherwise returns the default.
@@ -231,6 +237,9 @@ public:
   /// Returns the memory space used for AllocaOps.
   Attribute getAllocaMemorySpace() const;
 
+  /// Returns the default memory space used for memory operations.
+  Attribute getDefaultMemorySpace() const;
+
   /// Returns the memory space used for program memory operations.
   Attribute getProgramMemorySpace() const;
 
@@ -281,6 +290,7 @@ private:
   mutable std::optional<Attribute> allocaMemorySpace;
   mutable std::optional<Attribute> programMemorySpace;
   mutable std::optional<Attribute> globalMemorySpace;
+  mutable std::optional<Attribute> defaultMemorySpace;
 
   /// Cache for stack alignment.
   mutable std::optional<uint64_t> stackAlignment;
