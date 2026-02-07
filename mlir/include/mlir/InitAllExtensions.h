@@ -35,6 +35,8 @@
 #include "mlir/Dialect/SparseTensor/TransformOps/SparseTensorTransformOps.h"
 #include "mlir/Dialect/Tensor/TransformOps/TensorTransformOps.h"
 #include "mlir/Dialect/Transform/DebugExtension/DebugExtension.h"
+#include "mlir/Dialect/ArmSVE/TransformOps/ArmSVEVectorTransformOps.h"
+#include "mlir/Dialect/ArmSME/TransformOps/ArmSMEVectorTransformOps.h"
 #include "mlir/Dialect/Transform/IRDLExtension/IRDLExtension.h"
 #include "mlir/Dialect/Transform/LoopExtension/LoopExtension.h"
 #include "mlir/Dialect/Transform/PDLExtension/PDLExtension.h"
@@ -82,6 +84,8 @@ inline void registerAllExtensions(DialectRegistry &registry) {
   transform::registerLoopExtension(registry);
   transform::registerPDLExtension(registry);
   vector::registerTransformDialectExtension(registry);
+  arm_sve::registerTransformDialectExtension(registry);
+  arm_sme::registerTransformDialectExtension(registry);
 
   // Translation extensions need to be registered by calling
   // `registerAllToLLVMIRTranslations` (see All.h).
