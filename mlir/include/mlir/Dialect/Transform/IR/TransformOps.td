@@ -1379,4 +1379,57 @@ def YieldOp : TransformDialectOp<"yield",
   ];
 }
 
+def LowerToArmSMEOp : TransformDialectOp<"lower_to_arm_sme",
+    [FunctionalStyleTransformOpTrait,
+     DeclareOpInterfaceMethods<MemoryEffectsOpInterface>,
+     TransformOpInterface, TransformEachOpTrait]> {
+  let description = [{Apply a list of passes to lower supported ops to
+  legalized arm_sme dialect ops and types.}];
+
+  let arguments =
+    (ins TransformHandleTypeInterface:$target,
+     DefaultValuedAttr<BoolAttr, "false">:$fuse_outer_products
+    );
+
+  let assemblyFormat = "$target attr-dict `:` type($target)";
+
+  let extraClassDeclaration = [{
+    ::mlir::DiagnosedSilenceableFailure applyToOne(
+        ::mlir::transform::TransformRewriter &rewriter,
+        ::mlir::ModuleOp target,
+        ::mlir::transform::ApplyToEachResultList &results,
+        ::mlir::transform::TransformState &state);
+  }];
+}
+
+def LowerToLLVMNewOp : TransformDialectOp<"lower_to_llvm_new",
+    [FunctionalStyleTransformOpTrait,
+     DeclareOpInterfaceMethods<MemoryEffectsOpInterface>,
+     TransformOpInterface, TransformEachOpTrait]> {
+  let description = [{Indicates that the entire module should be converted
+  to the LLVM dialect. This is expected to be the last transformation in
+  a sequence.}];
+
+  let arguments =
+    (ins TransformHandleTypeInterface:$target,
+     DefaultValuedAttr<BoolAttr, "false">:$reassociate_fp_reductions,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_index_optimizations,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_arm_neon,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_arm_sve,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_amx,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_x86vector,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_async,
+     DefaultValuedAttr<I64Attr, "1">:$vscale_range);
+
+  let assemblyFormat = "$target attr-dict `:` type($target)";
+
+  let extraClassDeclaration = [{
+    ::mlir::DiagnosedSilenceableFailure applyToOne(
+        ::mlir::transform::TransformRewriter &rewriter,
+        ::mlir::ModuleOp target,
+        ::mlir::transform::ApplyToEachResultList &results,
+        ::mlir::transform::TransformState &state);
+  }];
+}
+
 #endif // MLIR_DIALECT_TRANSFORM_IR_TRANSFORMOPS
