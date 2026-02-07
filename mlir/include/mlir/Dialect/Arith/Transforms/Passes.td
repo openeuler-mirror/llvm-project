@@ -17,6 +17,10 @@ def ArithExpandOpsPass : Pass<"arith-expand"> {
   let options = [
     Option<"includeBf16", "include-bf16", "bool", /*default=*/"false",
            "Enable the BF16 expansion patterns">,
+    Option<"includeF8E5M2", "include-f8e5m2", "bool", /*default=*/"false",
+           "Enable the F8E5M2 expansion patterns">,
+    Option<"includeF8E4M3FN", "include-f8e4m3fn", "bool", /*default=*/"false",
+           "Enable the F8E4M3FN expansion patterns">,
   ];
 }
 
