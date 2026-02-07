@@ -1169,3 +1169,20 @@ func.func @broadcast_transpose_fold_2dim(%input: tensor<2xf32>,
       permutation = [1, 0]
   func.return %transpose : tensor<4x2xf32>
 }
+
+// -----
+
+// This test checks linalg op has a recursive memory effect. Otherwise
+// linalg.map without a user would be DCEd.
+func.func @recursive_effect(%arg : tensor<1xf32>) {
+  %init = arith.constant dense<0.0> : tensor<1xf32>
+  %mapped = linalg.map ins(%arg:tensor<1xf32>) outs(%init :tensor<1xf32>)
+            (%in : f32) {
+              vector.print %in : f32
+              linalg.yield %in : f32
+            }
+  func.return
+}
+
+// CHECK-LABEL: @recursive_effect
+//       CHECK: linalg.map
