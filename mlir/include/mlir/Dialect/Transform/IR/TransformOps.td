@@ -1432,4 +1432,29 @@ def LowerToLLVMNewOp : TransformDialectOp<"lower_to_llvm_new",
   }];
 }
 
+def LegalizeOp : TransformDialectOp<"legalize",
+    [DeclareOpInterfaceMethods<TransformOpInterface>,
+     DeclareOpInterfaceMethods<MemoryEffectsOpInterface>]> {
+  let description = [{Legalizes vector sizes to multiples of accepted vector
+  length thanks to unrolling.}];
+
+  let arguments = (ins DefaultValuedAttr<I64Attr, "128">:$hardware_vector_length,
+                       DefaultValuedAttr<I64Attr, "1">:$vscale);
+
+  let assemblyFormat = "attr-dict";
+
+  let extraClassDeclaration = [{
+    static std::optional<SmallVector<int64_t>> getShape(mlir::Operation *op,
+                                                           unsigned hardwareVectorLength,
+                                                           unsigned vscale);
+    static int64_t getMaxUnrollingFactor(unsigned vectorSize,
+                                         unsigned dataBitSize,
+                                         unsigned hardwareVectorLength);
+    static SmallVector<int64_t> getAllDimsMaxUnrollingFactor(ArrayRef<int64_t> dstShape,
+                                                unsigned elementSize,
+                                                unsigned hardwareVectorLength,
+                                                unsigned vscale);
+  }];
+}
+
 #endif // MLIR_DIALECT_TRANSFORM_IR_TRANSFORMOPS
