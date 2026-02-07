@@ -42,6 +42,7 @@ namespace linalg {
 /// WARNING: This hoisting does not model parallelism and is generally incorrect
 /// when used on distributed loops with memref semantics!
 void hoistRedundantVectorTransfers(Operation *root);
+void hoistRedundantVectorCasts(Operation *root);
 
 /// Hoist vector.extract/vector.broadcast pairs out of immediately enclosing
 /// scf::ForOp iteratively, if the following conditions are met:

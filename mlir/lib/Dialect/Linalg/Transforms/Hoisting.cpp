@@ -199,6 +199,134 @@ static bool noAliasingUseInLoop(vector::TransferReadOp transferRead,
   return true;
 }
 
+// Hoist out vector.shape_cast operations whose operands are iter_args of a
+// loop. This function transforms something like this:
+//  %loop = scf.for _ = _ to _ step _ iter_args(%iterarg = %v) -> (t1) {
+//   %c = vector.shape_cast %iterarg : t1 to t2
+//   (... do something with %c ...)
+//   scf.yield %something : t1
+// }
+// into the following:
+//  %c = vector.shape_cast %v: t1 to t2
+//  %loop = scf.for _ = _ to _ step _ iter_args(%iterarg = %c) -> (t2) {
+//  (... do something with %iterarg ...)
+//   %something_cast = vector.shape_cast %something : t1 to t2
+//   scf.yield %something_cast : t2
+// }
+// %loop_cast = vector.shape_cast %loop : t1 to t2
+// This transformation is most useful when the generated casts can be
+// canonicalized away.
+void mlir::linalg::hoistRedundantVectorCasts(Operation *root) {
+  bool changed = true;
+  while (changed) {
+    changed = false;
+    // First move loop invariant ops outside of their loop. This needs to be
+    // done before as we cannot move ops without interrupting the function walk.
+    root->walk(
+        [&](LoopLikeOpInterface loopLike) { moveLoopInvariantCode(loopLike); });
+
+    root->walk([&](scf::ForOp loop) {
+      auto iterArgs = loop.getRegionIterArgs();
+      for (auto iArg : iterArgs) {
+        // If the iter_arg does not have only one use, it won't be possible to
+        // hoist it out.
+        if (!iArg.hasOneUse()) {
+          return WalkResult::advance();
+        }
+        auto user = *iArg.getUsers().begin();
+        // We can hoist out the iter arg if and only if its user is a shape_cast
+        // operation.
+        if (auto shapeCast = dyn_cast<vector::ShapeCastOp>(*user)) {
+          // If all the dependences of the cast are casts themselves, then we
+          // cannot hoist without risking to create an infinite loop of
+          // hoistings. Give up.
+          auto all_casts =
+              llvm::all_of(shapeCast.getResult().getUsers(), [&](Operation *v) {
+                return isa<vector::ShapeCastOp>(*v);
+              });
+          if (all_casts)
+            return WalkResult::advance();
+
+          Value initArg = loop.getTiedLoopInit(iArg)->get();
+          OpBuilder b(shapeCast);
+
+          // Create a new vector.shape_cast operation outside of the loop
+          auto newShapeCast = b.create<vector::ShapeCastOp>(
+              shapeCast.getLoc(), shapeCast.getType(), initArg);
+          loop.moveOutOfLoop(newShapeCast);
+          b.setInsertionPoint(loop);
+
+          auto index = iArg.getArgNumber() - loop.getNumInductionVars();
+          auto operands = llvm::to_vector(loop.getInits());
+
+          // Create new loop with the hoisted operation as an iter_arg
+          operands[index] = newShapeCast.getResult();
+          scf::ForOp newLoop = b.create<scf::ForOp>(
+              loop.getLoc(), loop.getLowerBound(), loop.getUpperBound(),
+              loop.getStep(), operands,
+              [](OpBuilder &, Location, Value, ValueRange) {});
+
+          Block *loopBody = loop.getBody();
+          Block *newLoopBody = newLoop.getBody();
+
+          // Move the body of the original loop to the new loop.
+          newLoopBody->getOperations().splice(newLoopBody->end(),
+                                              loopBody->getOperations());
+
+          auto yield = cast<scf::YieldOp>(newLoopBody->getTerminator());
+          // Inject a cast before the loop yield to return values of the same
+          // type as the iter_args
+          b.setInsertionPoint(yield);
+          auto yieldCast = b.create<vector::ShapeCastOp>(
+              yield.getLoc(), shapeCast.getType(), yield.getOperand(index));
+          SmallVector<Value> res(yield.getResults());
+          res[index] = yieldCast;
+          yield.getResultsMutable().assign(res);
+
+          // Remap the BlockArguments from the original loop to the new loop
+          // BlockArguments.
+          MutableArrayRef<BlockArgument> bbArgs = loopBody->getArguments();
+          for (auto it :
+               llvm::zip(bbArgs,
+                         newLoopBody->getArguments().take_front(bbArgs.size())))
+            std::get<0>(it).replaceAllUsesWith(std::get<1>(it));
+
+          // Replace all uses of the original loop with corresponding values
+          // from the new loop, and insert a cast when the result corresponds to
+          // the hoisted iter_arg.
+          b.setInsertionPointAfter(newLoop);
+          auto castOp = b.create<vector::ShapeCastOp>(
+              newLoop.getLoc(), newShapeCast.getSource().getType(),
+              newLoop.getResult(index));
+          auto resultToCast = loop.getResult(index);
+          for (auto res : llvm::zip(loop.getResults(), newLoop.getResults())) {
+            std::get<0>(res).replaceUsesWithIf(
+                std::get<1>(res),
+                [&](OpOperand &v) { return v.get() != resultToCast; });
+          }
+          resultToCast.replaceAllUsesWith(castOp);
+
+          // Erase the old loop
+          loop.erase();
+
+          // Update the uses of the hoisted operation and erase it
+          shapeCast.replaceAllUsesWith(newLoop.getRegionIterArgs()[index]);
+          shapeCast.erase();
+
+          changed = true;
+
+          // Need to interrupt and restart because erasing the loop messes up
+          // the walk.
+          return WalkResult::interrupt();
+        }
+      }
+      return WalkResult::advance();
+    });
+  }
+}
+
+
+
 void mlir::linalg::hoistRedundantVectorTransfers(Operation *root) {
   bool changed = true;
   while (changed) {
