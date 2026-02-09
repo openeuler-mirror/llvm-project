@@ -1801,6 +1801,23 @@ INSTANTIATE_TEST_SUITE_P(
              AArch64::AEK_PROFILE, AArch64::AEK_JSCVT, AArch64::AEK_FCMA,
              AArch64::AEK_FP16, AArch64::AEK_FP16FML, AArch64::AEK_DOTPROD,
              AArch64::AEK_PERFMON}),
+        AArch64CPUTestParams("hip12", "armv9.2-a",
+                             {AArch64::AEK_SVE, AArch64::AEK_SVE2,
+                              AArch64::AEK_SVE2BITPERM, AArch64::AEK_SVE2AES,
+                              AArch64::AEK_SVE2SM4, AArch64::AEK_SVE2SHA3,
+                              AArch64::AEK_FP16, AArch64::AEK_PERFMON,
+                              AArch64::AEK_PROFILE, AArch64::AEK_HBC,
+                              AArch64::AEK_RCPC3, AArch64::AEK_BF16,
+                              AArch64::AEK_CRC, AArch64::AEK_DOTPROD,
+                              AArch64::AEK_FP, AArch64::AEK_I8MM,
+                              AArch64::AEK_LSE, AArch64::AEK_SIMD,
+                              AArch64::AEK_PAUTH, AArch64::AEK_RAS,
+                              AArch64::AEK_RCPC, AArch64::AEK_RDM,
+                              AArch64::AEK_LS64, AArch64::AEK_BRBE,
+                              AArch64::AEK_FPAC, AArch64::AEK_JSCVT,
+                              AArch64::AEK_ETE, AArch64::AEK_FCMA,
+                              AArch64::AEK_NMI, AArch64::AEK_RME,
+                              AArch64::AEK_SPE_EEF, AArch64::AEK_TRBE}),
         AArch64CPUTestParams("a64fx", "armv8.2-a",
                              {AArch64::AEK_CRC, AArch64::AEK_AES,
                               AArch64::AEK_SHA2, AArch64::AEK_FP,
@@ -1834,7 +1851,7 @@ INSTANTIATE_TEST_SUITE_P(
     AArch64CPUTestParams::PrintToStringParamName);
 
 // Note: number of CPUs includes aliases.
-static constexpr unsigned NumAArch64CPUArchs = 81;
+static constexpr unsigned NumAArch64CPUArchs = 82;
 
 TEST(TargetParserTest, testAArch64CPUArchList) {
   SmallVector<StringRef, NumAArch64CPUArchs> List;
