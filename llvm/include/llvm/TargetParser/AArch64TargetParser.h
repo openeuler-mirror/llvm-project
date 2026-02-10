@@ -811,6 +811,16 @@ inline constexpr CpuInfo CpuInfos[] = {
                                 AArch64::AEK_SHA2, AArch64::AEK_AES,
                                 AArch64::AEK_MTE, AArch64::AEK_SB,
                                 AArch64::AEK_SSBS, AArch64::AEK_CSSC}))},
+    {"hip12", ARMV9_2A,
+     (AArch64::ExtensionBitset(
+         {AArch64::AEK_SVE, AArch64::AEK_SVE2, AArch64::AEK_SVE2BITPERM,
+          AArch64::AEK_SVE2AES, AArch64::AEK_SVE2SM4, AArch64::AEK_SVE2SHA3,
+          AArch64::AEK_FP16, AArch64::AEK_PERFMON, AArch64::AEK_PROFILE,
+          AArch64::AEK_HBC, AArch64::AEK_RCPC3, AArch64::AEK_BF16,
+          AArch64::AEK_CRC, AArch64::AEK_DOTPROD, AArch64::AEK_FP,
+          AArch64::AEK_I8MM, AArch64::AEK_LSE, AArch64::AEK_SIMD,
+          AArch64::AEK_PAUTH, AArch64::AEK_RAS, AArch64::AEK_RCPC,
+          AArch64::AEK_RDM, AArch64::AEK_LS64, AArch64::AEK_BRBE}))},
 };
 
 // An alias for a CPU.
