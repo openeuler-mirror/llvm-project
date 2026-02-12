@@ -14,7 +14,7 @@ containerize_needed="0"
 container="openEuler"
 docker=$(type -p docker)
 do_install="0"
-enabled_projects="clang;lld;compiler-rt;openmp;clang-tools-extra"
+enabled_projects="clang;lld;compiler-rt;openmp;clang-tools-extra;mlir"
 extra_projects=""
 host_arch="$(uname -m)"
 install="install"
@@ -427,6 +427,12 @@ cmake $CMAKE_OPTIONS \
       -DLLVM_USE_LINKER=gold \
       -DLLVM_USE_PERF=ON \
       -DLLVM_USE_SPLIT_DWARF=$split_dwarf \
+      -DMLIR_BUILD_MLIR_C_DYLIB=ON \
+      -DMLIR_ENABLE_BINDINGS_PYTHON=OFF \
+      -DMLIR_INSTALL_AGGREGATE_OBJECTS=OFF \
+      -DMLIR_INCLUDE_DOCS=ON \
+      -DMLIR_INCLUDE_INTEGRATION_TESTS=OFF \
+      -DMLIR_INCLUDE_TESTS=ON \
       $llvm_binutils_incdir \
       ../llvm
 
@@ -436,6 +442,7 @@ if [ $do_install == "1" ]; then
 fi
 
 if [ -n "$unit_test" ]; then
+  export LD_LIBRARY_PATH="$build_prefix/lib:$LD_LIBRARY_PATH"
   make -j$threads $verbose check-all
 fi
 
