@@ -711,16 +711,7 @@ static void cleanUpDeadVals(RDVFinalCleanupList &list) {
     // blocks that are accessed via multiple codepaths processed once
     if (b.b->getNumArguments() != b.nonLiveArgs.size())
       continue;
-    LDBG_OS([&](raw_ostream &os) {
-      os << "Erasing non-live arguments [";
-      llvm::interleaveComma(b.nonLiveArgs.set_bits(), os);
-      os << "] from block #" << b.b->computeBlockNumber() << " in region #"
-         << b.b->getParent()->getRegionNumber() << " of operation "
-         << OpWithFlags(b.b->getParent()->getParentOp(),
-                        OpPrintingFlags().skipRegions().printGenericOpForm());
-    });
-    // Note: Iterate from the end to make sure that that indices of not yet
-    // processes arguments do not change.
+    // it iterates backwards because erase invalidates all successor indexes
     for (int i = b.nonLiveArgs.size() - 1; i >= 0; --i) {
       if (!b.nonLiveArgs[i])
         continue;
