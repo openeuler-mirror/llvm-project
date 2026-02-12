@@ -1257,7 +1257,7 @@ public:
        Value r = nullptr;
        if (acc)
         r = rewriter.create<vector::ExtractOp>(loc, acc, d);
-      if (vectorTransformOptions.armSve) {
+      if (vectorTransformOptions.armSve && !isInt) {
         long sizeOfScalableVector =
             128 /
             mlir::LLVM::getPrimitiveTypeSizeInBits(resType.getElementType());
