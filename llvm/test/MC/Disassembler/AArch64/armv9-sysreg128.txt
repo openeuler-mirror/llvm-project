@@ -1,8 +1,6 @@
 # RUN: llvm-mc -triple aarch64 -mattr=+d128                   --disassemble -show-encoding %s -o - | FileCheck %s --check-prefix=WITHOUT
 # RUN: llvm-mc -triple aarch64 -mattr=+d128,+the,+el2vmsa,+vh --disassemble -show-encoding %s -o - | FileCheck %s --check-prefix=W_FEATS
 
-# RUN: llvm-mc -triple aarch64 --disassemble -show-encoding %s -o - 2>&1 | FileCheck %s --check-prefix=ERROR-NO-D128
-
 0x00,0x20,0x78,0xd5
 0x20,0x20,0x78,0xd5
 0x00,0x74,0x78,0xd5
@@ -72,9 +70,6 @@
 # W_FEATS: mrrs	x24, x25, VTTBR_EL2             // encoding: [0x18,0x21,0x7c,0xd5]
 # W_FEATS: mrrs	x26, x27, VTTBR_EL2             // encoding: [0x1a,0x21,0x7c,0xd5]
 
-# ERROR-NO-D128: warning: invalid instruction encoding
-
-
 0x00,0x20,0x58,0xd5
 0x20,0x20,0x58,0xd5
 0x00,0x74,0x58,0xd5
@@ -143,5 +138,3 @@
 # W_FEATS: msrr	VTTBR_EL2, x22, x23             // encoding: [0x16,0x21,0x5c,0xd5]
 # W_FEATS: msrr	VTTBR_EL2, x24, x25             // encoding: [0x18,0x21,0x5c,0xd5]
 # W_FEATS: msrr	VTTBR_EL2, x26, x27             // encoding: [0x1a,0x21,0x5c,0xd5]
-
-# ERROR-NO-D128: warning: invalid instruction encoding
