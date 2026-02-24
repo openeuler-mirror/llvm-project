@@ -28,6 +28,8 @@
 #include "mlir/Conversion/UBToLLVM/UBToLLVM.h"
 #include "mlir/Dialect/AMX/Transforms.h"
 #include "mlir/Dialect/Affine/TransformOps/AffineTransformOps.h"
+#include "mlir/Dialect/ArmSME/TransformOps/ArmSMEVectorTransformOps.h"
+#include "mlir/Dialect/ArmSVE/TransformOps/ArmSVEVectorTransformOps.h"
 #include "mlir/Dialect/Bufferization/TransformOps/BufferizationTransformOps.h"
 #include "mlir/Dialect/DLTI/TransformOps/DLTITransformOps.h"
 #include "mlir/Dialect/Func/Extensions/AllExtensions.h"
@@ -79,6 +81,8 @@ inline void registerAllExtensions(DialectRegistry &registry) {
 
   // Register all transform dialect extensions.
   affine::registerTransformDialectExtension(registry);
+  arm_sme::registerTransformDialectExtension(registry);
+  arm_sve::registerTransformDialectExtension(registry);
   bufferization::registerTransformDialectExtension(registry);
   dlti::registerTransformDialectExtension(registry);
   func::registerTransformDialectExtension(registry);
