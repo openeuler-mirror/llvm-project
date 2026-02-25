@@ -29,6 +29,7 @@
 #include <queue>
 #include <utility>
 #include <vector>
+#include <numa.h>
 
 std::mutex mtx;
 
@@ -92,6 +93,10 @@ static cl::opt<bool> SplitBasedHotFuncs("split-based-on-hot-func", cl::Hidden,
 
 static cl::opt<bool> CloneHotExternalOnly("clone-hot-external-only", cl::Hidden,
                                           cl::init(false), cl::desc(""));
+
+static cl::opt<bool> BindToNuma(
+    "bind-to-numa", cl::Hidden, cl::init(false),
+    cl::desc("binding to numa before clone module"));
 
 using GetTTIFn = function_ref<const TargetTransformInfo &(Function &)>;
 using PartitionID = unsigned;
@@ -582,6 +587,10 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
     return Var && Var->hasLocalLinkage();
   };
 
+  int MainNuma;
+  if (BindToNuma && numa_available() == 0)
+    MainNuma = numa_node_of_cpu(sched_getcpu());
+ 
   unsigned TotalFnImpls = 0;
   SmallString<0> BC;
   raw_svector_ostream BCOS(BC);
@@ -594,6 +603,11 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
   for (unsigned I = 0; I < N; ++I) {
     auto TimeStart = Clock::now();
     PartitionThreadPool->async([&, I]() {
+
+      if (BindToNuma && numa_available() == 0) {
+        numa_run_on_node(MainNuma);
+      }
+
       const auto &FnsInPart = Partitions[I];
 
       std::unique_ptr<Module> MPart;

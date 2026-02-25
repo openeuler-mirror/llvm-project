@@ -95,4 +95,7 @@ add_llvm_component_library(LLVMTransformUtils
   Core
   Support
   TargetParser
+
+  LINK_LIBS
+  numa
   )
