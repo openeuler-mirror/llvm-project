@@ -69,6 +69,8 @@ void ConvertVectorToLLVMPass::runOnOperation() {
     populateVectorToVectorCanonicalizationPatterns(patterns);
     populateVectorBitCastLoweringPatterns(patterns);
     populateVectorBroadcastLoweringPatterns(patterns);
+    populateVectorContractLoweringPatterns(
+      patterns, VectorTransformsOptions().enableArmSVE(armSVE));
     populateVectorContractLoweringPatterns(patterns, vectorTransformsOptions);
     populateVectorMaskOpLoweringPatterns(patterns);
     populateVectorShapeCastLoweringPatterns(patterns);
