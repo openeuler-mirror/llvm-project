@@ -84,6 +84,24 @@ static cl::opt<unsigned> ReductionSize(
     cl::desc("A huge scheduling region will have maps reduced by this many "
              "nodes at a time. Defaults to HugeRegion / 2."));
 
+static cl::opt<unsigned> NCMemLatency(
+    "nc-mem-latency", cl::init(50),
+    cl::desc("This is used for the neighboring load and store instruction "
+             "to make them separate."));
+
+cl::opt<bool> EnablePGONCSched(
+    "enable-pgo-nc-sched", cl::init(false), cl::ReallyHidden,
+    cl::desc("Enable scheduling load/store instructions together for "
+             "NC memory by reading data-source profile."));
+
+static cl::opt<std::string>
+    SchedHintsFile("pgo-sched-hints-file",
+                   cl::desc("Path to the sched hints profile"), cl::Hidden,
+                   cl::callback([](const std::string &Path) {
+                      if (!Path.empty())
+                        EnablePGONCSched = true;
+                   }));
+
 #if !defined(NDEBUG) || defined(LLVM_ENABLE_DUMP)
 static cl::opt<bool> SchedPrintCycles(
     "sched-print-cycles", cl::Hidden, cl::init(false),
@@ -544,7 +562,9 @@ void ScheduleDAGInstrs::addChainDependency (SUnit *SUa, SUnit *SUb,
                                             unsigned Latency) {
   if (SUa->getInstr()->mayAlias(AAForDep, *SUb->getInstr(), UseTBAA)) {
     SDep Dep(SUa, SDep::MayAliasMem);
-    Dep.setLatency(Latency);
+    Dep.setLatency(
+        ((SUa->isNCLd && SUb->isNCSt) || (SUa->isNCSt && SUb->isNCLd))
+        ? NCMemLatency : Latency);
     SUb->addPred(Dep);
   }
 }
@@ -602,6 +622,46 @@ void ScheduleDAGInstrs::initSUnits() {
         default:
           break;
         }
+      }
+    }
+  }
+
+  if (!EnablePGONCSched)
+    return;
+
+  if (!readAfdoFile(MF.getFunction().getContext(), SchedHintsFile))
+    return;
+
+  const FunctionSamples *Samples = Reader->getSamplesFor(MF.getName());
+
+  for (MachineInstr &MI : make_range(RegionBegin, RegionEnd)) {
+    if (!MI.mayLoad() && !MI.mayStore())
+      continue;
+
+    const DebugLoc &DL = MI.getDebugLoc();
+    const DILocation *DIL = DL.get();
+    if (!DIL)
+      continue;
+
+    auto *FunctionSamples = Samples->findFunctionSamples(DIL);
+    if (!FunctionSamples)
+      continue;
+
+    uint32_t Off = FunctionSamples::getOffset(DIL);
+    uint32_t Dis = DIL->getBaseDiscriminator();
+    auto Item = FunctionSamples->findCallTargetMapAt(Off, Dis);
+    if (!Item)
+      continue;
+    for (auto &KV : Item.get()) {
+      StringRef Type = KV.getKey();
+      int64_t Source = KV.second;
+      const int REMOTE = 1;
+      if (Type == "source" && Source == REMOTE)  {
+        SUnit *SU = MISUnitMap[&MI];
+        if (MI.mayLoad())
+          SU->isNCLd = true;
+        else
+          SU->isNCSt = true;
       }
     }
   }

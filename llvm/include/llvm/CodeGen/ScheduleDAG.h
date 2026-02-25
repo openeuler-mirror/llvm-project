@@ -253,6 +253,9 @@ class TargetRegisterInfo;
     const MCSchedClassDesc *SchedClass =
         nullptr; ///< nullptr or resolved SchedClass.
 
+    bool isNCLd = false;
+    bool isNCSt = false;
+
     SmallVector<SDep, 4> Preds;  ///< All sunit predecessors.
     SmallVector<SDep, 4> Succs;  ///< All sunit successors.
 
