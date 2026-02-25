@@ -11,6 +11,14 @@
 #include "mlir/Conversion/ConvertToLLVM/ToLLVMInterface.h"
 #include "mlir/Conversion/LLVMCommon/ConversionTarget.h"
 #include "mlir/Conversion/LLVMCommon/TypeConverter.h"
+#include "mlir/Conversion/Passes.h"
+#include "mlir/Dialect/Arith/Transforms/Passes.h"
+#include "mlir/Dialect/ArmSME/IR/ArmSME.h"
+#include "mlir/Dialect/ArmSME/Transforms/Passes.h"
+#include "mlir/Dialect/Async/Passes.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Dialect/Linalg/Passes.h"
+#include "mlir/Dialect/MemRef/Transforms/Passes.h"
 #include "mlir/Dialect/Transform/IR/TransformAttrs.h"
 #include "mlir/Dialect/Transform/IR/TransformDialect.h"
 #include "mlir/Dialect/Transform/IR/TransformTypes.h"
@@ -34,6 +42,7 @@
 #include "mlir/Transforms/DialectConversion.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
 #include "mlir/Transforms/LoopInvariantCodeMotionUtils.h"
+#include "mlir/Transforms/Passes.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/ScopeExit.h"
@@ -2898,4 +2907,132 @@ void transform::VerifyOp::getEffects(
 void transform::YieldOp::getEffects(
     SmallVectorImpl<MemoryEffects::EffectInstance> &effects) {
   onlyReadsHandle(getOperandsMutable(), effects);
+}
+
+//===----------------------------------------------------------------------===//
+// LowerToArmSMEOp
+//===----------------------------------------------------------------------===//
+
+DiagnosedSilenceableFailure transform::LowerToArmSMEOp::applyToOne(
+    transform::TransformRewriter &rewriter, ModuleOp target,
+    transform::ApplyToEachResultList &results,
+    transform::TransformState &state) {
+  PassManager pm(getContext());
+  // createVectorLegalizationPass requires ModuleOp level pass.
+  // Legalize vector operations so they can be converted to ArmSME.
+  pm.addPass(arm_sme::createVectorLegalizationPass());
+
+  // Sprinkle some cleanups.
+  pm.addPass(createCanonicalizerPass());
+  pm.addPass(createCSEPass());
+
+  // Passes that convert operations on vectors to ArmSME operations.
+  pm.addPass(createArithToArmSMEConversionPass());
+  pm.addPass(createConvertVectorToArmSMEPass());
+
+  // TODO: Leverage FMOPA 2Way for half precision?
+  // Fuse outer products.
+  if (getFuseOuterProducts())
+    pm.addPass(arm_sme::createOuterProductFusionPass());
+
+  // Convert operations on high-level vectors to loops.
+  pm.addPass(createConvertArmSMEToSCFPass());
+  // Convert Vector to SCF (with full unroll enabled).
+  pm.addNestedPass<func::FuncOp>(arm_sme::createEnableArmStreamingPass(
+      arm_sme::ArmStreamingMode::StreamingLocally, arm_sme::ArmZaMode::NewZA,
+      /*onlyIfRequiredByOps=*/true));
+
+  if (failed(pm.run(target)))
+    return DiagnosedSilenceableFailure::definiteFailure();
+  return DiagnosedSilenceableFailure::success();
+}
+
+void transform::LowerToArmSMEOp::getEffects(
+    SmallVectorImpl<MemoryEffects::EffectInstance> &effects) {
+  transform::modifiesPayload(effects);
+  transform::onlyReadsHandle(getTargetMutable(), effects);
+}
+
+//===---------------------------------------------------------------------===//
+// LowerToLLVMNewOp
+//===---------------------------------------------------------------------===//
+
+DiagnosedSilenceableFailure transform::LowerToLLVMNewOp::applyToOne(
+    transform::TransformRewriter &rewriter, ModuleOp target,
+    transform::ApplyToEachResultList &results,
+    transform::TransformState &state) {
+  // TODO: it is feasible to scope lowering at arbitrary level and introduce
+  // unrealized casts, but there needs to be the final module-wise cleanup in
+  // the end. Keep module-level for now.
+  MLIRContext *ctx = getContext();
+  PassManager pm(ctx);
+
+  // Lower multi dimensionOps to scf
+  pm.addNestedPass<func::FuncOp>(createConvertVectorToSCFPass());
+  pm.addNestedPass<func::FuncOp>(createConvertLinalgToLoopsPass());
+  // Lower Async
+  if (getEnableAsync()) {
+    pm.addPass(createAsyncToAsyncRuntimePass());
+    pm.addPass(createAsyncRuntimeRefCountingPass());
+    pm.addPass(createAsyncRuntimeRefCountingOptPass());
+  }
+  pm.addPass(createCanonicalizerPass());
+  pm.addPass(memref::createExpandStridedMetadataPass());
+  // The expansion may create affine expressions. Get rid of them.
+  pm.addPass(createLowerAffinePass());
+  pm.addPass(createConvertSCFToCFPass());
+  if (ctx->getLoadedDialect<mlir::arm_sme::ArmSMEDialect>()) {
+    pm.addNestedPass<func::FuncOp>(createConvertArmSMEToLLVMPass());
+  }
+  pm.addPass(createConvertComplexToLLVMPass());
+  pm.addPass(createConvertVectorToLLVMPass(ConvertVectorToLLVMPassOptions{
+      /* reassociateFPReductions = */ getReassociateFpReductions(),
+      /* force32BitVectorIndices */ getEnableIndexOptimizations(),
+      /* amx = */ getEnableAmx(),
+      /* armNeon = */ getEnableArmNeon(),
+      /* armSVE = */ getEnableArmSve(),
+      /* x86Vector = */ getEnableX86vector()}));
+  pm.addNestedPass<func::FuncOp>(createConvertMathToLLVMPass());
+  pm.addNestedPass<func::FuncOp>(arith::createArithExpandOpsPass());
+  pm.addPass(createFinalizeMemRefToLLVMConversionPass());
+  if (getEnableAsync())
+    pm.addPass(createConvertAsyncToLLVMPass());
+  pm.addPass(createConvertOpenMPToLLVMPass());
+  pm.addPass(createConvertFuncToLLVMPass());
+  pm.addPass(createConvertControlFlowToLLVMPass());
+  pm.addPass(createArithToLLVMConversionPass());
+  pm.addPass(createConvertIndexToLLVMPass());
+  pm.addPass(createReconcileUnrealizedCastsPass());
+  if (failed(pm.run(target)))
+    return DiagnosedSilenceableFailure::definiteFailure();
+
+  llvm::SmallVector<mlir::Attribute, 4> attrs;
+
+  if (getVscaleRange() > 0) {
+    attrs.push_back(mlir::ArrayAttr::get(
+        ctx, {mlir::StringAttr::get(ctx, "vscale_range"),
+              mlir::StringAttr::get(ctx, llvm::Twine(getVscaleRange()))}));
+
+    target->walk([&](LLVM::LLVMFuncOp funcOp) {
+      if (!funcOp.getBody().empty())
+        funcOp->setAttr("passthrough", mlir::ArrayAttr::get(ctx, attrs));
+    });
+  }
+
+  // Make all arguments noalias for now.
+  // FIXME: this is a terrible hack!
+  target->walk([](LLVM::LLVMFuncOp funcOp) {
+    for (int64_t i = 0; i < funcOp.getNumArguments(); ++i) {
+      if (!isa<LLVM::LLVMPointerType>(funcOp.getFunctionType().getParamType(i)))
+        continue;
+      funcOp.setArgAttr(i, "llvm.noalias", UnitAttr::get(funcOp.getContext()));
+    }
+  });
+  return DiagnosedSilenceableFailure::success();
+}
+
+void transform::LowerToLLVMNewOp::getEffects(
+    SmallVectorImpl<MemoryEffects::EffectInstance> &effects) {
+  transform::modifiesPayload(effects);
+  transform::onlyReadsHandle(getTargetMutable(), effects);
 }
