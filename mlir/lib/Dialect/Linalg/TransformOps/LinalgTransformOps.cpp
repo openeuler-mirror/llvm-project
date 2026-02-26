@@ -3614,6 +3614,33 @@ transform::HoistRedundantVectorBroadcastsOp::applyToOne(
 }
 
 //===----------------------------------------------------------------------===//
+// HoistRedundantVectorShapeCastsOp
+//===----------------------------------------------------------------------===//
+
+DiagnosedSilenceableFailure
+transform::HoistRedundantVectorShapeCastsOp::applyToOne(
+    transform::TransformRewriter &rewriter, func::FuncOp target,
+    transform::ApplyToEachResultList &results,
+    transform::TransformState &state) {
+  linalg::hoistRedundantVectorCasts(target);
+  results.push_back(target);
+  return DiagnosedSilenceableFailure::success();
+}
+
+//===----------------------------------------------------------------------===//
+// HoistRedundantVectorCastsOp
+//===----------------------------------------------------------------------===//
+
+DiagnosedSilenceableFailure transform::HoistRedundantVectorCastsOp::applyToOne(
+    transform::TransformRewriter &rewriter, Operation *target,
+    transform::ApplyToEachResultList &results,
+    transform::TransformState &state) {
+  linalg::hoistRedundantVectorCasts(target);
+  results.push_back(target);
+  return DiagnosedSilenceableFailure::success();
+}
+
+//===----------------------------------------------------------------------===//
 // ConvertConv2DToImg2ColOp.
 //===----------------------------------------------------------------------===//
 
