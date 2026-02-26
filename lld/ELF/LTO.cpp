@@ -403,10 +403,17 @@ std::vector<InputFile *> BitcodeCompiler::compile() {
         continue;
 
       StringRef bitcodeFilePath;
-      StringRef objNum = (Twine(i) + (j == 0 ? Twine("") : Twine('.') + Twine(j))).str();
+      std::string objNumStr;
+      if (i == 0 && j == 0) {
+          objNumStr = "";
+      } else if (j == 0) {
+          objNumStr = Twine(i).str();
+      } else {
+          objNumStr = (Twine(i) + "." + Twine(j)).str();
+      }
 
       if (savePrelink || config->ltoEmitAsm)
-        saveBuffer(objBuf, config->outputFile + objNum +
+        saveBuffer(objBuf, config->outputFile + Twine(objNumStr) +
                            Twine(config->ltoEmitAsm ? "" : ".lto.o"));
 
       if (!config->ltoEmitAsm)
