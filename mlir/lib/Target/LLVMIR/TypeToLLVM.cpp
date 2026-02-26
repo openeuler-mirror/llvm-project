@@ -39,6 +39,11 @@ public:
             .Case([this](LLVM::LLVMVoidType) {
               return llvm::Type::getVoidTy(context);
             })
+            .Case<Float8E5M2Type, Float8E4M3Type, Float8E4M3FNType,
+                  Float8E5M2FNUZType, Float8E4M3FNUZType,
+                  Float8E4M3B11FNUZType>([this](Type) {
+              return llvm::Type::getIntNTy(context, 8);
+            })
             .Case(
                 [this](Float16Type) { return llvm::Type::getHalfTy(context); })
             .Case([this](BFloat16Type) {
