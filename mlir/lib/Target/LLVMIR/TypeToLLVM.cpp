@@ -39,6 +39,10 @@ public:
             .Case([this](LLVM::LLVMVoidType) {
               return llvm::Type::getVoidTy(context);
             })
+            // Float8 types have no LLVM IR equivalent. Map them to i8, which
+            // has the same 8-bit memory layout. Note: f8 should only appear
+            // in memory access ops (loads, GEPs, etc.) where treating the
+            // bits as i8 is correct.
             .Case<Float8E5M2Type, Float8E4M3Type, Float8E4M3FNType,
                   Float8E5M2FNUZType, Float8E4M3FNUZType,
                   Float8E4M3B11FNUZType>([this](Type) {
