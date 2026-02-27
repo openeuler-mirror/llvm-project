@@ -87,13 +87,10 @@ static cl::opt<bool> splitOptAndCodeGen(
     cl::desc("enable split optandcodegen in thinlto backend."));
 static cl::opt<bool> ThinLTOCombineOutput(
     "thinlto-split-combine-output", cl::init(true),
-cl::desc("combine the split output to a .o in thinlto backend."));
-static cl::opt<bool> ThinLTOUseCG(
-    "thinlto-use-callgraph", cl::init(true),
-    cl::desc("use callgraph to split module in thinlto backend."));
-static cl::opt<bool> ThinLTOSplit(
-    "thinlto-split", cl::init(true),
-    cl::desc("split module in thinlto backend."));
+    cl::desc("combine the split output to a .o in thinlto backend."));
+static cl::opt<bool>
+    ThinLTOUseCG("thinlto-use-callgraph", cl::init(true),
+                 cl::desc("use callgraph to split module in thinlto backend."));
 static cl::opt<unsigned> ThinLTOSplitThreshold(
     "thinlto-split-threshold", cl::Hidden, cl::init(2),
     cl::desc("control the amount of whether split in thinlto backend."));
@@ -104,12 +101,13 @@ static cl::opt<unsigned> ThinLTOSplitModuleSizeThreshold(
 static cl::opt<unsigned> ThinLTOSplitPartitions(
     "thinlto-split-partitions", cl::Hidden, cl::init(0),
     cl::desc("control split to how many partitions in thinlto backend."));
-static cl::opt<bool> ThinLTODebugMpart(
-    "thinlto-debug-mpart", cl::init(false),
-    cl::desc("debug mpart when split module."));
+static cl::opt<bool>
+    ThinLTODebugMpart("thinlto-debug-mpart", cl::init(false),
+                      cl::desc("debug mpart when split module."));
 
 namespace llvm {
 extern cl::opt<bool> NoPGOWarnMismatch;
+extern cl::opt<bool> ThinLTOSplit;
 }
 
 [[noreturn]] static void reportOpenError(StringRef Path, Twine Msg) {
@@ -271,7 +269,7 @@ createTargetMachine(const Config &Conf, const Target *TheTarget, Module &M) {
 }
 
 static void runProfileLoaderPass(const Config &Conf, Module &Mod,
-		                 TargetMachine *TM) {
+                                 TargetMachine *TM) {
   auto FS = vfs::getRealFileSystem();
   std::optional<PGOOptions> PGOOpt;
   if (!Conf.SampleProfile.empty())
@@ -311,11 +309,11 @@ static void runProfileLoaderPass(const Config &Conf, Module &Mod,
   PB.registerFunctionAnalyses(FAM);
   PB.registerLoopAnalyses(LAM);
   PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
-  
+
   ModulePassManager MPM;
   MPM.addPass(SampleProfileLoaderPass(PGOOpt->ProfileFile,
-			              PGOOpt->ProfileRemappingFile,
-				      ThinOrFullLTOPhase::ThinLTOPostLink));
+                                      PGOOpt->ProfileRemappingFile,
+                                      ThinOrFullLTOPhase::ThinLTOPostLink));
   MPM.addPass(RequireAnalysisPass<ProfileSummaryAnalysis, Module>());
   MPM.run(Mod, MAM);
 }
@@ -494,9 +492,9 @@ static void codegen(const Config &Conf, TargetMachine *TM,
       TM->Options.MCOptions.SplitDwarfFile = Conf.SplitDwarfFile;
     } else if (!DwoFile.empty()) {
       // Derive a unique filename by injecting ".<Task>" before extension.
-      llvm::StringRef Dir  = sys::path::parent_path(DwoFile);
+      llvm::StringRef Dir = sys::path::parent_path(DwoFile);
       llvm::StringRef Stem = sys::path::stem(DwoFile);
-      llvm::StringRef Ext  = sys::path::extension(DwoFile); // usually ".dwo"
+      llvm::StringRef Ext = sys::path::extension(DwoFile); // usually ".dwo"
 
       llvm::SmallString<1024> UniquePath;
       if (!Dir.empty()) {
@@ -553,12 +551,11 @@ static void codegen(const Config &Conf, TargetMachine *TM,
     DwoOut->keep();
 }
 
-static void splitCodeGenThin(unsigned task, const Config &C, TargetMachine *TM,
-                             AddStreamFn AddStream,
-                             unsigned ParallelCodeGenParallelismLevel, Module &Mod,
-                             const ModuleSummaryIndex &CombinedIndex,
-                             ThreadPool *PartitionThreadPool,
-                             std::vector<std::vector<SmallString<0>>> &bufPart) {
+static void splitCodeGenThin(
+    unsigned task, const Config &C, TargetMachine *TM, AddStreamFn AddStream,
+    unsigned ParallelCodeGenParallelismLevel, Module &Mod,
+    const ModuleSummaryIndex &CombinedIndex, ThreadPool *PartitionThreadPool,
+    std::vector<std::vector<SmallString<0>>> &bufPart) {
   unsigned ThreadCount = 0;
   const Target *T = &TM->getTarget();
 
@@ -568,49 +565,47 @@ static void splitCodeGenThin(unsigned task, const Config &C, TargetMachine *TM,
 
   bufPart[task].resize(ParallelCodeGenParallelismLevel);
 
-  const auto HandleModulePartition =
-      [&](std::unique_ptr<Module> MPart) {
-        // We want to clone the module in a new context to multi-thread the
-        // codegen. We do it by serializing partition modules to bitcode
-        // (while still on the main thread, in order to avoid data races) and
-        // spinning up new threads which deserialize the partitions into
-        // separate contexts.
-        // FIXME: Provide a more direct way to do this in LLVM.
-        SmallString<0> BC;
-        raw_svector_ostream BCOS(BC);
-        WriteBitcodeToFile(*MPart, BCOS);
+  const auto HandleModulePartition = [&](std::unique_ptr<Module> MPart) {
+    // We want to clone the module in a new context to multi-thread the
+    // codegen. We do it by serializing partition modules to bitcode
+    // (while still on the main thread, in order to avoid data races) and
+    // spinning up new threads which deserialize the partitions into
+    // separate contexts.
+    // FIXME: Provide a more direct way to do this in LLVM.
+    SmallString<0> BC;
+    raw_svector_ostream BCOS(BC);
+    WriteBitcodeToFile(*MPart, BCOS);
 
-        // Enqueue the task
-        PartitionThreadPool->async(
-            [&](const SmallString<0> &BC, unsigned ThreadId) {
-              LTOLLVMContext Ctx(C);
-              Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(
-                  MemoryBufferRef(BC.str(), "ld-temp.o"),
-                  Ctx);
-              if (!MOrErr)
-                report_fatal_error("Failed to read bitcode");
-              std::unique_ptr<Module> MPartInCtx = std::move(MOrErr.get());
+    // Enqueue the task
+    PartitionThreadPool->async(
+        [&](const SmallString<0> &BC, unsigned ThreadId) {
+          LTOLLVMContext Ctx(C);
+          Expected<std::unique_ptr<Module>> MOrErr =
+              parseBitcodeFile(MemoryBufferRef(BC.str(), "ld-temp.o"), Ctx);
+          if (!MOrErr)
+            report_fatal_error("Failed to read bitcode");
+          std::unique_ptr<Module> MPartInCtx = std::move(MOrErr.get());
 
-              std::unique_ptr<TargetMachine> TM =
-                  createTargetMachine(C, T, *MPartInCtx);
+          std::unique_ptr<TargetMachine> TM =
+              createTargetMachine(C, T, *MPartInCtx);
 
-              AddStreamFn splitStream = [&](size_t task, const Twine &moduleName) {
-                      return std::make_unique<CachedFileStream>(
-                          std::make_unique<raw_svector_ostream>(bufPart[task][ThreadId]));
-                    };
+          AddStreamFn splitStream = [&](size_t task, const Twine &moduleName) {
+            return std::make_unique<CachedFileStream>(
+                std::make_unique<raw_svector_ostream>(bufPart[task][ThreadId]));
+          };
 
-              codegen(C, TM.get(), splitStream, task, *MPartInCtx,
-                      CombinedIndex);
-            },
-            // Pass BC using std::move to ensure that it get moved rather than
-            // copied into the thread's context.
-            std::move(BC), ThreadCount++);
-      };
+          codegen(C, TM.get(), splitStream, task, *MPartInCtx, CombinedIndex);
+        },
+        // Pass BC using std::move to ensure that it get moved rather than
+        // copied into the thread's context.
+        std::move(BC), ThreadCount++);
+  };
 
   if (ThinLTOUseCG)
     SplitModuleCG.SplitModule(TM, HandleModulePartition, false);
   else
-    SplitModule(Mod, ParallelCodeGenParallelismLevel, HandleModulePartition, false);
+    SplitModule(Mod, ParallelCodeGenParallelismLevel, HandleModulePartition,
+                false);
 
   // Because the inner lambda (which runs in a worker thread) captures our local
   // variables, we need to wait for the worker threads to terminate before we
@@ -678,9 +673,10 @@ struct TaskIdAllocator {
 // Global allocator shared by all split partitions.
 static TaskIdAllocator gSplitTaskIds;
 
-static bool splitOptAndCodeGenThin(unsigned task, const Config &C, TargetMachine *TM,
-                                   AddStreamFn AddStream,
-                                   unsigned ParallelCodeGenParallelismLevel, Module &Mod,
+static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
+                                   TargetMachine *TM, AddStreamFn AddStream,
+                                   unsigned ParallelCodeGenParallelismLevel,
+                                   Module &Mod,
                                    const ModuleSummaryIndex &CombinedIndex,
                                    const std::vector<uint8_t> &CmdArgs,
                                    ThreadPool *PartitionThreadPool,
@@ -696,12 +692,12 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C, TargetMachine
   static std::mutex ChangeLinkageMutex;
   auto Mname = Mod.getModuleIdentifier();
 
-  SplitModuleCG SplitModuleCG(Mod, C,
-                              ParallelCodeGenParallelismLevel, PartitionThreadPool);
+  SplitModuleCG SplitModuleCG(Mod, C, ParallelCodeGenParallelismLevel,
+                              PartitionThreadPool);
   if (ThinLTOUseCG)
     ParallelCodeGenParallelismLevel = SplitModuleCG.getPartitionNum();
 
-  std::vector<std::string> TempObjectFiles (ParallelCodeGenParallelismLevel);
+  std::vector<std::string> TempObjectFiles(ParallelCodeGenParallelismLevel);
 
   if (ThinLTODebugMpart) {
     std::lock_guard<std::mutex> Lock(PrintMutex);
@@ -709,153 +705,146 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C, TargetMachine
     LLVM_DEBUG(Mod.dump());
   }
 
-  const auto HandleModulePartition =
-      [&](std::unique_ptr<Module> MPart) {
-        // We want to clone the module in a new context to multi-thread the
-        // codegen. We do it by serializing partition modules to bitcode
-        // (while still on the main thread, in order to avoid data races) and
-        // spinning up new threads which deserialize the partitions into
-        // separate contexts.
-        // FIXME: Provide a more direct way to do this in LLVM.
-        // SmallString<0> BC;
-        // raw_svector_ostream BCOS(BC);
-        // WriteBitcodeToFile(*MPart, BCOS);
+  const auto HandleModulePartition = [&](std::unique_ptr<Module> MPart) {
+    // We want to clone the module in a new context to multi-thread the
+    // codegen. We do it by serializing partition modules to bitcode
+    // (while still on the main thread, in order to avoid data races) and
+    // spinning up new threads which deserialize the partitions into
+    // separate contexts.
+    // FIXME: Provide a more direct way to do this in LLVM.
+    // SmallString<0> BC;
+    // raw_svector_ostream BCOS(BC);
+    // WriteBitcodeToFile(*MPart, BCOS);
 
-        if (ThinLTODebugMpart) {
+    if (ThinLTODebugMpart) {
+      std::lock_guard<std::mutex> Lock(PrintMutex);
+      LLVM_DEBUG(dbgs() << "before opt, MPart " << Mname << " \n");
+      LLVM_DEBUG(MPart->dump());
+    }
+
+    unsigned CurrentThreadId, UniqueTaskId;
+    {
+      std::lock_guard<std::mutex> Lock(PrintMutex);
+      CurrentThreadId = ThreadCount++;
+
+      // In distributed ThinLTO, `task` may be a sentinel (e.g. -1 cast to
+      // unsigned), which becomes UINT_MAX and naturally has MSB==1. Treat it
+      // as "no base task id" and don't enforce the namespace check on it.
+      //
+      // We do not rely on the incoming `task` for partition uniqueness: split
+      // partitions get a dedicated UniqueTaskId allocated below.
+      if (task != std::numeric_limits<unsigned>::max()) {
+        assert(!TaskIdAllocator::isPartition(task) &&
+               "Original ThinLTO TaskId unexpectedly overlaps the partition "
+               "namespace");
+      }
+      UniqueTaskId = gSplitTaskIds.alloc();
+    }
+
+    std::unique_ptr<TargetMachine> ThreadTM = createTargetMachine(C, T, *MPart);
+
+    if (DoOpt) {
+      auto StartOpt = Clock::now();
+      if (!opt(C, ThreadTM.get(), UniqueTaskId, *MPart, /*IsThinLTO=*/true,
+               /*ExportSummary=*/nullptr, /*ImportSummary=*/&CombinedIndex,
+               CmdArgs)) {
+        report_fatal_error("Failed to gen opt for split mod in thread.");
+      }
+      auto EndOpt = Clock::now();
+      if (ThinLTODebugMpart) {
+        {
           std::lock_guard<std::mutex> Lock(PrintMutex);
-          LLVM_DEBUG(dbgs() << "before opt, MPart " << Mname << " \n");
-          LLVM_DEBUG(MPart->dump());
+          LLVM_DEBUG(
+              dbgs()
+              << Mname << " Mpart " << CurrentThreadId << " opt cost: "
+              << std::chrono::duration_cast<Ms>(EndOpt - StartOpt).count()
+              << " ms\n");
         }
+        TotalOptTime +=
+            std::chrono::duration_cast<Ms>(EndOpt - StartOpt).count();
+      }
+    }
 
-        unsigned CurrentThreadId, UniqueTaskId;
-        {std::lock_guard<std::mutex> Lock(PrintMutex);
-        CurrentThreadId = ThreadCount++;
-
-        // In distributed ThinLTO, `task` may be a sentinel (e.g. -1 cast to
-        // unsigned), which becomes UINT_MAX and naturally has MSB==1. Treat it
-        // as "no base task id" and don't enforce the namespace check on it.
-        //
-        // We do not rely on the incoming `task` for partition uniqueness: split
-        // partitions get a dedicated UniqueTaskId allocated below.
-        if (task != std::numeric_limits<unsigned>::max()) {
-          assert(!TaskIdAllocator::isPartition(task) &&
-                 "Original ThinLTO TaskId unexpectedly overlaps the partition namespace");
+    {
+      // change linkage from internal to external
+      auto &ChangeLinkageFuncs = SplitModuleCG.getChangeLinkageFunction();
+      std::lock_guard<std::mutex> Lock(ChangeLinkageMutex);
+      for (auto &[FnName, ChangeLinkage] : ChangeLinkageFuncs) {
+        if (auto Fn = MPart->getFunction(FnName)) {
+          if (Fn->isDeclaration() || !Fn->hasLocalLinkage())
+            continue;
+          if (!ChangeLinkage) {
+            Fn->setLinkage(GlobalValue::ExternalLinkage);
+            ChangeLinkageFuncs[FnName] = true;
+          } else {
+            Fn->setLinkage(GlobalValue::AvailableExternallyLinkage);
+            Fn->setSubprogram(nullptr);
+            Fn->setComdat(nullptr);
+          }
+          Fn->setVisibility(GlobalValue::HiddenVisibility);
         }
-        UniqueTaskId = gSplitTaskIds.alloc();}
+      }
+      runGlobalDCEPass(*MPart);
+    }
 
+    auto PromotedRenames = SplitModuleCG.getPromotedRenames();
+    for (auto &GV : MPart->global_values()) {
+      if (auto It = PromotedRenames.find(GV.getName());
+          It != PromotedRenames.end()) {
+        GV.setName(It->second);
+      }
+    }
+    if (ThinLTODebugMpart) {
+      std::lock_guard<std::mutex> Lock(PrintMutex);
+      LLVM_DEBUG(dbgs() << "after rename, MPart " << Mname << "\n");
+      LLVM_DEBUG(MPart->dump());
+    }
 
-        // Enqueue the task
-        // PartitionThreadPool->async(
-        //     [&, CurrentThreadId, UniqueTaskId](const SmallString<0> &BC) {
-        //       LTOLLVMContext Ctx(C);
-        //       Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(
-        //           MemoryBufferRef(BC.str(), "ld-temp.o"),
-        //           Ctx);
-        //       if (!MOrErr)
-        //         report_fatal_error("Failed to read bitcode");
-        //       std::unique_ptr<Module> MPartInCtx = std::move(MOrErr.get());
+    auto splitStream = [&](unsigned task, const Twine &moduleName)
+        -> Expected<std::unique_ptr<CachedFileStream>> {
+      int FD;
+      SmallString<128> TempFilename;
+      if (std::error_code EC = sys::fs::createUniqueFile(
+              "/dev/shm/thinlto-split-%%%%%%.o", FD, TempFilename))
+        return errorCodeToError(EC);
 
-              std::unique_ptr<TargetMachine> ThreadTM =
-                  createTargetMachine(C, T, *MPart);
+      TempObjectFiles[CurrentThreadId] = std::string(TempFilename.str());
 
-              if (DoOpt) {
-                auto StartOpt = Clock::now();
-                if (!opt(C, ThreadTM.get(), UniqueTaskId, *MPart, /*IsThinLTO=*/true,
-                         /*ExportSummary=*/nullptr, /*ImportSummary=*/&CombinedIndex,
-                         CmdArgs)) {
-                  report_fatal_error("Failed to gen opt for split mod in thread.");
-                }
-                auto EndOpt = Clock::now();
-                if (ThinLTODebugMpart) {
-                  {
-                    std::lock_guard<std::mutex> Lock(PrintMutex);
-                    LLVM_DEBUG(dbgs() << Mname << " Mpart " << CurrentThreadId << " opt cost: "
-                                      << std::chrono::duration_cast<Ms>(EndOpt - StartOpt).count()
-                                      << " ms\n");
-                  }
-                  TotalOptTime +=
-                      std::chrono::duration_cast<Ms>(EndOpt - StartOpt).count();
-                }
-              }
+      auto OS =
+          std::make_unique<raw_fd_ostream>(FD, true, /*CloseOnDestruct*/ true);
 
-              {
-                // change linkage from internal to external
-                auto &ChangeLinkageFuncs = SplitModuleCG.getChangeLinkageFunction();
-                std::lock_guard<std::mutex> Lock(ChangeLinkageMutex);
-                for (auto &[FnName, ChangeLinkage] : ChangeLinkageFuncs) {
-                  if (auto Fn = MPart->getFunction(FnName)) {
-                    if (Fn->isDeclaration() || !Fn->hasLocalLinkage())
-                        continue;
-                    if (!ChangeLinkage) {
-                      Fn->setLinkage(GlobalValue::ExternalLinkage);
-                      ChangeLinkageFuncs[FnName] = true;
-                    } else {
-                      Fn->setLinkage(GlobalValue::AvailableExternallyLinkage);
-                      Fn->setSubprogram(nullptr);
-                      Fn->setComdat(nullptr);
-                    }
-                    Fn->setVisibility(GlobalValue::HiddenVisibility);
-                  }
-                }
-                runGlobalDCEPass(*MPart);
-              }
+      auto Stream = std::make_unique<CachedFileStream>(
+          std::move(OS), std::string(TempFilename.str()));
 
-              auto PromotedRenames = SplitModuleCG.getPromotedRenames();
-              for (auto &GV : MPart->global_values()) {
-                if (auto It = PromotedRenames.find(GV.getName());
-                    It != PromotedRenames.end()) {
-                  GV.setName(It->second);
-                }
-              }
-              if (ThinLTODebugMpart) {
-                std::lock_guard<std::mutex> Lock(PrintMutex);
-                LLVM_DEBUG(dbgs() << "after rename, MPart " << Mname << "\n");
-                LLVM_DEBUG(MPart->dump());
-              }
+      return std::move(Stream);
+    };
 
-              auto splitStream = [&](unsigned task, const Twine &moduleName) 
-                  -> Expected<std::unique_ptr<CachedFileStream>> {
-                      int FD;
-                      SmallString<128> TempFilename;
-                      if (std::error_code EC = sys::fs::createUniqueFile(
-                              "/dev/shm/thinlto-split-%%%%%%.o", FD, TempFilename))
-                        return errorCodeToError(EC);
-
-                      TempObjectFiles[CurrentThreadId] = std::string(TempFilename.str());
-
-                      auto OS = std::make_unique<raw_fd_ostream>(
-                          FD, true, /*CloseOnDestruct*/true);
-
-                      auto Stream = std::make_unique<CachedFileStream>(
-                          std::move(OS), std::string(TempFilename.str()));
-
-                      return std::move(Stream);
-                    };
-
-              auto StartCG = Clock::now();
-              codegen(C, ThreadTM.get(), splitStream, UniqueTaskId, *MPart,
-                      CombinedIndex);
-              auto EndCG = Clock::now();
-              if (ThinLTODebugMpart) {
-                {
-                  std::lock_guard<std::mutex> Lock(PrintMutex);
-                  LLVM_DEBUG(dbgs() << Mname << " Mpart " << CurrentThreadId << " codegen cost: "
-                                    << std::chrono::duration_cast<Ms>(EndCG - StartCG).count()
-                                    << " ms\n");
-                }
-                TotalCodeGenTime +=
-                    std::chrono::duration_cast<Ms>(EndCG - StartCG).count();
-              }
-            // },
-            // Pass BC using std::move to ensure that it get moved rather than
-            // copied into the thread's context.
-            // std::move(BC));
-      };
+    auto StartCG = Clock::now();
+    codegen(C, ThreadTM.get(), splitStream, UniqueTaskId, *MPart,
+            CombinedIndex);
+    auto EndCG = Clock::now();
+    if (ThinLTODebugMpart) {
+      {
+        std::lock_guard<std::mutex> Lock(PrintMutex);
+        LLVM_DEBUG(
+            dbgs() << Mname << " Mpart " << CurrentThreadId << " codegen cost: "
+                   << std::chrono::duration_cast<Ms>(EndCG - StartCG).count()
+                   << " ms\n");
+      }
+      TotalCodeGenTime +=
+          std::chrono::duration_cast<Ms>(EndCG - StartCG).count();
+    }
+    // },
+    // Pass BC using std::move to ensure that it get moved rather than
+    // copied into the thread's context.
+    // std::move(BC));
+  };
 
   if (ThinLTOUseCG)
     SplitModuleCG.SplitModule(TM, HandleModulePartition, false);
   else
-    SplitModule(Mod, ParallelCodeGenParallelismLevel, HandleModulePartition, false);
+    SplitModule(Mod, ParallelCodeGenParallelismLevel, HandleModulePartition,
+                false);
 
   // Because the inner lambda (which runs in a worker thread) captures our local
   // variables, we need to wait for the worker threads to terminate before we
@@ -876,7 +865,8 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C, TargetMachine
 
   int MergedFD;
   SmallString<128> MergedFilename;
-  if (sys::fs::createUniqueFile("/dev/shm/thinlto-merged-%%%%%%.o", MergedFD, MergedFilename))
+  if (sys::fs::createUniqueFile("/dev/shm/thinlto-merged-%%%%%%.o", MergedFD,
+                                MergedFilename))
     report_fatal_error("Failed to create merged temp file.");
   sys::fs::closeFile(MergedFD);
 
@@ -888,7 +878,8 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C, TargetMachine
     LinkerPath = *Path;
 
   if (LinkerPath.empty())
-    report_fatal_error("Cannot find linkeer (ld or ld.lld) to merge partitions.");
+    report_fatal_error(
+        "Cannot find linkeer (ld or ld.lld) to merge partitions.");
 
   Args.push_back(LinkerPath);
   Args.push_back("-r");
@@ -927,15 +918,24 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C, TargetMachine
     auto TimeAfterLink = Clock::now();
 
     // [Timing] 4. calculate and print
-    auto DurSplitCodegen = std::chrono::duration_cast<Ms>(TimeAfterCodeGen - TimeStart).count();
-    auto DurLinking = std::chrono::duration_cast<Ms>(TimeAfterLink - TimeAfterCodeGen).count();
-    auto DurTotal = std::chrono::duration_cast<Ms>(TimeAfterLink - TimeStart).count();
+    auto DurSplitCodegen =
+        std::chrono::duration_cast<Ms>(TimeAfterCodeGen - TimeStart).count();
+    auto DurLinking =
+        std::chrono::duration_cast<Ms>(TimeAfterLink - TimeAfterCodeGen)
+            .count();
+    auto DurTotal =
+        std::chrono::duration_cast<Ms>(TimeAfterLink - TimeStart).count();
 
-    LLVM_DEBUG(dbgs() << Mname << "    Split & CodeGen   : " << DurSplitCodegen << " ms\n");
-    LLVM_DEBUG(dbgs() << Mname << "    Sum(Opt CPU Time) : " << TotalOptTime.load() << " ms\n");
-    LLVM_DEBUG(dbgs() << Mname << "    Sum(CG CPU Time)  : " << TotalCodeGenTime.load() << " ms\n");
-    LLVM_DEBUG(dbgs() << Mname << "    Link(ld -r)       : " << DurLinking << " ms\n");
-    LLVM_DEBUG(dbgs() << Mname << "    Total             : " << DurTotal << " ms\n");
+    LLVM_DEBUG(dbgs() << Mname << "    Split & CodeGen   : " << DurSplitCodegen
+                      << " ms\n");
+    LLVM_DEBUG(dbgs() << Mname << "    Sum(Opt CPU Time) : "
+                      << TotalOptTime.load() << " ms\n");
+    LLVM_DEBUG(dbgs() << Mname << "    Sum(CG CPU Time)  : "
+                      << TotalCodeGenTime.load() << " ms\n");
+    LLVM_DEBUG(dbgs() << Mname << "    Link(ld -r)       : " << DurLinking
+                      << " ms\n");
+    LLVM_DEBUG(dbgs() << Mname << "    Total             : " << DurTotal
+                      << " ms\n");
   }
 
   return true;
@@ -1099,7 +1099,6 @@ void updateIndexSummaryForExternalizedModules(ModuleSummaryIndex &CombinedIndex,
     uint64_t OldGUID = GV.getGUID();
     if (!GV.hasName())
       GV.setName("__llvmsplit_unnamed");
-    // GV.setName(GV.getName().str() + "_" + M.getModuleIdentifier());
 
     GlobalValue::GUID NewGUID = GlobalValue::getGUID(GV.getName());
     if (OldGUID == NewGUID)
@@ -1187,11 +1186,13 @@ Error lto::thinBackend(const Config &Conf, unsigned Task, AddStreamFn AddStream,
   if (Conf.CodeGenOnly) {
     if (ThinLTOSplit)
       if (ThinLTOCombineOutput)
-        splitOptAndCodeGenThin(Task, Conf, TM.get(), AddStream, ThinLTOSplitPartitions,
-                               Mod, CombinedIndex, CmdArgs, PartitionThreadPool, false);
+        splitOptAndCodeGenThin(Task, Conf, TM.get(), AddStream,
+                               ThinLTOSplitPartitions, Mod, CombinedIndex,
+                               CmdArgs, PartitionThreadPool, false);
       else
-        splitCodeGenThin(Task, Conf, TM.get(), AddStream, ThinLTOSplitPartitions,
-                         Mod, CombinedIndex, PartitionThreadPool, bufPart);
+        splitCodeGenThin(Task, Conf, TM.get(), AddStream,
+                         ThinLTOSplitPartitions, Mod, CombinedIndex,
+                         PartitionThreadPool, bufPart);
     else
       codegen(Conf, TM.get(), AddStream, Task, Mod, CombinedIndex);
     return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
@@ -1212,44 +1213,45 @@ Error lto::thinBackend(const Config &Conf, unsigned Task, AddStreamFn AddStream,
     }
   }
 
-  auto OptimizeAndCodegen =
-      [&](Module &Mod, TargetMachine *TM,
-          std::unique_ptr<ToolOutputFile> DiagnosticOutputFile) {
-        if (ThinLTOSplit && ProfitableToSplit) {
-          if (ThinLTOCombineOutput) {
-            if (splitOptAndCodeGen) {
-              if (!splitOptAndCodeGenThin(
-                      Task, Conf, TM, AddStream, ThinLTOSplitPartitions, Mod,
-                      CombinedIndex, CmdArgs, PartitionThreadPool, true))
-                return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
-            } else {
-              if (!opt(Conf, TM, Task, Mod, /*IsThinLTO=*/true,
-                       /*ExportSummary=*/nullptr, /*ImportSummary=*/&CombinedIndex,
-                       CmdArgs))
-                return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
-
-              splitOptAndCodeGenThin(Task, Conf, TM, AddStream, ThinLTOSplitPartitions,
-                                     Mod, CombinedIndex, CmdArgs, PartitionThreadPool, false);
-            }
-          } else {
-            if (!opt(Conf, TM, Task, Mod, /*IsThinLTO=*/true,
-                     /*ExportSummary=*/nullptr, /*ImportSummary=*/&CombinedIndex,
-                     CmdArgs))
-              return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
-            splitCodeGenThin(Task, Conf, TM, AddStream, ThinLTOSplitPartitions,
-                             Mod, CombinedIndex, PartitionThreadPool, bufPart);
-          }
+  auto OptimizeAndCodegen = [&](Module &Mod, TargetMachine *TM,
+                                std::unique_ptr<ToolOutputFile>
+                                    DiagnosticOutputFile) {
+    if (ThinLTOSplit && ProfitableToSplit) {
+      if (ThinLTOCombineOutput) {
+        if (splitOptAndCodeGen) {
+          if (!splitOptAndCodeGenThin(
+                  Task, Conf, TM, AddStream, ThinLTOSplitPartitions, Mod,
+                  CombinedIndex, CmdArgs, PartitionThreadPool, true))
+            return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
         } else {
           if (!opt(Conf, TM, Task, Mod, /*IsThinLTO=*/true,
                    /*ExportSummary=*/nullptr, /*ImportSummary=*/&CombinedIndex,
                    CmdArgs))
             return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
 
-          codegen(Conf, TM, AddStream, Task, Mod, CombinedIndex);
+          splitOptAndCodeGenThin(Task, Conf, TM, AddStream,
+                                 ThinLTOSplitPartitions, Mod, CombinedIndex,
+                                 CmdArgs, PartitionThreadPool, false);
         }
-
+      } else {
+        if (!opt(Conf, TM, Task, Mod, /*IsThinLTO=*/true,
+                 /*ExportSummary=*/nullptr, /*ImportSummary=*/&CombinedIndex,
+                 CmdArgs))
+          return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
+        splitCodeGenThin(Task, Conf, TM, AddStream, ThinLTOSplitPartitions, Mod,
+                         CombinedIndex, PartitionThreadPool, bufPart);
+      }
+    } else {
+      if (!opt(Conf, TM, Task, Mod, /*IsThinLTO=*/true,
+               /*ExportSummary=*/nullptr, /*ImportSummary=*/&CombinedIndex,
+               CmdArgs))
         return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
-      };
+
+      codegen(Conf, TM, AddStream, Task, Mod, CombinedIndex);
+    }
+
+    return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
+  };
 
   if (ThinLTOAssumeMerged)
     return OptimizeAndCodegen(Mod, TM.get(), std::move(DiagnosticOutputFile));
@@ -1321,13 +1323,6 @@ Error lto::thinBackend(const Config &Conf, unsigned Task, AddStreamFn AddStream,
 
   if (Conf.PostImportModuleHook && !Conf.PostImportModuleHook(Task, Mod))
     return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
-
-  // static std::mutex IndexMutex;
-  // if (ThinLTOSplit && ProfitableToSplit) {
-  //   std::lock_guard<std::mutex> Lock(IndexMutex);
-  //   updateIndexSummaryForExternalizedModules(CombinedIndex, Mod);
-  //   updateIndexSummaryForInternalizeSymbol(CombinedIndex, Mod);
-  // }
 
   return OptimizeAndCodegen(Mod, TM.get(), std::move(DiagnosticOutputFile));
 }

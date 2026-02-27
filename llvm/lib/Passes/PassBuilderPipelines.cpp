@@ -296,7 +296,7 @@ cl::opt<bool> EnableMemProfContextDisambiguation(
 
 namespace llvm {
 cl::opt<bool> ThinLTOSplit("thinlto-split", cl::init(false),
-			   cl::desc("split module in thinlto backend."));
+                           cl::desc("split module in thinlto backend."));
 }
 
 PipelineTuningOptions::PipelineTuningOptions() {

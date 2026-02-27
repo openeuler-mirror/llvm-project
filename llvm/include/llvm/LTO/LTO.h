@@ -296,7 +296,8 @@ public:
   /// The client will receive at most one callback (via either AddStream or
   /// Cache) for each task identifier.
   Error run(AddStreamFn AddStream, FileCache Cache = nullptr);
-  Error run(AddStreamFn AddStream, FileCache Cache, std::vector<std::vector<SmallString<0>>> &bufPart);
+  Error run(AddStreamFn AddStream, FileCache Cache,
+            std::vector<std::vector<SmallString<0>>> &bufPart);
 
   /// Static method that returns a list of libcall symbols that can be generated
   /// by LTO but might not be visible from bitcode symbol table.

@@ -380,9 +380,6 @@ std::vector<InputFile *> BitcodeCompiler::compile() {
     pruneCache(config->thinLTOCacheDir, config->thinLTOCachePolicy, files);
 
   if (!config->ltoObjPath.empty()) {
-    // saveBuffer(buf[0], config->ltoObjPath);
-    // for (unsigned i = 1; i != maxTasks; ++i)
-    //   saveBuffer(buf[i], config->ltoObjPath + Twine(i));
     for (unsigned i = 0; i != maxTasks; ++i) {
       Twine baseWithTask = (i == 0) ? Twine(config->ltoObjPath)
                                     : (Twine(config->ltoObjPath) + Twine(i));
@@ -392,7 +389,7 @@ std::vector<InputFile *> BitcodeCompiler::compile() {
         for (unsigned j = 0; j != bufPart[i].size(); ++j)
           saveBuffer(bufPart[i][j],
                      config->ltoObjPath + Twine(i) +
-                     (j == 0 ? Twine("") : Twine('.') + Twine(j)));
+                         (j == 0 ? Twine("") : Twine('.') + Twine(j)));
       }
     }
   }
@@ -407,19 +404,18 @@ std::vector<InputFile *> BitcodeCompiler::compile() {
       if (objBuf.empty())
         continue;
 
-      StringRef bitcodeFilePath;
       std::string objNumStr;
       if (i == 0 && j == 0) {
-          objNumStr = "";
+        objNumStr = "";
       } else if (j == 0) {
-          objNumStr = Twine(i).str();
+        objNumStr = Twine(i).str();
       } else {
-          objNumStr = (Twine(i) + "." + Twine(j)).str();
+        objNumStr = (Twine(i) + "." + Twine(j)).str();
       }
 
       if (savePrelink || config->ltoEmitAsm)
         saveBuffer(objBuf, config->outputFile + Twine(objNumStr) +
-                           Twine(config->ltoEmitAsm ? "" : ".lto.o"));
+                               Twine(config->ltoEmitAsm ? "" : ".lto.o"));
 
       if (!config->ltoEmitAsm)
         ret.push_back(createObjFile(MemoryBufferRef(bufPart[i][j], "lto.tmp")));

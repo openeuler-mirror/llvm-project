@@ -1199,7 +1199,8 @@ Error LTO::run(AddStreamFn AddStream, FileCache Cache) {
   return Result;
 }
 
-Error LTO::run(AddStreamFn AddStream, FileCache Cache, std::vector<std::vector<SmallString<0>>> &bufPart) {
+Error LTO::run(AddStreamFn AddStream, FileCache Cache,
+               std::vector<std::vector<SmallString<0>>> &bufPart) {
   // Compute "dead" symbols, we don't want to import/export these!
   DenseSet<GlobalValue::GUID> GUIDPreservedSymbols;
   DenseMap<GlobalValue::GUID, PrevailingType> GUIDPrevailingResolutions;
@@ -1504,9 +1505,10 @@ public:
       bool ShouldEmitIndexFiles, bool ShouldEmitImportsFiles)
       : ThinBackendProc(Conf, CombinedIndex, ModuleToDefinedGVSummaries,
                         OnWrite, ShouldEmitImportsFiles),
-        BackendThreadPool(ThinLTOParallelism), PartitionThreadPool(ThinLTOParallelism),
-        AddStream(std::move(AddStream)),
-        Cache(std::move(Cache)), ShouldEmitIndexFiles(ShouldEmitIndexFiles) {
+        BackendThreadPool(ThinLTOParallelism),
+        PartitionThreadPool(ThinLTOParallelism),
+        AddStream(std::move(AddStream)), Cache(std::move(Cache)),
+        ShouldEmitIndexFiles(ShouldEmitIndexFiles) {
     for (auto &Name : CombinedIndex.cfiFunctionDefs())
       CfiFunctionDefs.insert(
           GlobalValue::getGUID(GlobalValue::dropLLVMManglingEscape(Name)));
@@ -1531,8 +1533,8 @@ public:
         return MOrErr.takeError();
 
       return thinBackend(Conf, Task, AddStream, **MOrErr, CombinedIndex,
-                         ImportList, DefinedGlobals, &ModuleMap,
-                         bufPart, {}, &PartitionThreadPool);
+                         ImportList, DefinedGlobals, &ModuleMap, bufPart, {},
+                         &PartitionThreadPool);
     };
 
     auto ModuleID = BM.getModuleIdentifier();
