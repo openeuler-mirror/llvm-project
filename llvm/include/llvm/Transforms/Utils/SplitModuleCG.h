@@ -4,15 +4,15 @@
 #include "llvm/ADT/EquivalenceClasses.h"
 #include "llvm/ADT/STLFunctionalExtras.h"
 #include "llvm/ADT/StringSet.h"
-#include "llvm/Target/TargetMachine.h"
 #include "llvm/Analysis/AssumptionCache.h"
 #include "llvm/Analysis/CallGraph.h"
+#include "llvm/Analysis/InlineCost.h"
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
-#include "llvm/Analysis/InlineCost.h"
+#include "llvm/LTO/Config.h"
 #include "llvm/Support/InstructionCost.h"
 #include "llvm/Support/ThreadPool.h"
-#include "llvm/LTO/Config.h"
+#include "llvm/Target/TargetMachine.h"
 #include <memory>
 
 namespace llvm {
@@ -30,14 +30,15 @@ class SimplifyCallGraph {
   FunctionMapTy FunctionMap;
 
 public:
-  explicit SimplifyCallGraph (CallGraph &CG,
-                              DenseSet<const Function *> &LargeFuncs,
-                              DenseSet<const Function *> &HotFuncs,
-                              DenseSet<const Function *> &AliasesFuncs)
-         : CG(CG), LargeFuncs(LargeFuncs), HotFuncs(HotFuncs), AliasesFuncs(AliasesFuncs) {
+  explicit SimplifyCallGraph(CallGraph &CG,
+                             DenseSet<const Function *> &LargeFuncs,
+                             DenseSet<const Function *> &HotFuncs,
+                             DenseSet<const Function *> &AliasesFuncs)
+      : CG(CG), LargeFuncs(LargeFuncs), HotFuncs(HotFuncs),
+        AliasesFuncs(AliasesFuncs) {
     createSimplifyCallGraph();
   }
-  ~SimplifyCallGraph() {};
+  ~SimplifyCallGraph(){};
 
   using iterator = FunctionMapTy::iterator;
   using const_iterator = FunctionMapTy::const_iterator;
@@ -59,7 +60,7 @@ public:
   inline SimplifyCallGraphNode *operator[](const Function *F) {
     const_iterator I = FunctionMap.find(F);
     assert(I != FunctionMap.end() && "Function not in callgraph!");
-    return I->second.get(); 
+    return I->second.get();
   }
 
   /// Returns the call graph node for the provided function.
@@ -149,6 +150,7 @@ class InlineClusterEstimation {
 public:
   InlineClusterEstimation(Module &M, CallGraph &CG, TargetMachine *TM);
   bool fromSameCluster(const Function *A, const Function *B);
+
 private:
   Module &M;
   CallGraph &CG;
@@ -178,9 +180,10 @@ private:
 /// \param CG Call graph for \p F's module.
 /// \param F Current function to look at.
 /// \param Fns[out] Resulting list of functions.
-static void addAllDependencies(SimplifyCallGraph &SCG, const Function &F,
-                               DenseSet<const Function *> &Fns,
-                               DenseMap<const Function *, bool> &externalFunction) {
+static void
+addAllDependencies(SimplifyCallGraph &SCG, const Function &F,
+                   DenseSet<const Function *> &Fns,
+                   DenseMap<const Function *, bool> &externalFunction) {
   assert(!F.isDeclaration());
 
   SmallVector<const Function *> WorkList({&F});
@@ -190,13 +193,13 @@ static void addAllDependencies(SimplifyCallGraph &SCG, const Function &F,
     assert(!CurFn.isDeclaration());
 
     // Scan for an indirect call. If such a call is found, we have to
-    // conservatively assume this can call all non-entrypoint functions in the module.
+    // conservatively assume this can call all non-entrypoint functions in the
+    // module.
     for (auto &SCGNode : *SCG.at(&CurFn)) {
       auto *Callee = SCGNode->getFunction();
       if (!Callee || Callee->isDeclaration())
         continue;
-      if (Callee != &F)
-      {
+      if (Callee != &F) {
         auto [It, Inserted] = Fns.insert(Callee);
         if (Inserted)
           WorkList.push_back(Callee);
@@ -211,13 +214,14 @@ struct FunctionWithDependencies {
                            const Function *F,
                            const DenseSet<const Function *> &AliasesFuncs,
                            DenseMap<const Function *, bool> &externalFunction,
-			                     const DenseSet<const Function *> &IfuncFuncs,
+                           const DenseSet<const Function *> &IfuncFuncs,
                            const DenseSet<const Function *> &ComdatFuncs)
       : F(F) {
     addAllDependencies(SCG, *F, Dependencies, externalFunction);
     if (AliasesFuncs.count(F))
       HasAliasesCall = true;
-    // If the function is an ifunc resolver, it must stay in the every partition.
+    // If the function is an ifunc resolver, it must stay in the every
+    // partition.
     if (IfuncFuncs.count(F))
       HasIfuncResolver = true;
     // If the function is in a comdat, it must stay in the first partition.
@@ -242,7 +246,7 @@ struct FunctionWithDependencies {
   bool HasAliasesCall = false;
   bool HasIfuncResolver = false;
   bool HasComdatMember = false;
-  
+
   CostType TotalCost = 0;
   int SplitedLayer = 0;
 
@@ -260,17 +264,20 @@ public:
   using ModuleCreationCallback =
       function_ref<void(std::unique_ptr<Module> MPart)>;
   SplitModuleCG(Module &M, const llvm::lto::Config &C,
-                unsigned LimitPartition = 0, ThreadPool *PartitionThreadPool = nullptr);
+                unsigned LimitPartition = 0,
+                ThreadPool *PartitionThreadPool = nullptr);
   void SplitModule(TargetMachine *TM, ModuleCreationCallback ModuleCallback,
-      bool PreserveLocals);
+                   bool PreserveLocals);
 
   unsigned getPartitionNum() { return N; }
   StringSet<> &getOriginalExternals() { return OriginalExternals; }
   StringMap<std::string> &getPromotedRenames() { return PromotedRenames; }
 
-  DenseMap<StringRef, bool> &getChangeLinkageFunction() {return ChangeLinkageFuncs;}
-  DenseSet<const Function *> &getIfuncFuncs() {return IfuncFuncs;}
-  
+  DenseMap<StringRef, bool> &getChangeLinkageFunction() {
+    return ChangeLinkageFuncs;
+  }
+  DenseSet<const Function *> &getIfuncFuncs() { return IfuncFuncs; }
+
 private:
   unsigned N;
   Module &M;

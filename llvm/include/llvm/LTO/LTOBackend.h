@@ -21,9 +21,9 @@
 #include "llvm/IR/ModuleSummaryIndex.h"
 #include "llvm/LTO/LTO.h"
 #include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Support/ThreadPool.h"
 #include "llvm/Target/TargetOptions.h"
 #include "llvm/Transforms/IPO/FunctionImport.h"
-#include "llvm/Support/ThreadPool.h"
 
 namespace llvm {
 
