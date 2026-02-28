@@ -377,9 +377,6 @@ std::vector<InputFile *> BitcodeCompiler::compile() {
     pruneCache(config->thinLTOCacheDir, config->thinLTOCachePolicy, files);
 
   if (!config->ltoObjPath.empty()) {
-    // saveBuffer(buf[0], config->ltoObjPath);
-    // for (unsigned i = 1; i != maxTasks; ++i)
-    //   saveBuffer(buf[i], config->ltoObjPath + Twine(i));
     for (unsigned i = 0; i != maxTasks; ++i) {
       Twine baseWithTask = (i == 0) ? Twine(config->ltoObjPath)
                                     : (Twine(config->ltoObjPath) + Twine(i));

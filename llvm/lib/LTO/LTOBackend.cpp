@@ -740,17 +740,6 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
       UniqueTaskId = gSplitTaskIds.alloc();
     }
 
-    // Enqueue the task
-    // PartitionThreadPool->async(
-    //     [&, CurrentThreadId, UniqueTaskId](const SmallString<0> &BC) {
-    //       LTOLLVMContext Ctx(C);
-    //       Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(
-    //           MemoryBufferRef(BC.str(), "ld-temp.o"),
-    //           Ctx);
-    //       if (!MOrErr)
-    //         report_fatal_error("Failed to read bitcode");
-    //       std::unique_ptr<Module> MPartInCtx = std::move(MOrErr.get());
-
     std::unique_ptr<TargetMachine> ThreadTM = createTargetMachine(C, T, *MPart);
 
     if (DoOpt) {
@@ -1107,7 +1096,6 @@ void updateIndexSummaryForExternalizedModules(ModuleSummaryIndex &CombinedIndex,
     uint64_t OldGUID = GV.getGUID();
     if (!GV.hasName())
       GV.setName("__llvmsplit_unnamed");
-    // GV.setName(GV.getName().str() + "_" + M.getModuleIdentifier());
 
     GlobalValue::GUID NewGUID = GlobalValue::getGUID(GV.getName());
     if (OldGUID == NewGUID)
@@ -1330,13 +1318,6 @@ Error lto::thinBackend(const Config &Conf, unsigned Task, AddStreamFn AddStream,
 
   if (Conf.PostImportModuleHook && !Conf.PostImportModuleHook(Task, Mod))
     return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
-
-  // static std::mutex IndexMutex;
-  // if (ThinLTOSplit && ProfitableToSplit) {
-  //   std::lock_guard<std::mutex> Lock(IndexMutex);
-  //   updateIndexSummaryForExternalizedModules(CombinedIndex, Mod);
-  //   updateIndexSummaryForInternalizeSymbol(CombinedIndex, Mod);
-  // }
 
   return OptimizeAndCodegen(Mod, TM.get(), std::move(DiagnosticOutputFile));
 }
