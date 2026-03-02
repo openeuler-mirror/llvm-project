@@ -711,9 +711,6 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
     // spinning up new threads which deserialize the partitions into
     // separate contexts.
     // FIXME: Provide a more direct way to do this in LLVM.
-    // SmallString<0> BC;
-    // raw_svector_ostream BCOS(BC);
-    // WriteBitcodeToFile(*MPart, BCOS);
 
     if (ThinLTODebugMpart) {
       std::lock_guard<std::mutex> Lock(PrintMutex);

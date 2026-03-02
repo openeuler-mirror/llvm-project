@@ -8165,8 +8165,7 @@ llvm::parseBitcodeFile(MemoryBufferRef Buffer, LLVMContext &Context,
   return BM->parseModule(Context, Callbacks);
 }
 
-Expected<BitcodeModule>
-llvm::parseBitcodeFileStream(MemoryBufferRef Buffer) {
+Expected<BitcodeModule> llvm::parseBitcodeFileStream(MemoryBufferRef Buffer) {
   return getSingleModule(Buffer);
 }
 

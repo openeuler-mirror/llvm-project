@@ -16,12 +16,12 @@
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Bitstream/BitCodeEnums.h"
+#include "llvm/Bitstream/BitstreamReader.h"
 #include "llvm/IR/GlobalValue.h"
 #include "llvm/Support/Endian.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/ErrorOr.h"
 #include "llvm/Support/MemoryBufferRef.h"
-#include "llvm/Bitstream/BitstreamReader.h"
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -216,8 +216,7 @@ struct ParserCallbacks {
   parseBitcodeFile(MemoryBufferRef Buffer, LLVMContext &Context,
                    ParserCallbacks Callbacks = {});
 
-  Expected<BitcodeModule>
-  parseBitcodeFileStream(MemoryBufferRef Buffer);
+  Expected<BitcodeModule> parseBitcodeFileStream(MemoryBufferRef Buffer);
 
   /// Returns LTO information for the specified bitcode file.
   Expected<BitcodeLTOInfo> getBitcodeLTOInfo(MemoryBufferRef Buffer);
