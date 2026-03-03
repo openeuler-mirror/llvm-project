@@ -30,7 +30,7 @@
 #include <sys/types.h>
 #endif
 #endif
-
+#include <signal.h>
 #include "InstrProfiling.h"
 #include "InstrProfilingInternal.h"
 #include "InstrProfilingPort.h"
@@ -1187,6 +1187,7 @@ int __llvm_orderfile_dump(void) {
 }
 
 static void writeFileWithoutReturn(void) { __llvm_profile_write_file(); }
+static void sigDumpHandler(int sigDump) { __llvm_profile_write_file(); }
 
 COMPILER_RT_VISIBILITY
 int __llvm_profile_register_write_file_atexit(void) {
@@ -1198,6 +1199,16 @@ int __llvm_profile_register_write_file_atexit(void) {
   lprofSetupValueProfiler();
 
   HasBeenRegistered = 1;
+
+  int sigDump = SIGUSR2;
+  const char *pgodumpsignal = getenv("PGODUMPSIGNAL");
+  if (pgodumpsignal != NULL) {
+    sigDump = atoi(pgodumpsignal);
+    if (sigDump < SIGHUP || sigDump > SIGRTMAX)
+      sigDump = 0;
+  }
+  if (sigDump)
+    signal(sigDump, sigDumpHandler);
   return atexit(writeFileWithoutReturn);
 }
 
