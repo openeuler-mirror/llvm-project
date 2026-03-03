@@ -1050,6 +1050,19 @@ struct ConvertAMDGPUToROCDLPass
 
     RewritePatternSet patterns(ctx);
     LLVMTypeConverter converter(ctx);
+    converter.addConversion([](FloatType t) -> std::optional<Type> {
+      if (isa<Float8E4M3B11FNUZType, Float8E4M3FNType, Float8E4M3FNUZType,
+              Float8E5M2Type, Float8E5M2FNUZType>(t))
+        return IntegerType::get(t.getContext(), 8);
+      return std::nullopt;
+    });
+    converter.addConversion([&converter](VectorType t) -> std::optional<Type> {
+      if (isa<Float8E4M3B11FNUZType, Float8E4M3FNType, Float8E4M3FNUZType,
+              Float8E5M2Type, Float8E5M2FNUZType>(t.getElementType()))
+        return converter.convertType(
+            t.clone(IntegerType::get(t.getContext(), 8)));
+      return std::nullopt;
+    });
     populateAMDGPUToROCDLConversionPatterns(converter, patterns, *maybeChipset);
     LLVMConversionTarget target(getContext());
     target.addIllegalDialect<::mlir::amdgpu::AMDGPUDialect>();
