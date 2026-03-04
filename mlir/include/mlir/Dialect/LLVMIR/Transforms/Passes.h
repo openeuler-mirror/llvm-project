@@ -14,6 +14,7 @@
 #include "mlir/Dialect/LLVMIR/Transforms/LegalizeFloat8Types.h"
 #include "mlir/Dialect/LLVMIR/Transforms/LegalizeForExport.h"
 #include "mlir/Dialect/LLVMIR/Transforms/OptimizeForNVVM.h"
+#include "mlir/Dialect/LLVMIR/Transforms/PromoteI1ToI8.h"
 #include "mlir/Dialect/LLVMIR/Transforms/RequestCWrappers.h"
 #include "mlir/Pass/Pass.h"
 

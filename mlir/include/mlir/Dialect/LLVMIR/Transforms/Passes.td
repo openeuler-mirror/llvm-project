@@ -44,6 +44,23 @@ def LLVMLegalizeForExport : Pass<"llvm-legalize-for-export"> {
   let dependentDialects = ["LLVM::LLVMDialect"];
 }
 
+def LLVMPromoteI1ToI8 : Pass<"llvm-promote-i1-to-i8"> {
+  let summary = "Promote vector<N x i1> memory ops to vector<N x i8>";
+  let description = [{
+    When LLVM stores a vector<N x i1>, it packs the bits so that N elements
+    occupy only N/8 bytes. However, when individual i1 elements are later
+    loaded via scalar GEP + load i1, each element is addressed at byte
+    granularity (1 byte per element). This mismatch causes wrong results
+    because the scalar loads read garbage for most elements.
+
+    This pass promotes vector<N x i1> stores to vector<N x i8> (with zext
+    before store) and vector<N x i1> loads to vector<N x i8> (with trunc
+    after load), so that each boolean element occupies a full byte in memory.
+  }];
+  let constructor = "::mlir::LLVM::createPromoteI1ToI8Pass()";
+  let dependentDialects = ["LLVM::LLVMDialect"];
+}
+
 def LLVMRequestCWrappers
     : Pass<"llvm-request-c-wrappers", "::mlir::func::FuncOp"> {
   let summary = "Request C wrapper emission for all functions";
