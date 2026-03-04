@@ -860,10 +860,21 @@ void mlir::populateAMDGPUToROCDLConversionPatterns(LLVMTypeConverter &converter,
   converter.addConversion([](BFloat16Type t) -> Type {
     return IntegerType::get(t.getContext(), 16);
   });
+  converter.addConversion([](Float8E5M2FNUZType t) -> Type {
+    return IntegerType::get(t.getContext(), 8);
+  });
+  converter.addConversion([](Float8E4M3FNUZType t) -> Type {
+    return IntegerType::get(t.getContext(), 8);
+  });
   converter.addConversion([&converter](VectorType t) -> std::optional<Type> {
-    if (!t.getElementType().isBF16())
-      return std::nullopt;
-    return converter.convertType(t.clone(IntegerType::get(t.getContext(), 16)));
+    if (t.getElementType().isBF16())
+      return converter.convertType(
+          t.clone(IntegerType::get(t.getContext(), 16)));
+    if (t.getElementType().isFloat8E5M2FNUZ() ||
+        t.getElementType().isFloat8E4M3FNUZ())
+      return converter.convertType(
+          t.clone(IntegerType::get(t.getContext(), 8)));
+    return std::nullopt;
   });
 
   patterns
