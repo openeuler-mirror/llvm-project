@@ -495,6 +495,63 @@ void SplitModuleCG::calculateComdatMembers() {
   }
 }
 
+static void DealWithDeclareDebugInfo(Module &MPart) {
+  for (Function &F : MPart)
+    if (F.isDeclaration())
+      F.setSubprogram(nullptr);
+}
+
+void SplitModuleCG::DealWithDuplicateDebugInfo(Module &MPart) {
+  DebugInfoFinder DIF;
+  DIF.processModule(MPart);
+  std::set<DICompileUnit *> NewCUs;
+  bool Changed = false;
+  for (DICompileUnit *DIC : DIF.compile_units()) {
+    // Deal with duplicate imported entities
+    SmallVector<Metadata *, 4> NewImports;
+    bool ChangedNewImports = false;
+    for (auto *IE : DIC->getImportedEntities()) {
+      if (auto *SP = dyn_cast_or_null<DISubprogram>(IE->getEntity())) {
+        if (!SP->isDefinition() || !MPart.getFunction(SP->getLinkageName())) {
+          ChangedNewImports = true;
+          continue;
+        }
+      }
+      NewImports.emplace_back(IE);
+    }
+    if (ChangedNewImports) {
+      DIC->replaceImportedEntities(MDTuple::get(MPart.getContext(), NewImports));
+      Changed = false;
+    }
+
+    // Deal with duplicate enum type
+    SmallVector<Metadata *, 4> NewEnumTypes;
+    bool ChangedEnumTypes = true;
+    for (auto *ET : DIC->getEnumTypes()) {
+      if (auto *SP = dyn_cast_or_null<DISubprogram>(ET->getScope())) {
+        Function *F = MPart.getFunction(SP->getLinkageName());
+        if (!F || (F->isDeclaration() && F->use_empty())) {
+          ChangedEnumTypes = true;
+          continue;
+        }
+        NewEnumTypes.emplace_back(ET);
+      }
+    }
+    if (ChangedEnumTypes) {
+      Changed = true;
+      DIC->replaceEnumTypes(MDTuple::get(MPart.getContext(), NewEnumTypes));
+    }
+
+    NewCUs.insert(DIC);
+  }
+  if (Changed) {
+    NamedMDNode *NMD = MPart.getOrInsertNamedMetadata("llvm.dbg.cu");
+    NMD->clearOperands();
+    for (DICompileUnit *CU : NewCUs)
+      NMD->addOperand(CU);
+  }
+}
+
 using Clock = std::chrono::high_resolution_clock;
 using Ms = std::chrono::milliseconds;
 
@@ -632,6 +689,9 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
           return I == 0;
         });
       }
+
+      DealWithDuplicateDebugInfo(*MPart);
+      DealWithDeclareDebugInfo(*MPart);
 
       // collect symbols to rename
       auto checkPromoted = [&](const GlobalValue &GV) {
