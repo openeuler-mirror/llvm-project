@@ -1027,6 +1027,17 @@ unsigned DWARFLinker::DIECloner::cloneDieReferenceAttribute(
   const bool IsTypeUnit =
       U.getUnitType() == dwarf::DW_UT_type ||
       U.getUnitType() == dwarf::DW_UT_split_type;
+  
+  if (NewRefDie && IsTypeUnit && RefUnit != &Unit) {
+    if (auto *RefTU = dyn_cast<DWARFTypeUnit>(&RefUnit->getOrigUnit())) {
+      Die.addValue(DIEAlloc, dwarf::Attribute(AttrSpec.Attr),
+                   dwarf::DW_FORM_ref_sig8,
+                   DIEInteger(RefTU->getTypeHash()));
+      return 8;
+    }
+    // Target is a compile unit which is not expressible without ref_addr.
+    return 0;
+  }
 
   if (AttrSpec.Form == dwarf::DW_FORM_ref_addr ||
       (!IsTypeUnit && Unit.hasODR() && isODRAttribute(AttrSpec.Attr))) {
