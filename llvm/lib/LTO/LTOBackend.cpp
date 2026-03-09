@@ -689,7 +689,6 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
   std::atomic<long> TotalOptTime{0};
   std::atomic<long> TotalCodeGenTime{0};
   static std::mutex PrintMutex;
-  static std::mutex ChangeLinkageMutex;
   auto Mname = Mod.getModuleIdentifier();
 
   SplitModuleCG SplitModuleCG(Mod, C, ParallelCodeGenParallelismLevel,
@@ -763,28 +762,6 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
         TotalOptTime +=
             std::chrono::duration_cast<Ms>(EndOpt - StartOpt).count();
       }
-    }
-
-    {
-      // change linkage from internal to external
-      auto &ChangeLinkageFuncs = SplitModuleCG.getChangeLinkageFunction();
-      std::lock_guard<std::mutex> Lock(ChangeLinkageMutex);
-      for (auto &[FnName, ChangeLinkage] : ChangeLinkageFuncs) {
-        if (auto Fn = MPart->getFunction(FnName)) {
-          if (Fn->isDeclaration() || !Fn->hasLocalLinkage())
-            continue;
-          if (!ChangeLinkage) {
-            Fn->setLinkage(GlobalValue::ExternalLinkage);
-            ChangeLinkageFuncs[FnName] = true;
-          } else {
-            Fn->setLinkage(GlobalValue::AvailableExternallyLinkage);
-            Fn->setSubprogram(nullptr);
-            Fn->setComdat(nullptr);
-          }
-          Fn->setVisibility(GlobalValue::HiddenVisibility);
-        }
-      }
-      runGlobalDCEPass(*MPart);
     }
 
     auto PromotedRenames = SplitModuleCG.getPromotedRenames();
