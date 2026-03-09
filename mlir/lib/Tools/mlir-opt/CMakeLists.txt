@@ -5,6 +5,7 @@ add_mlir_library(MLIROptLib
   ${MLIR_MAIN_INCLUDE_DIR}/mlir/Tools/mlir-opt
 
   LINK_LIBS PUBLIC
+  MLIRArmSVEDialect
   MLIRBytecodeWriter
   MLIRDebug
   MLIRObservers

@@ -4,8 +4,10 @@ add_mlir_dialect_library(MLIRLLVMIRTransforms
   DIExpressionRewriter.cpp
   DIScopeForLLVMFuncOp.cpp
   InlinerInterfaceImpl.cpp
+  LegalizeFloat8Types.cpp
   LegalizeForExport.cpp
   OptimizeForNVVM.cpp
+  PromoteI1ToI8.cpp
   RequestCWrappers.cpp
 
   DEPENDS

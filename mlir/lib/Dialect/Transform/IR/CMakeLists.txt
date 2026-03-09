@@ -6,17 +6,32 @@ add_mlir_dialect_library(MLIRTransformDialect
   Utils.cpp
 
   LINK_LIBS PUBLIC
+  MLIRAffineToStandard
+  MLIRArithToArmSME
+  MLIRArmSMEToLLVM
+  MLIRArmSMEToSCF
+  MLIRAsyncToLLVM
+  MLIRAsyncTransforms
   MLIRCastInterfaces
+  MLIRComplexToLLVM
   MLIRFunctionInterfaces
   MLIRIR
+  MLIRIndexToLLVM
   MLIRLLVMCommonConversion
   MLIRLLVMDialect
+  MLIRLinalgTransforms
   MLIRLoopLikeInterface
+  MLIRMathToLLVM
+  MLIROpenMPToLLVM
   MLIRParser
   MLIRPass
+  MLIRReconcileUnrealizedCasts
   MLIRRewrite
   MLIRSideEffectInterfaces
   MLIRTransforms
   MLIRTransformDialectInterfaces
   MLIRTransformDialectUtils
+  MLIRVectorToArmSME
+  MLIRVectorToLLVMPass
+  MLIRVectorToSCF
   )

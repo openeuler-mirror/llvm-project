@@ -50,6 +50,7 @@ namespace linalg {
 /// threads.
 void hoistRedundantVectorTransfers(Operation *root,
                                    bool verifyNonZeroTrip = false);
+void hoistRedundantVectorCasts(Operation *root);
 
 /// Hoist vector.extract/vector.broadcast pairs out of immediately enclosing
 /// scf::ForOp iteratively, if the following conditions are met:

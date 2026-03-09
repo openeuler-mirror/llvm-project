@@ -24,9 +24,40 @@ def LLVMAddComdats : Pass<"llvm-add-comdats", "::mlir::ModuleOp"> {
   }];
 }
 
+def LLVMLegalizeFloat8Types : Pass<"llvm-legalize-float8-types"> {
+  let summary = "Replace Float8 types with i8 in LLVM dialect ops";
+  let description = [{
+    LLVM IR has no native Float8 types. This pass replaces all Float8 types
+    (f8E4M3FN, f8E5M2, etc.) in safe memory operations with i8, since they
+    share the same 8-bit memory layout. Identity bitcasts (e.g.
+    vector<1xf8E4M3FN> -> vector<1xi8>) are folded away.
+    This pass only works with memory operations that don't affect arithmetic
+    semantics to ensure functional correctness.
+  }];
+  let constructor = "::mlir::LLVM::createLegalizeFloat8TypesPass()";
+  let dependentDialects = ["LLVM::LLVMDialect"];
+}
+
 def LLVMLegalizeForExport : Pass<"llvm-legalize-for-export"> {
   let summary = "Legalize LLVM dialect to be convertible to LLVM IR";
   let constructor = "::mlir::LLVM::createLegalizeForExportPass()";
+  let dependentDialects = ["LLVM::LLVMDialect"];
+}
+
+def LLVMPromoteI1ToI8 : Pass<"llvm-promote-i1-to-i8"> {
+  let summary = "Promote vector<N x i1> memory ops to vector<N x i8>";
+  let description = [{
+    When LLVM stores a vector<N x i1>, it packs the bits so that N elements
+    occupy only N/8 bytes. However, when individual i1 elements are later
+    loaded via scalar GEP + load i1, each element is addressed at byte
+    granularity (1 byte per element). This mismatch causes wrong results
+    because the scalar loads read garbage for most elements.
+
+    This pass promotes vector<N x i1> stores to vector<N x i8> (with zext
+    before store) and vector<N x i1> loads to vector<N x i8> (with trunc
+    after load), so that each boolean element occupies a full byte in memory.
+  }];
+  let constructor = "::mlir::LLVM::createPromoteI1ToI8Pass()";
   let dependentDialects = ["LLVM::LLVMDialect"];
 }
 

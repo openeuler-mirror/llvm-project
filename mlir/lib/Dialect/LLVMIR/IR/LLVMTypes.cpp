@@ -349,8 +349,10 @@ LLVMPointerType::getIndexBitwidth(const DataLayout &dataLayout,
   return dataLayout.getTypeIndexBitwidth(get(getContext()));
 }
 
-bool LLVMPointerType::areCompatible(DataLayoutEntryListRef oldLayout,
-                                    DataLayoutEntryListRef newLayout) const {
+bool LLVMPointerType::areCompatible(
+    DataLayoutEntryListRef oldLayout, DataLayoutEntryListRef newLayout,
+    DataLayoutSpecInterface newSpec,
+    const DataLayoutIdentifiedEntryMap &map) const {
   for (DataLayoutEntryInterface newEntry : newLayout) {
     if (!newEntry.isTypeEntry())
       continue;
@@ -597,8 +599,10 @@ static uint64_t extractStructSpecValue(Attribute attr, StructDLEntryPos pos) {
       .getValues<uint64_t>()[static_cast<size_t>(pos)];
 }
 
-bool LLVMStructType::areCompatible(DataLayoutEntryListRef oldLayout,
-                                   DataLayoutEntryListRef newLayout) const {
+bool LLVMStructType::areCompatible(
+    DataLayoutEntryListRef oldLayout, DataLayoutEntryListRef newLayout,
+    DataLayoutSpecInterface newSpec,
+    const DataLayoutIdentifiedEntryMap &map) const {
   for (DataLayoutEntryInterface newEntry : newLayout) {
     if (!newEntry.isTypeEntry())
       continue;
@@ -765,6 +769,12 @@ bool LLVM::LLVMTargetExtType::supportsMemOps() const {
 bool mlir::LLVM::isCompatibleOuterType(Type type) {
   // clang-format off
   if (llvm::isa<
+      Float8E5M2Type,
+      Float8E4M3Type,
+      Float8E4M3FNType,
+      Float8E5M2FNUZType,
+      Float8E4M3FNUZType,
+      Float8E4M3B11FNUZType,
       BFloat16Type,
       Float16Type,
       Float32Type,
@@ -835,6 +845,12 @@ static bool isCompatibleImpl(Type type, DenseSet<Type> &compatibleTypes) {
             return isCompatible(containerType.getElementType());
           })
           .Case<
+            Float8E5M2Type,
+            Float8E4M3Type,
+            Float8E4M3FNType,
+            Float8E5M2FNUZType,
+            Float8E4M3FNUZType,
+            Float8E4M3B11FNUZType,
             BFloat16Type,
             Float16Type,
             Float32Type,
@@ -885,8 +901,11 @@ bool mlir::LLVM::isCompatibleVectorType(Type type) {
     Type elementType = vecType.getElementType();
     if (auto intType = llvm::dyn_cast<IntegerType>(elementType))
       return intType.isSignless();
-    return llvm::isa<BFloat16Type, Float16Type, Float32Type, Float64Type,
-                     Float80Type, Float128Type>(elementType);
+    return llvm::isa<Float8E5M2Type, Float8E4M3Type, Float8E4M3FNType,
+                     Float8E5M2FNUZType, Float8E4M3FNUZType,
+                     Float8E4M3B11FNUZType, BFloat16Type, Float16Type,
+                     Float32Type, Float64Type, Float80Type,
+                     Float128Type>(elementType);
   }
   return false;
 }
@@ -985,6 +1004,10 @@ llvm::TypeSize mlir::LLVM::getPrimitiveTypeSizeInBits(Type type) {
          "expected a type compatible with the LLVM dialect");
 
   return llvm::TypeSwitch<Type, llvm::TypeSize>(type)
+      .Case<Float8E5M2Type, Float8E4M3Type, Float8E4M3FNType,
+            Float8E5M2FNUZType, Float8E4M3FNUZType,
+            Float8E4M3B11FNUZType>(
+          [](Type) { return llvm::TypeSize::getFixed(8); })
       .Case<BFloat16Type, Float16Type>(
           [](Type) { return llvm::TypeSize::getFixed(16); })
       .Case<Float32Type>([](Type) { return llvm::TypeSize::getFixed(32); })

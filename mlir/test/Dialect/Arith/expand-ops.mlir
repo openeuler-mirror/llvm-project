@@ -1,4 +1,4 @@
-// RUN: mlir-opt %s -arith-expand="include-bf16=true" -split-input-file | FileCheck %s
+// RUN: mlir-opt %s -arith-expand="include-bf16=true include-f8e5m2=true include-f8e4m3fn=true" -split-input-file | FileCheck %s
 
 // Test ceil divide with signed integer
 // CHECK-LABEL:       func @ceildivi
@@ -310,3 +310,43 @@ func.func @minui(%a: i32, %b: i32) -> i32 {
 // CHECK-NEXT: %[[CMP:.*]] = arith.cmpi ult, %[[LHS]], %[[RHS]] : i32
 // CHECK-NEXT: %[[RESULT:.*]] = arith.select %[[CMP]], %[[LHS]], %[[RHS]] : i32
 // CHECK-NEXT: return %[[RESULT]] : i32
+
+// -----
+
+func.func @extf_vector_f8E5M2_to_f32(%arg0 : vector<4xf8E5M2>) -> vector<4xf32> {
+    %0 = arith.extf %arg0 : vector<4xf8E5M2> to vector<4xf32>
+    return %0 : vector<4xf32>
+}
+
+// CHECK-LABEL: @extf_vector_f8E5M2_to_f32
+// CHECK-NOT: arith.extf
+
+// -----
+
+func.func @truncf_vector_f32_to_f8E5M2(%arg0 : vector<4xf32>) -> vector<4xf8E5M2> {
+    %0 = arith.truncf %arg0 : vector<4xf32> to vector<4xf8E5M2>
+    return %0 : vector<4xf8E5M2>
+}
+
+// CHECK-LABEL: @truncf_vector_f32_to_f8E5M2
+// CHECK-NOT: arith.truncf
+
+// -----
+
+func.func @extf_vector_f8E4M3FN_to_f32(%arg0 : vector<4xf8E4M3FN>) -> vector<4xf32> {
+    %0 = arith.extf %arg0 : vector<4xf8E4M3FN> to vector<4xf32>
+    return %0 : vector<4xf32>
+}
+
+// CHECK-LABEL: @extf_vector_f8E4M3FN_to_f32
+// CHECK-NOT: arith.extf
+
+// -----
+
+func.func @truncf_vector_f32_to_f8E4M3FN(%arg0 : vector<4xf32>) -> vector<4xf8E4M3FN> {
+    %0 = arith.truncf %arg0 : vector<4xf32> to vector<4xf8E4M3FN>
+    return %0 : vector<4xf8E4M3FN>
+}
+
+// CHECK-LABEL: @truncf_vector_f32_to_f8E4M3FN
+// CHECK-NOT: arith.truncf

@@ -1380,4 +1380,82 @@ def YieldOp : TransformDialectOp<"yield",
   ];
 }
 
+def LowerToArmSMEOp : TransformDialectOp<"lower_to_arm_sme",
+    [FunctionalStyleTransformOpTrait,
+     DeclareOpInterfaceMethods<MemoryEffectsOpInterface>,
+     TransformOpInterface, TransformEachOpTrait]> {
+  let description = [{Apply a list of passes to lower supported ops to
+  legalized arm_sme dialect ops and types.}];
+
+  let arguments =
+    (ins TransformHandleTypeInterface:$target,
+     DefaultValuedAttr<BoolAttr, "false">:$fuse_outer_products
+    );
+
+  let assemblyFormat = "$target attr-dict `:` type($target)";
+
+  let extraClassDeclaration = [{
+    ::mlir::DiagnosedSilenceableFailure applyToOne(
+        ::mlir::transform::TransformRewriter &rewriter,
+        ::mlir::ModuleOp target,
+        ::mlir::transform::ApplyToEachResultList &results,
+        ::mlir::transform::TransformState &state);
+  }];
+}
+
+def LowerToLLVMNewOp : TransformDialectOp<"lower_to_llvm_new",
+    [FunctionalStyleTransformOpTrait,
+     DeclareOpInterfaceMethods<MemoryEffectsOpInterface>,
+     TransformOpInterface, TransformEachOpTrait]> {
+  let description = [{Indicates that the entire module should be converted
+  to the LLVM dialect. This is expected to be the last transformation in
+  a sequence.}];
+
+  let arguments =
+    (ins TransformHandleTypeInterface:$target,
+     DefaultValuedAttr<BoolAttr, "false">:$reassociate_fp_reductions,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_index_optimizations,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_arm_neon,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_arm_sve,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_amx,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_x86vector,
+     DefaultValuedAttr<BoolAttr, "false">:$enable_async,
+     DefaultValuedAttr<I64Attr, "1">:$vscale_range);
+
+  let assemblyFormat = "$target attr-dict `:` type($target)";
+
+  let extraClassDeclaration = [{
+    ::mlir::DiagnosedSilenceableFailure applyToOne(
+        ::mlir::transform::TransformRewriter &rewriter,
+        ::mlir::ModuleOp target,
+        ::mlir::transform::ApplyToEachResultList &results,
+        ::mlir::transform::TransformState &state);
+  }];
+}
+
+def LegalizeOp : TransformDialectOp<"legalize",
+    [DeclareOpInterfaceMethods<TransformOpInterface>,
+     DeclareOpInterfaceMethods<MemoryEffectsOpInterface>]> {
+  let description = [{Legalizes vector sizes to multiples of accepted vector
+  length thanks to unrolling.}];
+
+  let arguments = (ins DefaultValuedAttr<I64Attr, "128">:$hardware_vector_length,
+                       DefaultValuedAttr<I64Attr, "1">:$vscale);
+
+  let assemblyFormat = "attr-dict";
+
+  let extraClassDeclaration = [{
+    static std::optional<SmallVector<int64_t>> getShape(mlir::Operation *op,
+                                                           unsigned hardwareVectorLength,
+                                                           unsigned vscale);
+    static int64_t getMaxUnrollingFactor(unsigned vectorSize,
+                                         unsigned dataBitSize,
+                                         unsigned hardwareVectorLength);
+    static SmallVector<int64_t> getAllDimsMaxUnrollingFactor(ArrayRef<int64_t> dstShape,
+                                                unsigned elementSize,
+                                                unsigned hardwareVectorLength,
+                                                unsigned vscale);
+  }];
+}
+
 #endif // MLIR_DIALECT_TRANSFORM_IR_TRANSFORMOPS
