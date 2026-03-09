@@ -326,6 +326,7 @@ static void thinLTOCreateEmptyIndexFiles() {
 std::vector<InputFile *> BitcodeCompiler::compile() {
   unsigned maxTasks = ltoObj->getMaxTasks();
   buf.resize(maxTasks);
+  bufPart.resize(maxTasks);
   files.resize(maxTasks);
 
   // The --thinlto-cache-dir option specifies the path to a directory in which
@@ -345,7 +346,7 @@ std::vector<InputFile *> BitcodeCompiler::compile() {
           return std::make_unique<CachedFileStream>(
               std::make_unique<raw_svector_ostream>(buf[task]));
         },
-        cache));
+        cache, bufPart));
 
   // Emit empty index files for non-indexed files but not in single-module mode.
   if (config->thinLTOModulesToCompile.empty()) {
@@ -376,29 +377,47 @@ std::vector<InputFile *> BitcodeCompiler::compile() {
     pruneCache(config->thinLTOCacheDir, config->thinLTOCachePolicy, files);
 
   if (!config->ltoObjPath.empty()) {
-    saveBuffer(buf[0], config->ltoObjPath);
-    for (unsigned i = 1; i != maxTasks; ++i)
-      saveBuffer(buf[i], config->ltoObjPath + Twine(i));
+    for (unsigned i = 0; i != maxTasks; ++i) {
+      Twine baseWithTask = (i == 0) ? Twine(config->ltoObjPath)
+                                    : (Twine(config->ltoObjPath) + Twine(i));
+      if (bufPart[i].empty()) {
+        saveBuffer(buf[i], baseWithTask);
+      } else {
+        for (unsigned j = 0; j != bufPart[i].size(); ++j)
+          saveBuffer(bufPart[i][j],
+                     config->ltoObjPath + Twine(i) +
+                         (j == 0 ? Twine("") : Twine('.') + Twine(j)));
+      }
+    }
   }
 
-  if (config->saveTempsArgs.contains("prelink")) {
-    if (!buf[0].empty())
-      saveBuffer(buf[0], config->outputFile + ".lto.o");
-    for (unsigned i = 1; i != maxTasks; ++i)
-      saveBuffer(buf[i], config->outputFile + Twine(i) + ".lto.o");
-  }
-
-  if (config->ltoEmitAsm) {
-    saveBuffer(buf[0], config->outputFile);
-    for (unsigned i = 1; i != maxTasks; ++i)
-      saveBuffer(buf[i], config->outputFile + Twine(i));
-    return {};
-  }
-
+  bool savePrelink = config->saveTempsArgs.contains("prelink");
   std::vector<InputFile *> ret;
-  for (unsigned i = 0; i != maxTasks; ++i)
-    if (!buf[i].empty())
-      ret.push_back(createObjFile(MemoryBufferRef(buf[i], "lto.tmp")));
+  for (unsigned i = 0; i != maxTasks; ++i) {
+    if (bufPart[i].size() == 0)
+      bufPart[i].emplace_back(std::move(buf[i]));
+    for (unsigned j = 0; j != bufPart[i].size(); ++j) {
+      StringRef objBuf = bufPart[i][j];
+      if (objBuf.empty())
+        continue;
+
+      std::string objNumStr;
+      if (i == 0 && j == 0) {
+        objNumStr = "";
+      } else if (j == 0) {
+        objNumStr = Twine(i).str();
+      } else {
+        objNumStr = (Twine(i) + "." + Twine(j)).str();
+      }
+
+      if (savePrelink || config->ltoEmitAsm)
+        saveBuffer(objBuf, config->outputFile + Twine(objNumStr) +
+                               Twine(config->ltoEmitAsm ? "" : ".lto.o"));
+
+      if (!config->ltoEmitAsm)
+        ret.push_back(createObjFile(MemoryBufferRef(bufPart[i][j], "lto.tmp")));
+    }
+  }
 
   for (std::unique_ptr<MemoryBuffer> &file : files)
     if (file)

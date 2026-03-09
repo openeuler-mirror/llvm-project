@@ -74,6 +74,7 @@ add_llvm_component_library(LLVMTransformUtils
   SimplifyLibCalls.cpp
   SizeOpts.cpp
   SplitModule.cpp
+  SplitModuleCG.cpp
   StripNonLineTableDebugInfo.cpp
   SymbolRewriter.cpp
   UnifyFunctionExitNodes.cpp
@@ -94,4 +95,7 @@ add_llvm_component_library(LLVMTransformUtils
   Core
   Support
   TargetParser
+
+  LINK_LIBS
+  numa
   )

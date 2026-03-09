@@ -47,6 +47,7 @@ public:
 private:
   std::unique_ptr<llvm::lto::LTO> ltoObj;
   std::vector<SmallString<0>> buf;
+  std::vector<std::vector<SmallString<0>>> bufPart;
   std::vector<std::unique_ptr<MemoryBuffer>> files;
   llvm::DenseSet<StringRef> usedStartStop;
   std::unique_ptr<llvm::raw_fd_ostream> indexFile;
