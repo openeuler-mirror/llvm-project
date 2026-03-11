@@ -116,6 +116,8 @@ static bool runIPSCCP(
   SCCPSolver Solver(DL, GetTLI, M.getContext());
   FunctionSpecializer Specializer(Solver, M, FAM, GetTLI, GetTTI, GetAC);
 
+  SmallSetVector<Function *, 16> OptimizedCalleesSet;
+
   // Loop over all functions, marking arguments to those with their addresses
   // taken or that are external as overdefined.
   for (Function &F : M) {
@@ -165,6 +167,8 @@ static bool runIPSCCP(
   // constants if we have found them to be of constant values.
   bool MadeChanges = false;
   for (Function &F : M) {
+    bool FuncWasOptimized = false;
+
     if (F.isDeclaration())
       continue;
 
@@ -203,7 +207,7 @@ static bool runIPSCCP(
           CB->setAttributes(UpdateAttrs(CB->getAttributes()));
         }
       }
-      MadeChanges |= ReplacedPointerArg;
+      FuncWasOptimized |= ReplacedPointerArg;
     }
 
     SmallPtrSet<Value *, 32> InsertedValues;
@@ -212,14 +216,14 @@ static bool runIPSCCP(
         LLVM_DEBUG(dbgs() << "  BasicBlock Dead:" << BB);
         ++NumDeadBlocks;
 
-        MadeChanges = true;
+        FuncWasOptimized = true;
 
         if (&BB != &F.front())
           BlocksToErase.push_back(&BB);
         continue;
       }
 
-      MadeChanges |= Solver.simplifyInstsInBlock(
+      FuncWasOptimized |= Solver.simplifyInstsInBlock(
           BB, InsertedValues, NumInstRemoved, NumInstReplaced);
     }
 
@@ -241,7 +245,7 @@ static bool runIPSCCP(
 
     BasicBlock *NewUnreachableBB = nullptr;
     for (BasicBlock &BB : F)
-      MadeChanges |= Solver.removeNonFeasibleEdges(&BB, DTU, NewUnreachableBB);
+      FuncWasOptimized |= Solver.removeNonFeasibleEdges(&BB, DTU, NewUnreachableBB);
 
     for (BasicBlock *DeadBB : BlocksToErase)
       if (!DeadBB->hasAddressTaken())
@@ -259,6 +263,11 @@ static bool runIPSCCP(
           }
         }
       }
+    }
+
+    MadeChanges |= FuncWasOptimized;
+    if (FuncWasOptimized) {
+      OptimizedCalleesSet.insert(&F);
     }
   }
 
@@ -339,6 +348,7 @@ static bool runIPSCCP(
   // Remove the returned attribute for zapped functions and the
   // corresponding call sites.
   for (Function *F : FuncZappedReturn) {
+    OptimizedCalleesSet.insert(F);
     for (Argument &A : F->args())
       F->removeParamAttr(A.getArgNo(), Attribute::Returned);
     for (Use &U : F->uses()) {
@@ -367,11 +377,19 @@ static bool runIPSCCP(
                       << "' is constant!\n");
     while (!GV->use_empty()) {
       StoreInst *SI = cast<StoreInst>(GV->user_back());
+      Function *F = SI->getParent()->getParent();
+      OptimizedCalleesSet.insert(F);
       SI->eraseFromParent();
       MadeChanges = true;
     }
     M.getGlobalList().erase(GV);
     ++NumGlobalConst;
+  }
+
+  LLVMContext &Ctx = M.getContext();
+  for (Function *F : OptimizedCalleesSet) {
+    MDNode *IPSCCPMD = MDNode::get(Ctx, MDString::get(Ctx, "IPSCCP_Optimized"));
+    F->setMetadata("llvm.ipsccp", IPSCCPMD);
   }
 
   return MadeChanges;
