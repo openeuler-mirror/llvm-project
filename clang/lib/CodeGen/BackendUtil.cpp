@@ -1387,10 +1387,13 @@ static void runThinLTOBackend(
     Conf.CGFileType = getCodeGenFileType(Action);
     break;
   }
+  ThreadPool BackendThreadPool(heavyweight_hardware_concurrency());
+  std::vector<std::vector<SmallString<0>>> bufPart;
   if (Error E =
           thinBackend(Conf, -1, AddStream, *M, *CombinedIndex, ImportList,
                       ModuleToDefinedGVSummaries[M->getModuleIdentifier()],
-                      /* ModuleMap */ nullptr, CGOpts.CmdArgs)) {
+                      /* ModuleMap */ nullptr, bufPart, CGOpts.CmdArgs,
+                      &BackendThreadPool)) {
     handleAllErrors(std::move(E), [&](ErrorInfoBase &EIB) {
       errs() << "Error running ThinLTO backend: " << EIB.message() << '\n';
     });
