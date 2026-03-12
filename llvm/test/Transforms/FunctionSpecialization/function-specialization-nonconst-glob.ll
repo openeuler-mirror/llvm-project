@@ -60,7 +60,7 @@ entry:
   ret i32 %add
 }
 
-; CHECK-LABEL: define internal i32 @foo.1(i32 %x, ptr %b) {
+; CHECK-LABEL: define internal i32 @foo.1(i32 %x, ptr %b) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    %0 = load i32, ptr @A, align 4
 ; CHECK-NEXT:    %add = add nsw i32 %x, %0

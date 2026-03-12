@@ -4,7 +4,7 @@
 
 
 define void @main() {
-; CHECK-LABEL: void @main() {
+; CHECK-LABEL: void @main() !llvm.ipsccp !0 {
 ; CHECK-NEXT:    %r = call i32 @f(%struct.S { i32 100 })
 ; CHECK-NEXT:    call void @do_report(i32 123)
   %r = call i32 @f(%struct.S { i32 100 })

@@ -2,7 +2,7 @@
 ; RUN: opt < %s -S -passes=ipsccp | FileCheck %s
 
 define void @main() {
-; CHECK-LABEL: define {{[^@]+}}@main() {
+; CHECK-LABEL: define {{[^@]+}}@main() !llvm.ipsccp !0 {
 ; CHECK-NEXT:    [[CALL:%.*]] = call i1 @patatino(i1 undef)
 ; CHECK-NEXT:    ret void
 ;
@@ -12,7 +12,7 @@ define void @main() {
 
 define internal i1 @patatino(i1 %a) {
 ; CHECK-LABEL: define {{[^@]+}}@patatino
-; CHECK-SAME: (i1 [[A:%.*]]) {
+; CHECK-SAME: (i1 [[A:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:    unreachable
 ;
   br i1 %a, label %ontrue, label %onfalse

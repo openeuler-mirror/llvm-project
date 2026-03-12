@@ -39,13 +39,13 @@ merge:
 
 ; CHECK-NOT: define internal i64 @compute(
 ;
-; CHECK-LABEL: define internal i64 @compute.1(i64 %x, ptr %binop) {
+; CHECK-LABEL: define internal i64 @compute.1(i64 %x, ptr %binop) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TMP0:%.+]] = call i64 @plus(i64 %x)
 ; CHECK-NEXT:    ret i64 [[TMP0]]
 ; CHECK-NEXT:  }
 ;
-; CHECK-LABEL: define internal i64 @compute.2(i64 %x, ptr %binop) {
+; CHECK-LABEL: define internal i64 @compute.2(i64 %x, ptr %binop) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TMP0:%.+]] = call i64 @minus(i64 %x)
 ; CHECK-NEXT:    ret i64 [[TMP0]]

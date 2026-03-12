@@ -78,7 +78,7 @@ define i32 @test_duplicate_successors_phi_3(i1 %c1, ptr %p, i32 %y) {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    br i1 [[C1:%.*]], label [[SWITCH:%.*]], label [[SWITCH_1:%.*]]
 ; CHECK:       switch:
-; CHECK-NEXT:    [[X:%.*]] = load i32, ptr [[P:%.*]], align 4, !range !0
+; CHECK-NEXT:    [[X:%.*]] = load i32, ptr [[P:%.*]], align 4, !range [[RNG1:![0-9]+]]
 ; CHECK-NEXT:    switch i32 [[X]], label [[SWITCH_DEFAULT:%.*]] [
 ; CHECK-NEXT:    i32 0, label [[SWITCH_DEFAULT]]
 ; CHECK-NEXT:    i32 1, label [[SWITCH_0:%.*]]
@@ -118,7 +118,7 @@ switch.1:
 ; TODO: Determine that the default destination is dead.
 define i32 @test_local_range(ptr %p) {
 ; CHECK-LABEL: @test_local_range(
-; CHECK-NEXT:    [[X:%.*]] = load i32, ptr [[P:%.*]], align 4, !range !0
+; CHECK-NEXT:    [[X:%.*]] = load i32, ptr [[P:%.*]], align 4, !range [[RNG1]]
 ; CHECK-NEXT:    switch i32 [[X]], label [[SWITCH_DEFAULT:%.*]] [
 ; CHECK-NEXT:    i32 0, label [[SWITCH_0:%.*]]
 ; CHECK-NEXT:    i32 1, label [[SWITCH_1:%.*]]
@@ -160,7 +160,7 @@ switch.3:
 ; TODO: Determine that case i3 is dead, even though the edge is shared?
 define i32 @test_duplicate_successors(ptr %p) {
 ; CHECK-LABEL: @test_duplicate_successors(
-; CHECK-NEXT:    [[X:%.*]] = load i32, ptr [[P:%.*]], align 4, !range !0
+; CHECK-NEXT:    [[X:%.*]] = load i32, ptr [[P:%.*]], align 4, !range [[RNG1]]
 ; CHECK-NEXT:    switch i32 [[X]], label [[SWITCH_DEFAULT:%.*]] [
 ; CHECK-NEXT:    i32 0, label [[SWITCH_0:%.*]]
 ; CHECK-NEXT:    i32 1, label [[SWITCH_0]]
@@ -205,7 +205,7 @@ define internal i32 @test_ip_range(i32 %x) {
 ; CHECK-NEXT:    i32 3, label [[SWITCH_3:%.*]]
 ; CHECK-NEXT:    i32 1, label [[SWITCH_1:%.*]]
 ; CHECK-NEXT:    i32 2, label [[SWITCH_2:%.*]]
-; CHECK-NEXT:    ], !prof !1
+; CHECK-NEXT:    ], !prof [[PROF2:![0-9]+]]
 ; CHECK:       switch.default:
 ; CHECK-NEXT:    ret i32 -1
 ; CHECK:       switch.1:
@@ -251,4 +251,4 @@ define void @call_test_ip_range() {
 
 declare void @llvm.assume(i1)
 
-; CHECK: !1 = !{!"branch_weights", i32 1, i32 5, i32 3, i32 4}
+; CHECK: [[PROF2]] = !{!"branch_weights", i32 1, i32 5, i32 3, i32 4}

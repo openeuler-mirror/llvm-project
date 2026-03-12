@@ -42,7 +42,7 @@ entry:
 ; CONST1:     define internal i32 @foo.1(i32 %x, ptr %b, ptr %c)
 ; CONST1-NOT: define internal i32 @foo.2(i32 %x, ptr %b, ptr %c)
 
-; CHECK:        define internal i32 @foo.1(i32 %x, ptr %b, ptr %c) {
+; CHECK:        define internal i32 @foo.1(i32 %x, ptr %b, ptr %c) !llvm.ipsccp !0 {
 ; CHECK-NEXT:   entry:
 ; CHECK-NEXT:     %0 = load i32, ptr @A, align 4
 ; CHECK-NEXT:     %add = add nsw i32 %x, %0
@@ -51,7 +51,7 @@ entry:
 ; CHECK-NEXT:     ret i32 %add1
 ; CHECK-NEXT:   }
 
-; CHECK: define internal i32 @foo.2(i32 %x, ptr %b, ptr %c) {
+; CHECK: define internal i32 @foo.2(i32 %x, ptr %b, ptr %c) !llvm.ipsccp !0 {
 ; CHECK-NEXT:   entry:
 ; CHECK-NEXT:     %0 = load i32, ptr @B, align 4
 ; CHECK-NEXT:     %add = add nsw i32 %x, %0
