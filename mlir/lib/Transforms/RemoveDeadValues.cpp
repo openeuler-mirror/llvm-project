@@ -367,6 +367,31 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
                                   RunLivenessAnalysis &la,
                                   DenseSet<Value> &nonLiveSet,
                                   RDVFinalCleanupList &cl) {
+  // Collect regions that actively participate in the control flow, as reported
+  // by getSuccessorRegions(). Empty regions (e.g., scf::IfOp with no else
+  // block) are naturally excluded because the interface reports a
+  // branch-to-parent instead of into the empty region.
+  SmallVector<Region *> activeRegions;
+  {
+    SmallVector<RegionSuccessor> successors;
+    DenseSet<Region *> seen;
+    regionBranchOp.getSuccessorRegions(RegionBranchPoint::parent(), successors);
+    for (const RegionSuccessor &succ : successors) {
+      Region *r = succ.getSuccessor();
+      if (r && seen.insert(r).second)
+        activeRegions.push_back(r);
+    }
+    for (unsigned i = 0; i < activeRegions.size(); ++i) {
+      successors.clear();
+      regionBranchOp.getSuccessorRegions(activeRegions[i], successors);
+      for (const RegionSuccessor &succ : successors) {
+        Region *r = succ.getSuccessor();
+        if (r && seen.insert(r).second)
+          activeRegions.push_back(r);
+      }
+    }
+  }
+
   // Mark live results of `regionBranchOp` in `liveResults`.
   auto markLiveResults = [&](BitVector &liveResults) {
     liveResults = markLives(regionBranchOp->getResults(), nonLiveSet, la);
@@ -374,10 +399,10 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
 
   // Mark live arguments in the regions of `regionBranchOp` in `liveArgs`.
   auto markLiveArgs = [&](DenseMap<Region *, BitVector> &liveArgs) {
-    for (Region &region : regionBranchOp->getRegions()) {
-      SmallVector<Value> arguments(region.front().getArguments());
+    for (Region *region : activeRegions) {
+      SmallVector<Value> arguments(region->front().getArguments());
       BitVector regionLiveArgs = markLives(arguments, nonLiveSet, la);
-      liveArgs[&region] = regionLiveArgs;
+      liveArgs[region] = regionLiveArgs;
     }
   };
 
@@ -419,11 +444,11 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
   // `regionBranchOp` in `nonForwardedRets`.
   auto markNonForwardedReturnValues =
       [&](DenseMap<Operation *, BitVector> &nonForwardedRets) {
-        for (Region &region : regionBranchOp->getRegions()) {
-          Operation *terminator = region.front().getTerminator();
+        for (Region *region : activeRegions) {
+          Operation *terminator = region->front().getTerminator();
           nonForwardedRets[terminator] =
               BitVector(terminator->getNumOperands(), true);
-          for (const RegionSuccessor &successor : getSuccessors(&region)) {
+          for (const RegionSuccessor &successor : getSuccessors(region)) {
             for (OpOperand *opOperand :
                  getForwardedOpOperands(successor, terminator))
               nonForwardedRets[terminator].reset(opOperand->getOperandNumber());
@@ -498,15 +523,15 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
 
         // Recompute `resultsToKeep` and `argsToKeep` based on
         // `terminatorOperandsToKeep`.
-        for (Region &region : regionBranchOp->getRegions()) {
-          Operation *terminator = region.front().getTerminator();
-          for (const RegionSuccessor &successor : getSuccessors(&region)) {
+        for (Region *region : activeRegions) {
+          Operation *terminator = region->front().getTerminator();
+          for (const RegionSuccessor &successor : getSuccessors(region)) {
             Region *successorRegion = successor.getSuccessor();
             for (auto [opOperand, input] :
                  llvm::zip(getForwardedOpOperands(successor, terminator),
                            successor.getSuccessorInputs())) {
               bool recomputeBasedOn =
-                  terminatorOperandsToKeep[region.back().getTerminator()]
+                  terminatorOperandsToKeep[region->back().getTerminator()]
                                           [opOperand->getOperandNumber()];
               bool toRecompute =
                   successorRegion
@@ -546,10 +571,10 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
                                                    resultsToKeep, argsToKeep);
 
           // Update the terminator operands that need to be kept.
-          for (Region &region : regionBranchOp->getRegions()) {
+          for (Region *region : activeRegions) {
             updateOperandsOrTerminatorOperandsToKeep(
-                terminatorOperandsToKeep[region.back().getTerminator()],
-                resultsToKeep, argsToKeep, &region);
+                terminatorOperandsToKeep[region->back().getTerminator()],
+                resultsToKeep, argsToKeep, region);
           }
 
           // Recompute the results and arguments that need to be kept.
@@ -610,18 +635,16 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
   cl.operands.push_back({regionBranchOp, operandsToKeep.flip()});
 
   // Do (2.a) and (2.b).
-  for (Region &region : regionBranchOp->getRegions()) {
-    assert(!region.empty() && "expected a non-empty region in an op "
-                              "implementing `RegionBranchOpInterface`");
-    BitVector argsToRemove = argsToKeep[&region].flip();
-    cl.blocks.push_back({&region.front(), argsToRemove});
-    collectNonLiveValues(nonLiveSet, region.front().getArguments(),
+  for (Region *region : activeRegions) {
+    BitVector argsToRemove = argsToKeep[region].flip();
+    cl.blocks.push_back({&region->front(), argsToRemove});
+    collectNonLiveValues(nonLiveSet, region->front().getArguments(),
                          argsToRemove);
   }
 
   // Do (2.c).
-  for (Region &region : regionBranchOp->getRegions()) {
-    Operation *terminator = region.front().getTerminator();
+  for (Region *region : activeRegions) {
+    Operation *terminator = region->front().getTerminator();
     cl.operands.push_back(
         {terminator, terminatorOperandsToKeep[terminator].flip()});
   }
