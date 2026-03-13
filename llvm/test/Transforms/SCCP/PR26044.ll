@@ -5,7 +5,7 @@ target triple = "x86_64-unknown-linux-gnu"
 
 define void @fn2(ptr %P) {
 ; CHECK-LABEL: define {{[^@]+}}@fn2
-; CHECK-SAME: (ptr [[P:%.*]]) {
+; CHECK-SAME: (ptr [[P:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    br label [[IF_END:%.*]]
 ; CHECK:       for.cond1:
@@ -45,7 +45,7 @@ entry:
 
 define void @fn_no_null_opt(ptr %P) #0 {
 ; CHECK-LABEL: define {{[^@]+}}@fn_no_null_opt
-; CHECK-SAME: (ptr [[P:%.*]]) #[[ATTR0:[0-9]+]] {
+; CHECK-SAME: (ptr [[P:%.*]]) #[[ATTR0:[0-9]+]] !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    br label [[IF_END:%.*]]
 ; CHECK:       for.cond1:

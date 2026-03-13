@@ -3,7 +3,7 @@
 
 define internal i32 @f1(i32 %x) {
 ; CHECK-LABEL: define {{[^@]+}}@f1
-; CHECK-SAME: (i32 [[X:%.*]]) {
+; CHECK-SAME: (i32 [[X:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:    ret i32 undef
 ;
   %cmp = icmp sgt i32 %x, 300
@@ -14,7 +14,7 @@ define internal i32 @f1(i32 %x) {
 ; %res is a constant range [0, 2) from a PHI node.
 define i32 @caller1(i1 %cmp) {
 ; CHECK-LABEL: define {{[^@]+}}@caller1
-; CHECK-SAME: (i1 [[CMP:%.*]]) {
+; CHECK-SAME: (i1 [[CMP:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    br i1 [[CMP]], label [[IF_TRUE:%.*]], label [[END:%.*]]
 ; CHECK:       if.true:
@@ -40,7 +40,7 @@ end:
 
 define internal i32 @f2(i32 %x, i32 %y, i32 %z, i1 %cmp.1, i1 %cmp.2) {
 ; CHECK-LABEL: define {{[^@]+}}@f2
-; CHECK-SAME: (i32 [[X:%.*]], i32 [[Y:%.*]], i32 [[Z:%.*]], i1 [[CMP_1:%.*]], i1 [[CMP_2:%.*]]) {
+; CHECK-SAME: (i32 [[X:%.*]], i32 [[Y:%.*]], i32 [[Z:%.*]], i1 [[CMP_1:%.*]], i1 [[CMP_2:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    br i1 [[CMP_1]], label [[IF_TRUE_1:%.*]], label [[END:%.*]]
 ; CHECK:       if.true.1:

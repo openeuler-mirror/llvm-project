@@ -3,7 +3,7 @@
 ; RUN: opt -passes='ipsccp,ipsccp' < %s -S | FileCheck %s
 
 define void @barney() {
-; CHECK-LABEL: define {{[^@]+}}@barney() {
+; CHECK-LABEL: define {{[^@]+}}@barney() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  bb:
 ; CHECK-NEXT:    br label [[BB9:%.*]]
 ; CHECK:       bb6:
@@ -27,7 +27,7 @@ bb9:                                              ; preds = %bb
 }
 
 define void @blam() {
-; CHECK-LABEL: define {{[^@]+}}@blam() {
+; CHECK-LABEL: define {{[^@]+}}@blam() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  bb:
 ; CHECK-NEXT:    br label [[BB16:%.*]]
 ; CHECK:       bb16:
@@ -60,7 +60,7 @@ bb38:                                             ; preds = %bb16
 
 
 define void @hoge() {
-; CHECK-LABEL: define {{[^@]+}}@hoge() {
+; CHECK-LABEL: define {{[^@]+}}@hoge() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  bb:
 ; CHECK-NEXT:    unreachable
 ;
@@ -90,7 +90,7 @@ bb4:                                              ; preds = %bb2, %bb2, %bb2
 ; Test case from PR49573. %default.bb is unfeasible. Make sure it gets replaced
 ; by an unreachable block.
 define void @pr49573_main() {
-; CHECK-LABEL: define {{[^@]+}}@pr49573_main() {
+; CHECK-LABEL: define {{[^@]+}}@pr49573_main() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TGT:%.*]] = call i16 @pr49573_fn()
 ; CHECK-NEXT:    unreachable
@@ -125,7 +125,7 @@ next:
 
 ; Make sure a new unreachable BB is created.
 define void @pr49573_main_2() {
-; CHECK-LABEL: define {{[^@]+}}@pr49573_main_2() {
+; CHECK-LABEL: define {{[^@]+}}@pr49573_main_2() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TGT:%.*]] = call i16 @pr49573_fn()
 ; CHECK-NEXT:    unreachable
@@ -152,7 +152,7 @@ case.2:
 }
 
 define internal i16 @pr49573_fn() {
-; CHECK-LABEL: define {{[^@]+}}@pr49573_fn() {
+; CHECK-LABEL: define {{[^@]+}}@pr49573_fn() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    unreachable
 ;
@@ -167,7 +167,7 @@ else:
 }
 
 define internal i16 @pr49573_fn_2() {
-; CHECK-LABEL: define {{[^@]+}}@pr49573_fn_2() {
+; CHECK-LABEL: define {{[^@]+}}@pr49573_fn_2() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    unreachable
 ;

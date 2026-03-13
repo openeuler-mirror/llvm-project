@@ -92,7 +92,7 @@ merge:
 
 ; THREE-NOT: define internal i64 @compute
 ;
-; THREE-LABEL: define internal i64 @compute.1(i64 %x, i64 %y, ptr %binop1, ptr %binop2) {
+; THREE-LABEL: define internal i64 @compute.1(i64 %x, i64 %y, ptr %binop1, ptr %binop2) !llvm.ipsccp !0 {
 ; THREE-NEXT:  entry:
 ; THREE-NEXT:    [[TMP0:%.+]] = call i64 @power(i64 %x, i64 %y)
 ; THREE-NEXT:    [[TMP1:%.+]] = call i64 @mul(i64 %x, i64 %y)
@@ -103,7 +103,7 @@ merge:
 ; THREE-NEXT:    ret i64 [[TMP5]]
 ; THREE-NEXT:  }
 ;
-; THREE-LABEL: define internal i64 @compute.2(i64 %x, i64 %y, ptr %binop1, ptr %binop2) {
+; THREE-LABEL: define internal i64 @compute.2(i64 %x, i64 %y, ptr %binop1, ptr %binop2) !llvm.ipsccp !0 {
 ; THREE-NEXT:  entry:
 ; THREE-NEXT:    [[TMP0:%.+]] = call i64 @plus(i64 %x, i64 %y)
 ; THREE-NEXT:    [[TMP1:%.+]] = call i64 @minus(i64 %x, i64 %y)
@@ -114,7 +114,7 @@ merge:
 ; THREE-NEXT:    ret i64 [[TMP5]]
 ; THREE-NEXT:  }
 ;
-; THREE-LABEL: define internal i64 @compute.3(i64 %x, i64 %y, ptr %binop1, ptr %binop2) {
+; THREE-LABEL: define internal i64 @compute.3(i64 %x, i64 %y, ptr %binop1, ptr %binop2) !llvm.ipsccp !0 {
 ; THREE-NEXT:  entry:
 ; THREE-NEXT:    [[TMP0:%.+]] = call i64 @minus(i64 %x, i64 %y)
 ; THREE-NEXT:    [[TMP1:%.+]] = call i64 @power(i64 %x, i64 %y)

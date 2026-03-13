@@ -6,7 +6,7 @@
 ; replaced by unreachable. This is fine, as the call to testf() will already
 ; trigger undefined behavior.
 define void @test1() {
-; CHECK-LABEL: define {{[^@]+}}@test1() {
+; CHECK-LABEL: define {{[^@]+}}@test1() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    br label [[IF_THEN:%.*]]
 ; CHECK:       if.then:
@@ -26,7 +26,7 @@ if.end:                                           ; preds = %if.then, %entry
 }
 
 define internal i1 @testf() {
-; CHECK-LABEL: define {{[^@]+}}@testf() {
+; CHECK-LABEL: define {{[^@]+}}@testf() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    unreachable
 ;
@@ -42,7 +42,7 @@ if.end3:                                          ; preds = %if.then1, %entry
 
 ; Call sites in unreachable blocks should not be a problem.
 define i1 @test2() {
-; CHECK-LABEL: define {{[^@]+}}@test2() {
+; CHECK-LABEL: define {{[^@]+}}@test2() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    br label [[IF_END:%.*]]
 ; CHECK:       if.end:

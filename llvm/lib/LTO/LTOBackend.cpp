@@ -803,7 +803,7 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
       std::lock_guard<std::mutex> Lock(ChangeLinkageMutex);
       for (auto &[FnName, ChangeLinkage] : ChangeLinkageFuncs) {
         if (auto Fn = MPart->getFunction(FnName)) {
-          if (Fn->isDeclaration() || !Fn->hasLocalLinkage())
+          if (Fn->isDeclaration() || !Fn->hasLocalLinkage() || Fn->getMetadata("llvm.ipsccp"))
             continue;
           if (!ChangeLinkage) {
             Fn->setLinkage(GlobalValue::ExternalLinkage);

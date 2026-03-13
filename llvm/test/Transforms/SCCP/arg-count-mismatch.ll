@@ -55,7 +55,7 @@ define internal i16 @bar(i16 %p1, i16 %p2) {
 
 define internal i16 @vararg_prop(i16 %p1, ...) {
 ; CHECK-LABEL: define {{[^@]+}}@vararg_prop
-; CHECK-SAME: (i16 [[P1:%.*]], ...) {
+; CHECK-SAME: (i16 [[P1:%.*]], ...) !llvm.ipsccp !0 {
 ; CHECK-NEXT:    ret i16 undef
 ;
   ret i16 %p1
@@ -63,7 +63,7 @@ define internal i16 @vararg_prop(i16 %p1, ...) {
 
 define dso_local i16 @vararg_tests(i16 %a) {
 ; CHECK-LABEL: define {{[^@]+}}@vararg_tests
-; CHECK-SAME: (i16 [[A:%.*]]) {
+; CHECK-SAME: (i16 [[A:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:    [[CALL1:%.*]] = call i16 (i16, ...) @vararg_prop(i16 7, i16 8, i16 [[A]])
 ; CHECK-NEXT:    [[CALL2:%.*]] = call i16 @vararg_no_prop(i16 7)
 ; CHECK-NEXT:    [[ADD:%.*]] = add i16 7, [[CALL2]]

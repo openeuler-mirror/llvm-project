@@ -4,7 +4,7 @@
 ; Constant range for %a is [1, 48) and for %b is [301, 1000)
 define internal i32 @f1(i32 %a, i32 %b) {
 ; CHECK-LABEL: define {{[^@]+}}@f1
-; CHECK-SAME: (i32 [[A:%.*]], i32 [[B:%.*]]) {
+; CHECK-SAME: (i32 [[A:%.*]], i32 [[B:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    ret i32 undef
 ;
@@ -27,7 +27,7 @@ entry:
 ; Constant range for %x is [47, 302)
 define internal i32 @f2(i32 %x) {
 ; CHECK-LABEL: define {{[^@]+}}@f2
-; CHECK-SAME: (i32 [[X:%.*]]) {
+; CHECK-SAME: (i32 [[X:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[CMP:%.*]] = icmp sgt i32 [[X]], 300
 ; CHECK-NEXT:    [[CMP4:%.*]] = icmp ugt i32 [[X]], 300
@@ -57,7 +57,7 @@ entry:
 }
 
 define i32 @caller1() {
-; CHECK-LABEL: define {{[^@]+}}@caller1() {
+; CHECK-LABEL: define {{[^@]+}}@caller1() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[CALL1:%.*]] = tail call i32 @f1(i32 1, i32 301)
 ; CHECK-NEXT:    [[CALL2:%.*]] = tail call i32 @f1(i32 47, i32 999)
@@ -79,7 +79,7 @@ entry:
 
 define internal i32 @f3(i32 %x) {
 ; CHECK-LABEL: define {{[^@]+}}@f3
-; CHECK-SAME: (i32 [[X:%.*]]) {
+; CHECK-SAME: (i32 [[X:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    ret i32 undef
 ;
@@ -92,7 +92,7 @@ entry:
 ; The phi node could be converted in a ConstantRange.
 define i32 @caller2(i1 %cmp) {
 ; CHECK-LABEL: define {{[^@]+}}@caller2
-; CHECK-SAME: (i1 [[CMP:%.*]]) {
+; CHECK-SAME: (i1 [[CMP:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    br i1 [[CMP]], label [[IF_TRUE:%.*]], label [[END:%.*]]
 ; CHECK:       if.true:
@@ -116,7 +116,7 @@ end:
 
 define internal i32 @f4(i32 %x) {
 ; CHECK-LABEL: define {{[^@]+}}@f4
-; CHECK-SAME: (i32 [[X:%.*]]) {
+; CHECK-SAME: (i32 [[X:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    ret i32 undef
 ;
@@ -129,7 +129,7 @@ entry:
 ; ICmp introduces bounds on ConstantRanges.
 define i32 @caller3(i32 %x) {
 ; CHECK-LABEL: define {{[^@]+}}@caller3
-; CHECK-SAME: (i32 [[X:%.*]]) {
+; CHECK-SAME: (i32 [[X:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[CMP:%.*]] = icmp sgt i32 [[X]], 300
 ; CHECK-NEXT:    br i1 [[CMP]], label [[IF_TRUE:%.*]], label [[END:%.*]]
@@ -156,7 +156,7 @@ end:
 ; Check to make sure we do not attempt to access lattice values in unreachable
 ; blocks.
 define i32 @test_unreachable() {
-; CHECK-LABEL: define {{[^@]+}}@test_unreachable() {
+; CHECK-LABEL: define {{[^@]+}}@test_unreachable() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TMP0:%.*]] = call i1 @test_unreachable_callee(i32 1)
 ; CHECK-NEXT:    [[TMP1:%.*]] = call i1 @test_unreachable_callee(i32 2)
@@ -170,7 +170,7 @@ entry:
 
 define internal i1 @test_unreachable_callee(i32 %a) {
 ; CHECK-LABEL: define {{[^@]+}}@test_unreachable_callee
-; CHECK-SAME: (i32 [[A:%.*]]) {
+; CHECK-SAME: (i32 [[A:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    ret i1 undef
 ;
@@ -282,7 +282,7 @@ entry:
 
 define internal i32 @callee6.1(i32 %i) {
 ; CHECK-LABEL: define {{[^@]+}}@callee6.1
-; CHECK-SAME: (i32 [[I:%.*]]) {
+; CHECK-SAME: (i32 [[I:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:    [[RES:%.*]] = call i32 @callee6.2(i32 [[I]])
 ; CHECK-NEXT:    ret i32 undef
 ;
@@ -292,7 +292,7 @@ define internal i32 @callee6.1(i32 %i) {
 
 define internal i32 @callee6.2(i32 %i) {
 ; CHECK-LABEL: define {{[^@]+}}@callee6.2
-; CHECK-SAME: (i32 [[I:%.*]]) {
+; CHECK-SAME: (i32 [[I:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:    br label [[IF_THEN:%.*]]
 ; CHECK:       if.then:
 ; CHECK-NEXT:    ret i32 undef
@@ -309,7 +309,7 @@ if.else:                                          ; preds = %entry
 }
 
 define i32 @caller6() {
-; CHECK-LABEL: define {{[^@]+}}@caller6() {
+; CHECK-LABEL: define {{[^@]+}}@caller6() !llvm.ipsccp !0 {
 ; CHECK-NEXT:    [[CALL_1:%.*]] = call i32 @callee6.1(i32 30)
 ; CHECK-NEXT:    [[CALL_2:%.*]] = call i32 @callee6.1(i32 43)
 ; CHECK-NEXT:    ret i32 2

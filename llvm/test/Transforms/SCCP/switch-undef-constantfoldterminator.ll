@@ -15,7 +15,7 @@
 ; an unconditional branch when ConstantFoldTerminator returned true.
 
 define void @f4() {
-; CHECK-LABEL: define {{[^@]+}}@f4() {
+; CHECK-LABEL: define {{[^@]+}}@f4() !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[CALL:%.*]] = call i16 @f3(i16 undef)
 ; CHECK-NEXT:    ret void
@@ -27,7 +27,7 @@ entry:
 
 define internal i16 @f3(i16 %p1) {
 ; CHECK-LABEL: define {{[^@]+}}@f3
-; CHECK-SAME: (i16 [[P1:%.*]]) {
+; CHECK-SAME: (i16 [[P1:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    unreachable
 ;

@@ -4,7 +4,7 @@
 ; IPSCCP should propagate the 0 argument, eliminate the switch, and propagate
 ; the result.
 
-; CHECK: define i32 @main() #0 {
+; CHECK: define i32 @main() #0 !llvm.ipsccp !0 {
 ; CHECK-NEXT: entry:
 ; CHECK-NEXT: %call2 = tail call i32 @wwrite(i64 0) [[NUW:#[0-9]+]]
 ; CHECK-NEXT: ret i32 123

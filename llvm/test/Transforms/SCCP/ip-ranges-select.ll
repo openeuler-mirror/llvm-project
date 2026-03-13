@@ -3,7 +3,7 @@
 
 define void @caller.1(ptr %arg) {
 ; CHECK-LABEL: define {{[^@]+}}@caller.1
-; CHECK-SAME: (ptr [[ARG:%.*]]) {
+; CHECK-SAME: (ptr [[ARG:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:    [[R_1:%.*]] = tail call i32 @callee.1(i32 4)
 ; CHECK-NEXT:    [[R_2:%.*]] = tail call i32 @callee.1(i32 2)
 ; CHECK-NEXT:    call void @use(i32 20)
@@ -18,7 +18,7 @@ define void @caller.1(ptr %arg) {
 
 define internal i32 @callee.1(i32 %arg) {
 ; CHECK-LABEL: define {{[^@]+}}@callee.1
-; CHECK-SAME: (i32 [[ARG:%.*]]) {
+; CHECK-SAME: (i32 [[ARG:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:    [[SEL:%.*]] = select i1 false, i32 16, i32 [[ARG]]
 ; CHECK-NEXT:    br label [[BB10:%.*]]
 ; CHECK:       bb10:
@@ -40,7 +40,7 @@ declare void @use(i32)
 
 define internal i1 @f1(i32 %x, i32 %y, i1 %cmp) {
 ; CHECK-LABEL: define {{[^@]+}}@f1
-; CHECK-SAME: (i32 [[X:%.*]], i32 [[Y:%.*]], i1 [[CMP:%.*]]) {
+; CHECK-SAME: (i32 [[X:%.*]], i32 [[Y:%.*]], i1 [[CMP:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:    [[SEL_1:%.*]] = select i1 [[CMP]], i32 [[X]], i32 [[Y]]
 ; CHECK-NEXT:    [[C_2:%.*]] = icmp sgt i32 [[SEL_1]], 100
 ; CHECK-NEXT:    [[C_3:%.*]] = icmp eq i32 [[SEL_1]], 50

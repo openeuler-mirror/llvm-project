@@ -8,7 +8,7 @@ declare i32 @external()
 
 define ptr @start(i8 %v) {
 ; CHECK-LABEL: define {{[^@]+}}@start
-; CHECK-SAME: (i8 [[V:%.*]]) {
+; CHECK-SAME: (i8 [[V:%.*]]) !llvm.ipsccp !0 {
 ; CHECK-NEXT:    [[C1:%.*]] = icmp eq i8 [[V]], 0
 ; CHECK-NEXT:    br i1 [[C1]], label [[TRUE:%.*]], label [[FALSE:%.*]]
 ; CHECK:       true:
@@ -61,7 +61,7 @@ define internal ptr @side_effects(i8 %v) {
 ; The call to this function is removed, so the return value must be zapped
 define internal ptr @no_side_effects(i8 %v) readonly nounwind willreturn {
 ; CHECK-LABEL: define {{[^@]+}}@no_side_effects
-; CHECK-SAME: (i8 [[V:%.*]]) #[[ATTR0:[0-9]+]] {
+; CHECK-SAME: (i8 [[V:%.*]]) #[[ATTR0:[0-9]+]] !llvm.ipsccp !0 {
 ; CHECK-NEXT:    ret ptr undef
 ;
   ret ptr null
