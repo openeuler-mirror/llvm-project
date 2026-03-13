@@ -68,6 +68,36 @@ enum class LTOBitcodeEmbedding {
   EmbedPostMergePreOptimized = 2
 };
 
+static std::mutex ForwardDiagMutex;
+
+struct ForwardingDiagHandler : public DiagnosticHandler { 
+  DiagnosticHandler *OrigHandler;
+
+  ForwardingDiagHandler(DiagnosticHandler *Orig) : OrigHandler(Orig) {}
+
+  bool isAnyRemarkEnabled() const override {
+    return OrigHandler ? OrigHandler->isAnyRemarkEnabled() : false; 
+  }
+
+  bool isPassedOptRemarkEnabled(StringRef PassName) const override {
+    return OrigHandler ? OrigHandler->isPassedOptRemarkEnabled(PassName) : false; 
+  }
+
+  bool isMissedOptRemarkEnabled(StringRef PassName) const override { 
+    return OrigHandler ? OrigHandler->isMissedOptRemarkEnabled(PassName) : false; 
+  }
+		   
+  bool isAnalysisRemarkEnabled(StringRef PassName) const override {
+    return OrigHandler ? OrigHandler->isAnalysisRemarkEnabled(PassName) : false; 
+  }
+
+  bool handleDiagnostics(const DiagnosticInfo &DI) override {
+    if (!OrigHandler) { return false; }
+    std::lock_guard<std::mutex> Lock(ForwardDiagMutex);
+    return OrigHandler->handleDiagnostics(DI);
+  }
+};
+
 static cl::opt<LTOBitcodeEmbedding> EmbedBitcode(
     "lto-embed-bitcode", cl::init(LTOBitcodeEmbedding::DoNotEmbed),
     cl::values(clEnumValN(LTOBitcodeEmbedding::DoNotEmbed, "none",
@@ -683,6 +713,9 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
   unsigned ThreadCount = 0;
   const Target *T = &TM->getTarget();
 
+  DiagnosticHandler *OrigDiagHandler = const_cast<DiagnosticHandler*>(Mod.getContext().getDiagHandlerPtr());
+  bool OrigHotness = Mod.getContext().getDiagnosticsHotnessRequested();
+
   // [Timing] 1.start
   auto TimeStart = Clock::now();
   std::atomic<long> TotalOptTime{0};
@@ -712,6 +745,9 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
     // separate contexts.
     // FIXME: Provide a more direct way to do this in LLVM.
 
+    MPart->getContext().setDiagnosticHandler(std::make_unique<ForwardingDiagHandler>(OrigDiagHandler));
+    MPart->getContext().setDiagnosticsHotnessRequested(OrigHotness);
+    
     if (ThinLTODebugMpart) {
       std::lock_guard<std::mutex> Lock(PrintMutex);
       LLVM_DEBUG(dbgs() << "before opt, MPart " << Mname << " \n");
