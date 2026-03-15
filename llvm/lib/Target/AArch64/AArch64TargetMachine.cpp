@@ -210,6 +210,7 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeAArch64Target() {
   initializeAArch64A53Fix835769Pass(*PR);
   initializeAArch64A57FPLoadBalancingPass(*PR);
   initializeAArch64AdvSIMDScalarPass(*PR);
+  initializeAArch64BiasedBranchOptPass(*PR);
   initializeAArch64BranchTargetsPass(*PR);
   initializeAArch64CollectLOHPass(*PR);
   initializeAArch64CompressJumpTablesPass(*PR);
@@ -835,6 +836,8 @@ void AArch64PassConfig::addPostBBSections() {
   // range of their destination.
   if (BranchRelaxation)
     addPass(&BranchRelaxationPassID);
+
+  addPass(createAArch64BiasedBranchOptPass());
 
   if (TM->getOptLevel() != CodeGenOpt::None && EnableCompressJumpTables)
     addPass(createAArch64CompressJumpTablesPass());
