@@ -1060,8 +1060,7 @@ def GenericAtomicRMWOp : MemRef_Op<"generic_atomic_rmw", [
 
 def AtomicYieldOp : MemRef_Op<"atomic_yield", [
       HasParent<"GenericAtomicRMWOp">,
-      Pure,
-      Terminator
+      Pure, Terminator, ReturnLike
     ]> {
   let summary = "yield operation for GenericAtomicRMWOp";
   let description = [{
