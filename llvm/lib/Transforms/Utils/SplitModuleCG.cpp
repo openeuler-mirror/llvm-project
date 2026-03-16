@@ -4,6 +4,7 @@
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Analysis/CGSCCPassManager.h"
 #include "llvm/Analysis/CallGraphSCCPass.h"
+#include "llvm/Analysis/IndirectCallPromotionAnalysis.h"
 #include "llvm/Analysis/LoopAnalysisManager.h"
 #include "llvm/Analysis/ProfileSummaryInfo.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
@@ -495,6 +496,63 @@ void SplitModuleCG::calculateComdatMembers() {
   }
 }
 
+static void DealWithDeclareDebugInfo(Module &MPart) {
+  for (Function &F : MPart)
+    if (F.isDeclaration())
+      F.setSubprogram(nullptr);
+}
+
+void SplitModuleCG::DealWithDuplicateDebugInfo(Module &MPart) {
+  DebugInfoFinder DIF;
+  DIF.processModule(MPart);
+  std::set<DICompileUnit *> NewCUs;
+  bool Changed = false;
+  for (DICompileUnit *DIC : DIF.compile_units()) {
+    // Deal with duplicate imported entities
+    SmallVector<Metadata *, 4> NewImports;
+    bool ChangedNewImports = false;
+    for (auto *IE : DIC->getImportedEntities()) {
+      if (auto *SP = dyn_cast_or_null<DISubprogram>(IE->getEntity())) {
+        if (!SP->isDefinition() || !MPart.getFunction(SP->getLinkageName())) {
+          ChangedNewImports = true;
+          continue;
+        }
+      }
+      NewImports.emplace_back(IE);
+    }
+    if (ChangedNewImports) {
+      DIC->replaceImportedEntities(MDTuple::get(MPart.getContext(), NewImports));
+      Changed = false;
+    }
+
+    // Deal with duplicate enum type
+    SmallVector<Metadata *, 4> NewEnumTypes;
+    bool ChangedEnumTypes = true;
+    for (auto *ET : DIC->getEnumTypes()) {
+      if (auto *SP = dyn_cast_or_null<DISubprogram>(ET->getScope())) {
+        Function *F = MPart.getFunction(SP->getLinkageName());
+        if (!F || (F->isDeclaration() && F->use_empty())) {
+          ChangedEnumTypes = true;
+          continue;
+        }
+        NewEnumTypes.emplace_back(ET);
+      }
+    }
+    if (ChangedEnumTypes) {
+      Changed = true;
+      DIC->replaceEnumTypes(MDTuple::get(MPart.getContext(), NewEnumTypes));
+    }
+
+    NewCUs.insert(DIC);
+  }
+  if (Changed) {
+    NamedMDNode *NMD = MPart.getOrInsertNamedMetadata("llvm.dbg.cu");
+    NMD->clearOperands();
+    for (DICompileUnit *CU : NewCUs)
+      NMD->addOperand(CU);
+  }
+}
+
 using Clock = std::chrono::high_resolution_clock;
 using Ms = std::chrono::milliseconds;
 
@@ -633,6 +691,9 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
         });
       }
 
+      DealWithDuplicateDebugInfo(*MPart);
+      DealWithDeclareDebugInfo(*MPart);
+
       // collect symbols to rename
       auto checkPromoted = [&](const GlobalValue &GV) {
         // now is external (not local), but not in external set.
@@ -694,6 +755,7 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
 }
 
 SplitModuleCG::SplitModuleCG(Module &M, const llvm::lto::Config &C,
+                             const ModuleSummaryIndex &CombinedIndex,
                              unsigned LimitPartition,
                              ThreadPool *PartitionThreadPool)
     : M(M), CG(M), N(LimitPartition), PartitionThreadPool(PartitionThreadPool),
@@ -717,7 +779,7 @@ SplitModuleCG::SplitModuleCG(Module &M, const llvm::lto::Config &C,
                     << M.getName() << " \n");
 
   SCG = std::make_unique<SimplifyCallGraph>(CG, LargeFuncs, HotFuncs,
-                                            AliasesFuncs);
+                                            AliasesFuncs, CombinedIndex, M);
   calculateEntryFuncs();
   if (N == 0 || N > EntryFuncs.size()) {
     N = EntryFuncs.size();
@@ -725,7 +787,12 @@ SplitModuleCG::SplitModuleCG(Module &M, const llvm::lto::Config &C,
   N = N == 0 ? 1 : N;
 }
 
-void SimplifyCallGraph::createSimplifyCallGraph() {
+void SimplifyCallGraph::createSimplifyCallGraph(const ModuleSummaryIndex &CombinedIndex) {
+  DenseMap<uint64_t, const Function *> GUIDFuntionMap;
+  for (auto &F : M.functions()) {
+    GUIDFuntionMap[F.getGUID()] = &F;
+  }
+  ICallPromotionAnalysis ICallAnalysis;
   for (auto &NodePair : CG) {
     CallGraphNode *CGNode = NodePair.second.get();
     Function *F = CGNode->getFunction();
@@ -733,40 +800,56 @@ void SimplifyCallGraph::createSimplifyCallGraph() {
       continue;
 
     SimplifyCallGraphNode *SCGNode = getOrInsertFunction(F);
-    // deal with indirect call
-    if (F->hasAddressTaken()) {
-      for (auto *User : F->users()) {
-        Instruction *CallInst = nullptr;
-        if (auto *Inst = dyn_cast<Instruction>(User)) {
-          CallInst = Inst;
-        } else if (auto *CE = dyn_cast<ConstantExpr>(User)) {
-          for (auto *CEUser : CE->users()) {
-            if (auto *CEInst = dyn_cast<Instruction>(CEUser)) {
-              CallInst = CEInst;
-              break;
-            }
-          }
-        }
-        if (CallInst) {
-          auto ParentFunc = CallInst->getFunction();
-          if (ParentFunc && ParentFunc != F) {
-            SimplifyCallGraphNode *ParentSCGNode = getOrInsertFunction(ParentFunc);
-            ParentSCGNode->addCalledFunction(SCGNode);
-          }
-        }
-      }
-    }
     for (const auto &CGNodeItem : *CGNode) {
       Function *Called = CGNodeItem.second->getFunction();
       if (!Called) {
-        // deal with alias
-        auto *CallInst = cast<CallBase>(*CGNodeItem.first);
-        if (CallInst) {
-          llvm::Value *CalledVal = CallInst->getCalledOperand();
-          if (llvm::isa<llvm::GlobalAlias>(CalledVal)) {
-            AliasesFuncs.insert(F);
+        // indirect call
+        auto *I = cast<Instruction>(*CGNodeItem.first);
+        auto *CB = cast<CallBase>(I);
+        auto *CalledValue = CB->getCalledOperand();
+        auto *CalledFunction = CB->getCalledFunction();
+        if (CalledValue && !CalledFunction) {
+          CalledValue = CalledValue->stripPointerCasts();
+          // Stripping pointer casts can reveal a called function.
+          CalledFunction = dyn_cast<Function>(CalledValue);
+        }
+        // Check if this is an alias to a function.
+        if (auto *GA = dyn_cast<GlobalAlias>(CalledValue)) {
+          AliasesFuncs.insert(F);
+          continue;
+        }
+        // Check if this is an indirect call with profile data.
+        if (!CalledFunction) {
+          const auto *CI = dyn_cast<CallInst>(I);
+          if (CI && CI->isInlineAsm())
+            continue;
+          if (!CalledValue || isa<Constant>(CalledValue))
+            continue;
+          if (auto *MD = I->getMetadata(LLVMContext::MD_callees)) {
+            for (const auto &Op : MD->operands()) {
+              Function *Callee = mdconst::extract_or_null<Function>(Op);
+              if (Callee)
+                SCGNode->addCalledFunction(getOrInsertFunction(Callee));
+            }
+          }
+          uint32_t NumVals, NumCandidates;
+          uint64_t TotalCount;
+          auto CandidateProfileData =
+              ICallAnalysis.getPromotionCandidatesForInstruction(
+                   I, NumVals, TotalCount, NumCandidates);
+          for (const auto &Candidate : CandidateProfileData) {
+            ValueInfo VI = CombinedIndex.getValueInfo(Candidate.Value);
+            const Function *Callee = GUIDFuntionMap[Candidate.Value];
+            LLVM_DEBUG(dbgs() << "Add called function by Profile: '"
+                                << F->getName() << "'  Calls  '"
+                                << Candidate.Value << "'\n");
+            if (Callee) {
+              SCGNode->addCalledFunction(getOrInsertFunction(Callee));
+              LLVM_DEBUG(dbgs() << "    name: "  << Callee->getName() << "\n");
+            }
           }
         }
+        Called = CalledFunction;
       }
       if (!Called || Called->isDeclaration() ||
           (LargeFuncs.find(Called) != LargeFuncs.end() &&
@@ -780,6 +863,7 @@ void SimplifyCallGraph::createSimplifyCallGraph() {
   if (enablePrintSimplifyCallGraph)
     print();
 }
+
 
 void SimplifyCallGraph::print() {
   {
