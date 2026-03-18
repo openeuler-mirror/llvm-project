@@ -367,29 +367,12 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
                                   RunLivenessAnalysis &la,
                                   DenseSet<Value> &nonLiveSet,
                                   RDVFinalCleanupList &cl) {
-  // Collect regions that actively participate in the control flow, as reported
-  // by getSuccessorRegions(). Empty regions (e.g., scf::IfOp with no else
-  // block) are naturally excluded because the interface reports a
-  // branch-to-parent instead of into the empty region.
-  SmallVector<Region *> activeRegions;
-  {
-    SmallVector<RegionSuccessor> successors;
-    DenseSet<Region *> seen;
-    regionBranchOp.getSuccessorRegions(RegionBranchPoint::parent(), successors);
-    for (const RegionSuccessor &succ : successors) {
-      Region *r = succ.getSuccessor();
-      if (r && seen.insert(r).second)
-        activeRegions.push_back(r);
-    }
-    for (unsigned i = 0; i < activeRegions.size(); ++i) {
-      successors.clear();
-      regionBranchOp.getSuccessorRegions(activeRegions[i], successors);
-      for (const RegionSuccessor &succ : successors) {
-        Region *r = succ.getSuccessor();
-        if (r && seen.insert(r).second)
-          activeRegions.push_back(r);
-      }
-    }
+  // Collect all non-empty regions of the op. Empty regions (e.g., scf::IfOp with no else block)
+  // are naturally excluded.
+  SmallVector<Region *> nonEmptyRegions;
+  for (Region &region : regionBranchOp->getRegions()) {
+    if (!region.empty())
+      nonEmptyRegions.push_back(&region);
   }
 
   // Mark live results of `regionBranchOp` in `liveResults`.
@@ -399,7 +382,7 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
 
   // Mark live arguments in the regions of `regionBranchOp` in `liveArgs`.
   auto markLiveArgs = [&](DenseMap<Region *, BitVector> &liveArgs) {
-    for (Region *region : activeRegions) {
+    for (Region *region : nonEmptyRegions) {
       SmallVector<Value> arguments(region->front().getArguments());
       BitVector regionLiveArgs = markLives(arguments, nonLiveSet, la);
       liveArgs[region] = regionLiveArgs;
@@ -444,7 +427,7 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
   // `regionBranchOp` in `nonForwardedRets`.
   auto markNonForwardedReturnValues =
       [&](DenseMap<Operation *, BitVector> &nonForwardedRets) {
-        for (Region *region : activeRegions) {
+        for (Region *region : nonEmptyRegions) {
           Operation *terminator = region->front().getTerminator();
           nonForwardedRets[terminator] =
               BitVector(terminator->getNumOperands(), true);
@@ -523,7 +506,7 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
 
         // Recompute `resultsToKeep` and `argsToKeep` based on
         // `terminatorOperandsToKeep`.
-        for (Region *region : activeRegions) {
+        for (Region *region : nonEmptyRegions) {
           Operation *terminator = region->front().getTerminator();
           for (const RegionSuccessor &successor : getSuccessors(region)) {
             Region *successorRegion = successor.getSuccessor();
@@ -571,7 +554,7 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
                                                    resultsToKeep, argsToKeep);
 
           // Update the terminator operands that need to be kept.
-          for (Region *region : activeRegions) {
+          for (Region *region : nonEmptyRegions) {
             updateOperandsOrTerminatorOperandsToKeep(
                 terminatorOperandsToKeep[region->back().getTerminator()],
                 resultsToKeep, argsToKeep, region);
@@ -635,7 +618,7 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
   cl.operands.push_back({regionBranchOp, operandsToKeep.flip()});
 
   // Do (2.a) and (2.b).
-  for (Region *region : activeRegions) {
+  for (Region *region : nonEmptyRegions) {
     BitVector argsToRemove = argsToKeep[region].flip();
     cl.blocks.push_back({&region->front(), argsToRemove});
     collectNonLiveValues(nonLiveSet, region->front().getArguments(),
@@ -643,7 +626,7 @@ static void processRegionBranchOp(RegionBranchOpInterface regionBranchOp,
   }
 
   // Do (2.c).
-  for (Region *region : activeRegions) {
+  for (Region *region : nonEmptyRegions) {
     Operation *terminator = region->front().getTerminator();
     cl.operands.push_back(
         {terminator, terminatorOperandsToKeep[terminator].flip()});
