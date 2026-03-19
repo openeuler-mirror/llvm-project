@@ -5275,6 +5275,11 @@ public:
     if (failed(isZeroBasedContiguousSeq(op.getIndexVec())))
       return failure();
 
+    // MaskedLoadOp requires a memref base; do not fold if the gather operates
+    // on a tensor (which is valid for vector.gather but not vector.maskedload).
+    if (!isa<MemRefType>(op.getBase().getType()))
+      return failure();
+
     rewriter.replaceOpWithNewOp<MaskedLoadOp>(op, op.getType(), op.getBase(),
                                               op.getIndices(), op.getMask(),
                                               op.getPassThru());
