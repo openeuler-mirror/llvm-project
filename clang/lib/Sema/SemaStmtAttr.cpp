@@ -137,6 +137,7 @@ static Attr *handleLoopHintAttr(Sema &S, Stmt *St, const ParsedAttr &A,
                  OptionLoc->Ident->getName())
                  .Case("vectorize", LoopHintAttr::Vectorize)
                  .Case("vectorize_width", LoopHintAttr::VectorizeWidth)
+                 .Case("vectorize_version", LoopHintAttr::VectorizeVersion)
                  .Case("interleave", LoopHintAttr::Interleave)
                  .Case("vectorize_predicate", LoopHintAttr::VectorizePredicate)
                  .Case("interleave_count", LoopHintAttr::InterleaveCount)
@@ -157,6 +158,14 @@ static Attr *handleLoopHintAttr(Sema &S, Stmt *St, const ParsedAttr &A,
         State = LoopHintAttr::ScalableWidth;
       else
         State = LoopHintAttr::FixedWidth;
+    } else if (Option == LoopHintAttr::VectorizeVersion) {
+      assert(StateLoc && StateLoc->Ident && "Loop hint must have an argument");
+      if (StateLoc->Ident->isStr("sve"))
+        State = LoopHintAttr::SVE;
+      else if (StateLoc->Ident->isStr("neon"))
+        State = LoopHintAttr::Neon;
+      else
+        llvm_unreachable("bad loop hint argument");
     } else if (Option == LoopHintAttr::InterleaveCount ||
                Option == LoopHintAttr::UnrollCount ||
                Option == LoopHintAttr::PipelineInitiationInterval) {
@@ -486,6 +495,7 @@ CheckForIncompatibleAttributes(Sema &S,
     switch (Option) {
     case LoopHintAttr::Vectorize:
     case LoopHintAttr::VectorizeWidth:
+    case LoopHintAttr::VectorizeVersion:
       Category = Vectorize;
       break;
     case LoopHintAttr::Interleave:

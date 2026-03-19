@@ -64,7 +64,8 @@ class LoopVectorizeHints {
     HK_FORCE,
     HK_ISVECTORIZED,
     HK_PREDICATE,
-    HK_SCALABLE
+    HK_SCALABLE,
+    HK_VECTORIZE_VERSION
   };
 
   /// Hint - associates name and validation with the hint value.
@@ -97,6 +98,9 @@ class LoopVectorizeHints {
   /// Says whether we should use fixed width or scalable vectorization.
   Hint Scalable;
 
+  /// Vectorization version (SVE or Neon).
+  Hint VectorizeVersion;
+
   /// Return the loop metadata prefix.
   static StringRef Prefix() { return "llvm.loop."; }
 
@@ -119,6 +123,13 @@ public:
     /// scalable vectors when the cost-model is inconclusive. This is the
     /// default when the scalable.enable hint is enabled through a pragma.
     SK_PreferScalable = 1
+  };
+
+  /// Vectorization version kinds.
+  enum VectorizeVersionKind {
+    VVK_Undefined = -1, ///< Not selected.
+    VVK_Neon = 0,       ///< Neon vectorization.
+    VVK_SVE = 1         ///< SVE vectorization.
   };
 
   LoopVectorizeHints(const Loop *L, bool InterleaveOnlyWhenForced,
@@ -180,6 +191,11 @@ public:
     // Otherwise, a sequence of vectorized loops, even without reduction,
     // could lead to different end results on the destination vectors.
     return getForce() != LoopVectorizeHints::FK_Enabled && PotentiallyUnsafe;
+  }
+
+  /// Return the vectorization version hint.
+  enum VectorizeVersionKind getVectorizeVersion() const {
+    return (VectorizeVersionKind)VectorizeVersion.Value;
   }
 
   void setPotentiallyUnsafe() { PotentiallyUnsafe = true; }

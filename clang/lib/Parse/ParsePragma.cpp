@@ -1465,6 +1465,7 @@ bool Parser::HandlePragmaLoopHint(LoopHint &Hint) {
                       .Case("vectorize", true)
                       .Case("interleave", true)
                       .Case("vectorize_predicate", true)
+                      .Case("vectorize_version", true)
                       .Default(false) ||
                   OptionUnroll || OptionUnrollAndJam || OptionDistribute ||
                   OptionPipelineDisabled;
@@ -1489,12 +1490,14 @@ bool Parser::HandlePragmaLoopHint(LoopHint &Hint) {
     IdentifierInfo *StateInfo = Toks[0].getIdentifierInfo();
 
     bool Valid = StateInfo &&
-                 llvm::StringSwitch<bool>(StateInfo->getName())
+                 (llvm::StringSwitch<bool>(StateInfo->getName())
                      .Case("disable", true)
                      .Case("enable", !OptionPipelineDisabled)
                      .Case("full", OptionUnroll || OptionUnrollAndJam)
                      .Case("assume_safety", AssumeSafetyArg)
-                     .Default(false);
+                     .Default(false) ||
+                  (OptionInfo && OptionInfo->getName() == "vectorize_version" &&
+                   (StateInfo->getName() == "sve" || StateInfo->getName() == "neon")));
     if (!Valid) {
       if (OptionPipelineDisabled) {
         Diag(Toks[0].getLocation(), diag::err_pragma_pipeline_invalid_keyword);
@@ -3625,6 +3628,7 @@ void PragmaLoopHintHandler::HandlePragma(Preprocessor &PP,
                            .Case("distribute", true)
                            .Case("vectorize_predicate", true)
                            .Case("vectorize_width", true)
+                           .Case("vectorize_version", true)
                            .Case("interleave_count", true)
                            .Case("unroll_count", true)
                            .Case("pipeline", true)

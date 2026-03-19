@@ -84,6 +84,14 @@ struct LoopAttributes {
 
   /// Value for whether the loop is required to make progress.
   bool MustProgress;
+
+  /// Value for llvm.loop.vectorize.version metadata.
+  LVEnableState VectorizeVersion;
+
+  /// Set the vectorize.version state.
+  void setVectorizeVersion(LVEnableState State) {
+    VectorizeVersion = State;
+  }
 };
 
 /// Information used when generating a structured loop.
