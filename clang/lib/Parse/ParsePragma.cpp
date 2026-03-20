@@ -1476,10 +1476,14 @@ bool Parser::HandlePragmaLoopHint(LoopHint &Hint) {
   // Verify loop hint has an argument.
   if (Toks[0].is(tok::eof)) {
     ConsumeAnnotationToken();
-    Diag(Toks[0].getLocation(), diag::err_pragma_loop_missing_argument)
-        << /*StateArgument=*/StateOption
-        << /*FullKeyword=*/(OptionUnroll || OptionUnrollAndJam)
-        << /*AssumeSafetyKeyword=*/AssumeSafetyArg;
+    if (OptionInfo && OptionInfo->getName() == "vectorize_version") {
+      Diag(Toks[0].getLocation(), diag::err_pragma_invalid_vectorize_version);
+    } else {
+      Diag(Toks[0].getLocation(), diag::err_pragma_loop_missing_argument)
+          << /*StateArgument=*/StateOption
+          << /*FullKeyword=*/(OptionUnroll || OptionUnrollAndJam)
+          << /*AssumeSafetyKeyword=*/AssumeSafetyArg;
+    }
     return false;
   }
 
