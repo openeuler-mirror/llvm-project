@@ -1501,6 +1501,8 @@ bool Parser::HandlePragmaLoopHint(LoopHint &Hint) {
     if (!Valid) {
       if (OptionPipelineDisabled) {
         Diag(Toks[0].getLocation(), diag::err_pragma_pipeline_invalid_keyword);
+      } else if (OptionInfo && OptionInfo->getName() == "vectorize_version") {
+        Diag(Toks[0].getLocation(), diag::err_pragma_invalid_vectorize_version);
       } else {
         Diag(Toks[0].getLocation(), diag::err_pragma_invalid_keyword)
             << /*FullKeyword=*/(OptionUnroll || OptionUnrollAndJam)
