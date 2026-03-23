@@ -3978,6 +3978,13 @@ def fslp_vectorize : Flag<["-"], "fslp-vectorize">, Group<f_Group>,
 def fno_slp_vectorize : Flag<["-"], "fno-slp-vectorize">, Group<f_Group>;
 def : Flag<["-"], "ftree-slp-vectorize">, Alias<fslp_vectorize>;
 def : Flag<["-"], "fno-tree-slp-vectorize">, Alias<fno_slp_vectorize>;
+def fvectorize_version_EQ : Joined<["-"], "fvectorize-version=">, Group<f_Group>,
+  Visibility<[ClangOption, CC1Option]>,
+  HelpText<"Specify vectorization version: sve, neon">,
+  Values<"sve,neon">,
+  NormalizedValuesScope<"CodeGenOptions::VectorizeVersionKind">,
+  NormalizedValues<["VectorizeVersion_SVE", "VectorizeVersion_Neon"]>,
+  MarshallingInfoEnum<CodeGenOpts<"VectorizeVersion">, "VectorizeVersion_Neon">;
 def Wlarge_by_value_copy_def : Flag<["-"], "Wlarge-by-value-copy">,
   HelpText<"Warn if a function definition returns or accepts an object larger "
            "in bytes than a given value">, Flags<[HelpHidden]>;

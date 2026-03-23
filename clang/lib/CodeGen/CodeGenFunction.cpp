@@ -998,6 +998,16 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
   if (D && D->hasAttr<HybridPatchableAttr>())
     Fn->addFnAttr(llvm::Attribute::HybridPatchable);
 
+  // Add vectorize version attribute
+  switch (CGM.getCodeGenOpts().getVectorizeVersion()) {
+  case CodeGenOptions::VectorizeVersion_SVE:
+    Fn->addFnAttr("vectorize-version", "sve");
+    break;
+  case CodeGenOptions::VectorizeVersion_Neon:
+    Fn->addFnAttr("vectorize-version", "neon");
+    break;
+  }
+
   if (D) {
     // Function attributes take precedence over command line flags.
     if (auto *A = D->getAttr<FunctionReturnThunksAttr>()) {

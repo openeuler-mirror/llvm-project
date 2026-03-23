@@ -168,6 +168,11 @@ public:
     Forced,
   };
 
+  enum VectorizeVersionKind {
+    VectorizeVersion_SVE,
+    VectorizeVersion_Neon,
+  };
+
   /// The code model to use (-mcmodel).
   std::string CodeModel;
 

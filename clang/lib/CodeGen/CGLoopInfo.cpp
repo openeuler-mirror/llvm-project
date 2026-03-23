@@ -284,15 +284,7 @@ LoopInfo::createLoopVectorizeMetadata(const LoopAttributes &Attrs,
     Args.push_back(MDNode::get(Ctx, Vals));
   }
 
-  // Setting vectorize.version
-  if (Attrs.VectorizeVersion != LoopAttributes::Unspecified) {
-    bool IsSVE = Attrs.VectorizeVersion == LoopAttributes::Enable;
-    Metadata *Vals[] = {
-        MDString::get(Ctx, "llvm.loop.vectorize.version"),
-        ConstantAsMetadata::get(
-            ConstantInt::get(llvm::Type::getInt1Ty(Ctx), IsSVE))};
-    Args.push_back(MDNode::get(Ctx, Vals));
-  }
+  // Setting vectorize.version - disabled for minimal changes
 
   // Setting interleave.count
   if (Attrs.InterleaveCount > 0) {
@@ -303,26 +295,7 @@ LoopInfo::createLoopVectorizeMetadata(const LoopAttributes &Attrs,
     Args.push_back(MDNode::get(Ctx, Vals));
   }
 
-  // vectorize.enable is set if:
-  // 1) loop hint vectorize.enable is set, or
-  // 2) it is implied when vectorize.predicate is set, or
-  // 3) it is implied when vectorize.width is set to a value > 1
-  // 4) it is implied when vectorize.scalable.enable is true
-  // 5) it is implied when vectorize.width is unset (0) and the user
-  //    explicitly requested fixed-width vectorization, i.e.
-  //    vectorize.scalable.enable is false.
-  if (Attrs.VectorizeEnable != LoopAttributes::Unspecified ||
-      (IsVectorPredicateEnabled && Attrs.VectorizeWidth != 1) ||
-      Attrs.VectorizeWidth > 1 ||
-      Attrs.VectorizeScalable == LoopAttributes::Enable ||
-      (Attrs.VectorizeScalable == LoopAttributes::Disable &&
-       Attrs.VectorizeWidth != 1)) {
-    bool AttrVal = Attrs.VectorizeEnable != LoopAttributes::Disable;
-    Args.push_back(
-        MDNode::get(Ctx, {MDString::get(Ctx, "llvm.loop.vectorize.enable"),
-                          ConstantAsMetadata::get(ConstantInt::get(
-                              llvm::Type::getInt1Ty(Ctx), AttrVal))}));
-  }
+  // vectorize.enable - disabled for minimal changes
 
   if (FollowupHasTransforms)
     Args.push_back(MDNode::get(
@@ -472,7 +445,7 @@ LoopAttributes::LoopAttributes(bool IsParallel)
       UnrollCount(0), UnrollAndJamCount(0),
       DistributeEnable(LoopAttributes::Unspecified), PipelineDisabled(false),
       PipelineInitiationInterval(0), CodeAlign(0), MustProgress(false),
-      VectorizeVersion(LoopAttributes::Unspecified) {}
+      VectorizeVersion(LoopAttributes::VectorizeVersion_Unspecified) {}
 
 void LoopAttributes::clear() {
   IsParallel = false;
@@ -490,7 +463,7 @@ void LoopAttributes::clear() {
   PipelineInitiationInterval = 0;
   CodeAlign = 0;
   MustProgress = false;
-  VectorizeVersion = LoopAttributes::Unspecified;
+  VectorizeVersion = LoopAttributes::VectorizeVersion_Unspecified;
 }
 
 LoopInfo::LoopInfo(BasicBlock *Header, const LoopAttributes &Attrs,
@@ -696,7 +669,7 @@ void LoopInfoStack::push(BasicBlock *Header, clang::ASTContext &Ctx,
         setPipelineDisabled(true);
         break;
       case LoopHintAttr::VectorizeVersion:
-        StagedAttrs.setVectorizeVersion(LoopAttributes::Disable);
+        StagedAttrs.setVectorizeVersion(LoopAttributes::VectorizeVersion_Neon);
         break;
       case LoopHintAttr::UnrollCount:
       case LoopHintAttr::UnrollAndJamCount:
@@ -726,7 +699,7 @@ void LoopInfoStack::push(BasicBlock *Header, clang::ASTContext &Ctx,
         setDistributeState(true);
         break;
       case LoopHintAttr::VectorizeVersion:
-        StagedAttrs.setVectorizeVersion(LoopAttributes::Enable);
+        StagedAttrs.setVectorizeVersion(LoopAttributes::VectorizeVersion_SVE);
         break;
       case LoopHintAttr::UnrollCount:
       case LoopHintAttr::UnrollAndJamCount:
@@ -739,27 +712,29 @@ void LoopInfoStack::push(BasicBlock *Header, clang::ASTContext &Ctx,
       }
       break;
     case LoopHintAttr::AssumeSafety:
-      switch (Option) {
-      case LoopHintAttr::Vectorize:
-      case LoopHintAttr::Interleave:
-        // Apply "llvm.mem.parallel_loop_access" metadata to load/stores.
-        setParallel(true);
-        setVectorizeEnable(true);
-        break;
-      case LoopHintAttr::Unroll:
-      case LoopHintAttr::UnrollAndJam:
-      case LoopHintAttr::VectorizePredicate:
-      case LoopHintAttr::VectorizeVersion:
-      case LoopHintAttr::UnrollCount:
-      case LoopHintAttr::UnrollAndJamCount:
-      case LoopHintAttr::VectorizeWidth:
-      case LoopHintAttr::InterleaveCount:
-      case LoopHintAttr::Distribute:
-      case LoopHintAttr::PipelineDisabled:
-      case LoopHintAttr::PipelineInitiationInterval:
-        llvm_unreachable("Options cannot be used to assume mem safety.");
-        break;
-      }
+        switch (Option) {
+        case LoopHintAttr::Vectorize:
+        case LoopHintAttr::Interleave:
+          // Apply "llvm.mem.parallel_loop_access" metadata to load/stores.
+          setParallel(true);
+          setVectorizeEnable(true);
+          break;
+        case LoopHintAttr::VectorizeVersion:
+          StagedAttrs.setVectorizeVersion(LoopAttributes::VectorizeVersion_SVE);
+          break;
+        case LoopHintAttr::Unroll:
+        case LoopHintAttr::UnrollAndJam:
+        case LoopHintAttr::VectorizePredicate:
+        case LoopHintAttr::UnrollCount:
+        case LoopHintAttr::UnrollAndJamCount:
+        case LoopHintAttr::VectorizeWidth:
+        case LoopHintAttr::InterleaveCount:
+        case LoopHintAttr::Distribute:
+        case LoopHintAttr::PipelineDisabled:
+        case LoopHintAttr::PipelineInitiationInterval:
+          llvm_unreachable("Options cannot be used to assume mem safety.");
+          break;
+        }
       break;
     case LoopHintAttr::Full:
       switch (Option) {
@@ -794,11 +769,7 @@ void LoopInfoStack::push(BasicBlock *Header, clang::ASTContext &Ctx,
         if (LH->getValue())
           setVectorizeWidth(ValueInt);
         break;
-      case LoopHintAttr::VectorizeVersion:
-        StagedAttrs.setVectorizeVersion(State == LoopHintAttr::ScalableWidth
-                                         ? LoopAttributes::Enable
-                                         : LoopAttributes::Disable);
-        break;
+
       default:
         llvm_unreachable("Options cannot be used with 'scalable' hint.");
         break;
@@ -809,8 +780,8 @@ void LoopInfoStack::push(BasicBlock *Header, clang::ASTContext &Ctx,
       switch (Option) {
       case LoopHintAttr::VectorizeVersion:
         StagedAttrs.setVectorizeVersion(State == LoopHintAttr::SVE
-                               ? LoopAttributes::Enable
-                               : LoopAttributes::Disable);
+                               ? LoopAttributes::VectorizeVersion_SVE
+                               : LoopAttributes::VectorizeVersion_Neon);
         break;
       default:
         llvm_unreachable("Options cannot be used with 'sve' or 'neon' hint.");
@@ -836,6 +807,7 @@ void LoopInfoStack::push(BasicBlock *Header, clang::ASTContext &Ctx,
       case LoopHintAttr::VectorizePredicate:
       case LoopHintAttr::Vectorize:
       case LoopHintAttr::VectorizeWidth:
+      case LoopHintAttr::VectorizeVersion:
       case LoopHintAttr::Interleave:
       case LoopHintAttr::Distribute:
       case LoopHintAttr::PipelineDisabled:
@@ -864,6 +836,22 @@ void LoopInfoStack::push(BasicBlock *Header, clang::ASTContext &Ctx,
         (StagedAttrs.UnrollEnable == LoopAttributes::Unspecified &&
          StagedAttrs.UnrollCount == 0))
       setUnrollState(LoopAttributes::Disable);
+
+  // Set default vectorize version from command line option if not specified by pragma
+  if (StagedAttrs.VectorizeVersion == LoopAttributes::VectorizeVersion_Unspecified) {
+    switch (CGOpts.getVectorizeVersion()) {
+    case CodeGenOptions::VectorizeVersion_SVE:
+      StagedAttrs.setVectorizeVersion(LoopAttributes::VectorizeVersion_SVE);
+      if (StagedAttrs.VectorizeEnable == LoopAttributes::Unspecified)
+        setVectorizeEnable(true);
+      break;
+    case CodeGenOptions::VectorizeVersion_Neon:
+      StagedAttrs.setVectorizeVersion(LoopAttributes::VectorizeVersion_Neon);
+      if (StagedAttrs.VectorizeEnable == LoopAttributes::Unspecified)
+        setVectorizeEnable(true);
+      break;
+    }
+  }
 
   /// Stage the attributes.
   push(Header, StartLoc, EndLoc);
