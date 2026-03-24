@@ -3081,6 +3081,10 @@ struct CleanupExtractSlice
             op.getLoc(), indices[indices.size() - 1], ofs);
 
         newIndices[indices.size() - 1] = addidx;
+
+        OpBuilder::InsertionGuard guard(rewriter);
+        rewriter.setInsertionPointAfter(readOp);
+
         auto newVectType = cast<VectorType>(op.getResult().getType());
         auto newReadOp = rewriter.create<mlir::vector::TransferReadOp>(
             readOp.getLoc(), newVectType, readOp.getSource(), newIndices,
