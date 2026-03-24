@@ -162,7 +162,7 @@ cl::opt<unsigned> llvm::SetLicmMssaNoAccForPromotionCap(
  	     "licm-skip-no-memory-inline-asm",
  	     cl::desc("Skip no-memory inline asm when computing clobbering memory "
  	              "access in LICM"),
- 	     cl::init(true));
+ 	     cl::init(false));
 
 static bool inSubLoop(BasicBlock *BB, Loop *CurLoop, LoopInfo *LI);
 static bool isNotUsedOrFoldableInLoop(const Instruction &I, const Loop *CurLoop,

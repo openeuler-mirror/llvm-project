@@ -1,4 +1,4 @@
-; RUN: opt < %s -passes='mem2reg,simplifycfg,loop-simplify,lcssa,loop-mssa(licm)' -S | FileCheck %s
+; RUN: opt < %s -passes='mem2reg,simplifycfg,loop-simplify,lcssa,loop-mssa(licm)' -licm-skip-no-memory-inline-asm=true -S | FileCheck %s
 
 @p = dso_local global ptr null, align 8
 define dso_local void @foo() {
