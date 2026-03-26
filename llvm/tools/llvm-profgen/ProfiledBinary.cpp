@@ -55,6 +55,10 @@ static cl::list<std::string> DisassembleFunctions(
     cl::desc("List of functions to print disassembly for. Accept demangled "
              "names only. Only work with show-disassembly-only"));
 
+static cl::opt<uint32_t> TargetPageSize("page-size", cl::init(0x1000), 
+                                         cl::desc("Target system page size."));
+
+
 extern cl::opt<bool> ShowDetailedWarning;
 extern cl::opt<bool> InferMissingFrames;
 
@@ -316,7 +320,13 @@ void ProfiledBinary::setPreferredTextSegmentAddresses(const ELFFile<ELFT> &Obj,
   // However such info isn't available at post-processing time, assuming
   // 4K page now. Note that we don't use EXEC_PAGESIZE from <linux/param.h>
   // because we may build the tools on non-linux.
-  uint32_t PageSize = 0x1000;
+
+  // Use the page size specified by -page-size option, which should match
+  // the page size of the system where profiling was performed.
+  uint32_t PageSize = TargetPageSize;
+  if ((PageSize <= 0) || (PageSize & (PageSize - 1))) {
+    exitWithError("Number in -page-size=<num> must be positive power of two", FileName);
+  }
   for (const typename ELFT::Phdr &Phdr : PhdrRange) {
     if (Phdr.p_type == ELF::PT_LOAD) {
       if (!FirstLoadableAddress)
