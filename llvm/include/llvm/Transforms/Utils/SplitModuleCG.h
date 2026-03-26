@@ -84,12 +84,17 @@ public:
   void print();
   SimplifyCallGraphNode *getOrInsertFunction(const Function *F);
   void traceIndirectCallUsage(Value *V, Function *F, SimplifyCallGraphNode *SCGNode, int Depth);
+  DenseMap<const Function *, DenseSet<const GlobalVariable *>> &getVTableRecord() {
+    return VTableRecord;
+  }
+
 private:
   CallGraph &CG;
   Module &M;
   DenseSet<const Function *> &LargeFuncs;
   DenseSet<const Function *> &HotFuncs;
   DenseSet<const Function *> &AliasesFuncs;
+  DenseMap<const Function *, DenseSet<const GlobalVariable *>> VTableRecord;
 };
 
 class SimplifyCallGraphNode {
@@ -278,10 +283,6 @@ public:
   unsigned getPartitionNum() { return N; }
   StringSet<> &getOriginalExternals() { return OriginalExternals; }
   StringMap<std::string> &getPromotedRenames() { return PromotedRenames; }
-
-  DenseMap<StringRef, bool> &getChangeLinkageFunction() {
-    return ChangeLinkageFuncs;
-  }
   DenseSet<const Function *> &getIfuncFuncs() { return IfuncFuncs; }
 
 private:
@@ -299,10 +300,10 @@ private:
   DenseSet<const Function *> IfuncFuncs;
   DenseSet<const Function *> ComdatFuncs;
   DenseSet<const Function *> IndirectCalleeFuncs;
-  DenseMap<StringRef, bool> ChangeLinkageFuncs;
   StringSet<> OriginalExternals;
   StringMap<std::string> PromotedRenames;
   DenseMap<const Function *, bool> externalFunction;
+  DenseMap<const GlobalVariable *, bool> ExternalGVs;
   DenseMap<const Function *, CostType> FuncsCosts;
   ThreadPool *PartitionThreadPool;
   const llvm::lto::Config &C;
