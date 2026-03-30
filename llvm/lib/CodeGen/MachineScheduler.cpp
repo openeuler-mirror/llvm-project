@@ -173,6 +173,10 @@ static cl::opt<unsigned>
     MIResourceCutOff("misched-resource-cutoff", cl::Hidden,
                      cl::desc("Number of intervals to track"), cl::init(10));
 
+static cl::opt<bool> ForceGroupLdSt(
+    "force-group-ldst", cl::Hidden, cl::init(false),
+    cl::desc("Enable heuristic considering grouping ld/st instrs"));
+
 // DAG subtrees must have at least this many nodes.
 static const unsigned MinSubtreeSize = 8;
 
@@ -831,6 +835,11 @@ void ScheduleDAGMI::schedule() {
     SUnit *SU = SchedImpl->pickNode(IsTopNode);
     if (!SU) break;
 
+    if (IsTopNode)
+      SchedImpl->IsPreMemOpLd = !SU->getInstr()->mayStore();
+    else
+      SchedImpl->IsPreMemOpSt = !SU->getInstr()->mayStore();
+
     assert(!SU->isScheduled && "Node already scheduled");
     if (!checkSchedLimit())
       break;
@@ -1450,6 +1459,11 @@ void ScheduleDAGMILive::schedule() {
     LLVM_DEBUG(dbgs() << "** ScheduleDAGMILive::schedule picking next node\n");
     SUnit *SU = SchedImpl->pickNode(IsTopNode);
     if (!SU) break;
+
+    if (IsTopNode)
+      SchedImpl->IsPreMemOpLd = !SU->getInstr()->mayStore();
+    else
+      SchedImpl->IsPreMemOpSt = !SU->getInstr()->mayStore();
 
     assert(!SU->isScheduled && "Node already scheduled");
     if (!checkSchedLimit())
@@ -3039,6 +3053,7 @@ const char *GenericSchedulerBase::getReasonStr(
   case Stall:          return "STALL     ";
   case Cluster:        return "CLUSTER   ";
   case Weak:           return "WEAK      ";
+  case LdStGroup:      return "LDST-GROUP";
   case RegMax:         return "REG-MAX   ";
   case ResourceReduce: return "RES-REDUCE";
   case ResourceDemand: return "RES-DEMAND";
@@ -3215,6 +3230,9 @@ void GenericScheduler::initialize(ScheduleDAGMI *dag) {
   }
   TopCand.SU = nullptr;
   BotCand.SU = nullptr;
+
+  IsPreMemOpLd = true;
+  IsPreMemOpSt = true;
 }
 
 /// Initialize the per-region scheduling policy.
@@ -3459,6 +3477,20 @@ int biasPhysReg(const SUnit *SU, bool isTop) {
 }
 } // end namespace llvm
 
+int tryGroupLdSt(const SUnit *SU, bool IsPreMemOpLd, bool IsPreMemOpSt,
+                 bool IsTop) {
+  const MachineInstr *MI = SU->getInstr();
+  if (IsTop) {
+    if (IsPreMemOpLd && MI->mayStore())
+      return -1;
+    return 1;
+  }
+
+  if (IsPreMemOpSt && MI->mayLoad())
+    return -1;
+  return 1;
+}
+
 void GenericScheduler::initCandidate(SchedCandidate &Cand, SUnit *SU,
                                      bool AtTop,
                                      const RegPressureTracker &RPTracker,
@@ -3595,6 +3627,14 @@ bool GenericScheduler::tryCandidate(SchedCandidate &Cand,
                    Cand.ResDelta.DemandedResources,
                    TryCand, Cand, ResourceDemand))
       return TryCand.Reason != NoCand;
+
+    if (ForceGroupLdSt)
+      if (tryGreater(
+              tryGroupLdSt(TryCand.SU, IsPreMemOpLd, IsPreMemOpSt,
+                           TryCand.AtTop),
+              tryGroupLdSt(Cand.SU, IsPreMemOpLd, IsPreMemOpSt, Cand.AtTop),
+              TryCand, Cand, LdStGroup))
+        return TryCand.Reason != NoCand;
 
     // Avoid serializing long latency dependence chains.
     // For acyclic path limited loops, latency was already checked above.
@@ -3902,6 +3942,13 @@ bool PostGenericScheduler::tryCandidate(SchedCandidate &Cand,
                  Cand.ResDelta.DemandedResources,
                  TryCand, Cand, ResourceDemand))
     return TryCand.Reason != NoCand;
+
+  if (ForceGroupLdSt)
+    if (tryGreater(
+            tryGroupLdSt(TryCand.SU, IsPreMemOpLd, IsPreMemOpSt, TryCand.AtTop),
+            tryGroupLdSt(Cand.SU, IsPreMemOpLd, IsPreMemOpSt, Cand.AtTop),
+            TryCand, Cand, LdStGroup))
+      return TryCand.Reason != NoCand;
 
   // Avoid serializing long latency dependence chains.
   if (Cand.Policy.ReduceLatency && tryLatency(TryCand, Cand, Top)) {
