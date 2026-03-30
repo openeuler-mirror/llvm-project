@@ -133,6 +133,8 @@ def Naked : EnumAttr<"naked", [FnAttr]>;
 /// Nested function static chain.
 def Nest : EnumAttr<"nest", [ParamAttr]>;
 
+def NCSched : EnumAttr<"ncsched", [FnAttr]>;
+
 /// Considered to not alias after call.
 def NoAlias : EnumAttr<"noalias", [ParamAttr, RetAttr]>;
 

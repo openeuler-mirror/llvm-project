@@ -813,7 +813,8 @@ void ScheduleDAGInstrs::buildSchedGraph(AAResults *AA,
   // on it, stores and loads kept separately. Two SUs are trivially
   // non-aliasing if they both depend on only identified Values and do
   // not share any common Value.
-  Value2SUsMap Stores, Loads(1 /*TrueMemOrderLatency*/);
+  Value2SUsMap Stores(IsNCSched ? NCMemLatency : 0),
+      Loads(1 /*TrueMemOrderLatency*/);
 
   // Certain memory accesses are known to not alias any SU in Stores
   // or Loads, and have therefore their own 'NonAlias'
@@ -822,7 +823,8 @@ void ScheduleDAGInstrs::buildSchedGraph(AAResults *AA,
   // accesses always have a proper memory operand modelling, and are
   // therefore never unanalyzable, but this is conservatively not
   // done.
-  Value2SUsMap NonAliasStores, NonAliasLoads(1 /*TrueMemOrderLatency*/);
+  Value2SUsMap NonAliasStores(IsNCSched ? NCMemLatency : 0),
+      NonAliasLoads(1 /*TrueMemOrderLatency*/);
 
   // Track all instructions that may raise floating-point exceptions.
   // These do not depend on one other (or normal loads or stores), but

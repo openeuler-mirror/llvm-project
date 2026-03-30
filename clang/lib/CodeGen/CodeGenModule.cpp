@@ -2301,6 +2301,18 @@ void CodeGenModule::SetLLVMFunctionAttributesForDefinition(const Decl *D,
       B.addAttribute("aarch64_new_za");
   }
 
+  if (auto *NCSched = D->getAttr<NCSchedAttr>()) {
+    std::string A = "ncsched";
+    std::string V = "";
+    for (ParamIdx *Arg = NCSched->args_begin(); Arg != NCSched->args_end();
+         Arg++) {
+      V += std::to_string(Arg->getASTIndex());
+      if (Arg != NCSched->args_end() - 1)
+        V += ",";
+    }
+    B.addAttribute(A, V);
+  }
+
   // Track whether we need to add the optnone LLVM attribute,
   // starting with the default for this optimization level.
   bool ShouldAddOptNone =
