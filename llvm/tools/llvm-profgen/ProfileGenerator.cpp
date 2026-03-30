@@ -12,6 +12,9 @@
 #include "ProfiledBinary.h"
 #include "llvm/DebugInfo/Symbolize/SymbolizableModule.h"
 #include "llvm/ProfileData/ProfileCommon.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/JSON.h"
+#include "llvm/Support/raw_ostream.h"
 #include <algorithm>
 #include <float.h>
 #include <unordered_set>
@@ -99,6 +102,36 @@ cl::opt<bool> InferMissingFrames(
     llvm::cl::desc(
         "Infer missing call frames due to compiler tail call elimination."),
     llvm::cl::Optional);
+
+static cl::opt<int32_t> PrefetchDistance(
+    "prefetch-distance", cl::value_desc("prefetch-distance"), cl::init(256),
+    cl::desc("Distance to prefetch ahead, which unit is byte (default: 256)."));
+
+static cl::opt<uint32_t> TopN(
+    "top-N", cl::value_desc("top-N"), cl::init(10),
+    cl::desc("Select N instructions with the most llc miss samples in perf "
+             "data as prefetch candidates (default: 10)."));
+
+static cl::opt<bool> EnableAutoPGO(
+    "enable-auto-pgo", cl::init(false),
+    cl::desc("Enable automatic PGO prefetching."));
+
+static cl::opt<std::string> AutoPGOConfig(
+    "auto-pgo-config", cl::value_desc("path"), cl::init("AutoPGOConfig.json"),
+    cl::desc("Specify the path of automatic PGO prefetching's config file."));
+
+static cl::opt<double> NoiseGate(
+    "noise-gate", cl::init(0.12),
+    cl::desc("Specify the noise gate of llc miss samples (default: 0.12)."));
+
+static cl::opt<uint32_t> MinLLCThreshold(
+    "min-llc-threshold", cl::init(50),
+    cl::desc("Specify the minimum processing threshold (default: 50)."));
+
+static cl::opt<uint32_t> PrefetchStep(
+    "prefetch-step", cl::init(32),
+    cl::desc("Specify the step size for the llc-miss optimization algorithm "
+             "(default: 32)."));
 
 using namespace llvm;
 using namespace sampleprof;
@@ -442,6 +475,12 @@ bool ProfileGeneratorBase::collectFunctionsFromRawProfile(
       if (FuncRange *FRange = Binary->findFuncRange(TargetAddress))
         ProfiledFunctions.insert(FRange->Func);
     }
+
+    for (auto Item : CI.second.SPECounter) {
+      uint64_t StartAddress = Item.first;
+      if (FuncRange *FRange = Binary->findFuncRange(StartAddress))
+        ProfiledFunctions.insert(FRange->Func);
+    }
   }
   return true;
 }
@@ -524,6 +563,8 @@ void ProfileGenerator::generateLineNumBasedProfile() {
   populateBodySamplesForAllFunctions(SC.RangeCounter);
   // Fill in boundary sample counts as well as call site samples for calls
   populateBoundarySamplesForAllFunctions(SC.BranchCounter);
+  // Fill in prefetch hints samples.
+  populateSPESamplesForAllFunctions(SC.SPECounter);
 
   updateFunctionSamples();
 }
@@ -538,6 +579,9 @@ void ProfileGenerator::generateProbeBasedProfile() {
   populateBodySamplesWithProbesForAllFunctions(SC.RangeCounter);
   // Fill in boundary sample counts as well as call site samples for calls
   populateBoundarySamplesWithProbesForAllFunctions(SC.BranchCounter);
+  // Fill in prefetch hints samples with Line number always though Profile is
+  // probe based.
+  populateSPESamplesForAllFunctions(SC.SPECounter);
 
   updateFunctionSamples();
 }
@@ -592,6 +636,271 @@ void ProfileGenerator::populateBoundarySamplesWithProbesForAllFunctions(
           FrameVec.back().Location.LineOffset,
           FrameVec.back().Location.Discriminator,
           CalleeName, Count);
+    }
+  }
+}
+
+static void findOptimalDistSingleShot(int &CurrentDist, int &ProbeDist,
+                                      int &ProbeMiss, int &BaseMiss,
+                                      int &Direction, int &Step, int &IsStable) {
+  double Improvement =
+      static_cast<double>(BaseMiss - ProbeMiss) / static_cast<double>(BaseMiss);
+
+  if (ProbeMiss < MinLLCThreshold) {
+    IsStable = 1;
+    return;
+  }
+
+  if (Improvement > NoiseGate) {
+    CurrentDist = ProbeDist;
+    BaseMiss = ProbeMiss;
+  } else if (Improvement < -NoiseGate) {
+    Direction *= -1;
+    Step /= 2;
+  } else {
+    IsStable = 1;
+    Step /= 2;
+  }
+
+  if (Step < 4) {
+    IsStable = 1;
+    return;
+  }
+
+  ProbeDist = CurrentDist + (Step * Direction);
+
+  while (ProbeDist < 0 || ProbeDist > 256) {
+    Direction *= -1;
+    Step /= 2;
+    if (Step < 4)
+      break;
+    ProbeDist = CurrentDist + (Step * Direction);
+  }
+}
+
+void ProfileGenerator::initPGOConfig(
+    const std::vector<std::pair<uint64_t, uint64_t>> &Vec) {
+  std::error_code EC;
+  llvm::raw_fd_ostream CfgFile(AutoPGOConfig, EC);
+
+  if (EC)
+    WithColor::error() << "Failed to open " << AutoPGOConfig
+                       << " to save config info.\n";
+
+  llvm::json::Array FuncsArr;
+  constexpr int64_t InitialDist = 32;
+  constexpr int64_t InitialStep = 32;
+  for (size_t I = 0; I < Vec.size() && I < TopN; ++I) {
+    const auto &[Address, Count] = Vec[I];
+    const SampleContextFrameVector FrameVec =
+        Binary->getCachedFrameLocationStack(Address);
+    if (FrameVec.empty()) {
+      WithColor::warning()
+          << "No source information found for the address: " << Address << "\n";
+      continue;
+    }
+
+    llvm::json::Object Func;
+    // Specify which iteration it is, counting from 1. 
+    Func["Iter"] = 1;
+    // Specify the hash value for the source code location.
+    Func["FrameHash"] = FrameVec.back().getHashCode();
+    // Record each prefetch distance.
+    Func["Distance"] = llvm::json::Array({-1});
+    // Record each llc-miss count.
+    Func["LLCCount"] = llvm::json::Array({Count});
+    // Specify whether recording is enabled for a specific load instruction. 
+    Func["Disable"] = 0;
+    // Temporary parameters for optimization algorithms.
+    Func["CurrentDist"] = 0;
+    Func["ProbeDist"] = PrefetchStep.getValue();
+    Func["ProbeMiss"] = -1;
+    Func["BaseMiss"] = Count;
+    Func["Direction"] = 1;
+    Func["Step"] = PrefetchStep.getValue();
+    Func["Stable"] = llvm::json::Array({0});
+
+    FuncsArr.push_back(std::move(Func));
+
+    // Modify afdo file for the second iteration.
+    FunctionSamples &FunctionProfile =
+        getLeafProfileAndAddTotalSamples(FrameVec, 0);
+    FunctionProfile.addCalledTargetSamples(
+        FrameVec.back().Location.LineOffset,
+        getBaseDiscriminator(FrameVec.back().Location.Discriminator),
+        "__load", static_cast<int64_t>(PrefetchStep));
+    FunctionProfile.addTotalSamples(0);
+  }
+  llvm::json::Object CfgObj{{"FuncArr", std::move(FuncsArr)}};
+  CfgFile << llvm::json::Value(std::move(CfgObj));
+}
+
+void ProfileGenerator::updatePGOConfig(
+    const std::vector<std::pair<uint64_t, uint64_t>> &Vec) {
+  ErrorOr<std::unique_ptr<MemoryBuffer>> BufferOrErr
+      = MemoryBuffer::getFile(AutoPGOConfig);
+  if (std::error_code EC = BufferOrErr.getError()) {
+    WithColor::error() << "Could not open file: " << EC.message() << "\n";
+    exit(1);
+  }
+
+  Expected<json::Value> ValOrErr = json::parse(BufferOrErr.get()->getBuffer());
+  if (!ValOrErr) {
+    handleErrors(ValOrErr.takeError(), [](const StringError &E) {
+      errs() << "Parse failed: " << E.getMessage() << "\n";
+    });
+    exit(1);
+  }
+
+  json::Value &V = *ValOrErr;
+  json::Object *Obj = V.getAsObject();
+  if (!Obj) {
+    errs() << "Top level is not an object\n";
+    return;
+  }
+
+  json::Array *FuncArr = Obj->getArray("FuncArr");
+  llvm::json::Array NewFuncArr;
+
+  bool Changed = false;
+  int64_t It = 0;
+
+  for (json::Value &Item : *FuncArr) {
+    json::Object *Func = Item.getAsObject();
+    int64_t Iter = Func->getInteger("Iter").value();
+    It = Iter;
+    uint64_t FrameHash = Func->get("FrameHash")->getAsUINT64().value();
+    json::Array *Distance = Func->getArray("Distance");
+    json::Array *LLCCount = Func->getArray("LLCCount");
+    int64_t CurrentDist = Func->getInteger("CurrentDist").value();
+    int64_t ProbeDist = Func->getInteger("ProbeDist").value();
+    int64_t BaseMiss = Func->getInteger("BaseMiss").value();
+    int64_t Direction = Func->getInteger("Direction").value();
+    int64_t Step = Func->getInteger("Step").value();
+    json::Array *Stable = Func->getArray("Stable");
+    int64_t Disable = Func->getInteger("Disable").value();
+    if (Disable) {
+      NewFuncArr.push_back(std::move(*Func));
+      continue;
+    }
+
+    bool HasFound = false;
+
+    for (size_t I = 0; I < Vec.size(); ++I) {
+      auto &[Address, Count] = Vec[I];
+      const SampleContextFrameVector FrameVec =
+          Binary->getCachedFrameLocationStack(Address);
+      if (FrameVec.empty()) {
+        WithColor::warning()
+            << "No source information found for the address: " << Address
+            << "\n";
+        continue;
+      }
+			
+      if (FrameHash != FrameVec.back().getHashCode())
+        continue;
+      HasFound = true;
+
+      // Update config file.
+      (*Func)["Iter"] = Iter + 1;
+
+      int TmpCurrentDist = CurrentDist;
+      int TmpProbeDist = ProbeDist;
+      int TmpProbeMiss = Count;
+      int TmpBaseMiss = BaseMiss;
+      int TmpDirection = Direction;
+      int TmpStep = Step;
+      int IsStable = 0;
+
+      Distance->push_back(TmpProbeDist);
+      (*Func)["Distance"] = std::move(*Distance);
+
+      findOptimalDistSingleShot(TmpCurrentDist, TmpProbeDist, TmpProbeMiss,
+                                TmpBaseMiss, TmpDirection, TmpStep, IsStable);
+
+      (*Func)["CurrentDist"] = TmpCurrentDist;
+      (*Func)["ProbeDist"] = TmpProbeDist;
+      (*Func)["ProbeMiss"] = TmpProbeMiss;
+      (*Func)["BaseMiss"] = TmpBaseMiss;
+      (*Func)["Direction"] = TmpDirection;
+      (*Func)["Step"] = TmpStep;
+      Stable->push_back(IsStable);
+      (*Func)["Stable"] = std::move(*Stable);
+
+      // Check stop.
+      size_t S = Stable->size();
+      if (S >= 3 && !((*Stable)[S-1].getAsInteger().value() == 1 &&
+                      (*Stable)[S-2].getAsInteger().value() == 1))
+        Changed = true;
+
+      LLCCount->push_back(Count);
+      (*Func)["LLCCount"] = std::move(*LLCCount);
+
+      // Update afdo file.
+      FunctionSamples &FunctionProfile =
+          getLeafProfileAndAddTotalSamples(FrameVec, 0);
+      FunctionProfile.addCalledTargetSamples(
+          FrameVec.back().Location.LineOffset,
+          getBaseDiscriminator(FrameVec.back().Location.Discriminator),
+          "__load", TmpProbeDist);
+      FunctionProfile.addTotalSamples(0);
+      break;	
+    }
+    if (!HasFound)
+      (*Func)["Disable"] = 1;
+    NewFuncArr.push_back(std::move(*Func));
+  }
+
+  // Convergence reached. Pausing.
+  if (It > 3 && !Changed) {
+    errs() << "AutoConfig is stable. Stop.\n";
+    return;
+  }
+
+  llvm::json::Object CfgObj;
+  CfgObj["FuncArr"] = std::move(NewFuncArr);
+  std::error_code EC;
+  llvm::raw_fd_ostream CfgFile(AutoPGOConfig, EC, sys::fs::OF_Text);
+  CfgFile << llvm::json::Value(std::move(CfgObj));
+}
+
+void ProfileGenerator::populateSPESamplesForAllFunctions(
+    const std::unordered_map<uint64_t, uint64_t> &SPECounter) {
+  if (SPECounter.empty())
+    return;
+  FunctionSamples::ProfileIsProbeBased = false;
+  std::vector<std::pair<uint64_t, uint64_t>> Vec;
+  Vec.reserve(SPECounter.size());
+  for (const auto &Item : SPECounter)
+    Vec.emplace_back(Item.first, Item.second);
+  stable_sort(Vec,
+      [](const auto &A, const auto &B) {return A.second > B.second;});
+	
+  if (EnableAutoPGO) {
+    // Defaults to the first iteration if no config file is found.
+    if (!sys::fs::exists(AutoPGOConfig))
+      initPGOConfig(Vec);
+    else
+      updatePGOConfig(Vec);
+  } else {
+    // Use fixed prefetch distance if AutoPGO is not enabled.
+    for (size_t i = 0; i < Vec.size() && i < TopN; ++i) {
+      uint64_t Address = Vec[i].first;
+      const SampleContextFrameVector FrameVec =
+          Binary->getCachedFrameLocationStack(Address);
+      if (!FrameVec.empty()) {
+        FunctionSamples &FunctionProfile = getLeafProfileAndAddTotalSamples(
+            FrameVec, 0);
+        // Currently, the profile expects unsigned values, corresponding to
+        // number of collected samples. We're hacking support for prefetch hints
+        // on top of that, and prefetch hints are signed. For now, we'll
+        // explicitly cast it to unsigned.
+        FunctionProfile.addCalledTargetSamples(
+            FrameVec.back().Location.LineOffset,
+            getBaseDiscriminator(FrameVec.back().Location.Discriminator),
+            "__load", static_cast<uint64_t>(PrefetchDistance));
+        FunctionProfile.addTotalSamples(0);
+      }
     }
   }
 }

@@ -62,6 +62,7 @@ add_llvm_target(AArch64CodeGen
   AArch64RedundantCopyElimination.cpp
   AArch64ISelDAGToDAG.cpp
   AArch64ISelLowering.cpp
+  AArch64InsertPrefetch.cpp
   AArch64InstrInfo.cpp
   AArch64LoadStoreOptimizer.cpp
   AArch64LoopIdiomTransform.cpp

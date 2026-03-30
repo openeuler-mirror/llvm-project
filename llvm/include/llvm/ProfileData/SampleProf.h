@@ -494,6 +494,11 @@ struct SampleContextFrame {
     }
     return OContextStr.str();
   }
+
+  uint64_t getHashCode() const {
+    return hash_combine(FuncName, Location.LineOffset, 
+                        Location.Discriminator);
+  }
 };
 
 static inline hash_code hash_value(const SampleContextFrame &arg) {

@@ -199,6 +199,8 @@ static cl::opt<bool> EnableGISelLoadStoreOptPostLegal(
     cl::desc("Enable GlobalISel's post-legalizer load/store optimization pass"),
     cl::init(false), cl::Hidden);
 
+extern cl::opt<bool> EnableAArch64InsertPrefetch;
+
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeAArch64Target() {
   // Register the target.
   RegisterTargetMachine<AArch64leTargetMachine> X(getTheAArch64leTarget());
@@ -767,6 +769,10 @@ void AArch64PassConfig::addPreRegAlloc() {
     // be register coalescer friendly.
     addPass(&PeepholeOptimizerID);
   }
+
+  // Insert Prefetch instruction if prefetch hints file is used.
+  if (EnableAArch64InsertPrefetch)
+    addPass(createAArch64InsertPrefetchPass());
 }
 
 void AArch64PassConfig::addPostRegAlloc() {

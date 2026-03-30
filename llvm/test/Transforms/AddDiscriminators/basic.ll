@@ -1,4 +1,4 @@
-; RUN: opt < %s -passes=add-discriminators -S | FileCheck %s
+; RUN: opt < %s -passes=add-discriminators -discriminate-memops=0 -S | FileCheck %s
 
 ; Basic DWARF discriminator test. All the instructions in block
 ; 'if.then' should have a different discriminator value than

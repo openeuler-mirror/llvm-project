@@ -1,4 +1,4 @@
-; RUN: opt < %s -passes=add-discriminators -S | FileCheck %s
+; RUN: opt < %s -passes=add-discriminators -discriminate-memops=0 -S | FileCheck %s
 
 ; Discriminator support for multiple CFG paths on the same line.
 ;
