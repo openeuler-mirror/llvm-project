@@ -26,6 +26,8 @@
 #include "llvm/CodeGen/TargetRegisterInfo.h"
 #include "llvm/CodeGen/TargetSchedule.h"
 #include "llvm/MC/LaneBitmask.h"
+#include "llvm/ProfileData/SampleProfReader.h"
+#include "llvm/Support/VirtualFileSystem.h"
 #include <cassert>
 #include <cstdint>
 #include <list>
@@ -360,6 +362,24 @@ namespace llvm {
     /// \returns true if the edge may be added without creating a cycle OR if an
     /// equivalent edge already existed (false indicates failure).
     bool addEdge(SUnit *SuccSU, const SDep &PredDep);
+
+    std::unique_ptr<SampleProfileReader> Reader;
+
+    bool readAfdoFile(LLVMContext &Ctx, const std::string &FilePath) {
+      auto FS = vfs::getRealFileSystem();
+      auto ReaderOrErr = SampleProfileReader::create(FilePath, Ctx, *FS);
+      if (auto EC = ReaderOrErr.getError()) {
+        std::string Msg = "Could not open profile: " + EC.message();
+        Ctx.diagnose(DiagnosticInfoSampleProfile(
+                        FilePath, Msg, DiagnosticSeverity::DS_Warning));
+        return false;
+      }
+
+      Reader = std::move(ReaderOrErr.get());
+      Reader->read();
+
+      return Reader != nullptr;
+    }
 
   protected:
     void initSUnits();
