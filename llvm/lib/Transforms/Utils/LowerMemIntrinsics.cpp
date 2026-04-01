@@ -486,8 +486,8 @@ void llvm::createMemCpyAsScalableLoop(Instruction *InsertBefore, Value *SrcAddr,
   Type *BoolVecTy =
       VectorType::get(Builder.getInt1Ty(), VecTy->getElementCount());
   Function *ActiveMaskFunc =
-      Intrinsic::getDeclaration(M, Intrinsic::get_active_lane_mask,
-                                {BoolVecTy, PendingLength_Epi->getType()});
+      Intrinsic::getOrInsertDeclaration(M, Intrinsic::get_active_lane_mask,
+                                        {BoolVecTy, PendingLength_Epi->getType()});
 
   auto *Mask = Builder.CreateCall(ActiveMaskFunc, {Zero, PendingLength_Epi});
   auto *MaskedLoad = Builder.CreateMaskedLoad(VecTy, SrcEpi, SrcAlign, Mask);

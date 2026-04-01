@@ -1864,13 +1864,13 @@ bool MemCpyOptPass::processMemCpy(MemCpyInst *M, BasicBlock::iterator &BBI,
     BasicBlock *VersionedCallBB = BasicBlock::Create(
         Ctx, "call.memcpy.inline", M->getFunction(), FollowingBB);
     MemCpyInst *M_Inline = cast<MemCpyInst>(M->clone());
-    Function *MemCpyInline = Intrinsic::getDeclaration(
+    Function *MemCpyInline = Intrinsic::getOrInsertDeclaration(
         M->getModule(), Intrinsic::memcpy_inline, ArgTys);
     M_Inline->setCalledFunction(MemCpyInline);
     M_Inline->insertInto(VersionedCallBB, VersionedCallBB->begin());
     BranchInst::Create(FollowingBB, VersionedCallBB);
     BranchInst::Create(VersionedCallBB, OriginalCallBB, Check,
-                       BB->getTerminator());
+                       BB->getTerminator()->getIterator());
     // Make sure we do not invalidate the iterator.
     BBI = IsBBStart ? BB->begin() : PrevIter;
     BB->getTerminator()->eraseFromParent();
