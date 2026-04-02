@@ -1211,8 +1211,8 @@ func.func @assumingOp(
 
 // -----
 
-// Test Case: The op "test.bar" does not implement the RegionBranchOpInterface.
-// This is not allowed in buffer deallocation.
+// Test Case: An op with a region that returns a memref result but does not
+// implement RegionBranchOpInterface is not allowed in buffer deallocation.
 
 func.func @noRegionBranchOpInterface() {
 // expected-error@+1 {{All operations with attached regions need to implement the RegionBranchOpInterface.}}
@@ -1220,9 +1220,9 @@ func.func @noRegionBranchOpInterface() {
 // expected-error@+1 {{All operations with attached regions need to implement the RegionBranchOpInterface.}}
     %1 = "test.bar"() ({
       "test.yield"() : () -> ()
-    }) : () -> (i32)
+    }) : () -> (memref<i32>)
     "test.yield"() : () -> ()
-  }) : () -> (i32)
+  }) : () -> (memref<i32>)
   "test.terminator"() : () -> ()
 }
 
@@ -1460,3 +1460,21 @@ func.func @auto_dealloc() {
 // CHECK-NEXT:  return
 
 
+
+// -----
+
+// Test that memref.generic_atomic_rmw with a non-memref result (e.g., f16)
+// does not trigger the "must implement RegionBranchOpInterface" diagnostic.
+// The buffer deallocation pass only tracks memref-typed values; a scalar
+// result must not be treated as a buffer ownership concern.
+
+// CHECK-LABEL: func @generic_atomic_rmw_f16_no_interface
+func.func @generic_atomic_rmw_f16_no_interface(%arg0: memref<1xf16>) {
+  %c0 = arith.constant 0 : index
+  %0 = memref.generic_atomic_rmw %arg0[%c0] : memref<1xf16> {
+  ^bb0(%cur: f16):
+    memref.atomic_yield %cur : f16
+  }
+  return
+}
+// CHECK-NOT: error
