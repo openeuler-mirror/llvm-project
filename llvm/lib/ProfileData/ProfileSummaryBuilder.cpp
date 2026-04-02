@@ -35,6 +35,12 @@ cl::opt<int> ProfileSummaryCutoffHot(
     cl::desc("A count is hot if it exceeds the minimum count to"
              " reach this percentile of total counts."));
 
+cl::opt<int> ProfileSummaryCutoffHotICP(
+    "profile-summary-cutoff-hot-icp", cl::Hidden, cl::init(990000),
+    cl::desc("A count is hot in the context of ICP, if it exceeds the minimum "
+             "count to"
+             " reach this percentile of total counts."));
+
 cl::opt<int> ProfileSummaryCutoffCold(
     "profile-summary-cutoff-cold", cl::Hidden, cl::init(999999),
     cl::desc("A count is cold if it is below the minimum count"
@@ -170,6 +176,16 @@ ProfileSummaryBuilder::getHotCountThreshold(const SummaryEntryVector &DS) {
   if (ProfileSummaryHotCount.getNumOccurrences() > 0)
     HotCountThreshold = ProfileSummaryHotCount;
   return HotCountThreshold;
+}
+
+uint64_t ProfileSummaryBuilder::getHotCountThresholdForICP(
+    const SummaryEntryVector &DS) {
+  auto &HotEntry = ProfileSummaryBuilder::getEntryForPercentile(
+      DS, ProfileSummaryCutoffHotICP);
+  uint64_t HotCountThresholdICP = HotEntry.MinCount;
+  if (ProfileSummaryHotCount.getNumOccurrences() > 0)
+    HotCountThresholdICP = ProfileSummaryHotCount;
+  return HotCountThresholdICP;
 }
 
 uint64_t
