@@ -336,6 +336,7 @@ void AArch64Subtarget::initializeProperties(bool HasMinSize) {
     PrefLoopAlignment = Align(4);
     VScaleForTuning = 2;
     DefaultSVETFOpts = TailFoldingOpts::Simple;
+    break;
   case ThunderX3T110:
     CacheLineSize = 64;
     PrefFunctionAlignment = Align(16);
