@@ -124,6 +124,7 @@ include "AArch64SchedNeoverseN3.td"
 include "AArch64SchedNeoverseV1.td"
 include "AArch64SchedNeoverseV2.td"
 include "AArch64SchedOryon.td"
+include "AArch64SchedHIP09.td"
 include "AArch64SchedHIP12.td"
 include "AArch64Processors.td"
 

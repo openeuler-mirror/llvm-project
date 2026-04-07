@@ -240,7 +240,7 @@ public:
   bool hasFusion() const {
     return hasArithmeticBccFusion() || hasArithmeticCbzFusion() ||
            hasFuseAES() || hasFuseArithmeticLogic() || hasFuseCCSelect() ||
-           hasFuseAdrpAdd() || hasFuseLiterals();
+           hasFuseAdrpAdd() || hasFuseLiterals() || hasFuseMvnClz();
   }
 
   unsigned getEpilogueVectorizationMinVF() const {
