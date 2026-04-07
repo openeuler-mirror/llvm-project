@@ -704,6 +704,10 @@ public:
 
   bool hasPairedLoad(EVT LoadedType, Align &RequiredAligment) const override;
 
+  bool isProfitableToInterleaveWithGatherScatter() const override {
+    return true;
+  }
+
   unsigned getMaxSupportedInterleaveFactor() const override { return 4; }
 
   bool lowerInterleavedLoad(LoadInst *LI,
@@ -712,6 +716,9 @@ public:
                             unsigned Factor) const override;
   bool lowerInterleavedStore(StoreInst *SI, ShuffleVectorInst *SVI,
                              unsigned Factor) const override;
+
+  bool lowerInterleavedStoreWithShuffle(StoreInst *SI, ShuffleVectorInst *SVI,
+                                        unsigned Factor) const;
 
   bool lowerDeinterleaveIntrinsicToLoad(
       LoadInst *LI, ArrayRef<Value *> DeinterleaveValues) const override;
