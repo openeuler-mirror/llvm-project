@@ -18,6 +18,7 @@
 #include "mlir/Conversion/LLVMCommon/Pattern.h"
 #include "mlir/Conversion/LLVMCommon/PrintCallHelper.h"
 #include "mlir/Conversion/LLVMCommon/VectorPattern.h"
+#include "mlir/Conversion/PtrToLLVM/PtrToLLVM.h"
 #include "mlir/Dialect/ControlFlow/IR/ControlFlowOps.h"
 #include "mlir/Dialect/LLVMIR/FunctionCallUtils.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
@@ -260,6 +261,10 @@ struct ConvertControlFlowToLLVM
 
     LLVMTypeConverter converter(ctx, options);
     RewritePatternSet patterns(ctx);
+
+    // add ptr.ptr to llvm.ptr conversion
+    mlir::ptr::populatePtrToLLVMConversionPatterns(converter, patterns);
+
     mlir::cf::populateControlFlowToLLVMConversionPatterns(converter, patterns);
     mlir::cf::populateAssertToLLVMConversionPattern(converter, patterns);
 
