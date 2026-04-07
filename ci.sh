@@ -70,7 +70,7 @@ cd ${WORKSPACE}/llvm-project
 COMMIT_ID=$(git log --pretty=format:%H | tail -1)
 
 rm -rf ./pr_status
-git clone --branch main https://eastb233:${TOKEN}@atomgit.com/eastb233/pr_status.git
+git clone --branch $(arch) https://eastb233:${TOKEN}@atomgit.com/eastb233/pr_status.git
 if [ -f "${JSON_FILE}" ]; then
   JSON_SOURCE_BRANCH=$(jq -r '.source_branch' ${JSON_FILE})
   JSON_DEST_BRANCH=$(jq -r '.dest_branch' ${JSON_FILE})
@@ -115,6 +115,6 @@ cat > "${COMMIT_FILE}" <<EOF
 }
 EOF
 
-git add ${COMMIT_FILE} && git commit -m "CI adds PR${PR_ID} json" && git push origin main
+git add ${COMMIT_FILE} && git commit -m "CI adds PR${PR_ID} json" && git push origin $(arch)
 
 exit ${RESULT}
