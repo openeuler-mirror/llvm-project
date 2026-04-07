@@ -56,6 +56,7 @@ elif [ "$(arch)" == "x86_64" ]; then
 fi
 
 #   4.2 执行构建
+cd ${WORKSPACE}/llvm-project
 bash build.sh -v -r -t -b relwithdebinfo -E -i -I install-$(arch)-for-pr-${PR_ID} -j${PARALLEL_JOBS}
 RESULT=$?
 exit ${RESULT}
