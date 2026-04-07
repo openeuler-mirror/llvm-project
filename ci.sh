@@ -108,6 +108,7 @@ cat > "${COMMIT_FILE}" <<EOF
   "pr_id": "${PR_ID}",
   "source_branch": "${SOURCE_BRANCH}",
   "dest_branch": "${DEST_BRANCH}",
+  "author": "${AUTHOR}",
   "commit_id": "${COMMIT_ID}",
   "status": "${STATUS}",
   "timestamp": "$(date -Iseconds)"
