@@ -1769,7 +1769,7 @@ AArch64ExtensionDependenciesBaseArchTestParams
         {AArch64::ARMV8A, {}, {"v8a", "fp-armv8", "neon"}, {}},
         {AArch64::ARMV8_1A,
          {},
-         {"v8.1a", "crc", "fp-armv8", "lse", "rdm", "neon"},
+         {"v8.1a", "crc", "fp-armv8", "rdm", "neon"},
          {}},
         {AArch64::ARMV9_5A, {}, {"v9.5a", "mops", "cpa"}, {}},
 
