@@ -25,6 +25,7 @@
 #include "llvm/CodeGen/MachineScheduler.h"
 #include "llvm/IR/GlobalValue.h"
 #include "llvm/Support/SipHash.h"
+#include "llvm/IR/Module.h"
 #include "llvm/TargetParser/AArch64TargetParser.h"
 
 using namespace llvm;
@@ -512,7 +513,8 @@ unsigned AArch64Subtarget::classifyGlobalFunctionReference(
   // NonLazyBind goes via GOT unless we know it's available locally.
   auto *F = dyn_cast<Function>(GV);
   if ((!isTargetMachO() || MachOUseNonLazyBind) && F &&
-      F->hasFnAttribute(Attribute::NonLazyBind) && !TM.shouldAssumeDSOLocal(GV))
+      F->getParent()->getRtLibUseGOT() && !(TM.shouldAssumeDSOLocal(GV) ||
+      GV->hasLocalLinkage()))
     return AArch64II::MO_GOT;
 
   if (getTargetTriple().isOSWindows()) {

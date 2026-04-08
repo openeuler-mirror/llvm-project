@@ -151,6 +151,12 @@ TLI_DEFINE_ENUM_INTERNAL(under_IO_putc)
 TLI_DEFINE_STRING_INTERNAL("_IO_putc")
 TLI_DEFINE_SIG_INTERNAL(Int, Int, Ptr)
 
+/// void _Unwind_Resume(_Unwind_Exception *);
+TLI_DEFINE_ENUM_INTERNAL(_Unwind_Resume)
+TLI_DEFINE_STRING_INTERNAL("_Unwind_Resume")
+TLI_DEFINE_SIG_INTERNAL(Void, Ptr)
+
+
 /// void operator delete[](void*);
 TLI_DEFINE_ENUM_INTERNAL(ZdaPv)
 TLI_DEFINE_STRING_INTERNAL("_ZdaPv")
@@ -491,6 +497,16 @@ TLI_DEFINE_SIG_INTERNAL(Dbl, Dbl)
 TLI_DEFINE_ENUM_INTERNAL(cospif)
 TLI_DEFINE_STRING_INTERNAL("__cospif")
 TLI_DEFINE_SIG_INTERNAL(Flt, Flt)
+
+/// void * __cxa_allocate_exception(size_t thrown_size);
+TLI_DEFINE_ENUM_INTERNAL(__cxa_allocate_exception)
+TLI_DEFINE_STRING_INTERNAL("__cxa_allocate_exception")
+TLI_DEFINE_SIG_INTERNAL(Ptr, SizeT)
+
+/// void * __cxa_begin_catch(void *e);
+TLI_DEFINE_ENUM_INTERNAL(__cxa_begin_catch)
+TLI_DEFINE_STRING_INTERNAL("__cxa_begin_catch")
+TLI_DEFINE_SIG_INTERNAL(Ptr, Ptr)
 
 /// int __cxa_atexit(void (*f)(void *), void *p, void *d);
 TLI_DEFINE_ENUM_INTERNAL(cxa_atexit)
