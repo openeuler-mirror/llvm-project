@@ -76,6 +76,10 @@ static cl::opt<unsigned> DMBLookaheadThreshold(
     "dmb-lookahead-threshold", cl::init(10), cl::Hidden,
     cl::desc("The number of instructions to search for a redundant dmb"));
 
+static cl::opt<bool>
+    ForceEnableExperimentalOpt("force-enable-experimental-optimization",
+                               cl::init(false), cl::Hidden);
+
 namespace {
 class TailFoldingOption {
   // These bitfields will only ever be set to something non-zero in operator=,
@@ -522,6 +526,14 @@ AArch64TTIImpl::getPopcntSupport(unsigned TyWidth) {
     return TTI::PSK_FastHardware;
   // TODO: AArch64TargetLowering::LowerCTPOP() supports 128bit popcount.
   return TTI::PSK_Software;
+}
+
+bool AArch64TTIImpl::isProfitableToLoopVersioning() const {
+  // Prove to work well for HiSilicon Processors.
+  // You can experimentally enable optimization by option
+  // -mllvm -force-enable-experimental-optimization if you
+  // want to test it on other platforms.
+  return ST->isHiSiliconProc() || ForceEnableExperimentalOpt;
 }
 
 static bool isUnpackedVectorVT(EVT VecVT) {

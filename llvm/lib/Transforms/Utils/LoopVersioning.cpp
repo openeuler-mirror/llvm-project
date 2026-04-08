@@ -42,9 +42,9 @@ static cl::opt<bool>
 LoopVersioning::LoopVersioning(const LoopAccessInfo &LAI,
                                ArrayRef<RuntimePointerCheck> Checks, Loop *L,
                                LoopInfo *LI, DominatorTree *DT,
-                               ScalarEvolution *SE)
+                               ScalarEvolution *SE, bool EnableLVOverlap)
     : VersionedLoop(L), AliasChecks(Checks), Preds(LAI.getPSE().getPredicate()),
-      LAI(LAI), LI(LI), DT(DT), SE(SE) {}
+      LAI(LAI), LI(LI), DT(DT), SE(SE), EnableLVOverlap(EnableLVOverlap) {}
 
 void LoopVersioning::versionLoop(
     const SmallVectorImpl<Instruction *> &DefsUsedOutside) {
@@ -63,8 +63,13 @@ void LoopVersioning::versionLoop(
   SCEVExpander Exp2(*RtPtrChecking.getSE(),
                     VersionedLoop->getHeader()->getDataLayout(),
                     "induction");
-  MemRuntimeCheck = addRuntimeChecks(RuntimeCheckBB->getTerminator(),
-                                     VersionedLoop, AliasChecks, Exp2);
+  if (EnableLVOverlap) {
+    auto DiffChecks = LAI.getRuntimePointerChecking()->getDiffChecks();
+    MemRuntimeCheck = addOverlapRuntimeChecks(RuntimeCheckBB->getTerminator(),
+                                              *DiffChecks, Exp2);
+  } else
+    MemRuntimeCheck = addRuntimeChecks(RuntimeCheckBB->getTerminator(),
+                                       VersionedLoop, AliasChecks, Exp2);
 
   SCEVExpander Exp(*SE, RuntimeCheckBB->getDataLayout(),
                    "scev.check");
