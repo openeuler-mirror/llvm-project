@@ -164,7 +164,7 @@ static cl::opt<unsigned> ThinLTOSplitModuleSizeThreshold(
     cl::desc("Control the amount of whether split in thinlto backend"
              "accroding to the size of a module."));
 static cl::opt<float> ThinLTOSplitModuleSizeRiteThreshold(
-    "thinlto-split-module-size-rite-threshold", cl::Hidden, cl::init(0.6),
+    "thinlto-split-module-size-rite-threshold", cl::Hidden, cl::init(0.5),
     cl::desc(""));
 static cl::opt<unsigned> ThinLTOSplitPartitions(
     "thinlto-split-partitions", cl::Hidden, cl::init(0),
@@ -1264,10 +1264,14 @@ static bool HasLargeCG(Module &Mod, const ModuleSummaryIndex &CombinedIndex) {
   }
   uint64_t moduleSize = calModuleSize(Mod);
 
+  int OverThreshold = 0;
   for (auto &SizePair : EntryFuncs) {
     if (SizePair.second >= moduleSize * ThinLTOSplitModuleSizeRiteThreshold) {
-      return false;
+      OverThreshold += 1;
     }
+  }
+  if (OverThreshold == 1) {
+    return false;
   }
 
   return true;
