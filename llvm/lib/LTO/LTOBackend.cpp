@@ -619,7 +619,7 @@ static void splitCodeGenThin(
 
   bufPart[task].resize(ParallelCodeGenParallelismLevel);
 
-  const auto HandleModulePartition = [&](std::unique_ptr<Module> MPart) {
+  const auto HandleModulePartition = [&](std::unique_ptr<Module> MPart, unsigned PartitionId) {
     // We want to clone the module in a new context to multi-thread the
     // codegen. We do it by serializing partition modules to bitcode
     // (while still on the main thread, in order to avoid data races) and
@@ -657,9 +657,6 @@ static void splitCodeGenThin(
 
   if (ThinLTOUseCG)
     SplitModuleCG.SplitModule(TM, HandleModulePartition, false);
-  else
-    SplitModule(Mod, ParallelCodeGenParallelismLevel, HandleModulePartition,
-                false);
 
   // Because the inner lambda (which runs in a worker thread) captures our local
   // variables, we need to wait for the worker threads to terminate before we
@@ -770,7 +767,7 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
     LLVM_DEBUG(Mod.dump());
   }
 
-  const auto HandleModulePartition = [&](std::unique_ptr<Module> MPart) {
+  const auto HandleModulePartition = [&](std::unique_ptr<Module> MPart, unsigned PartitionId) {
     // We want to clone the module in a new context to multi-thread the
     // codegen. We do it by serializing partition modules to bitcode
     // (while still on the main thread, in order to avoid data races) and
@@ -857,7 +854,7 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
               "/dev/shm/thinlto-split-%%%%%%.o", FD, TempFilename))
         return errorCodeToError(EC);
 
-      TempObjectFiles[CurrentThreadId] = std::string(TempFilename.str());
+      TempObjectFiles[PartitionId] = std::string(TempFilename.str());
 
       auto OS =
           std::make_unique<raw_fd_ostream>(FD, true, /*CloseOnDestruct*/ true);
@@ -903,9 +900,6 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
 
   if (ThinLTOUseCG)
     SplitModuleCG.SplitModule(TM, HandleModulePartition, false);
-  else
-    SplitModule(Mod, ParallelCodeGenParallelismLevel, HandleModulePartition,
-                false);
 
   // Because the inner lambda (which runs in a worker thread) captures our local
   // variables, we need to wait for the worker threads to terminate before we

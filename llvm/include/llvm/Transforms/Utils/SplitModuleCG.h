@@ -247,7 +247,7 @@ struct FunctionWithDependencies {
 class SplitModuleCG {
 public:
   using ModuleCreationCallback =
-      function_ref<void(std::unique_ptr<Module> MPart)>;
+      function_ref<void(std::unique_ptr<Module> MPart, unsigned PartitionId)>;
   SplitModuleCG(Module &M, const llvm::lto::Config &C,
                 const ModuleSummaryIndex &CombinedIndex,
                 unsigned LimitPartition = 0,

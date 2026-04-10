@@ -882,7 +882,7 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
           LLVM_DEBUG(dbgs() << "partition " << I << "  : " << Elapsed.count()
                             << " ms\n");
         }
-        ModuleCallback(std::move(MPart));
+        ModuleCallback(std::move(MPart), I);
       });
     }
     PartitionThreadPool->wait();
@@ -968,7 +968,7 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
         if (!MOrErr)	 
           report_fatal_error("Failed to read bitcode");	 
         std::unique_ptr<Module> MPartInCtx = std::move(MOrErr.get());
-        ModuleCallback(std::move(MPartInCtx));
+        ModuleCallback(std::move(MPartInCtx), I);
         auto TimeEndcodgen = Clock::now();
         auto optandcodegen = std::chrono::duration_cast<Ms>(TimeEndcodgen - Timebegincodgen);
         {
