@@ -2,6 +2,7 @@
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SCCIterator.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/Analysis/CGSCCPassManager.h"
 #include "llvm/Analysis/CallGraphSCCPass.h"
 #include "llvm/Analysis/IndirectCallPromotionAnalysis.h"
@@ -21,6 +22,7 @@
 #include "llvm/IR/Value.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/MD5.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include <algorithm>
 #include <cassert>
@@ -737,9 +739,14 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
         std::lock_guard<std::mutex> lock(mtx);
         if (PromotedRenames.count(GV.getName()))
           return;
-        std::string NewName =
-            GV.getName().str() + "_" + M.getModuleIdentifier();
-        PromotedRenames[GV.getName()] = NewName;
+          MD5 Hash;
+          Hash.update(M.getModuleIdentifier());
+          MD5::MD5Result Result;
+          Hash.final(Result);
+          SmallString<32> HashStr;
+          MD5::stringifyResult(Result, HashStr);
+          std::string NewName = (GV.getName() + "." + HashStr.str().substr(0, 8)).str();
+          PromotedRenames[GV.getName()] = NewName;
       }
     };
     for (const auto &GV : MPart->global_values())
@@ -882,7 +889,7 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
           LLVM_DEBUG(dbgs() << "partition " << I << "  : " << Elapsed.count()
                             << " ms\n");
         }
-        ModuleCallback(std::move(MPart));
+        ModuleCallback(std::move(MPart), I);
       });
     }
     PartitionThreadPool->wait();
@@ -968,7 +975,7 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
         if (!MOrErr)	 
           report_fatal_error("Failed to read bitcode");	 
         std::unique_ptr<Module> MPartInCtx = std::move(MOrErr.get());
-        ModuleCallback(std::move(MPartInCtx));
+        ModuleCallback(std::move(MPartInCtx), I);
         auto TimeEndcodgen = Clock::now();
         auto optandcodegen = std::chrono::duration_cast<Ms>(TimeEndcodgen - Timebegincodgen);
         {
