@@ -12,6 +12,7 @@
 #include <string>
 #include <unordered_set>
 #include <cassert>
+#include <cstdint>
  
 class WeakConsistencyAllowlist {
 public:
