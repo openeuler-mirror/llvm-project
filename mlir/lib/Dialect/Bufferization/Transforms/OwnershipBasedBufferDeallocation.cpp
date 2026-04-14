@@ -516,9 +516,12 @@ LogicalResult BufferDeallocation::verifyOperationPreconditions(Operation *op) {
   //   MemoryEffectOpInterface. They usually do not have side effects apart
   //   from the callee, which will be analyzed separately. (This is similar to
   //   "recursive memory effects".)
+  //   assume_alignment used in Bufferization has no side effects. ZeroResults
+  //    with no MemoryEffectOpInterface check added to allow assume_alignment.
   if (!isa<MemoryEffectOpInterface>(op) &&
       !op->hasTrait<OpTrait::HasRecursiveMemoryEffects>() &&
-      !isa<CallOpInterface>(op))
+      !isa<CallOpInterface>(op) && !(op->hasTrait<OpTrait::ZeroResults>() &&
+      op->hasTrait<OpTrait::OpInvariants>() && !isa<MemoryEffectOpInterface>(op)))
     return op->emitError(
         "ops with unknown memory side effects are not supported");
 
