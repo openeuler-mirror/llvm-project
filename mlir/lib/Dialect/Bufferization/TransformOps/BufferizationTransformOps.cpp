@@ -62,6 +62,7 @@ transform::OneShotBufferizeOp::apply(transform::TransformRewriter &rewriter,
   options.allowReturnAllocsFromLoops = getAllowReturnAllocsFromLoops();
   options.allowUnknownOps = getAllowUnknownOps();
   options.bufferizeFunctionBoundaries = getBufferizeFunctionBoundaries();
+  options.copyBeforeWrite = getCopyBeforeWrite();
   options.dumpAliasSets = getDumpAliasSets();
   options.testAnalysisOnly = getTestAnalysisOnly();
   options.printConflicts = getPrintConflicts();
