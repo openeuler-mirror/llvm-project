@@ -703,3 +703,20 @@ func.func @test_affine_if_3() -> memref<10xf32> {
 //       CHECK: [[BASE:%[a-zA-Z0-9_]+]],{{.*}} = memref.extract_strided_metadata [[V0]]#0
 //       CHECK: bufferization.dealloc ([[ALLOC]], [[BASE]] :{{.*}}) if (%true{{[0-9_]*}}, [[V0]]#1) retain ([[V1]]
 //       CHECK: return [[V1]]
+
+// -----
+
+// Test that memref.generic_atomic_rmw with a non-memref result (e.g., f16)
+// does not trigger the "must implement RegionBranchOpInterface" diagnostic.
+// Buffer deallocation only tracks memref-typed values; a scalar result must
+// not be treated as a buffer ownership concern.
+
+// CHECK-LABEL: func @generic_atomic_rmw_f16_no_interface
+func.func @generic_atomic_rmw_f16_no_interface(%arg0: memref<1xf16>) {
+  %c0 = arith.constant 0 : index
+  %0 = memref.generic_atomic_rmw %arg0[%c0] : memref<1xf16> {
+  ^bb0(%cur: f16):
+    memref.atomic_yield %cur : f16
+  }
+  return
+}

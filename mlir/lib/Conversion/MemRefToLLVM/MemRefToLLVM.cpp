@@ -407,10 +407,19 @@ struct GenericAtomicRMWOpLowering
     auto loc = atomicOp.getLoc();
     Type valueType = typeConverter->convertType(atomicOp.getResult().getType());
 
+    // llvm.cmpxchg only supports integer or pointer types. For floating-point
+    // types, we bitcast to an integer of the same width.
+    bool needsBitcast = isa<FloatType>(valueType);
+    Type cmpxchgType = valueType;
+    if (needsBitcast) {
+      unsigned bitWidth = cast<FloatType>(valueType).getWidth();
+      cmpxchgType = IntegerType::get(rewriter.getContext(), bitWidth);
+    }
+
     // Split the block into initial, loop, and ending parts.
     auto *initBlock = rewriter.getInsertionBlock();
     auto *loopBlock = rewriter.splitBlock(initBlock, Block::iterator(atomicOp));
-    loopBlock->addArgument(valueType, loc);
+    loopBlock->addArgument(cmpxchgType, loc);
 
     auto *endBlock =
         rewriter.splitBlock(loopBlock, Block::iterator(atomicOp)++);
@@ -422,6 +431,8 @@ struct GenericAtomicRMWOpLowering
                                         adaptor.getIndices(), rewriter);
     Value init = rewriter.create<LLVM::LoadOp>(
         loc, typeConverter->convertType(memRefType.getElementType()), dataPtr);
+    if (needsBitcast)
+      init = rewriter.create<LLVM::BitcastOp>(loc, cmpxchgType, init);
     rewriter.create<LLVM::BrOp>(loc, init, loopBlock);
 
     // Prepare the body of the loop block.
@@ -429,14 +440,20 @@ struct GenericAtomicRMWOpLowering
 
     // Clone the GenericAtomicRMWOp region and extract the result.
     auto loopArgument = loopBlock->getArgument(0);
+    Value loopArgForBody = loopArgument;
+    if (needsBitcast)
+      loopArgForBody =
+          rewriter.create<LLVM::BitcastOp>(loc, valueType, loopArgument);
     IRMapping mapping;
-    mapping.map(atomicOp.getCurrentValue(), loopArgument);
+    mapping.map(atomicOp.getCurrentValue(), loopArgForBody);
     Block &entryBlock = atomicOp.body().front();
     for (auto &nestedOp : entryBlock.without_terminator()) {
       Operation *clone = rewriter.clone(nestedOp, mapping);
       mapping.map(nestedOp.getResults(), clone->getResults());
     }
     Value result = mapping.lookup(entryBlock.getTerminator()->getOperand(0));
+    if (needsBitcast)
+      result = rewriter.create<LLVM::BitcastOp>(loc, cmpxchgType, result);
 
     // Prepare the epilog of the loop block.
     // Append the cmpxchg op to the end of the loop block.
@@ -452,9 +469,15 @@ struct GenericAtomicRMWOpLowering
     rewriter.create<LLVM::CondBrOp>(loc, ok, endBlock, ArrayRef<Value>(),
                                     loopBlock, newLoaded);
 
-    rewriter.setInsertionPointToEnd(endBlock);
-
     // The 'result' of the atomic_rmw op is the newly loaded value.
+    // Bitcast back to float if needed. Insert at the *start* of endBlock so
+    // the bitcast precedes the continuation ops and the block terminator.
+    if (needsBitcast) {
+      rewriter.setInsertionPointToStart(endBlock);
+      newLoaded =
+          rewriter.create<LLVM::BitcastOp>(loc, valueType, newLoaded);
+    }
+    rewriter.setInsertionPointToEnd(endBlock);
     rewriter.replaceOp(atomicOp, {newLoaded});
 
     return success();
