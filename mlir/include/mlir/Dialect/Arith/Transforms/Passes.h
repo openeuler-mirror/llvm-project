@@ -65,6 +65,9 @@ void populateExpandF8E5M2Patterns(RewritePatternSet &patterns);
 /// Add patterns to expand Arith f8E4M3 patterns to lower level bitcasts/shifts.
 void populateExpandF8E4M3FNPatterns(RewritePatternSet &patterns);
 
+/// Add patterns to expand Arith f4e2m1 patterns to lower level bitcasts/shifts.
+void populateExpandF4E2M1Patterns(RewritePatternSet &patterns);
+
 /// Add patterns to expand Arith ops.
 void populateArithExpandOpsPatterns(RewritePatternSet &patterns);
 
