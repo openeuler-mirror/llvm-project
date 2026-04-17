@@ -1064,16 +1064,40 @@ struct F32ToF8E4M3FNTruncFOpConverter
 
     Value shift_bits = b.create<arith::AddIOp>(
         e4m3_exponent, createConst(op.getLoc(), i32Ty, 3, rewriter));
-    Value e4m3_mantissa_subnormal = b.create<arith::ShRUIOp>(
-        mantissa,
-        b.create<arith::SubIOp>(createConst(op.getLoc(), i32Ty, 24, rewriter),
-                                shift_bits));
+    Value shiftAmount = b.create<arith::SubIOp>(
+        createConst(op.getLoc(), i32Ty, 24, rewriter), shift_bits);
+    Value e4m3_mantissa_subnormal =
+        b.create<arith::ShRUIOp>(mantissa, shiftAmount);
     e4m3_mantissa_subnormal = b.create<arith::AndIOp>(
         e4m3_mantissa_subnormal,
         b.create<arith::ShRUIOp>(
             createConst(op.getLoc(), i32Ty, 0x7, rewriter),
             b.create<arith::SubIOp>(
                 createConst(op.getLoc(), i32Ty, 0, rewriter), e4m3_exponent)));
+
+    // RNE rounding for subnormal numbers.
+    // Round bit position varies: shift_amount - 1 = 20 - e4m3_exponent.
+    Value roundShiftSub = b.create<arith::SubIOp>(
+        shiftAmount, createConst(op.getLoc(), i32Ty, 1, rewriter));
+    Value roundBitSub = b.create<arith::AndIOp>(
+        b.create<arith::ShRUIOp>(mantissa, roundShiftSub),
+        createConst(op.getLoc(), i32Ty, 1, rewriter));
+    Value stickyMaskSub = b.create<arith::SubIOp>(
+        b.create<arith::ShLIOp>(createConst(op.getLoc(), i32Ty, 1, rewriter),
+                                roundShiftSub),
+        createConst(op.getLoc(), i32Ty, 1, rewriter));
+    Value stickyBitsSub = b.create<arith::AndIOp>(mantissa, stickyMaskSub);
+    Value stickyNonZeroSub =
+        b.create<arith::CmpIOp>(arith::CmpIPredicate::ne, stickyBitsSub,
+                                createConst(op.getLoc(), i32Ty, 0, rewriter));
+    Value lsbSub =
+        b.create<arith::AndIOp>(b.create<arith::ShRUIOp>(mantissa, shiftAmount),
+                                createConst(op.getLoc(), i32Ty, 1, rewriter));
+    Value stickyOrLsbSub = b.create<arith::SelectOp>(
+        stickyNonZeroSub, createConst(op.getLoc(), i32Ty, 1, rewriter), lsbSub);
+    Value shouldRoundSub = b.create<arith::AndIOp>(roundBitSub, stickyOrLsbSub);
+    e4m3_mantissa_subnormal =
+        b.create<arith::AddIOp>(e4m3_mantissa_subnormal, shouldRoundSub);
 
     Value resultSubnormal = b.create<arith::OrIOp>(
         b.create<arith::ShLIOp>(sign,
@@ -1097,6 +1121,46 @@ struct F32ToF8E4M3FNTruncFOpConverter
         mantissa, createConst(op.getLoc(), i32Ty, 20, rewriter));
     e4m3_mantissa = b.create<arith::AndIOp>(
         e4m3_mantissa, createConst(op.getLoc(), i32Ty, 0x7, rewriter));
+
+    // RNE (Round to Nearest, Ties to Even) for normal numbers.
+    // The 24-bit mantissa (with implicit 1) was truncated to 3 bits by
+    // shifting right 20. Round bit is at position 19, sticky bits are [18:0].
+    Value roundBit = b.create<arith::AndIOp>(
+        b.create<arith::ShRUIOp>(mantissa,
+                                 createConst(op.getLoc(), i32Ty, 19, rewriter)),
+        createConst(op.getLoc(), i32Ty, 1, rewriter));
+    Value stickyBits = b.create<arith::AndIOp>(
+        mantissa, createConst(op.getLoc(), i32Ty, 0x7FFFF, rewriter));
+    Value stickyNonZero =
+        b.create<arith::CmpIOp>(arith::CmpIPredicate::ne, stickyBits,
+                                createConst(op.getLoc(), i32Ty, 0, rewriter));
+    Value lsb = b.create<arith::AndIOp>(
+        b.create<arith::ShRUIOp>(mantissa,
+                                 createConst(op.getLoc(), i32Ty, 20, rewriter)),
+        createConst(op.getLoc(), i32Ty, 1, rewriter));
+    // Round up if past midpoint, or at midpoint with odd lsb (ties to even).
+    Value stickyOrLsb = b.create<arith::SelectOp>(
+        stickyNonZero, createConst(op.getLoc(), i32Ty, 1, rewriter), lsb);
+    Value shouldRound = b.create<arith::AndIOp>(roundBit, stickyOrLsb);
+    e4m3_mantissa = b.create<arith::AddIOp>(e4m3_mantissa, shouldRound);
+
+    // Handle mantissa overflow: 0b111 + 1 = 0b1000 → increment exponent.
+    Value mantissaOverflowed =
+        b.create<arith::CmpIOp>(arith::CmpIPredicate::ugt, e4m3_mantissa,
+                                createConst(op.getLoc(), i32Ty, 7, rewriter));
+    e4m3_exponent = b.create<arith::AddIOp>(
+        e4m3_exponent,
+        b.create<arith::SelectOp>(
+            mantissaOverflowed, createConst(op.getLoc(), i32Ty, 1, rewriter),
+            createConst(op.getLoc(), i32Ty, 0, rewriter)));
+    e4m3_mantissa = b.create<arith::SelectOp>(
+        mantissaOverflowed, createConst(op.getLoc(), i32Ty, 0, rewriter),
+        e4m3_mantissa);
+
+    // Recompute overflow after rounding (may have pushed exponent past 15).
+    isOverflow =
+        b.create<arith::CmpIOp>(arith::CmpIPredicate::sgt, e4m3_exponent,
+                                createConst(op.getLoc(), i32Ty, 15, rewriter));
 
     // Pack the sign, exponent, and mantissa into an 8-bit value (normal
     // numbers)
