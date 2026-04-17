@@ -3075,15 +3075,15 @@ struct CleanupExtractSlice
           }
         }
 
-        auto ofs = rewriter.create<arith::ConstantIndexOp>(
-            op.getLoc(), offsets[offsets.size() - 1]);
-        auto addidx = rewriter.create<arith::AddIOp>(
-            op.getLoc(), indices[indices.size() - 1], ofs);
-
-        newIndices[indices.size() - 1] = addidx;
-
         OpBuilder::InsertionGuard guard(rewriter);
         rewriter.setInsertionPointAfter(readOp);
+
+        auto ofs = rewriter.create<arith::ConstantIndexOp>(
+            readOp.getLoc(), offsets[offsets.size() - 1]);
+        auto addidx = rewriter.create<arith::AddIOp>(
+            readOp.getLoc(), indices[indices.size() - 1], ofs);
+
+        newIndices[indices.size() - 1] = addidx;
 
         auto newVectType = cast<VectorType>(op.getResult().getType());
         auto newReadOp = rewriter.create<mlir::vector::TransferReadOp>(
