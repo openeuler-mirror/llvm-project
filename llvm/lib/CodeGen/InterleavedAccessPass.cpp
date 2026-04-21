@@ -248,9 +248,10 @@ static bool isReInterleaveMask(ShuffleVectorInst *SVI, unsigned &Factor,
   }
 
   if (InterleaveWithShuffles) {
+    unsigned VF = SVI->getShuffleMask().size();
     for (unsigned i = 1; MaxFactor * i <= 16; i *= 2) {
       Factor = i * MaxFactor;
-      if (SVI->isInterleave(Factor))
+      if (Factor < VF && SVI->isInterleave(Factor))
         return true;
     }
   }
