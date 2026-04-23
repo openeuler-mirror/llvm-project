@@ -895,6 +895,8 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
     PartitionThreadPool->wait();
   } else {
     auto clonesumbegin = Clock::now();
+    std::vector<std::unique_ptr<Module>> MPartInCtxs;
+    MPartInCtxs.resize(N);
     for (unsigned I = 0; I < N; ++I) {
       const auto &FnsInPart = Partitions[I];
       auto TimeStart = Clock::now();
@@ -963,19 +965,23 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
                           << " ms\n");
       }
 
-      SmallString<0> BC;
-      raw_svector_ostream BCOS(BC);
-      WriteBitcodeToFile(*MPart, BCOS);
-      PartitionThreadPool->async([&, I](const SmallString<0> &BC) {
-        auto Timebegincodgen = Clock::now();
-        llvm::lto::LTOLLVMContext Ctx(C);
+      auto CtxPtr = std::make_shared<llvm::lto::LTOLLVMContext>(C);
+      {
+        SmallString<0> BC;
+        raw_svector_ostream BCOS(BC);
+        WriteBitcodeToFile(*MPart, BCOS);
+        MPart.reset();
         Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(	 
             MemoryBufferRef(BC.str(), "ld-temp.o"),	 
-            Ctx);	 
+            *CtxPtr);	 
         if (!MOrErr)	 
           report_fatal_error("Failed to read bitcode");	 
-        std::unique_ptr<Module> MPartInCtx = std::move(MOrErr.get());
-        ModuleCallback(std::move(MPartInCtx), I);
+        MPartInCtxs[I] = std::move(MOrErr.get());
+      }
+      
+      PartitionThreadPool->async([&, I, CtxPtr]() {
+        auto Timebegincodgen = Clock::now();
+        ModuleCallback(std::move(MPartInCtxs[I]), I);
         auto TimeEndcodgen = Clock::now();
         auto optandcodegen = std::chrono::duration_cast<Ms>(TimeEndcodgen - Timebegincodgen);
         {
@@ -983,7 +989,7 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
           LLVM_DEBUG(dbgs() << "partition optandcodegen" << I << "  : " << optandcodegen.count()
                             << " ms\n");
         }
-      }, std::move(BC));
+      });
     }
     auto clonesumend = Clock::now();
     auto clonesum = std::chrono::duration_cast<Ms>(clonesumend - clonesumbegin);
