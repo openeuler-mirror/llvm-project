@@ -31,6 +31,7 @@
 #include <mutex>
 #include <numa.h>
 #include <queue>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -104,7 +105,7 @@ static cl::opt<bool>
     ParallelCloneModule("parallel-cloneModule", cl::Hidden, cl::init(false),
                cl::desc("parallel clone module"));
 static cl::opt<bool>
-    SerialParseModule("serial-parse-module", cl::Hidden, cl::init(true),
+    SerialParseModule("serial-parse-module", cl::Hidden, cl::init(false),
                cl::desc("serial parse module"));
 
 using GetTTIFn = function_ref<const TargetTransformInfo &(Function &)>;
@@ -900,6 +901,8 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
     auto clonesumbegin = Clock::now();
     std::vector<std::unique_ptr<Module>> MPartInCtxs;
     MPartInCtxs.resize(N);
+    std::vector<std::thread> Threads;
+    Threads.reserve(N);
     for (unsigned I = 0; I < N; ++I) {
       const auto &FnsInPart = Partitions[I];
       auto TimeStart = Clock::now();
@@ -982,7 +985,6 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
       SmallString<0> BC;
       raw_svector_ostream BCOS(BC);
       WriteBitcodeToFile(*MPart, BCOS);
-      MPart.reset();
       if (SerialParseModule) {
         auto CtxPtr = std::make_shared<llvm::lto::LTOLLVMContext>(C);
         {
@@ -994,11 +996,11 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
             report_fatal_error("Failed to read bitcode");
           MPartInCtxs[I] = std::move(MOrErr.get());
         }
-        PartitionThreadPool->async([&, I, CtxPtr]() {
+        Threads.emplace_back([&, I, CtxPtr]() {
           execCallback(std::move(MPartInCtxs[I]), I);
         });
       } else {
-        PartitionThreadPool->async([&, I](SmallString<0> BC) {
+        Threads.emplace_back([&, I](SmallString<0> BC) {
           llvm::lto::LTOLLVMContext Ctx(C);
           Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(
               MemoryBufferRef(BC.str(), "ld-temp.o"), Ctx);
@@ -1009,6 +1011,9 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
         }, std::move(BC));
       }
     }
+    for (auto &T : Threads) {
+      T.join();
+    }
     auto clonesumend = Clock::now();
     auto clonesum = std::chrono::duration_cast<Ms>(clonesumend - clonesumbegin);
     {
@@ -1016,7 +1021,6 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
       LLVM_DEBUG(dbgs() << "clone sum " << "  : " << clonesum.count()
                         << " ms\n");
     }
-    PartitionThreadPool->wait();
   }
   auto cloneoptcodegenend = Clock::now();
   auto cloneoptcodegensum = std::chrono::duration_cast<Ms>(cloneoptcodegenend - cloneoptcodegenbegin);
