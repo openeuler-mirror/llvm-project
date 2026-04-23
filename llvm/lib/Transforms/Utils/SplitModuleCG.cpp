@@ -1000,6 +1000,7 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
           execCallback(std::move(MPartInCtxs[I]), I);
         });
       } else {
+        MPart.reset();
         Threads.emplace_back([&, I](SmallString<0> BC) {
           llvm::lto::LTOLLVMContext Ctx(C);
           Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(
