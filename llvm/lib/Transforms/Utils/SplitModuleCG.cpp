@@ -101,8 +101,11 @@ static cl::opt<bool>
     BindToNuma("bind-to-numa", cl::Hidden, cl::init(false),
                cl::desc("binding to numa before clone module"));
 static cl::opt<bool>
-    ParallelCloneModule("parallel-cloneModule", cl::Hidden, cl::init(true),
+    ParallelCloneModule("parallel-cloneModule", cl::Hidden, cl::init(false),
                cl::desc("parallel clone module"));
+static cl::opt<bool>
+    SerialParseModule("serial-parse-module", cl::Hidden, cl::init(true),
+               cl::desc("serial parse module"));
 
 using GetTTIFn = function_ref<const TargetTransformInfo &(Function &)>;
 using PartitionID = unsigned;
@@ -965,23 +968,9 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
                           << " ms\n");
       }
 
-      auto CtxPtr = std::make_shared<llvm::lto::LTOLLVMContext>(C);
-      {
-        SmallString<0> BC;
-        raw_svector_ostream BCOS(BC);
-        WriteBitcodeToFile(*MPart, BCOS);
-        MPart.reset();
-        Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(	 
-            MemoryBufferRef(BC.str(), "ld-temp.o"),	 
-            *CtxPtr);	 
-        if (!MOrErr)	 
-          report_fatal_error("Failed to read bitcode");	 
-        MPartInCtxs[I] = std::move(MOrErr.get());
-      }
-      
-      PartitionThreadPool->async([&, I, CtxPtr]() {
+      auto execCallback = [&](std::unique_ptr<Module> M, unsigned I) {
         auto Timebegincodgen = Clock::now();
-        ModuleCallback(std::move(MPartInCtxs[I]), I);
+        ModuleCallback(std::move(M), I);
         auto TimeEndcodgen = Clock::now();
         auto optandcodegen = std::chrono::duration_cast<Ms>(TimeEndcodgen - Timebegincodgen);
         {
@@ -989,7 +978,36 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
           LLVM_DEBUG(dbgs() << "partition optandcodegen" << I << "  : " << optandcodegen.count()
                             << " ms\n");
         }
-      });
+      };
+      SmallString<0> BC;
+      raw_svector_ostream BCOS(BC);
+      WriteBitcodeToFile(*MPart, BCOS);
+      MPart.reset();
+      if (SerialParseModule) {
+        auto CtxPtr = std::make_shared<llvm::lto::LTOLLVMContext>(C);
+        {
+          Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(
+              MemoryBufferRef(BC.str(), "ld-temp.o"),
+              *CtxPtr);
+          BC = SmallString<0>();
+          if (!MOrErr)
+            report_fatal_error("Failed to read bitcode");
+          MPartInCtxs[I] = std::move(MOrErr.get());
+        }
+        PartitionThreadPool->async([&, I, CtxPtr]() {
+          execCallback(std::move(MPartInCtxs[I]), I);
+        });
+      } else {
+        PartitionThreadPool->async([&, I](SmallString<0> BC) {
+          llvm::lto::LTOLLVMContext Ctx(C);
+          Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(
+              MemoryBufferRef(BC.str(), "ld-temp.o"), Ctx);
+          BC = SmallString<0>();
+          if (!MOrErr)
+            report_fatal_error("Failed to read bitcode");
+          execCallback(std::move(MOrErr.get()), I);
+        }, std::move(BC));
+      }
     }
     auto clonesumend = Clock::now();
     auto clonesum = std::chrono::duration_cast<Ms>(clonesumend - clonesumbegin);
