@@ -31,6 +31,7 @@
 #include <mutex>
 #include <numa.h>
 #include <queue>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -101,8 +102,11 @@ static cl::opt<bool>
     BindToNuma("bind-to-numa", cl::Hidden, cl::init(false),
                cl::desc("binding to numa before clone module"));
 static cl::opt<bool>
-    ParallelCloneModule("parallel-cloneModule", cl::Hidden, cl::init(true),
+    ParallelCloneModule("parallel-cloneModule", cl::Hidden, cl::init(false),
                cl::desc("parallel clone module"));
+static cl::opt<bool>
+    SerialParseModule("serial-parse-module", cl::Hidden, cl::init(false),
+               cl::desc("serial parse module"));
 
 using GetTTIFn = function_ref<const TargetTransformInfo &(Function &)>;
 using PartitionID = unsigned;
@@ -895,6 +899,10 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
     PartitionThreadPool->wait();
   } else {
     auto clonesumbegin = Clock::now();
+    std::vector<std::unique_ptr<Module>> MPartInCtxs;
+    MPartInCtxs.resize(N);
+    std::vector<std::thread> Threads;
+    Threads.reserve(N);
     for (unsigned I = 0; I < N; ++I) {
       const auto &FnsInPart = Partitions[I];
       auto TimeStart = Clock::now();
@@ -963,19 +971,9 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
                           << " ms\n");
       }
 
-      SmallString<0> BC;
-      raw_svector_ostream BCOS(BC);
-      WriteBitcodeToFile(*MPart, BCOS);
-      PartitionThreadPool->async([&, I](const SmallString<0> &BC) {
+      auto execCallback = [&](std::unique_ptr<Module> M, unsigned I) {
         auto Timebegincodgen = Clock::now();
-        llvm::lto::LTOLLVMContext Ctx(C);
-        Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(	 
-            MemoryBufferRef(BC.str(), "ld-temp.o"),	 
-            Ctx);	 
-        if (!MOrErr)	 
-          report_fatal_error("Failed to read bitcode");	 
-        std::unique_ptr<Module> MPartInCtx = std::move(MOrErr.get());
-        ModuleCallback(std::move(MPartInCtx), I);
+        ModuleCallback(std::move(M), I);
         auto TimeEndcodgen = Clock::now();
         auto optandcodegen = std::chrono::duration_cast<Ms>(TimeEndcodgen - Timebegincodgen);
         {
@@ -983,7 +981,39 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
           LLVM_DEBUG(dbgs() << "partition optandcodegen" << I << "  : " << optandcodegen.count()
                             << " ms\n");
         }
-      }, std::move(BC));
+      };
+      SmallString<0> BC;
+      raw_svector_ostream BCOS(BC);
+      WriteBitcodeToFile(*MPart, BCOS);
+      if (SerialParseModule) {
+        auto CtxPtr = std::make_shared<llvm::lto::LTOLLVMContext>(C);
+        {
+          Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(
+              MemoryBufferRef(BC.str(), "ld-temp.o"),
+              *CtxPtr);
+          BC = SmallString<0>();
+          if (!MOrErr)
+            report_fatal_error("Failed to read bitcode");
+          MPartInCtxs[I] = std::move(MOrErr.get());
+        }
+        Threads.emplace_back([&, I, CtxPtr]() {
+          execCallback(std::move(MPartInCtxs[I]), I);
+        });
+      } else {
+        MPart.reset();
+        Threads.emplace_back([&, I](SmallString<0> BC) {
+          llvm::lto::LTOLLVMContext Ctx(C);
+          Expected<std::unique_ptr<Module>> MOrErr = parseBitcodeFile(
+              MemoryBufferRef(BC.str(), "ld-temp.o"), Ctx);
+          BC = SmallString<0>();
+          if (!MOrErr)
+            report_fatal_error("Failed to read bitcode");
+          execCallback(std::move(MOrErr.get()), I);
+        }, std::move(BC));
+      }
+    }
+    for (auto &T : Threads) {
+      T.join();
     }
     auto clonesumend = Clock::now();
     auto clonesum = std::chrono::duration_cast<Ms>(clonesumend - clonesumbegin);
@@ -992,7 +1022,6 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
       LLVM_DEBUG(dbgs() << "clone sum " << "  : " << clonesum.count()
                         << " ms\n");
     }
-    PartitionThreadPool->wait();
   }
   auto cloneoptcodegenend = Clock::now();
   auto cloneoptcodegensum = std::chrono::duration_cast<Ms>(cloneoptcodegenend - cloneoptcodegenbegin);
