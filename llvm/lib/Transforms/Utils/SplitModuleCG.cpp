@@ -562,12 +562,12 @@ void SplitModuleCG::DealWithDuplicateDebugInfo(Module &MPart) {
     }
     if (ChangedNewImports) {
       DIC->replaceImportedEntities(MDTuple::get(MPart.getContext(), NewImports));
-      Changed = false;
+      Changed = true;
     }
 
     // Deal with duplicate enum type
     SmallVector<Metadata *, 4> NewEnumTypes;
-    bool ChangedEnumTypes = true;
+    bool ChangedEnumTypes = false;
     for (auto *ET : DIC->getEnumTypes()) {
       if (auto *SP = dyn_cast_or_null<DISubprogram>(ET->getScope())) {
         Function *F = MPart.getFunction(SP->getLinkageName());
@@ -579,8 +579,8 @@ void SplitModuleCG::DealWithDuplicateDebugInfo(Module &MPart) {
       }
     }
     if (ChangedEnumTypes) {
-      Changed = true;
       DIC->replaceEnumTypes(MDTuple::get(MPart.getContext(), NewEnumTypes));
+      Changed = true;
     }
 
     NewCUs.insert(DIC);
