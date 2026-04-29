@@ -13,15 +13,20 @@
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Bitcode/BitcodeWriter.h"
 #include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/ModuleSummaryIndex.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/IRReader/IRReader.h"
+#include "llvm/LTO/Config.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/SourceMgr.h"
+#include "llvm/Support/ThreadPool.h"
 #include "llvm/Support/ToolOutputFile.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/WithColor.h"
+#include "llvm/Target/TargetMachine.h"
 #include "llvm/Transforms/Utils/SplitModule.h"
+#include "llvm/Transforms/Utils/SplitModuleCG.h"
 
 using namespace llvm;
 
@@ -47,6 +52,11 @@ static cl::opt<bool>
                    cl::desc("Split without externalizing locals"),
                    cl::cat(SplitCategory));
 
+static cl::opt<bool>
+    EnableSplitModuleCG("enable-split-module-CG", cl::Prefix, cl::init(false),
+                        cl::desc("Split module using call graph"),
+                        cl::cat(SplitCategory));
+
 int main(int argc, char **argv) {
   LLVMContext Context;
   SMDiagnostic Err;
@@ -58,6 +68,35 @@ int main(int argc, char **argv) {
   if (!M) {
     Err.print(argv[0], errs());
     return 1;
+  }
+
+  if (EnableSplitModuleCG) {
+    const auto HandleModulePartCG = [&](std::unique_ptr<Module> MPart, unsigned I) {
+      std::error_code EC;
+      std::unique_ptr<ToolOutputFile> Out(
+          new ToolOutputFile(OutputFilename + utostr(I), EC, sys::fs::OF_None));
+      if (EC) {
+        errs() << EC.message() << '\n';
+        exit(1);
+      }
+
+      if (verifyModule(*MPart, &errs())) {
+        errs() << "Broken module!\n";
+        exit(1);
+      }
+
+      WriteBitcodeToFile(*MPart, Out->os());
+
+      // Declare success.
+      Out->keep();
+    };
+
+    llvm::lto::Config Config;
+    ModuleSummaryIndex CombinedIndex(false);
+    std::unique_ptr<TargetMachine> TM;
+    SplitModuleCG SplitModuleCG(*M, Config, CombinedIndex, NumOutputs);
+    SplitModuleCG.SplitModule(TM.get(), HandleModulePartCG, false);
+    return 0;
   }
 
   unsigned I = 0;
