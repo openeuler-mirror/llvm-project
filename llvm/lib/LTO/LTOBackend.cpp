@@ -1300,9 +1300,6 @@ Error lto::thinBackend(const Config &Conf, unsigned Task, AddStreamFn AddStream,
 
   updatePublicTypeTestCalls(Mod, CombinedIndex.withWholeProgramVisibility());
 
-  if (ThinLTOSplit)
-    runProfileLoaderPass(Conf, Mod, TM.get());
-
   if (Conf.CodeGenOnly) {
     if (ThinLTOSplit)
       if (ThinLTOCombineOutput)
@@ -1439,6 +1436,9 @@ Error lto::thinBackend(const Config &Conf, unsigned Task, AddStreamFn AddStream,
 
   if (Conf.PostImportModuleHook && !Conf.PostImportModuleHook(Task, Mod))
     return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
+
+  if (ThinLTOSplit)
+    runProfileLoaderPass(Conf, Mod, TM.get());
 
   return OptimizeAndCodegen(Mod, TM.get(), std::move(DiagnosticOutputFile));
 }
