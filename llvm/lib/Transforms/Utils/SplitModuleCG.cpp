@@ -364,7 +364,6 @@ void SplitModuleCG::DealWithIFunc() {
     GlobalObject *GO = GI.getResolverFunction();
     if (auto *Funcs = dyn_cast<Function>(GO)) {
       Funcs->setLinkage(GlobalValue::WeakODRLinkage);
-      Funcs->setVisibility(GlobalValue::DefaultVisibility);
       if (externalFunction.count(Funcs))
         externalFunction.erase(Funcs);
       IfuncRecord[Funcs].insert(&GI);
@@ -647,8 +646,10 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
         (F.hasExternalLinkage() || !F.isDefinitionExact()))
       externalFunction[&F] = true;
   }
-  for (GlobalVariable &GV : M.globals())
-    externalize(&GV);
+  for (GlobalVariable &GV : M.globals()) {
+    if (!GV.hasAttribute("thinlto-internalize"))
+      externalize(&GV);
+  }
   for (GlobalAlias &GA : M.aliases())
     externalize(&GA);
   DealWithAlias();
@@ -733,6 +734,9 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
 
   unsigned TotalFnImpls = 0;
 
+  // TODO: Ensure deterministic linkage across parallel partitions. Linkage must
+  // be synchronized before cloning to prevent race conditions and
+  // inconsistent binary output.
   auto dealWithMpart = [&](std::unique_ptr<Module> MPart, unsigned I) {
     DealWithDuplicateDebugInfo(*MPart);
     DealWithDeclareDebugInfo(*MPart);
