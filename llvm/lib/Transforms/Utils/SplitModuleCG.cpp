@@ -170,6 +170,18 @@ doGValuePartitioning(
   }
   return GValuePartitions;
 }
+
+static bool isVTable(const GlobalVariable *GV) {
+  if (!GV) return false;
+  if (GV->getMetadata(llvm::LLVMContext::MD_type))
+    return true;
+
+  llvm::StringRef Name = GV->getName();
+  if (Name.startswith("_ZTV"))
+    return true;
+
+  return false;
+}
 } // namespace
 
 /// Performs all of the partitioning work on \p M.
@@ -364,7 +376,6 @@ void SplitModuleCG::DealWithIFunc() {
     GlobalObject *GO = GI.getResolverFunction();
     if (auto *Funcs = dyn_cast<Function>(GO)) {
       Funcs->setLinkage(GlobalValue::WeakODRLinkage);
-      Funcs->setVisibility(GlobalValue::DefaultVisibility);
       if (externalFunction.count(Funcs))
         externalFunction.erase(Funcs);
       IfuncRecord[Funcs].insert(&GI);
@@ -513,6 +524,7 @@ void SplitModuleCG::calculateComdatMembers() {
     for (auto *GValue : ComdatMember.second) {
       if (auto *F = dyn_cast<Function>(GValue)) {
         CallNode->addCalledFunction(SCG->getOrInsertFunction(F));
+        SCG->getOrInsertFunction(F)->addCalledFunction(CallNode);
       } else if (auto *GV = dyn_cast<GlobalVariable>(GValue)) {
         SpecialGV.insert(GV);
         GVRecord[FirstFn].insert(GV);
@@ -550,12 +562,12 @@ void SplitModuleCG::DealWithDuplicateDebugInfo(Module &MPart) {
     }
     if (ChangedNewImports) {
       DIC->replaceImportedEntities(MDTuple::get(MPart.getContext(), NewImports));
-      Changed = false;
+      Changed = true;
     }
 
     // Deal with duplicate enum type
     SmallVector<Metadata *, 4> NewEnumTypes;
-    bool ChangedEnumTypes = true;
+    bool ChangedEnumTypes = false;
     for (auto *ET : DIC->getEnumTypes()) {
       if (auto *SP = dyn_cast_or_null<DISubprogram>(ET->getScope())) {
         Function *F = MPart.getFunction(SP->getLinkageName());
@@ -567,8 +579,8 @@ void SplitModuleCG::DealWithDuplicateDebugInfo(Module &MPart) {
       }
     }
     if (ChangedEnumTypes) {
-      Changed = true;
       DIC->replaceEnumTypes(MDTuple::get(MPart.getContext(), NewEnumTypes));
+      Changed = true;
     }
 
     NewCUs.insert(DIC);
@@ -647,8 +659,10 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
         (F.hasExternalLinkage() || !F.isDefinitionExact()))
       externalFunction[&F] = true;
   }
-  for (GlobalVariable &GV : M.globals())
-    externalize(&GV);
+  for (GlobalVariable &GV : M.globals()) {
+    if (!GV.hasAttribute("thinlto-internalize"))
+      externalize(&GV);
+  }
   for (GlobalAlias &GA : M.aliases())
     externalize(&GA);
   DealWithAlias();
@@ -719,7 +733,6 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
     }
   }
   auto GVPartitions = doGValuePartitioning(GVRecord, Partitions, N);
-  auto GIPartitions = doGValuePartitioning(IfuncRecord, Partitions, N);
 
   // If we didn't externalize GVs, then local GVs need to be conservatively
   // imported into [dependency]every module (including their initializers), and
@@ -733,6 +746,9 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
 
   unsigned TotalFnImpls = 0;
 
+  // TODO: Ensure deterministic linkage across parallel partitions. Linkage must
+  // be synchronized before cloning to prevent race conditions and
+  // inconsistent binary output.
   auto dealWithMpart = [&](std::unique_ptr<Module> MPart, unsigned I) {
     DealWithDuplicateDebugInfo(*MPart);
     DealWithDeclareDebugInfo(*MPart);
@@ -846,6 +862,8 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
             // Functions go in their assigned partition.
             if (const auto *newFn = dyn_cast<Function>(GV)) {
               const auto *Fn = M.getFunction(newFn->getName());
+              if (IfuncRecord.count(Fn))
+                return true;
               return FnsInPart.contains(Fn);
             }
 
@@ -858,13 +876,6 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
               // GlobalVariable with comdat go in their assigned partition.
               if (SpecialGV.count(GVinM))
                 return GVPartitions[I].contains(GVinM);
-            }
-
-            // Global ifunc go in their assigned partition.
-            if (const auto *newGI = dyn_cast<GlobalIFunc>(GV)) {
-              const auto *GIinM = M.getNamedIFunc(newGI->getName());
-              if (SpecialGV.count(GIinM))
-                return GIPartitions[I].contains(GIinM);
             }
 
             if (NeedsConservativeImport(GV))
@@ -912,6 +923,8 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
             // Functions go in their assigned partition.
             if (const auto *newFn = dyn_cast<Function>(GV)) {
               const auto *Fn = M.getFunction(newFn->getName());
+              if (IfuncRecord.count(Fn))
+                return true;
               return FnsInPart.contains(Fn);
             }
 
@@ -924,13 +937,6 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
               // GlobalVariable with comdat go in their assigned partition.
               if (SpecialGV.count(GVinM))
                 return GVPartitions[I].contains(GVinM);
-            }
-
-            // Global ifunc go in their assigned partition.
-            if (const auto *newGI = dyn_cast<GlobalIFunc>(GV)) {
-              const auto *GIinM = M.getNamedIFunc(newGI->getName());
-              if (SpecialGV.count(GIinM))
-                return GIPartitions[I].contains(GIinM);
             }
 
             if (NeedsConservativeImport(GV))
@@ -1059,17 +1065,6 @@ SplitModuleCG::SplitModuleCG(Module &M, const llvm::lto::Config &C,
     N = EntryFuncs.size();
   }
   N = N == 0 ? 1 : N;
-}
-
-static bool isVTable(const GlobalVariable *GV) {
-  if (GV->getMetadata(llvm::LLVMContext::MD_type))
-    return true;
-  
-  llvm::StringRef Name = GV->getName();
-  if (Name.startswith("_ZTV"))
-    return true;
-
-  return false;
 }
 
 void SimplifyCallGraph::traceIndirectCallUsage(Value *V, Function *F, SimplifyCallGraphNode *SCGNode, int Depth) {

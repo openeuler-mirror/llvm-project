@@ -36,6 +36,7 @@
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/FileSystem.h"
+#include "llvm/Support/FileUtilities.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/Program.h"
@@ -163,9 +164,10 @@ static cl::opt<unsigned> ThinLTOSplitModuleSizeThreshold(
     "thinlto-split-module-size-threshold", cl::Hidden, cl::init(500),
     cl::desc("Control the amount of whether split in thinlto backend"
              "accroding to the size of a module."));
-static cl::opt<float> ThinLTOSplitModuleSizeRiteThreshold(
-    "thinlto-split-module-size-rite-threshold", cl::Hidden, cl::init(0.5),
-    cl::desc(""));
+static cl::opt<float> ThinLTOSplitModuleSizeRateThreshold(
+    "thinlto-split-module-size-rate-threshold", cl::Hidden, cl::init(0.5),
+    cl::desc("Whether to split in thinlto backend based on the ratio of "
+             "(callgraph size)/(module size)"));
 static cl::opt<unsigned> ThinLTOSplitPartitions(
     "thinlto-split-partitions", cl::Hidden, cl::init(0),
     cl::desc("control split to how many partitions in thinlto backend."));
@@ -766,6 +768,7 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
     LLVM_DEBUG(dbgs() << "before split, " << Mname << " \n");
     LLVM_DEBUG(Mod.dump());
   }
+  std::vector<llvm::FileRemover> TempFileRemovers(ParallelCodeGenParallelismLevel);
 
   const auto HandleModulePartition = [&](std::unique_ptr<Module> MPart, unsigned PartitionId) {
     // We want to clone the module in a new context to multi-thread the
@@ -850,11 +853,12 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
         -> Expected<std::unique_ptr<CachedFileStream>> {
       int FD;
       SmallString<128> TempFilename;
-      if (std::error_code EC = sys::fs::createUniqueFile(
-              "/dev/shm/thinlto-split-%%%%%%.o", FD, TempFilename))
+      if (std::error_code EC = sys::fs::createTemporaryFile(
+              "thinlto-split", "o", FD, TempFilename))
         return errorCodeToError(EC);
 
       TempObjectFiles[PartitionId] = std::string(TempFilename.str());
+      TempFileRemovers[PartitionId].setFile(TempObjectFiles[PartitionId]);
 
       auto OS =
           std::make_unique<raw_fd_ostream>(FD, true, /*CloseOnDestruct*/ true);
@@ -920,9 +924,10 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
 
   int MergedFD;
   SmallString<128> MergedFilename;
-  if (sys::fs::createUniqueFile("/dev/shm/thinlto-merged-%%%%%%.o", MergedFD,
-                                MergedFilename))
+  if (sys::fs::createTemporaryFile("thinlto-merged", "o", MergedFD,
+                                   MergedFilename))
     report_fatal_error("Failed to create merged temp file.");
+  llvm::FileRemover MergedFileRemover(MergedFilename);
   sys::fs::closeFile(MergedFD);
 
   std::vector<StringRef> Args;
@@ -963,36 +968,7 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
     FinalFileStream->OS->write(BufferOrErr.get()->getBufferStart(),
                                BufferOrErr.get()->getBufferSize());
   }
-
-  for (const auto &File : TempObjectFiles)
-    sys::fs::remove(File);
-  sys::fs::remove(MergedFilename);
-
-  if (ThinLTODebugMpart) {
-    // [Timing] 3. Link time
-    auto TimeAfterLink = Clock::now();
-
-    // [Timing] 4. calculate and print
-    auto DurSplitCodegen =
-        std::chrono::duration_cast<Ms>(TimeAfterCodeGen - TimeStart).count();
-    auto DurLinking =
-        std::chrono::duration_cast<Ms>(TimeAfterLink - TimeAfterCodeGen)
-            .count();
-    auto DurTotal =
-        std::chrono::duration_cast<Ms>(TimeAfterLink - TimeStart).count();
-
-    LLVM_DEBUG(dbgs() << Mname << "    Split & CodeGen   : " << DurSplitCodegen
-                      << " ms\n");
-    LLVM_DEBUG(dbgs() << Mname << "    Sum(Opt CPU Time) : "
-                      << TotalOptTime.load() << " ms\n");
-    LLVM_DEBUG(dbgs() << Mname << "    Sum(CG CPU Time)  : "
-                      << TotalCodeGenTime.load() << " ms\n");
-    LLVM_DEBUG(dbgs() << Mname << "    Link(ld -r)       : " << DurLinking
-                      << " ms\n");
-    LLVM_DEBUG(dbgs() << Mname << "    Total             : " << DurTotal
-                      << " ms\n");
-  }
-
+  
   return true;
 }
 
@@ -1260,7 +1236,7 @@ static bool HasLargeCG(Module &Mod, const ModuleSummaryIndex &CombinedIndex) {
 
   int OverThreshold = 0;
   for (auto &SizePair : EntryFuncs) {
-    if (SizePair.second >= moduleSize * ThinLTOSplitModuleSizeRiteThreshold) {
+    if (SizePair.second >= moduleSize * ThinLTOSplitModuleSizeRateThreshold) {
       OverThreshold += 1;
     }
   }
@@ -1299,9 +1275,6 @@ Error lto::thinBackend(const Config &Conf, unsigned Task, AddStreamFn AddStream,
   Mod.setPartialSampleProfileRatio(CombinedIndex);
 
   updatePublicTypeTestCalls(Mod, CombinedIndex.withWholeProgramVisibility());
-
-  if (ThinLTOSplit)
-    runProfileLoaderPass(Conf, Mod, TM.get());
 
   if (Conf.CodeGenOnly) {
     if (ThinLTOSplit)
@@ -1439,6 +1412,9 @@ Error lto::thinBackend(const Config &Conf, unsigned Task, AddStreamFn AddStream,
 
   if (Conf.PostImportModuleHook && !Conf.PostImportModuleHook(Task, Mod))
     return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
+
+  if (ThinLTOSplit)
+    runProfileLoaderPass(Conf, Mod, TM.get());
 
   return OptimizeAndCodegen(Mod, TM.get(), std::move(DiagnosticOutputFile));
 }
