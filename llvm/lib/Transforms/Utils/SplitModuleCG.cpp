@@ -11,6 +11,7 @@
 #include "llvm/Analysis/TargetTransformInfo.h"
 #include "llvm/Bitcode/BitcodeReader.h"
 #include "llvm/Bitcode/BitcodeWriter.h"
+#include "llvm/IR/Constants.h"
 #include "llvm/IR/DebugInfo.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/GlobalValue.h"
@@ -229,7 +230,15 @@ SplitModuleCG::doPartitioning(Module &M, unsigned NumParts, CostType ModuleCost,
                                      const FunctionWithDependencies &FWD) {
     auto &FnsInPart = Partitions[PID];
     FnsInPart.insert(FWD.F);
-    FnsInPart.insert(FWD.Dependencies.begin(), FWD.Dependencies.end());
+    for (const Function *Dep : FWD.Dependencies) {
+      if (PID != 0 && isInitArrayAnchor(Dep)) {
+        externalize(const_cast<Function *>(Dep));
+        if (!isDirectInitArrayAnchor(Dep))
+          FnsInPart.insert(Dep);
+      } else {
+        FnsInPart.insert(Dep);
+      }
+    }
 
     {
       std::lock_guard<std::mutex> lock(mtx);
@@ -292,9 +301,26 @@ SplitModuleCG::doPartitioning(Module &M, unsigned NumParts, CostType ModuleCost,
     }
   }
 
+  for (const Function &Fn : M) {
+    if (!Fn.isDeclaration() && isInitArrayAnchor(&Fn))
+      Partitions[0].insert(&Fn);
+  }
+  for (auto &[QueuePID, Cost] : BalancingQueue) {
+    if (QueuePID != 0)
+      continue;
+    CostType NewCost = 0;
+    for (const Function *Fn : Partitions[0])
+      NewCost += FnCosts.lookup(Fn);
+    Cost = NewCost;
+    break;
+  }
+  sort(BalancingQueue, ComparePartitions);
+
   for (auto &CurFn : WorkList) {
     // Normal "load-balancing", assign to partition with least pressure.
     auto [PID, CurCost] = BalancingQueue.back();
+    if (isInitArrayAnchor(CurFn.F))
+      PID = 0;
     AssignToPartition(PID, CurFn);
   }
 
@@ -536,6 +562,66 @@ void SplitModuleCG::calculateComdatMembers() {
   }
 }
 
+void SplitModuleCG::calculateInitArrayAnchors() {
+  auto AnchorFromAppending = [&](StringRef Name) {
+    auto *Appended = M.getGlobalVariable(Name);
+    if (!Appended || !Appended->hasInitializer())
+      return;
+
+    auto *Entries = dyn_cast<ConstantArray>(Appended->getInitializer());
+    if (!Entries)
+      return;
+
+    auto AddAnchorMember = [&](const GlobalValue *GV) {
+      InitArrayAnchorMembers.insert(GV);
+      if (const auto *Fn = dyn_cast<Function>(GV))
+        if (!Fn->isDeclaration())
+          InitArrayAnchors.insert(Fn);
+      if (const Comdat *C = GV->getComdat()) {
+        for (const GlobalValue *Member : ComdatMembers.lookup(C)) {
+          InitArrayAnchorMembers.insert(Member);
+          if (const auto *MemberFn = dyn_cast<Function>(Member))
+            if (!MemberFn->isDeclaration())
+              InitArrayAnchors.insert(MemberFn);
+        }
+      }
+    };
+
+    for (Value *Entry : Entries->operands()) {
+      auto *Struct = dyn_cast<ConstantStruct>(Entry);
+      if (!Struct || Struct->getNumOperands() < 2)
+        continue;
+
+      auto *Fn = dyn_cast<Function>(
+          Struct->getOperand(1)->stripPointerCastsAndAliases());
+      if (!Fn || Fn->isDeclaration())
+        continue;
+
+      DirectInitArrayAnchors.insert(Fn);
+      AddAnchorMember(Fn);
+      if (Struct->getNumOperands() >= 3)
+        if (auto *Key = dyn_cast<GlobalValue>(
+                Struct->getOperand(2)->stripPointerCastsAndAliases()))
+          AddAnchorMember(Key);
+    }
+  };
+
+  AnchorFromAppending("llvm.global_ctors");
+  AnchorFromAppending("llvm.global_dtors");
+}
+
+bool SplitModuleCG::isDirectInitArrayAnchor(const Function *Fn) const {
+  return Fn && DirectInitArrayAnchors.contains(Fn);
+}
+
+bool SplitModuleCG::isInitArrayAnchor(const Function *Fn) const {
+  return Fn && InitArrayAnchors.contains(Fn);
+}
+
+bool SplitModuleCG::isInitArrayAnchorMember(const GlobalValue *GV) const {
+  return GV && InitArrayAnchorMembers.contains(GV);
+}
+
 static void DealWithDeclareDebugInfo(Module &MPart) {
   for (Function &F : MPart)
     if (F.isDeclaration())
@@ -743,6 +829,13 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
     const auto *Var = dyn_cast<GlobalVariable>(GV);
     return Var && Var->hasLocalLinkage();
   };
+  // Non-function members of an init-array COMDAT need to be imported into
+  // every partition; dealWithMpart turns non-owner copies into imports.
+  const auto IsInitArrayAnchorNonFunctionMember = [&](const GlobalValue *GV) {
+    if (const auto *Var = dyn_cast<GlobalVariable>(GV))
+      return isInitArrayAnchorMember(M.getGlobalVariable(Var->getName()));
+    return false;
+  };
 
   unsigned TotalFnImpls = 0;
 
@@ -781,6 +874,12 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
       std::lock_guard<std::mutex> lock(mtx);
       for (auto &func : MPart->functions()) {
         auto Fn = M.getFunction(func.getName());
+        if (Fn && isInitArrayAnchor(Fn) && I != 0 && !func.isDeclaration()) {
+          func.setLinkage(GlobalValue::AvailableExternallyLinkage);
+          func.setSubprogram(nullptr);
+          func.setComdat(nullptr);
+          continue;
+        }
         if (externalFunction.count(Fn) && AliasedFuncs.count(Fn)) {
           if (I != 0 && !func.isDeclaration()) {
             func.setLinkage(GlobalValue::AvailableExternallyLinkage);
@@ -798,6 +897,15 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
           } else {
             externalFunction[Fn] = false;
           }
+        }
+      }
+
+      for (auto &GV : MPart->globals()) {
+        auto *GVInM = M.getNamedGlobal(GV.getName());
+        if (GVInM && isInitArrayAnchorMember(GVInM) && I != 0 &&
+            !GV.isDeclaration()) {
+          GV.setLinkage(GlobalValue::AvailableExternallyLinkage);
+          GV.setComdat(nullptr);
         }
       }
 
@@ -862,10 +970,14 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
             // Functions go in their assigned partition.
             if (const auto *newFn = dyn_cast<Function>(GV)) {
               const auto *Fn = M.getFunction(newFn->getName());
+              if (isDirectInitArrayAnchor(Fn))
+                return I == 0;
               if (IfuncRecord.count(Fn))
                 return true;
-              return FnsInPart.contains(Fn);
+              return FnsInPart.contains(Fn) || isInitArrayAnchor(Fn);
             }
+            if (IsInitArrayAnchorNonFunctionMember(GV))
+              return true;
 
             // GlobalVariable go in their assigned partition.
             if (const auto *newGV = dyn_cast<GlobalVariable>(GV)) {
@@ -923,10 +1035,14 @@ void SplitModuleCG::SplitModule(TargetMachine *TM,
             // Functions go in their assigned partition.
             if (const auto *newFn = dyn_cast<Function>(GV)) {
               const auto *Fn = M.getFunction(newFn->getName());
+              if (isDirectInitArrayAnchor(Fn))
+                return I == 0;
               if (IfuncRecord.count(Fn))
                 return true;
-              return FnsInPart.contains(Fn);
+              return FnsInPart.contains(Fn) || isInitArrayAnchor(Fn);
             }
+            if (IsInitArrayAnchorNonFunctionMember(GV))
+              return true;
 
             // GlobalVariable go in their assigned partition.
             if (const auto *newGV = dyn_cast<GlobalVariable>(GV)) {
@@ -1060,6 +1176,7 @@ SplitModuleCG::SplitModuleCG(Module &M, const llvm::lto::Config &C,
 
   SCG = std::make_unique<SimplifyCallGraph>(CG, LargeFuncs, HotFuncs, CombinedIndex, M);
   calculateComdatMembers();
+  calculateInitArrayAnchors();
   calculateEntryFuncs();
   if (N == 0 || N > EntryFuncs.size()) {
     N = EntryFuncs.size();

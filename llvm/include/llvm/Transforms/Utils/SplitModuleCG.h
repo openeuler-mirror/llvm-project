@@ -281,10 +281,17 @@ private:
   DenseMap<const Comdat *, DenseSet<const GlobalValue *>> ComdatMembers;
   DenseSet<const GlobalValue *> SpecialGV;
   DenseSet<const Function *> AliasedFuncs;
+  DenseSet<const Function *> DirectInitArrayAnchors;
+  DenseSet<const Function *> InitArrayAnchors;
+  DenseSet<const GlobalValue *> InitArrayAnchorMembers;
 
   void calculateEntryFuncs();
   void calculateFunctionCosts();
   void calculateComdatMembers();
+  void calculateInitArrayAnchors();
+  bool isDirectInitArrayAnchor(const Function *Fn) const;
+  bool isInitArrayAnchor(const Function *Fn) const;
+  bool isInitArrayAnchorMember(const GlobalValue *GV) const;
   void getLargeFunction();
   void getHotFunction();
   void DealWithAlias();
