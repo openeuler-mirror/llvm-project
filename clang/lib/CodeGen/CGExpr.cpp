@@ -1968,8 +1968,18 @@ RValue CodeGenFunction::EmitLoadOfLValue(LValue LV, SourceLocation Loc) {
   if (LV.isVectorElt()) {
     llvm::LoadInst *Load = Builder.CreateLoad(LV.getVectorAddress(),
                                               LV.isVolatileQualified());
-    return RValue::get(Builder.CreateExtractElement(Load, LV.getVectorIdx(),
-                                                    "vecext"));
+    llvm::Value *Ret = Builder.CreateExtractElement(Load, LV.getVectorIdx(),
+                                                    "vecext");
+
+    // Even being a scalar the `__mfp8` type corresponds to `<1 x i8>` in LLVM
+    // IR.
+    QualType EltTy = LV.getType()->castAs<VectorType>()->getElementType();
+    if (EltTy->isMFloat8Type())
+      Ret = Builder.CreateInsertElement(
+          llvm::PoisonValue::get(llvm::FixedVectorType::get(Int8Ty, 1)), Ret,
+          uint64_t(0), "mfp8ext");
+
+    return RValue::get(Ret);
   }
 
   // If this is a reference to a subset of the elements of a vector, either
