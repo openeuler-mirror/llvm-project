@@ -208,6 +208,15 @@ public:
   /// Recursively emit the DIE tree rooted at \p Die.
   virtual void emitDIE(DIE &Die) = 0;
 
+  /// Type units need a different header format than compile units.
+  virtual void emitTypeUnitHeader(CompileUnit &Unit, unsigned DwarfVersion,
+                                  uint64_t TypeSignature,
+                                  uint32_t TypeDIERelativeOffset) = 0;
+
+  /// Emits the DIE tree for a type unit into .debug_types.
+  virtual void emitTypeUnitDIE(DIE &Die) = 0;
+  virtual uint64_t getTypeUnitsSectionSize() const = 0;
+
   /// Emit all available macro tables(DWARFv4 and DWARFv5).
   /// Use \p UnitMacroMap to get compilation unit by macro table offset.
   /// Side effects: Fill \p StringPool with macro strings, update
@@ -526,6 +535,7 @@ private:
   struct LinkContext {
     DWARFFile &File;
     UnitListTy CompileUnits;
+    UnitListTy TypeUnits;
     ModuleUnitListTy ModuleUnits;
     bool Skip = false;
 
@@ -535,6 +545,7 @@ private:
     /// the debug object.
     void clear() {
       CompileUnits.clear();
+      TypeUnits.clear();
       File.Addresses->clear();
     }
   };
@@ -558,6 +569,7 @@ private:
   /// kept. All DIEs referenced though attributes should be kept.
   void lookForRefDIEsToKeep(const DWARFDie &Die, CompileUnit &CU,
                             unsigned Flags, const UnitListTy &Units,
+                            const UnitListTy &TypeUnits,
                             const DWARFFile &File,
                             SmallVectorImpl<WorklistItem> &Worklist);
 
@@ -573,7 +585,8 @@ private:
   ///
   /// The return value indicates whether the DIE is incomplete.
   void lookForDIEsToKeep(AddressesMap &RelocMgr, const UnitListTy &Units,
-                         const DWARFDie &DIE, const DWARFFile &File,
+                         const UnitListTy &TypeUnits, const DWARFDie &DIE,
+                         const DWARFFile &File,
                          CompileUnit &CU, unsigned Flags);
 
   /// Check whether specified \p CUDie is a Clang module reference.
@@ -639,7 +652,8 @@ private:
   /// reason.
   DWARFDie resolveDIEReference(const DWARFFile &File, const UnitListTy &Units,
                                const DWARFFormValue &RefValue,
-                               const DWARFDie &DIE, CompileUnit *&RefCU);
+                               const DWARFDie &DIE, CompileUnit *&RefCU,
+                               const UnitListTy *TypeUnits = nullptr);
 
   /// @}
 
@@ -668,15 +682,18 @@ private:
 
     bool Update;
 
+    UnitListTy &TypeUnits;
+
   public:
     DIECloner(DWARFLinker &Linker, DwarfEmitter *Emitter, DWARFFile &ObjFile,
               BumpPtrAllocator &DIEAlloc,
               std::vector<std::unique_ptr<CompileUnit>> &CompileUnits,
-              bool Update, OffsetsStringPool &DebugStrPool,
+              bool Update, UnitListTy &TypeUnits, OffsetsStringPool &DebugStrPool,
               OffsetsStringPool &DebugLineStrPool)
         : Linker(Linker), Emitter(Emitter), ObjFile(ObjFile),
           DebugStrPool(DebugStrPool), DebugLineStrPool(DebugLineStrPool),
-          DIEAlloc(DIEAlloc), CompileUnits(CompileUnits), Update(Update) {}
+          DIEAlloc(DIEAlloc), CompileUnits(CompileUnits), Update(Update),
+          TypeUnits(TypeUnits) {}
 
     /// Recursively clone \p InputDIE into an tree of DIE objects
     /// where useless (as decided by lookForDIEsToKeep()) bits have been
@@ -764,6 +781,12 @@ private:
                                         const DWARFFile &File,
                                         CompileUnit &Unit);
 
+    /// Clone 8-byte type signatures that reference type units.
+    unsigned cloneTypeRefAttribute(DIE &Die, const DWARFDie &InputDIE,
+                                   AttributeSpec AttrSpec,
+                                   const DWARFFormValue &Val,
+                                   const DWARFFile &File);
+
     /// Clone a DWARF expression that may be referencing another DIE.
     void cloneExpression(DataExtractor &Data, DWARFExpression Expression,
                          const DWARFFile &File, CompileUnit &Unit,
@@ -840,6 +863,11 @@ private:
   /// This is passed to AsmPrinter::emitDwarfAbbrevs(), thus it cannot be
   /// changed to a vector of unique_ptrs.
   std::vector<std::unique_ptr<DIEAbbrev>> Abbreviations;
+
+  // Type units with the same 8-byte signature describe the same type (per DWARF4
+  // spec). This set tracks which signatures have already been emitted so we
+  // emit each unique type exactly once across all input object files.
+  DenseSet<uint64_t> EmittedTypeSignatures;
 
   /// DIELoc objects that need to be destructed (but not freed!).
   std::vector<DIELoc *> DIELocs;
