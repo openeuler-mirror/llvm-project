@@ -2986,6 +2986,8 @@ DiagnosedSilenceableFailure transform::LowerToLLVMNewOp::applyToOne(
   pm.addPass(createConvertSCFToCFPass());
   if (ctx->getLoadedDialect<mlir::arm_sme::ArmSMEDialect>()) {
     pm.addNestedPass<func::FuncOp>(createConvertArmSMEToLLVMPass());
+    // SME tile load/store generate scf.for. SCF2CF needs to be run before and after
+    pm.addPass(createConvertSCFToCFPass());
   }
   pm.addPass(createConvertComplexToLLVMPass());
   pm.addPass(createConvertVectorToLLVMPass(ConvertVectorToLLVMPassOptions{
