@@ -845,7 +845,8 @@ static bool splitOptAndCodeGenThin(unsigned task, const Config &C,
   if (sys::fs::createUniqueFile("/dev/shm/thinlto-merged-%%%%%%.o", MergedFD,
                                 MergedFilename))
     report_fatal_error("Failed to create merged temp file.");
-  sys::fs::closeFile(MergedFD);
+  sys::fs::file_t MergedNativeFD = sys::fs::convertFDToNativeFile(MergedFD);
+  sys::fs::closeFile(MergedNativeFD);
 
   std::vector<StringRef> Args;
   std::string LinkerPath = "";
