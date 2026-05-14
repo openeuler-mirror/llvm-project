@@ -1145,7 +1145,7 @@ unsigned DWARFLinker::DIECloner::cloneDieReferenceAttribute(
       RefInfo.Ctxt->getCanonicalDIEOffset()) {
     assert(RefInfo.Ctxt->hasCanonicalDIE() &&
            "Offset to canonical die is set, but context is not marked");
-    if (AttrSpec.Attr == dwarf::DW_AT_import)
+    if (AttrSpec.Attr == dwarf::DW_AT_import && IsTypeUnit)
       return 0;
     DIEInteger Attr(RefInfo.Ctxt->getCanonicalDIEOffset());
     Die.addValue(DIEAlloc, dwarf::Attribute(AttrSpec.Attr),
