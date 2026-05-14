@@ -59,8 +59,8 @@ public:
   // Debug information queries.
   Register getFrameRegister(const MachineFunction &MF) const override;
 
-  const u_int32_t *getCallPreservedMask(const MachineFunction &MF,
-                                        CallingConv::ID) const override;
+  const uint32_t *getCallPreservedMask(const MachineFunction &MF,
+                                       CallingConv::ID) const override;
 
   // Return whether to emit frame moves
   static bool needsFrameMoves(const MachineFunction &MF);

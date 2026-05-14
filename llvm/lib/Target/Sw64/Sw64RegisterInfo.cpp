@@ -99,7 +99,7 @@ BitVector Sw64RegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   return Reserved;
 }
 
-const u_int32_t *
+const uint32_t *
 Sw64RegisterInfo::getCallPreservedMask(const MachineFunction &MF,
                                        CallingConv::ID) const {
   return CSR_F64_RegMask;
