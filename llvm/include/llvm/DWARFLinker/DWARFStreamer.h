@@ -68,6 +68,14 @@ public:
   /// Recursively emit the DIE tree rooted at \p Die.
   void emitDIE(DIE &Die) override;
 
+  void emitTypeUnitHeader(CompileUnit &Unit, unsigned DwarfVersion,
+                          uint64_t TypeSignature,
+                          uint32_t TypeDIERelativeOffset) override;
+  void emitTypeUnitDIE(DIE &Die) override;
+  uint64_t getTypeUnitsSectionSize() const override {
+    return TypeUnitsSectionSize;
+  }
+
   /// Emit the abbreviation table \p Abbrevs to the debug_abbrev section.
   void emitAbbrevs(const std::vector<std::unique_ptr<DIEAbbrev>> &Abbrevs,
                    unsigned DwarfVersion) override;
@@ -290,6 +298,11 @@ private:
   uint64_t DebugInfoSectionSize = 0;
   uint64_t MacInfoSectionSize = 0;
   uint64_t MacroSectionSize = 0;
+  uint64_t TypeUnitsSectionSize = 0;
+
+  // All type units go into one contiguous .debug_types section.
+  MCSection *TypesSection = nullptr;
+  MCSection *getOrCreateTypesSection();
   uint64_t AddrSectionSize = 0;
 
   /// Keep track of emitted CUs and their Unique ID.

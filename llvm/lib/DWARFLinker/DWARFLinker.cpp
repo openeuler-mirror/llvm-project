@@ -24,6 +24,7 @@
 #include "llvm/DebugInfo/DWARF/DWARFExpression.h"
 #include "llvm/DebugInfo/DWARF/DWARFFormValue.h"
 #include "llvm/DebugInfo/DWARF/DWARFSection.h"
+#include "llvm/DebugInfo/DWARF/DWARFTypeUnit.h"
 #include "llvm/DebugInfo/DWARF/DWARFUnit.h"
 #include "llvm/MC/MCDwarf.h"
 #include "llvm/Support/DataExtractor.h"
@@ -70,7 +71,13 @@ DWARFDie DWARFLinker::resolveDIEReference(const DWARFFile &File,
                                           const UnitListTy &Units,
                                           const DWARFFormValue &RefValue,
                                           const DWARFDie &DIE,
-                                          CompileUnit *&RefCU) {
+                                          CompileUnit *&RefCU,
+                                          const UnitListTy *TypeUnits) {
+  // ref_sig8 encodes a type signature, not an offset. getAsReference()
+  // would misinterpret the signature bytes as an offset, so intercept early.
+  if (RefValue.getForm() == dwarf::DW_FORM_ref_sig8)
+    return DWARFDie();
+
   assert(RefValue.isFormClass(DWARFFormValue::FC_Reference));
   uint64_t RefOffset = *RefValue.getAsReference();
   if ((RefCU = getUnitForOffset(Units, RefOffset)))
@@ -80,6 +87,14 @@ DWARFDie DWARFLinker::resolveDIEReference(const DWARFFile &File,
       if (!RefDie.isNULL())
         return RefDie;
     }
+
+  // Optional fallback to type units.
+  if (TypeUnits)
+    if ((RefCU = getUnitForOffset(*TypeUnits, RefOffset)))
+      if (const auto RefDie = RefCU->getOrigUnit().getDIEForOffset(RefOffset)) {
+        if (!RefDie.isNULL())
+          return RefDie;
+      }
 
   reportWarning("could not find referenced DIE", File, &DIE);
   return DWARFDie();
@@ -752,8 +767,8 @@ void DWARFLinker::markODRCanonicalDie(const DWARFDie &Die, CompileUnit &CU) {
 /// kept. All DIEs referenced though attributes should be kept.
 void DWARFLinker::lookForRefDIEsToKeep(
     const DWARFDie &Die, CompileUnit &CU, unsigned Flags,
-    const UnitListTy &Units, const DWARFFile &File,
-    SmallVectorImpl<WorklistItem> &Worklist) {
+    const UnitListTy &Units, const UnitListTy &TypeUnits,
+    const DWARFFile &File, SmallVectorImpl<WorklistItem> &Worklist) {
   bool UseOdr = (Flags & DWARFLinker::TF_DependencyWalk)
                     ? (Flags & DWARFLinker::TF_ODR)
                     : CU.hasODR();
@@ -773,9 +788,16 @@ void DWARFLinker::lookForRefDIEsToKeep(
     }
 
     Val.extractValue(Data, &Offset, Unit.getFormParams(), &Unit);
+
+    // ref_sig8 references type units by signature, not offset.
+    // Type unit DIEs are kept unconditionally via markEverythingAsKept(),
+    // so there is nothing to do here for them.
+    if (AttrSpec.Form == dwarf::DW_FORM_ref_sig8)
+      continue;
+
     CompileUnit *ReferencedCU;
-    if (auto RefDie =
-            resolveDIEReference(File, Units, Val, Die, ReferencedCU)) {
+    if (auto RefDie = resolveDIEReference(File, Units, Val, Die,
+                                          ReferencedCU, &TypeUnits)) {
       CompileUnit::DIEInfo &Info = ReferencedCU->getInfo(RefDie);
       // If the referenced DIE has a DeclContext that has already been
       // emitted, then do not keep the one in this CU. We'll link to
@@ -857,6 +879,7 @@ void DWARFLinker::lookForParentDIEsToKeep(
 /// The return value indicates whether the DIE is incomplete.
 void DWARFLinker::lookForDIEsToKeep(AddressesMap &AddressesMap,
                                     const UnitListTy &Units,
+                                    const UnitListTy &TypeUnits,
                                     const DWARFDie &Die, const DWARFFile &File,
                                     CompileUnit &Cu, unsigned Flags) {
   // LIFO work list.
@@ -878,8 +901,8 @@ void DWARFLinker::lookForDIEsToKeep(AddressesMap &AddressesMap,
       lookForChildDIEsToKeep(Current.Die, Current.CU, Current.Flags, Worklist);
       continue;
     case WorklistItemType::LookForRefDIEsToKeep:
-      lookForRefDIEsToKeep(Current.Die, Current.CU, Current.Flags, Units, File,
-                           Worklist);
+      lookForRefDIEsToKeep(Current.Die, Current.CU, Current.Flags, Units,
+                           TypeUnits, File, Worklist);
       continue;
     case WorklistItemType::LookForParentDIEsToKeep:
       lookForParentDIEsToKeep(Current.AncestorIdx, Current.CU, Current.Flags,
@@ -1077,18 +1100,42 @@ unsigned DWARFLinker::DIECloner::cloneDieReferenceAttribute(
     DIE &Die, const DWARFDie &InputDIE, AttributeSpec AttrSpec,
     unsigned AttrSize, const DWARFFormValue &Val, const DWARFFile &File,
     CompileUnit &Unit) {
+  if (AttrSpec.Form == dwarf::DW_FORM_ref_sig8)
+    return cloneTypeRefAttribute(Die, InputDIE, AttrSpec, Val, File);
   const DWARFUnit &U = Unit.getOrigUnit();
   uint64_t Ref = *Val.getAsReference();
 
   DIE *NewRefDie = nullptr;
   CompileUnit *RefUnit = nullptr;
+  DWARFDie RefDie;
 
-  DWARFDie RefDie =
-      Linker.resolveDIEReference(File, CompileUnits, Val, InputDIE, RefUnit);
+  const bool IsTypeUnit =
+    U.getUnitType() == dwarf::DW_UT_type ||
+    U.getUnitType() == dwarf::DW_UT_split_type;
+
+  // DW_FORM_ref4/ref2/ref1/ref_udata are unit-relative by DWARF spec.
+  // For type units, resolve within the current unit directly.
+  if (IsTypeUnit && AttrSpec.Form != dwarf::DW_FORM_ref_addr) {
+    uint64_t AbsRef = *Val.getAsReference();
+    RefDie = const_cast<DWARFUnit &>(U).getDIEForOffset(AbsRef);
+    RefUnit = &Unit;
+  } else {
+    RefDie = Linker.resolveDIEReference(File, CompileUnits, Val,
+                                         InputDIE, RefUnit, &TypeUnits);
+  }
 
   // If the referenced DIE is not found,  drop the attribute.
   if (!RefDie || AttrSpec.Attr == dwarf::DW_AT_sibling)
     return 0;
+
+  // Cross-unit reference into a type unit: convert to ref_sig8.
+  if (RefUnit != &Unit) {
+    if (auto *RefTU = dyn_cast<DWARFTypeUnit>(&RefUnit->getOrigUnit())) {
+      Die.addValue(DIEAlloc, dwarf::Attribute(AttrSpec.Attr),
+          dwarf::DW_FORM_ref_sig8, DIEInteger(RefTU->getTypeHash()));
+      return 8;
+    }
+  }
 
   CompileUnit::DIEInfo &RefInfo = RefUnit->getInfo(RefDie);
 
@@ -1098,6 +1145,8 @@ unsigned DWARFLinker::DIECloner::cloneDieReferenceAttribute(
       RefInfo.Ctxt->getCanonicalDIEOffset()) {
     assert(RefInfo.Ctxt->hasCanonicalDIE() &&
            "Offset to canonical die is set, but context is not marked");
+    if (AttrSpec.Attr == dwarf::DW_AT_import && IsTypeUnit)
+      return 0;
     DIEInteger Attr(RefInfo.Ctxt->getCanonicalDIEOffset());
     Die.addValue(DIEAlloc, dwarf::Attribute(AttrSpec.Attr),
                  dwarf::DW_FORM_ref_addr, Attr);
@@ -1113,7 +1162,7 @@ unsigned DWARFLinker::DIECloner::cloneDieReferenceAttribute(
   NewRefDie = RefInfo.Clone;
 
   if (AttrSpec.Form == dwarf::DW_FORM_ref_addr ||
-      (Unit.hasODR() && isODRAttribute(AttrSpec.Attr))) {
+      (!IsTypeUnit && Unit.hasODR() && isODRAttribute(AttrSpec.Attr))) {
     // We cannot currently rely on a DIEEntry to emit ref_addr
     // references, because the implementation calls back to DwarfDebug
     // to find the unit offset. (We don't have a DwarfDebug)
@@ -1142,6 +1191,15 @@ unsigned DWARFLinker::DIECloner::cloneDieReferenceAttribute(
                dwarf::Form(AttrSpec.Form), DIEEntry(*NewRefDie));
 
   return AttrSize;
+}
+
+unsigned DWARFLinker::DIECloner::cloneTypeRefAttribute(
+    DIE &Die, const DWARFDie &InputDIE, AttributeSpec AttrSpec,
+    const DWARFFormValue &Val, const DWARFFile &File) {
+  uint64_t Sig = *Val.getAsReference();
+  Die.addValue(DIEAlloc, dwarf::Attribute(AttrSpec.Attr),
+               dwarf::DW_FORM_ref_sig8, DIEInteger(Sig));
+  return 8;
 }
 
 void DWARFLinker::DIECloner::cloneExpression(
@@ -1542,6 +1600,14 @@ unsigned DWARFLinker::DIECloner::cloneAttribute(
     DIE &Die, const DWARFDie &InputDIE, const DWARFFile &File,
     CompileUnit &Unit, const DWARFFormValue &Val, const AttributeSpec AttrSpec,
     unsigned AttrSize, AttributesInfo &Info, bool IsLittleEndian) {
+  // Type units must not have DW_AT_stmt_list.
+  if (AttrSpec.Attr == dwarf::DW_AT_stmt_list) {
+    const bool IsTypeUnit =
+        Unit.getOrigUnit().getUnitType() == dwarf::DW_UT_type ||
+        Unit.getOrigUnit().getUnitType() == dwarf::DW_UT_split_type;
+    if (IsTypeUnit)
+        return 0;
+  }
   const DWARFUnit &U = Unit.getOrigUnit();
 
   switch (AttrSpec.Form) {
@@ -1559,6 +1625,7 @@ unsigned DWARFLinker::DIECloner::cloneAttribute(
   case dwarf::DW_FORM_ref2:
   case dwarf::DW_FORM_ref4:
   case dwarf::DW_FORM_ref8:
+  case dwarf::DW_FORM_ref_sig8:
     return cloneDieReferenceAttribute(Die, InputDIE, AttrSpec, AttrSize, Val,
                                       File, Unit);
   case dwarf::DW_FORM_block:
@@ -2334,12 +2401,19 @@ uint32_t DWARFLinker::DIECloner::hashFullyQualifiedName(DWARFDie DIE,
     if (!Ref->isFormClass(DWARFFormValue::FC_Reference))
       break;
 
+    // ref_sig8 cannot be resolved by offset, stop chain here.
+    if (Ref->getForm() == dwarf::DW_FORM_ref_sig8)
+      break;
+
     CompileUnit *RefCU;
-    if (auto RefDIE =
-            Linker.resolveDIEReference(File, CompileUnits, *Ref, DIE, RefCU)) {
+    if (auto RefDIE = Linker.resolveDIEReference(File, CompileUnits, *Ref, DIE,
+                                                 RefCU, &TypeUnits)) {
       CU = RefCU;
       OrigUnit = &RefCU->getOrigUnit();
       DIE = RefDIE;
+    } else {
+      // Stop on failed resolution to prevent runaway recursion.
+      break;
     }
   }
 
@@ -2591,6 +2665,37 @@ uint64_t DWARFLinker::DIECloner::cloneAllCompileUnits(
     AddrPool.clear();
   }
 
+  // Type units use a 23-byte header and have their own offset space
+  // starting from 0, independent of .debug_info.
+  const uint32_t TypeUnitHeaderSize = 23;
+  for (auto &CurrentUnit : TypeUnits) {
+    const uint16_t DwarfVersion = CurrentUnit->getOrigUnit().getVersion();
+    auto InputDIE = CurrentUnit->getOrigUnit().getUnitDIE();
+
+    // Each type unit section starts at offset 0 independently.
+    CurrentUnit->setStartOffset(0);
+
+    if (!InputDIE) {
+      CurrentUnit->computeNextUnitOffset(DwarfVersion);
+      continue;
+    }
+
+    if (CurrentUnit->getInfo(0).Keep) {
+      CurrentUnit->createOutputDIE();
+      cloneDIE(InputDIE, File, *CurrentUnit, 0,
+               TypeUnitHeaderSize, 0, IsLittleEndian,
+               CurrentUnit->getOutputUnitDIE());
+    }
+
+    CurrentUnit->computeNextUnitOffset(DwarfVersion);
+  }
+
+  // Emit accelerator entries for type units.
+  if (Emitter != nullptr) {
+    for (auto &CurrentUnit : TypeUnits)
+      Linker.emitAcceleratorEntriesForUnit(*CurrentUnit);
+  }
+
   if (Emitter != nullptr) {
     assert(Emitter);
     // Emit macro tables.
@@ -2611,6 +2716,41 @@ uint64_t DWARFLinker::DIECloner::cloneAllCompileUnits(
       Emitter->emitDIE(*CurrentUnit->getOutputUnitDIE());
       assert(Emitter->getDebugInfoSectionSize() ==
              CurrentUnit->computeNextUnitOffset(DwarfVersion));
+    }
+
+    for (auto &CurrentUnit : TypeUnits) {
+      CurrentUnit->fixupForwardReferences();
+      if (!CurrentUnit->getOutputUnitDIE())
+        continue;
+
+      auto *DTU = cast<DWARFTypeUnit>(&CurrentUnit->getOrigUnit());
+      uint64_t TypeSignature = DTU->getTypeHash();
+
+      // Emit each unique type signature exactly once across all object files.
+      if (!Linker.EmittedTypeSignatures.insert(TypeSignature).second)
+        continue;
+
+      unsigned DwarfVersion = CurrentUnit->getOrigUnit().getVersion();
+      DIE *RootDIE = CurrentUnit->getOutputUnitDIE();
+
+      // Locate the type DIE offset from the original TU header.
+      uint32_t TypeDIERelativeOffset = TypeUnitHeaderSize;
+      {
+        uint64_t OrigTypeDIEAbsOffset =
+            DTU->getOffset() + DTU->getTypeOffset();
+        DWARFDie OrigTypeDIE =
+            const_cast<DWARFTypeUnit *>(DTU)->getDIEForOffset(
+                OrigTypeDIEAbsOffset);
+        if (OrigTypeDIE) {
+          unsigned TypeDIEIdx = DTU->getDIEIndex(OrigTypeDIE);
+          if (DIE *ClonedTypeDIE = CurrentUnit->getInfo(TypeDIEIdx).Clone)
+            TypeDIERelativeOffset = ClonedTypeDIE->getOffset();
+        }
+      }
+
+      Emitter->emitTypeUnitHeader(*CurrentUnit, DwarfVersion,
+                                  TypeSignature, TypeDIERelativeOffset);
+      Emitter->emitTypeUnitDIE(*RootDIE);
     }
   }
 
@@ -2771,15 +2911,6 @@ Error DWARFLinker::link() {
     if (!OptContext.File.Dwarf)
       continue;
 
-    // Check whether type units are presented.
-    if (!OptContext.File.Dwarf->types_section_units().empty()) {
-      reportWarning("type units are not currently supported: file will "
-                    "be skipped",
-                    OptContext.File);
-      OptContext.Skip = true;
-      continue;
-    }
-
     // In a first phase, just read in the debug info and load all clang modules.
     OptContext.CompileUnits.reserve(
         OptContext.File.Dwarf->getNumCompileUnits());
@@ -2817,6 +2948,10 @@ Error DWARFLinker::link() {
   std::condition_variable ProcessedFilesConditionVariable;
   BitVector ProcessedFiles(NumObjects, false);
 
+  // Track type signatures seen during analysis. Separate from
+  // EmittedTypeSignatures to avoid a race with concurrent CloneLambda.
+  DenseSet<uint64_t> AnalyzedTypeSignatures;
+
   //  Analyzing the context info is particularly expensive so it is executed in
   //  parallel with emitting the previous compile unit.
   auto AnalyzeLambda = [&](size_t I) {
@@ -2824,6 +2959,29 @@ Error DWARFLinker::link() {
 
     if (Context.Skip || !Context.File.Dwarf)
       return;
+
+    // Collect and analyze type units from this object file.
+    for (const auto &TU : Context.File.Dwarf->types_section_units()) {
+      auto *DTU = cast<DWARFTypeUnit>(TU.get());
+      uint64_t Sig = DTU->getTypeHash();
+
+      if (!AnalyzedTypeSignatures.insert(Sig).second)
+        continue;
+
+      Context.TypeUnits.push_back(std::make_unique<CompileUnit>(
+          *TU, UniqueUnitID++, !Options.NoODR && !Options.Update, ""));
+      Context.TypeUnits.back()->markEverythingAsKept();
+    }
+
+    for (const auto &TU : Context.TypeUnits) {
+      auto TUDie = TU->getOrigUnit().getUnitDIE();
+      if (TUDie)
+        analyzeContextInfo(TUDie, 0, *TU, &ODRContexts.getRoot(), ODRContexts,
+                           ModulesEndOffset, Options.ParseableSwiftInterfaces,
+                           [&](const Twine &W, const DWARFDie &D) {
+                             reportWarning(W, Context.File, &D);
+                           });
+    }
 
     for (const auto &CU : Context.File.Dwarf->compile_units()) {
       // The !isClangModuleRef condition effectively skips over fully resolved
@@ -2875,7 +3033,8 @@ Error DWARFLinker::link() {
       copyInvariantDebugSection(*OptContext.File.Dwarf);
     } else {
       for (auto &CurrentUnit : OptContext.CompileUnits) {
-        lookForDIEsToKeep(*OptContext.File.Addresses, OptContext.CompileUnits,
+        lookForDIEsToKeep(*OptContext.File.Addresses,
+                          OptContext.CompileUnits, OptContext.TypeUnits,
                           CurrentUnit->getOrigUnit().getUnitDIE(),
                           OptContext.File, *CurrentUnit, 0);
 #ifndef NDEBUG
@@ -2893,7 +3052,8 @@ Error DWARFLinker::link() {
           getDebugInfoSize(*OptContext.File.Dwarf);
       SizeByObject[OptContext.File.FileName].Output =
           DIECloner(*this, TheDwarfEmitter.get(), OptContext.File, DIEAlloc,
-                    OptContext.CompileUnits, Options.Update, DebugStrPool,
+                    OptContext.CompileUnits, Options.Update,
+                    OptContext.TypeUnits, DebugStrPool,
                     DebugLineStrPool)
               .cloneAllCompileUnits(*OptContext.File.Dwarf, OptContext.File,
                                     OptContext.File.Dwarf->isLittleEndian());
@@ -3052,8 +3212,11 @@ Error DWARFLinker::cloneModuleUnit(LinkContext &Context, RefModuleUnit &Unit,
   UnitListTy CompileUnits;
   CompileUnits.emplace_back(std::move(Unit.Unit));
   assert(TheDwarfEmitter);
-  DIECloner(*this, TheDwarfEmitter.get(), Unit.File, DIEAlloc, CompileUnits,
-            Options.Update, DebugStrPool, DebugLineStrPool)
+  // Module units never have .debug_types.
+  static UnitListTy EmptyTypeUnits;
+  DIECloner(*this, TheDwarfEmitter.get(), Unit.File, DIEAlloc,
+            CompileUnits, Options.Update, EmptyTypeUnits,
+            DebugStrPool, DebugLineStrPool)
       .cloneAllCompileUnits(*Unit.File.Dwarf, Unit.File,
                             Unit.File.Dwarf->isLittleEndian());
   return Error::success();

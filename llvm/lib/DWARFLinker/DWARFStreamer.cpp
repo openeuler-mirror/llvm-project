@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/DWARFLinker/DWARFStreamer.h"
+#include "llvm/BinaryFormat/ELF.h"
 #include "llvm/CodeGen/NonRelocatableStringpool.h"
 #include "llvm/DWARFLinker/DWARFLinkerCompileUnit.h"
 #include "llvm/DebugInfo/DWARF/DWARFContext.h"
@@ -16,6 +17,7 @@
 #include "llvm/MC/MCDwarf.h"
 #include "llvm/MC/MCObjectWriter.h"
 #include "llvm/MC/MCSection.h"
+#include "llvm/MC/MCSectionELF.h"
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/MCTargetOptions.h"
@@ -207,6 +209,47 @@ void DwarfStreamer::emitDIE(DIE &Die) {
   MS->switchSection(MOFI->getDwarfInfoSection());
   Asm->emitDwarfDIE(Die);
   DebugInfoSectionSize += Die.getSize();
+}
+
+/// Returns a single shared .debug_types section.
+MCSection *DwarfStreamer::getOrCreateTypesSection() {
+  if (!TypesSection)
+    TypesSection = static_cast<MCSection *>(
+        MC->getELFSection(".debug_types", llvm::ELF::SHT_PROGBITS, 0));
+  return TypesSection;
+}
+
+/// Emit the DWARF4 type unit header to .debug_types.
+void DwarfStreamer::emitTypeUnitHeader(CompileUnit &Unit,
+                                       unsigned DwarfVersion,
+                                       uint64_t TypeSignature,
+                                       uint32_t TypeDIERelativeOffset) {
+  MS->switchSection(getOrCreateTypesSection());
+  MC->setDwarfVersion(DwarfVersion);
+
+  Unit.setLabelBegin(Asm->createTempSymbol("tu_begin"));
+  Asm->OutStreamer->emitLabel(Unit.getLabelBegin());
+
+  // length field = total unit size - 4 (the length field itself).
+  // computeNextUnitOffset assumes 11-byte CU header; type units have 23-byte
+  // headers, so add 12 to get the correct length.
+  const uint32_t TypeUnitHeaderExtraBytes = 12; // sig(8) + type_offset(4)
+  Asm->emitInt32(Unit.getNextUnitOffset() - Unit.getStartOffset() - 4
+                 + TypeUnitHeaderExtraBytes);
+  Asm->emitInt16(DwarfVersion);
+  Asm->emitInt32(0); // shared table always at section start
+  Asm->emitInt8(Unit.getOrigUnit().getAddressByteSize());
+  Asm->OutStreamer->emitIntValue(TypeSignature, 8);
+  Asm->emitInt32(TypeDIERelativeOffset);
+
+  TypeUnitsSectionSize += 23;
+}
+
+/// Emit the DIE tree for a type unit into .debug_types.
+void DwarfStreamer::emitTypeUnitDIE(DIE &Die) {
+  MS->switchSection(getOrCreateTypesSection());
+  Asm->emitDwarfDIE(Die);
+  TypeUnitsSectionSize += Die.getSize();
 }
 
 /// Emit contents of section SecName From Obj.
