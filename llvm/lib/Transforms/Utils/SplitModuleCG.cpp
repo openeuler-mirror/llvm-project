@@ -23,6 +23,7 @@
 #include "llvm/Transforms/Utils/Cloning.h"
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <iterator>
 #include <memory>
 #include <mutex>
