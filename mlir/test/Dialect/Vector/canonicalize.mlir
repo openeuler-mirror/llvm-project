@@ -3042,3 +3042,17 @@ func.func @contiguous_scatter_step(%base: memref<?xf32>,
     memref<?xf32>, vector<16xindex>, vector<16xi1>, vector<16xf32>
   return
 }
+// -----
+
+// The test checks the `InterleaveDeinterleaveFolder` pattern of `vector.interleave`
+// to correctly fold the following identity:
+//  interleave(deinterleave(x).even, deinterleave(x).odd) -> x
+
+// CHECK-LABEL: func @interleave_deinterleave_fold
+//  CHECK-SAME: (%[[ARG0:.*]]: vector<4xf32>)
+//       CHECK: return %[[ARG0]]
+func.func @interleave_deinterleave_fold(%arg0: vector<4xf32>) -> vector<4xf32> {
+  %even, %odd = vector.deinterleave %arg0 : vector<4xf32> -> vector<2xf32>
+  %result = vector.interleave %even, %odd : vector<2xf32> -> vector<4xf32>
+  return %result : vector<4xf32>
+}

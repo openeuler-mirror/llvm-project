@@ -550,6 +550,7 @@ def Vector_InterleaveOp :
       return ::llvm::cast<VectorType>(getResult().getType());
     }
   }];
+  let hasCanonicalizer = 1;
 }
 
 class ResultIsHalfSourceVectorType<string result> : TypesMatchWith<
