@@ -13,6 +13,8 @@
 #ifndef LLVM_LIB_TARGET_SW64_SW64REGISTERINFO_H
 #define LLVM_LIB_TARGET_SW64_SW64REGISTERINFO_H
 
+#include <cstdint>
+
 #include "Sw64.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 
