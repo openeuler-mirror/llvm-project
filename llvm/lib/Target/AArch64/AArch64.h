@@ -56,6 +56,8 @@ FunctionPass *createAArch64MIPeepholeOptPass();
 
 FunctionPass *createAArch64CleanupLocalDynamicTLSPass();
 
+FunctionPass *createAArch64MallocMergePass();
+
 FunctionPass *createAArch64CollectLOHPass();
 FunctionPass *createSMEABIPass();
 ModulePass *createSVEIntrinsicOptsPass();
@@ -88,6 +90,7 @@ void initializeAArch64GlobalsTaggingPass(PassRegistry &);
 void initializeAArch64LoadStoreOptPass(PassRegistry&);
 void initializeAArch64LoopIdiomTransformLegacyPassPass(PassRegistry &);
 void initializeAArch64LowerHomogeneousPrologEpilogPass(PassRegistry &);
+void initializeAArch64MallocMergeLegacyPassPass(PassRegistry &);
 void initializeAArch64MIPeepholeOptPass(PassRegistry &);
 void initializeAArch64O0PreLegalizerCombinerPass(PassRegistry &);
 void initializeAArch64PostLegalizerCombinerPass(PassRegistry &);
