@@ -1600,14 +1600,6 @@ unsigned DWARFLinker::DIECloner::cloneAttribute(
     DIE &Die, const DWARFDie &InputDIE, const DWARFFile &File,
     CompileUnit &Unit, const DWARFFormValue &Val, const AttributeSpec AttrSpec,
     unsigned AttrSize, AttributesInfo &Info, bool IsLittleEndian) {
-  // Type units must not have DW_AT_stmt_list.
-  if (AttrSpec.Attr == dwarf::DW_AT_stmt_list) {
-    const bool IsTypeUnit =
-        Unit.getOrigUnit().getUnitType() == dwarf::DW_UT_type ||
-        Unit.getOrigUnit().getUnitType() == dwarf::DW_UT_split_type;
-    if (IsTypeUnit)
-        return 0;
-  }
   const DWARFUnit &U = Unit.getOrigUnit();
 
   switch (AttrSpec.Form) {
@@ -2157,9 +2149,23 @@ void DWARFLinker::DIECloner::generateLineTableForUnit(CompileUnit &Unit) {
   if (!StmtList)
     return;
 
+  const bool IsTypeUnit =
+      Unit.getOrigUnit().getUnitType() == dwarf::DW_UT_type ||
+      Unit.getOrigUnit().getUnitType() == dwarf::DW_UT_split_type;
+
+  if (IsTypeUnit) {
+    auto LineTableOffset = LineTableOffsetMap.find(*StmtList);
+    if (LineTableOffset != LineTableOffsetMap.end()) {
+      if (auto *OutputDIE = Unit.getOutputUnitDIE())
+        patchStmtList(*OutputDIE, DIEInteger(LineTableOffset->second));
+      return;
+    }
+  }
+
   // Update the cloned DW_AT_stmt_list with the correct debug_line offset.
+  const uint64_t LineTableOffset = Emitter->getLineSectionSize();
   if (auto *OutputDIE = Unit.getOutputUnitDIE())
-    patchStmtList(*OutputDIE, DIEInteger(Emitter->getLineSectionSize()));
+    patchStmtList(*OutputDIE, DIEInteger(LineTableOffset));
 
   if (const DWARFDebugLine::LineTable *LT =
           ObjFile.Dwarf->getLineTableForUnit(&Unit.getOrigUnit())) {
@@ -2247,6 +2253,7 @@ void DWARFLinker::DIECloner::generateLineTableForUnit(CompileUnit &Unit) {
 
     Emitter->emitLineTableForUnit(LineTable, Unit, DebugStrPool,
                                   DebugLineStrPool);
+    LineTableOffsetMap.try_emplace(*StmtList, LineTableOffset);
   } else
     Linker.reportWarning("Cann't load line table.", ObjFile);
 }
@@ -2685,6 +2692,9 @@ uint64_t DWARFLinker::DIECloner::cloneAllCompileUnits(
       cloneDIE(InputDIE, File, *CurrentUnit, 0,
                TypeUnitHeaderSize, 0, IsLittleEndian,
                CurrentUnit->getOutputUnitDIE());
+
+      if (Emitter != nullptr)
+        generateLineTableForUnit(*CurrentUnit);
     }
 
     CurrentUnit->computeNextUnitOffset(DwarfVersion);

@@ -680,6 +680,11 @@ private:
     /// compile unit.
     Offset2UnitMap UnitMacroMap;
 
+    /// Keeps mapping from input .debug_line offsets to output .debug_line
+    /// offsets. Type units often share the same line table with compile units
+    /// or other type units.
+    DenseMap<uint64_t, uint64_t> LineTableOffsetMap;
+
     bool Update;
 
     UnitListTy &TypeUnits;
