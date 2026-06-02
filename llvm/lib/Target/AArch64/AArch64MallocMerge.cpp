@@ -16,7 +16,7 @@
 //    b. Reject escaping allocations.
 //    c. Check that the malloc and free mutually dominate and post-dominate
 //       one another.
-//    d. The alignment value of the points must be <= 16.
+//    d. Only accept a restricted set of local uses and forwarding patterns.
 //
 // 2. Group compatible pairs.
 //    a. Find a common dominating malloc anchor.
@@ -24,7 +24,8 @@
 //    c. Require every member free to post-dominate the chosen leader malloc.
 //
 // 3. Rewrite the group.
-//    a. Build the merged layout in decreasing alignment order.
+//    a. Build the merged layout so that every sub-allocation start preserves
+//       the assumed malloc return alignment.
 //    b. Rewrite each original allocation to a disjoint byte range within the
 //       merged allocation.
 //    c. Insert the merged malloc/free pair and erase the original pairs.
@@ -39,6 +40,7 @@
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Analysis/CaptureTracking.h"
 #include "llvm/Analysis/PostDominators.h"
+#include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/CodeGen/TargetPassConfig.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Dominators.h"
@@ -63,6 +65,10 @@ using namespace llvm;
 static cl::opt<bool> EnableMallocMerge("enable-malloc-merge", cl::Hidden,
                                        cl::desc("Enable the malloc merge pass"),
                                        cl::init(false));
+static cl::opt<unsigned>
+    MallocMergeAllocAlign("malloc-merge-alloc-align", cl::Hidden,
+                          cl::desc("Assumed alignment of malloc return values"),
+                          cl::init(16));
 
 STATISTIC(NumMergedMallocGroups, "Number of malloc groups merged");
 STATISTIC(NumMergedMallocCalls, "Number of malloc calls removed");
@@ -74,7 +80,6 @@ class AArch64MallocMergeImpl {
     CallInst *Malloc = nullptr;
     CallInst *Free = nullptr;
     uint64_t Size = 0;
-    Align RequiredAlign = Align(1);
     unsigned Order = 0;
     bool StoredPointerForwarded = false;
     SmallPtrSet<Instruction *, 8> Users;
@@ -86,12 +91,11 @@ class AArch64MallocMergeImpl {
     CallInst *LastFree = nullptr;
   };
 
-  static const Align MaxSupportedUseAlign;
-
 public:
   AArch64MallocMergeImpl(const AArch64TargetMachine &TM, DominatorTree &DT,
-                         PostDominatorTree &PDT, const DataLayout &DL)
-      : TM(TM), DT(DT), PDT(PDT), DL(DL) {}
+                         PostDominatorTree &PDT, const DataLayout &DL,
+                         const TargetLibraryInfo &TLI)
+      : TM(TM), DT(DT), PDT(PDT), DL(DL), TLI(TLI) {}
 
   bool run(Function &F) {
     if (!EnableMallocMerge || F.isDeclaration())
@@ -115,24 +119,34 @@ private:
   DominatorTree &DT;
   PostDominatorTree &PDT;
   const DataLayout &DL;
+  const TargetLibraryInfo &TLI;
 
-  static bool isMallocCall(const CallInst &CI) {
+  bool isMallocCall(const CallInst &CI) const {
     const Function *Callee = CI.getCalledFunction();
-    return Callee && Callee->getName() == "malloc" && CI.arg_size() == 1 &&
-           CI.getType()->isPointerTy();
+    if (!Callee)
+      return false;
+
+    LibFunc Func;
+    if (!TLI.getLibFunc(*Callee, Func) || !TLI.has(Func) ||
+        Func != LibFunc_malloc)
+      return false;
+    return true;
   }
 
-  static bool isFreeCall(const CallInst &CI) {
+  bool isFreeCall(const CallInst &CI) const {
     const Function *Callee = CI.getCalledFunction();
-    return Callee && Callee->getName() == "free" && CI.arg_size() == 1;
+    if (!Callee)
+      return false;
+
+    LibFunc Func;
+    if (!TLI.getLibFunc(*Callee, Func) || !TLI.has(Func) ||
+        Func != LibFunc_free)
+      return false;
+    return true;
   }
 
   static bool isSupportedPointerProducer(const Instruction &I) {
-    return isa<BitCastInst>(I) || isa<GetElementPtrInst>(I);
-  }
-
-  static bool isFreeCompatibleValue(const Value &V, const Value &Root) {
-    return &V == &Root || isa<BitCastInst>(V) || isa<LoadInst>(V);
+    return isa<BitCastInst>(I) || isa<GetElementPtrInst>(I) || isa<LoadInst>(I);
   }
 
   bool isLocalForwardingSlot(Value *Slot) const {
@@ -157,7 +171,6 @@ private:
       return false;
 
     Info.StoredPointerForwarded = true;
-    Info.RequiredAlign = std::max(Info.RequiredAlign, Store.getAlign());
     Info.Users.insert(&Store);
 
     for (User *U : Slot->users()) {
@@ -168,17 +181,15 @@ private:
         continue;
 
       if (auto *LI = dyn_cast<LoadInst>(I)) {
-        if (LI->isVolatile() || LI->getPointerOperand() != Slot ||
-            LI->getAlign() > MaxSupportedUseAlign)
+        if (LI->isVolatile() || LI->getPointerOperand() != Slot)
           return false;
-        Info.RequiredAlign = std::max(Info.RequiredAlign, LI->getAlign());
         Info.Users.insert(LI);
         if (!collectUses(LI, Root, Info, Visited))
           return false;
         continue;
       }
 
-      if (auto *SI = dyn_cast<StoreInst>(I)) {
+      if (isa<StoreInst>(I)) {
         return false;
       }
 
@@ -188,11 +199,13 @@ private:
         return false;
       }
 
-      if (isa<CallBase>(I) || isa<PHINode>(I) || isa<ReturnInst>(I))
+      if (isa<PHINode>(I) || isa<ReturnInst>(I))
         return false;
 
       if (I->getType()->isPointerTy())
         return false;
+
+      return false;
     }
 
     return true;
@@ -211,8 +224,7 @@ private:
         continue;
 
       if (auto *CI = dyn_cast<CallInst>(I)) {
-        if (isFreeCall(*CI) && CI->getArgOperand(0) == V &&
-            isFreeCompatibleValue(*V, Root)) {
+        if (isFreeCall(*CI)) {
           if (Info.Free && Info.Free != CI)
             return false;
           Info.Free = CI;
@@ -221,26 +233,16 @@ private:
         return false;
       }
 
-      if (isa<CallBase>(I) || isa<PHINode>(I) || isa<ReturnInst>(I))
+      if (isa<PHINode>(I) || isa<ReturnInst>(I))
         return false;
 
-      if (auto *LI = dyn_cast<LoadInst>(I)) {
-        if (LI->isVolatile() || LI->getPointerOperand() != V ||
-            LI->getAlign() > MaxSupportedUseAlign)
-          return false;
-        Info.RequiredAlign = std::max(Info.RequiredAlign, LI->getAlign());
-        Info.Users.insert(LI);
-        continue;
-      }
-
       if (auto *SI = dyn_cast<StoreInst>(I)) {
-        if (SI->isVolatile() || SI->getAlign() > MaxSupportedUseAlign)
+        if (SI->isVolatile())
           return false;
         if (SI->getValueOperand() == V)
           return collectStoredPointerUses(*SI, Root, Info, Visited);
         if (SI->getPointerOperand() != V)
           return false;
-        Info.RequiredAlign = std::max(Info.RequiredAlign, SI->getAlign());
         Info.Users.insert(SI);
         continue;
       }
@@ -249,8 +251,6 @@ private:
         return false;
 
       Info.Users.insert(I);
-      if (!collectUses(I, Root, Info, Visited))
-        return false;
     }
 
     return true;
@@ -273,7 +273,7 @@ private:
       return false;
     }
 
-    if (!Info.Free || Info.RequiredAlign > MaxSupportedUseAlign) {
+    if (!Info.Free) {
       LLVM_DEBUG(dbgs() << "MallocMerge: reject missing info " << Malloc
                         << '\n');
       return false;
@@ -323,65 +323,7 @@ private:
       }
     }
 
-    return Infos;
-  }
-
-  CallInst *findPostDominatingFree(ArrayRef<const MallocInfo *> Infos) const {
-    for (const MallocInfo *Candidate : Infos) {
-      bool PostDominatesAll = true;
-      for (const MallocInfo *Info : Infos) {
-        if (!PDT.dominates(Candidate->Free, Info->Free)) {
-          PostDominatesAll = false;
-          break;
-        }
-      }
-      if (PostDominatesAll)
-        return Candidate->Free;
-    }
-    return nullptr;
-  }
-
-  CallInst *findDominatingMalloc(ArrayRef<const MallocInfo *> Infos) const {
-    for (const MallocInfo *Candidate : Infos) {
-      bool DominatesAll = true;
-      for (const MallocInfo *Info : Infos) {
-        if (Candidate->Malloc != Info->Malloc &&
-            !DT.dominates(Candidate->Malloc, Info->Malloc)) {
-          DominatesAll = false;
-          break;
-        }
-      }
-      if (DominatesAll)
-        return Candidate->Malloc;
-    }
-    return nullptr;
-  }
-
-  bool addToMergeGroup(MergeGroup &Group, const MallocInfo &Info) const {
-    if (Group.Infos.empty()) {
-      Group.Infos.push_back(&Info);
-      Group.LeaderMalloc = Info.Malloc;
-      Group.LastFree = Info.Free;
-      return true;
-    }
-
-    SmallVector<const MallocInfo *, 4> NewInfos(Group.Infos.begin(),
-                                                Group.Infos.end());
-    NewInfos.push_back(&Info);
-
-    CallInst *LeaderMalloc = findDominatingMalloc(NewInfos);
-    CallInst *LastFree = findPostDominatingFree(NewInfos);
-    if (!LeaderMalloc || !LastFree)
-      return false;
-
-    for (const MallocInfo *Member : NewInfos)
-      if (!PDT.dominates(Member->Free, LeaderMalloc))
-        return false;
-
-    Group.Infos = std::move(NewInfos);
-    Group.LeaderMalloc = LeaderMalloc;
-    Group.LastFree = LastFree;
-    return true;
+    return std::move(Infos);
   }
 
   SmallVector<MergeGroup, 4>
@@ -396,32 +338,25 @@ private:
       if (Used[I])
         continue;
 
+      Used[I] = true;
+
       MergeGroup Group;
-      if (!addToMergeGroup(Group, Infos[I]))
-        continue;
+      Group.Infos.push_back(&Infos[I]);
+      Group.LeaderMalloc = Infos[I].Malloc;
+      Group.LastFree = Infos[I].Free;
 
-      SmallVector<bool, 8> InGroup(Infos.size(), false);
-      SmallVector<unsigned, 4> Members;
-      InGroup[I] = true;
-      Members.push_back(I);
+      for (unsigned J = 0; J != E; ++J) {
+        if (Used[J])
+          continue;
 
-      bool Added = false;
-      do {
-        Added = false;
-        for (unsigned J = 0; J != E; ++J) {
-          if (Used[J] || InGroup[J])
-            continue;
-
-          MergeGroup CandidateGroup = Group;
-          if (!addToMergeGroup(CandidateGroup, Infos[J]))
-            continue;
-
-          Group = std::move(CandidateGroup);
-          InGroup[J] = true;
-          Members.push_back(J);
-          Added = true;
+        if ((DT.dominates(Infos[J].Malloc, Group.LeaderMalloc) &&
+             PDT.dominates(Group.LeaderMalloc, Infos[J].Malloc)) ||
+            (DT.dominates(Group.LeaderMalloc, Infos[J].Malloc) &&
+             PDT.dominates(Infos[J].Malloc, Group.LeaderMalloc))) {
+          Group.Infos.push_back(&Infos[J]);
+          Used[J] = true;
         }
-      } while (Added);
+      }
 
       if (Group.Infos.size() < 2)
         continue;
@@ -429,9 +364,6 @@ private:
       llvm::sort(Group.Infos, [](const MallocInfo *L, const MallocInfo *R) {
         return L->Order < R->Order;
       });
-
-      for (unsigned Index : Members)
-        Used[Index] = true;
 
       LLVM_DEBUG(dbgs() << "MallocMerge: collected merge group with "
                         << Group.Infos.size() << " mallocs\n");
@@ -449,7 +381,7 @@ private:
     Offsets.reserve(Infos.size());
 
     for (const MallocInfo *Info : Infos) {
-      TotalSize = alignTo(TotalSize, Info->RequiredAlign.value());
+      TotalSize = alignTo(TotalSize, MallocMergeAllocAlign);
       Offsets.push_back(TotalSize);
       if (Info->Size > std::numeric_limits<uint64_t>::max() - TotalSize)
         return false;
@@ -490,11 +422,6 @@ private:
 
     SmallVector<const MallocInfo *, 4> LayoutInfos(Group.Infos.begin(),
                                                    Group.Infos.end());
-    llvm::sort(LayoutInfos, [](const MallocInfo *L, const MallocInfo *R) {
-      if (L->RequiredAlign != R->RequiredAlign)
-        return L->RequiredAlign.value() > R->RequiredAlign.value();
-      return L->Order < R->Order;
-    });
 
     uint64_t TotalSize = 0;
     SmallVector<uint64_t, 4> Offsets;
@@ -536,8 +463,6 @@ private:
   }
 };
 
-const Align AArch64MallocMergeImpl::MaxSupportedUseAlign(16);
-
 class AArch64MallocMergeLegacyPass : public FunctionPass {
 public:
   static char ID;
@@ -558,15 +483,18 @@ public:
     auto &DT = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
     auto &PDT = getAnalysis<PostDominatorTreeWrapperPass>().getPostDomTree();
     const DataLayout &DL = F.getParent()->getDataLayout();
-    return AArch64MallocMergeImpl(TM, DT, PDT, DL).run(F);
+    auto &TLI = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI(F);
+    return AArch64MallocMergeImpl(TM, DT, PDT, DL, TLI).run(F);
   }
 
   void getAnalysisUsage(AnalysisUsage &AU) const override {
     AU.addRequired<TargetPassConfig>();
     AU.addRequired<DominatorTreeWrapperPass>();
     AU.addRequired<PostDominatorTreeWrapperPass>();
+    AU.addRequired<TargetLibraryInfoWrapperPass>();
     AU.addPreserved<DominatorTreeWrapperPass>();
     AU.addPreserved<PostDominatorTreeWrapperPass>();
+    AU.addPreserved<TargetLibraryInfoWrapperPass>();
     AU.setPreservesCFG();
     FunctionPass::getAnalysisUsage(AU);
   }
@@ -581,8 +509,9 @@ public:
     DominatorTree &DT = AM.getResult<DominatorTreeAnalysis>(F);
     PostDominatorTree &PDT = AM.getResult<PostDominatorTreeAnalysis>(F);
     const DataLayout &DL = F.getParent()->getDataLayout();
+    const TargetLibraryInfo &TLI = AM.getResult<TargetLibraryAnalysis>(F);
 
-    bool Changed = AArch64MallocMergeImpl(*TM, DT, PDT, DL).run(F);
+    bool Changed = AArch64MallocMergeImpl(*TM, DT, PDT, DL, TLI).run(F);
     if (!Changed)
       return PreservedAnalyses::all();
 
@@ -590,6 +519,7 @@ public:
     PA.preserveSet<CFGAnalyses>();
     PA.preserve<DominatorTreeAnalysis>();
     PA.preserve<PostDominatorTreeAnalysis>();
+    PA.preserve<TargetLibraryAnalysis>();
     return PA;
   }
 
@@ -606,6 +536,7 @@ INITIALIZE_PASS_BEGIN(AArch64MallocMergeLegacyPass, DEBUG_TYPE, "malloc-merge",
 INITIALIZE_PASS_DEPENDENCY(TargetPassConfig)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTreeWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(TargetLibraryInfoWrapperPass)
 INITIALIZE_PASS_END(AArch64MallocMergeLegacyPass, DEBUG_TYPE, "malloc-merge",
                     false, false)
 
