@@ -11,6 +11,14 @@ llvm.func @store_vector_i1(%val: vector<128xi1>, %ptr: !llvm.ptr) {
   llvm.return
 }
 
+// CHECK-LABEL: @store_vector_i1_scalable
+// CHECK:         %[[ZEXT:.*]] = llvm.zext %{{.*}} : vector<[16]xi1> to vector<[16]xi8>
+// CHECK-NEXT:    llvm.store %[[ZEXT]], %{{.*}} : vector<[16]xi8>, !llvm.ptr
+llvm.func @store_vector_i1_scalable(%val: vector<[16]xi1>, %ptr: !llvm.ptr) {
+  llvm.store %val, %ptr : vector<[16]xi1>, !llvm.ptr
+  llvm.return
+}
+
 // -----
 
 // Case 2: Load vector<N x i1> — load as vector<N x i8> then trunc.
@@ -21,6 +29,15 @@ llvm.func @store_vector_i1(%val: vector<128xi1>, %ptr: !llvm.ptr) {
 llvm.func @load_vector_i1(%ptr: !llvm.ptr) -> vector<128xi1> {
   %0 = llvm.load %ptr : !llvm.ptr -> vector<128xi1>
   llvm.return %0 : vector<128xi1>
+}
+
+// CHECK-LABEL: @load_vector_i1_scalable
+// CHECK:         %[[LOAD:.*]] = llvm.load %{{.*}} : !llvm.ptr -> vector<[16]xi8>
+// CHECK-NEXT:    %[[TRUNC:.*]] = llvm.trunc %[[LOAD]] : vector<[16]xi8> to vector<[16]xi1>
+// CHECK-NEXT:    llvm.return %[[TRUNC]]
+llvm.func @load_vector_i1_scalable(%ptr: !llvm.ptr) -> vector<[16]xi1> {
+  %0 = llvm.load %ptr : !llvm.ptr -> vector<[16]xi1>
+  llvm.return %0 : vector<[16]xi1>
 }
 
 // -----
@@ -90,4 +107,15 @@ llvm.func @roundtrip_vector_i1(%val: vector<16xi1>, %ptr: !llvm.ptr) -> vector<1
   llvm.store %val, %ptr : vector<16xi1>, !llvm.ptr
   %0 = llvm.load %ptr : !llvm.ptr -> vector<16xi1>
   llvm.return %0 : vector<16xi1>
+}
+
+// CHECK-LABEL: @roundtrip_vector_i1_scalable
+// CHECK:         %[[ZEXT:.*]] = llvm.zext %{{.*}} : vector<[16]xi1> to vector<[16]xi8>
+// CHECK-NEXT:    llvm.store %[[ZEXT]], %{{.*}} : vector<[16]xi8>, !llvm.ptr
+// CHECK-NEXT:    %[[LOAD:.*]] = llvm.load %{{.*}} : !llvm.ptr -> vector<[16]xi8>
+// CHECK-NEXT:    %[[TRUNC:.*]] = llvm.trunc %[[LOAD]] : vector<[16]xi8> to vector<[16]xi1>
+llvm.func @roundtrip_vector_i1_scalable(%val: vector<[16]xi1>, %ptr: !llvm.ptr) -> vector<[16]xi1> {
+  llvm.store %val, %ptr : vector<[16]xi1>, !llvm.ptr
+  %0 = llvm.load %ptr : !llvm.ptr -> vector<[16]xi1>
+  llvm.return %0 : vector<[16]xi1>
 }

@@ -56,7 +56,8 @@ struct PromoteI1ToI8Pass
     for (auto storeOp : i1VecStores) {
       auto vecType = cast<VectorType>(storeOp.getValue().getType());
       auto i8VecType =
-          VectorType::get(vecType.getShape(), IntegerType::get(ctx, 8));
+          VectorType::get(vecType.getShape(), IntegerType::get(ctx, 8),
+                          vecType.getScalableDims());
       OpBuilder builder(storeOp);
       auto zext = builder.create<LLVM::ZExtOp>(storeOp.getLoc(), i8VecType,
                                                storeOp.getValue());
@@ -73,7 +74,8 @@ struct PromoteI1ToI8Pass
     for (auto loadOp : i1VecLoads) {
       auto vecType = cast<VectorType>(loadOp.getType());
       auto i8VecType =
-          VectorType::get(vecType.getShape(), IntegerType::get(ctx, 8));
+          VectorType::get(vecType.getShape(), IntegerType::get(ctx, 8),
+                          vecType.getScalableDims());
       OpBuilder builder(loadOp);
       builder.setInsertionPointAfter(loadOp);
       auto i8Load = builder.create<LLVM::LoadOp>(loadOp.getLoc(), i8VecType,
