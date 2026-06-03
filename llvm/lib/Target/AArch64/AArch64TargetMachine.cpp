@@ -220,6 +220,7 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeAArch64Target() {
   initializeAArch64ExpandPseudoPass(*PR);
   initializeAArch64LoadStoreOptPass(*PR);
   initializeAArch64LoopIdiomTransformLegacyPassPass(*PR);
+  initializeAArch64MallocMergeLegacyPassPass(*PR);
   initializeAArch64MIPeepholeOptPass(*PR);
   initializeAArch64SIMDInstrOptPass(*PR);
   initializeAArch64O0PreLegalizerCombinerPass(*PR);
@@ -602,6 +603,9 @@ void AArch64PassConfig::addIRPasses() {
   }
 
   TargetPassConfig::addIRPasses();
+
+  if (getOptLevel() != CodeGenOpt::None)
+    addPass(createAArch64MallocMergePass());
 
   if (getOptLevel() == CodeGenOpt::Aggressive && EnableSelectOpt)
     addPass(createSelectOptimizePass());

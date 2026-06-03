@@ -71,6 +71,8 @@
 ; CHECK-NEXT:       Expand reduction intrinsics
 ; CHECK-NEXT:       Natural Loop Information
 ; CHECK-NEXT:       TLS Variable Hoist
+; CHECK-NEXT:       Post-Dominator Tree Construction
+; CHECK-NEXT:       malloc-merge
 ; CHECK-NEXT:       Lazy Branch Probability Analysis
 ; CHECK-NEXT:       Lazy Block Frequency Analysis
 ; CHECK-NEXT:       Optimization Remark Emitter
