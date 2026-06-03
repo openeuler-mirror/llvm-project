@@ -16,7 +16,7 @@
 //    b. Reject escaping allocations.
 //    c. Check that the malloc and free mutually dominate and post-dominate
 //       one another.
-//    d. Only accept a restricted set of local uses and forwarding patterns.
+//    d. Only accept a restricted set of local uses.
 //
 // 2. Group compatible pairs.
 //    a. Find a common dominating malloc anchor.
@@ -81,7 +81,6 @@ class AArch64MallocMergeImpl {
     CallInst *Free = nullptr;
     uint64_t Size = 0;
     unsigned Order = 0;
-    bool StoredPointerForwarded = false;
     SmallPtrSet<Instruction *, 8> Users;
   };
 
@@ -145,73 +144,7 @@ private:
     return true;
   }
 
-  static bool isSupportedPointerProducer(const Instruction &I) {
-    return isa<BitCastInst>(I) || isa<GetElementPtrInst>(I) || isa<LoadInst>(I);
-  }
-
-  bool isLocalForwardingSlot(Value *Slot) const {
-    Value *Base = Slot->stripPointerCasts();
-    while (auto *GEP = dyn_cast<GetElementPtrInst>(Base))
-      Base = GEP->getPointerOperand()->stripPointerCasts();
-
-    if (isa<AllocaInst>(Base))
-      return true;
-
-    auto *CI = dyn_cast<CallInst>(Base);
-    return CI && isMallocCall(*CI);
-  }
-
-  bool collectStoredPointerUses(StoreInst &Store, CallInst &Root,
-                                MallocInfo &Info,
-                                SmallPtrSetImpl<Value *> &Visited) const {
-    Value *Slot = Store.getPointerOperand();
-    if (!Store.getValueOperand()->getType()->isPointerTy())
-      return false;
-    if (!isLocalForwardingSlot(Slot))
-      return false;
-
-    Info.StoredPointerForwarded = true;
-    Info.Users.insert(&Store);
-
-    for (User *U : Slot->users()) {
-      auto *I = dyn_cast<Instruction>(U);
-      if (!I)
-        return false;
-      if (I->isDebugOrPseudoInst() || I == &Store)
-        continue;
-
-      if (auto *LI = dyn_cast<LoadInst>(I)) {
-        if (LI->isVolatile() || LI->getPointerOperand() != Slot)
-          return false;
-        Info.Users.insert(LI);
-        if (!collectUses(LI, Root, Info, Visited))
-          return false;
-        continue;
-      }
-
-      if (isa<StoreInst>(I)) {
-        return false;
-      }
-
-      if (auto *CI = dyn_cast<CallInst>(I)) {
-        if (isFreeCall(*CI) && CI->getArgOperand(0) == Slot)
-          continue;
-        return false;
-      }
-
-      if (isa<PHINode>(I) || isa<ReturnInst>(I))
-        return false;
-
-      if (I->getType()->isPointerTy())
-        return false;
-
-      return false;
-    }
-
-    return true;
-  }
-
-  bool collectUses(Value *V, CallInst &Root, MallocInfo &Info,
+  bool collectUses(Value *V, MallocInfo &Info,
                    SmallPtrSetImpl<Value *> &Visited) const {
     if (!Visited.insert(V).second)
       return true;
@@ -240,15 +173,12 @@ private:
         if (SI->isVolatile())
           return false;
         if (SI->getValueOperand() == V)
-          return collectStoredPointerUses(*SI, Root, Info, Visited);
+          return false;
         if (SI->getPointerOperand() != V)
           return false;
         Info.Users.insert(SI);
         continue;
       }
-
-      if (!isSupportedPointerProducer(*I))
-        return false;
 
       Info.Users.insert(I);
     }
@@ -268,7 +198,7 @@ private:
     Info.Size = SizeC->getZExtValue();
 
     SmallPtrSet<Value *, 16> Visited;
-    if (!collectUses(&Malloc, Malloc, Info, Visited)) {
+    if (!collectUses(&Malloc, Info, Visited)) {
       LLVM_DEBUG(dbgs() << "MallocMerge: reject uses " << Malloc << '\n');
       return false;
     }
@@ -279,8 +209,7 @@ private:
       return false;
     }
 
-    if (!Info.StoredPointerForwarded &&
-        PointerMayBeCapturedBefore(&Malloc, /*ReturnCaptures=*/true,
+    if (PointerMayBeCapturedBefore(&Malloc, /*ReturnCaptures=*/true,
                                    /*StoreCaptures=*/true, Info.Free, &DT)) {
       LLVM_DEBUG(dbgs() << "MallocMerge: reject captured " << Malloc << '\n');
       return false;
