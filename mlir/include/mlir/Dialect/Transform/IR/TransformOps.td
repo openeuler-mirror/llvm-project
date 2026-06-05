@@ -369,6 +369,14 @@ def ApplyCanonicalizationPatternsOp
   let assemblyFormat = "attr-dict";
 }
 
+def ApplySetVscaleOp : TransformDialectOp<"apply_patterns.set_vscale",
+        [DeclareOpInterfaceMethods<PatternDescriptorOpInterface>]> {
+
+  let description = [{Sets the vscale as constant for VLS compilation.}];
+  let arguments = (ins DefaultValuedAttr<I64Attr, "1">:$vscale);
+  let assemblyFormat = "attr-dict";
+}
+
 def ApplyLoopInvariantCodeMotionOp : TransformDialectOp<"apply_licm",
     [TransformOpInterface, TransformEachOpTrait,
      DeclareOpInterfaceMethods<MemoryEffectsOpInterface>,
