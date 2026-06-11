@@ -511,6 +511,36 @@ void transform::ApplyCanonicalizationPatternsOp::populatePatterns(
 }
 
 //===----------------------------------------------------------------------===//
+// SetVscaleOp
+//===----------------------------------------------------------------------===//
+
+struct SetVscalePattern : public OpRewritePattern<vector::VectorScaleOp> {
+    SetVscalePattern(MLIRContext *context, unsigned vscaleValue,
+                     PatternBenefit benefit = 1)
+        : OpRewritePattern<vector::VectorScaleOp>(context, benefit),
+          vscaleValue(vscaleValue) {}
+
+  LogicalResult matchAndRewrite(vector::VectorScaleOp vscaleOp,
+                                PatternRewriter &rewriter) const override
+  {
+    Value val =
+        rewriter.create<arith::ConstantIndexOp>(vscaleOp.getLoc(), vscaleValue);
+    rewriter.replaceOp(vscaleOp, val);
+    return success();
+  }
+
+private:
+  unsigned vscaleValue;
+};
+
+void transform::ApplySetVscaleOp::populatePatterns(
+    RewritePatternSet &patterns)
+{
+  MLIRContext *ctx = patterns.getContext();
+  patterns.add<SetVscalePattern>(ctx, getVscale());
+}
+
+//===----------------------------------------------------------------------===//
 // ApplyConversionPatternsOp
 //===----------------------------------------------------------------------===//
 
