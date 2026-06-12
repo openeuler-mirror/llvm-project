@@ -9382,6 +9382,9 @@ let Predicates = [HasCMPBR] in {
  defm : CmpBranchImmediateAlias<"cbhs", "CBHI", "uimm6p1">;
  defm : CmpBranchImmediateAlias<"cble", "CBLT", "uimm6m1">;
  defm : CmpBranchImmediateAlias<"cbls", "CBLO", "uimm6m1">;
+
+ defm : CmpBranchRegisterAlias<"cble", "CBGE">;
+ defm : CmpBranchRegisterAlias<"cblo", "CBHI">;
  defm : CmpBranchRegisterAlias<"cbls", "CBHS">;
  defm : CmpBranchRegisterAlias<"cblt", "CBGT">;
 

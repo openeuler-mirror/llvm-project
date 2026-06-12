@@ -4032,7 +4032,7 @@ defm BFMINNM_ZPZZ : sve2p1_bf_bin_pred_zds<AArch64fminnm_p>;
 
 defm BFMUL_ZZZI : sve2p1_fp_bfmul_by_indexed_elem<"bfmul", int_aarch64_sve_fmul_lane>;
 
-defm BFCLAMP_ZZZ : sve2p1_bfclamp<"bfclamp", int_aarch64_sve_fclamp>;
+defm BFCLAMP_ZZZ : sve2p1_bfclamp<"bfclamp", AArch64fclamp>;
 } // End HasSVE2p1_or_HasSME2p1, HasB16B16
 
 

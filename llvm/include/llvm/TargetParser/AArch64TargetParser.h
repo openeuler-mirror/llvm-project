@@ -90,7 +90,8 @@ enum CPUFeatures {
   FEAT_SME2,
   FEAT_CMPBR,
   FEAT_LSUI,
-  FEAT_MAX
+  FEAT_MAX,
+  FEAT_INIT
 };
 
 static_assert(FEAT_MAX <= 64,
@@ -174,6 +175,7 @@ enum ArchExtKind : uint64_t {
   AEK_FPAC =         72, // FEAT_FPAC
   AEK_CMPBR =        73, // FEAT_CMPBR
   AEK_LSUI =         74, // FEAT_LSUI
+  AEK_NUM_EXTENSIONS
 };
 using ExtensionBitset = Bitset<AEK_NUM_EXTENSIONS>;
 // clang-format on

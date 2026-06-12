@@ -88,8 +88,10 @@ define <vscale x 8 x bfloat> @fclampbf16(<vscale x 8 x bfloat> %a, <vscale x 8 x
 ; CHECK:       // %bb.0:
 ; CHECK-NEXT:    bfclamp z0.h, z1.h, z2.h
 ; CHECK-NEXT:    ret
-  %min = tail call <vscale x 8 x bfloat> @llvm.aarch64.sve.fmaxnm.u.nxv8bf16(<vscale x 8 x i1> splat (i1 true), <vscale x 8 x bfloat> %a, <vscale x 8 x bfloat> %b)
-  %res = tail call <vscale x 8 x bfloat> @llvm.aarch64.sve.fminnm.u.nxv8bf16(<vscale x 8 x i1> splat (i1 true), <vscale x 8 x bfloat> %min, <vscale x 8 x bfloat> %c)
+  %head = insertelement <vscale x 8 x i1> poison, i1 true, i32 0
+  %m = shufflevector <vscale x 8 x i1> %head, <vscale x 8 x i1> poison, <vscale x 8 x i32> zeroinitializer
+  %min = tail call <vscale x 8 x bfloat> @llvm.aarch64.sve.fmaxnm.u.nxv8bf16(<vscale x 8 x i1> %m, <vscale x 8 x bfloat> %a, <vscale x 8 x bfloat> %b)
+  %res = tail call <vscale x 8 x bfloat> @llvm.aarch64.sve.fminnm.u.nxv8bf16(<vscale x 8 x i1> %m, <vscale x 8 x bfloat> %min, <vscale x 8 x bfloat> %c)
   ret <vscale x 8 x bfloat> %res
 }
 
