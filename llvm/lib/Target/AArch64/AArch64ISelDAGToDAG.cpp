@@ -408,7 +408,9 @@ public:
   }
 
   void SelectMultiVectorLuti(SDNode *Node, unsigned NumOutVecs, unsigned Opc,
-                             uint32_t MaxImm, bool IsMultiVector = false);
+                             uint32_t MaxImm, bool IsMultiVector = false,
+                             unsigned NumInVecs = 2);
+  void SelectMultiVectorLuti6LaneX4(SDNode *Node, unsigned NumIndexVecs);
 
   template <unsigned MaxIdx, unsigned Scale>
   bool SelectSMETileSlice(SDValue N, SDValue &Vector, SDValue &Offset) {
@@ -1940,7 +1942,8 @@ void AArch64DAGToDAGISel::SelectFrintFromVT(SDNode *N, unsigned NumVecs,
 void AArch64DAGToDAGISel::SelectMultiVectorLuti(SDNode *Node,
                                                 unsigned NumOutVecs,
                                                 unsigned Opc, uint32_t MaxImm,
-                                                bool IsMultiVector) {
+                                                bool IsMultiVector,
+                                                unsigned NumInVecs) {
   if (ConstantSDNode *Imm = dyn_cast<ConstantSDNode>(Node->getOperand(4)))
     if (Imm->getZExtValue() > MaxImm)
       return;
@@ -1950,7 +1953,10 @@ void AArch64DAGToDAGISel::SelectMultiVectorLuti(SDNode *Node,
   if (!ImmToReg<AArch64::ZT0, 0>(Node->getOperand(2), ZtValue))
     return;
   Ops.push_back(ZtValue);
-  if (IsMultiVector) {
+  if (IsMultiVector && NumInVecs == 3) {
+    Ops.push_back(createZTuple(
+        {Node->getOperand(3), Node->getOperand(4), Node->getOperand(5)}));
+  } else if (IsMultiVector) {
     Ops.push_back(createZMulTuple({Node->getOperand(3), Node->getOperand(4)}));
   } else {
     Ops.push_back(Node->getOperand(3));
@@ -1959,6 +1965,7 @@ void AArch64DAGToDAGISel::SelectMultiVectorLuti(SDNode *Node,
   // Preserve the chain so LUTI nodes that only differ in the chain operand
   // are not incorrectly CSE'd.
   Ops.push_back(Node->getOperand(0));
+
   SDLoc DL(Node);
   EVT VT = Node->getValueType(0);
 
@@ -1973,6 +1980,43 @@ void AArch64DAGToDAGISel::SelectMultiVectorLuti(SDNode *Node,
   // Copy chain
   unsigned ChainIdx = NumOutVecs;
   ReplaceUses(SDValue(Node, ChainIdx), SDValue(Instruction, 1));
+  CurDAG->RemoveDeadNode(Node);
+}
+
+void AArch64DAGToDAGISel::SelectMultiVectorLuti6LaneX4(SDNode *Node,
+                                                       unsigned NumIndexVecs) {
+  assert((NumIndexVecs == 2 || NumIndexVecs == 3) &&
+         "unexpected number of index vectors");
+
+  constexpr unsigned FirstIndexOp = 3;
+  unsigned ImmOp = FirstIndexOp + NumIndexVecs;
+  auto *Imm = dyn_cast<ConstantSDNode>(Node->getOperand(ImmOp));
+  if (!Imm || Imm->getZExtValue() > 1)
+    return;
+
+  // The luti6 instruction always takes a 2-register Zm index tuple. The x3
+  // ACLE form provides three index vectors, so the lane selects which adjacent
+  // pair to use before forming Zm (op 3/4 or op 4/5, with op6 as imm)
+  unsigned Lane = Imm->getZExtValue();
+  unsigned IndexOp = FirstIndexOp;
+  if (NumIndexVecs == 3)
+    IndexOp += Lane;
+
+  SDValue TableTuple = createZTuple({Node->getOperand(1), Node->getOperand(2)});
+  SDValue IndexTuple =
+      createZTuple({Node->getOperand(IndexOp), Node->getOperand(IndexOp + 1)});
+  SDValue Ops[] = {TableTuple, IndexTuple, Node->getOperand(ImmOp)};
+
+  SDLoc DL(Node);
+  EVT VT = Node->getValueType(0);
+  SDNode *Instruction =
+      CurDAG->getMachineNode(AArch64::LUTI6_4Z2Z2ZI, DL, MVT::Untyped, Ops);
+  SDValue SuperReg = SDValue(Instruction, 0);
+
+  for (unsigned I = 0; I < 4; ++I)
+    ReplaceUses(SDValue(Node, I), CurDAG->getTargetExtractSubreg(
+                                      AArch64::zsub0 + I, DL, VT, SuperReg));
+
   CurDAG->RemoveDeadNode(Node);
 }
 
@@ -5754,6 +5798,10 @@ void AArch64DAGToDAGISel::Select(SDNode *Node) {
       SelectMultiVectorLuti(Node, 4, AArch64::LUTI4_4ZZT2Z, 0, true);
       return;
     }
+    case Intrinsic::aarch64_sme_luti6_zt_x4: {
+      SelectMultiVectorLuti(Node, 4, AArch64::LUTI6_4ZT3Z, 0, true, 3);
+      return;
+    }
     case Intrinsic::aarch64_sve_fp8_cvtl1_x2:
       if (auto Opc = SelectOpcodeFromVT<SelectTypeKind::FP>(
               Node->getValueType(0),
@@ -5831,6 +5879,12 @@ void AArch64DAGToDAGISel::Select(SDNode *Node) {
               {AArch64::SRSHL_VG4_4ZZ_B, AArch64::SRSHL_VG4_4ZZ_H,
                AArch64::SRSHL_VG4_4ZZ_S, AArch64::SRSHL_VG4_4ZZ_D}))
         SelectDestructiveMultiIntrinsic(Node, 4, false, Op);
+      return;
+    case Intrinsic::aarch64_sme_luti6_lane_x4_x2:
+      SelectMultiVectorLuti6LaneX4(Node, 2);
+      return;
+    case Intrinsic::aarch64_sme_luti6_lane_x4_x3:
+      SelectMultiVectorLuti6LaneX4(Node, 3);
       return;
     case Intrinsic::aarch64_sve_urshl_single_x2:
       if (auto Op = SelectOpcodeFromVT<SelectTypeKind::Int>(

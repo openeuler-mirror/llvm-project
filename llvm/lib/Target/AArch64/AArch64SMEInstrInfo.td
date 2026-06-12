@@ -1050,7 +1050,7 @@ let Predicates = [HasSME_MOP4, HasSMEF8F32] in {
 }
 
 let Predicates = [HasSME2p3] in {
-  def LUTI6_ZTZ       : sme2_lut_single<"luti6">;
+  defm LUTI6_ZTZ      : sme2_lut_single<"luti6", int_aarch64_sme_luti6_zt>;
   def LUTI6_4ZT3Z     : sme2_luti6_zt_consecutive<"luti6">;
   def LUTI6_S_4ZT3Z   : sme2_luti6_zt_strided<"luti6">;
   def LUTI6_4Z2Z2ZI   : sme2_luti6_vector_vg4_consecutive<"luti6">;

@@ -4155,14 +4155,14 @@ defm TBLQ_ZZZ  : sve2p1_tblq<"tblq", int_aarch64_sve_tblq>;
 // SVE2.3 or SME2.3 instructions
 //===----------------------------------------------------------------------===//
 let Predicates = [HasSVE2p3_or_SME2p3] in {
-  defm LUTI6_Z2ZZI : sve2_luti6_vector_index<"luti6">;
+  defm LUTI6_Z2ZZI : sve2_luti6_vector_index<"luti6", int_aarch64_sve_luti6_lane_x2>;
 } // End HasSVE2p3_or_SME2p3
 
 //===----------------------------------------------------------------------===//
 // SVE2.3 instructions
 //===----------------------------------------------------------------------===//
 let Predicates = [HasSVE2p3] in {
-  def LUTI6_Z2ZZ : sve2_luti6_vector<"luti6">;
+  defm LUTI6_Z2ZZ : sve2_luti6_vector<"luti6", int_aarch64_sve_luti6>;
 }
 
 //===----------------------------------------------------------------------===//
