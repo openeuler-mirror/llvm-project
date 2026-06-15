@@ -737,6 +737,22 @@ static bool UpgradeIntrinsicFunction1(Function *F, Function *&NewFn) {
                                         Intrinsic::vector_insert, Tys);
       return true;
     }
+    if (Name.startswith("aarch64.sme.ftmopa.")) {
+      // The FP8 FTMOPA intrinsics were split out from the non-FP8 FTMOPA
+      // intrinsics to model their FPMR dependency.
+      Intrinsic::ID ID =
+          StringSwitch<Intrinsic::ID>(Name)
+              .Case("aarch64.sme.ftmopa.za16.nxv16i8",
+                    Intrinsic::aarch64_sme_fp8_ftmopa_za16)
+              .Case("aarch64.sme.ftmopa.za32.nxv16i8",
+                    Intrinsic::aarch64_sme_fp8_ftmopa_za32)
+              .Default(Intrinsic::not_intrinsic);
+      if (ID != Intrinsic::not_intrinsic) {
+        NewFn = Intrinsic::getDeclaration(F->getParent(), ID);
+        return true;
+      }
+      return false; // No other 'aarch64.sme.ftmopa.*'.
+    }
     if (Name.startswith("arm.neon.vclz")) {
       Type* args[2] = {
         F->arg_begin()->getType(),
@@ -1048,7 +1064,6 @@ static bool UpgradeIntrinsicFunction1(Function *F, Function *&NewFn) {
       NewFn = Intrinsic::getDeclaration(F->getParent(),
           Intrinsic::launder_invariant_group, ObjectPtr);
       return true;
-
     }
 
     break;
