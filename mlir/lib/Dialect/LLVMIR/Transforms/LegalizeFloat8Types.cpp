@@ -123,7 +123,7 @@ struct LegalizeFloat8TypesPass
       // If f8 appears on any other op, it means the arithmetic emulation
       // pipeline failed to promote it to f32 and blindly rewriting to i8
       // would be semantically wrong.
-      bool isSafeOp = isa<LLVM::LoadOp, LLVM::GEPOp, LLVM::UndefOp,
+      bool isSafeOp = isa<LLVM::LoadOp, LLVM::MaskedLoadOp, LLVM::GEPOp, LLVM::UndefOp,
                           LLVM::InsertElementOp, LLVM::ShuffleVectorOp,
                           LLVM::BitcastOp>(innerOp);
       if (!isSafeOp) {
