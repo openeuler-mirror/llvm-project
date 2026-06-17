@@ -98,3 +98,23 @@ llvm.func @store_implicit_ssa(%src: !llvm.ptr, %dst: !llvm.ptr) {
   llvm.store %0, %dst : f8E4M3FN, !llvm.ptr
   llvm.return
 }
+
+// Case 11: MaskedLoadOp — result type vector<N x f8> → vector<N x i8>
+// CHECK-LABEL: @maskedload_f8
+// CHECK:         %[[VAL:.*]] = llvm.intr.masked.load %{{.*}}, %{{.*}}, %{{.*}} (!llvm.ptr, vector<4xi1>, vector<4xf8E4M3FN>) -> vector<4xi8>
+// CHECK:         llvm.store %[[VAL]], %{{.*}} : vector<4xi8>, !llvm.ptr
+llvm.func @maskedload_f8(%src: !llvm.ptr, %mask: vector<4xi1>, %pass: vector<4xf8E4M3FN>, %dst: !llvm.ptr) {
+  %0 = llvm.intr.masked.load %src, %mask, %pass {alignment = 1 : i32} : (!llvm.ptr, vector<4xi1>, vector<4xf8E4M3FN>) -> vector<4xf8E4M3FN>
+  llvm.store %0, %dst : vector<4xf8E4M3FN>, !llvm.ptr
+  llvm.return
+}
+
+// Case 11: MaskedLoadOp — result type vector<N x f8> → vector<N x i8>
+// CHECK-LABEL: @maskedload_f8_scalable
+// CHECK:         %[[VAL:.*]] = llvm.intr.masked.load %{{.*}}, %{{.*}}, %{{.*}} (!llvm.ptr, vector<[4]xi1>, vector<[4]xf8E4M3FN>) -> vector<[4]xi8>
+// CHECK:         llvm.store %[[VAL]], %{{.*}} : vector<[4]xi8>, !llvm.ptr
+llvm.func @maskedload_f8_scalable(%src: !llvm.ptr, %mask: vector<[4]xi1>, %pass: vector<[4]xf8E4M3FN>, %dst: !llvm.ptr) {
+  %0 = llvm.intr.masked.load %src, %mask, %pass {alignment = 1 : i32} : (!llvm.ptr, vector<[4]xi1>, vector<[4]xf8E4M3FN>) -> vector<[4]xf8E4M3FN>
+  llvm.store %0, %dst : vector<[4]xf8E4M3FN>, !llvm.ptr
+  llvm.return
+}
