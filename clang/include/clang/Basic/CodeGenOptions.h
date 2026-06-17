@@ -169,6 +169,7 @@ public:
   };
 
   enum VectorizeVersionKind {
+    VectorizeVersion_Unspecified,
     VectorizeVersion_SVE,
     VectorizeVersion_Neon,
   };

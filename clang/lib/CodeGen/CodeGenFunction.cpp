@@ -1000,6 +1000,8 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
 
   // Add vectorize version attribute
   switch (CGM.getCodeGenOpts().getVectorizeVersion()) {
+  case CodeGenOptions::VectorizeVersion_Unspecified:
+    break;
   case CodeGenOptions::VectorizeVersion_SVE:
     Fn->addFnAttr("vectorize-version", "sve");
     break;

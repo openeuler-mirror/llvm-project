@@ -3984,7 +3984,7 @@ def fvectorize_version_EQ : Joined<["-"], "fvectorize-version=">, Group<f_Group>
   Values<"sve,neon">,
   NormalizedValuesScope<"CodeGenOptions::VectorizeVersionKind">,
   NormalizedValues<["VectorizeVersion_SVE", "VectorizeVersion_Neon"]>,
-  MarshallingInfoEnum<CodeGenOpts<"VectorizeVersion">, "VectorizeVersion_Neon">;
+  MarshallingInfoEnum<CodeGenOpts<"VectorizeVersion">, "VectorizeVersion_Unspecified">;
 def Wlarge_by_value_copy_def : Flag<["-"], "Wlarge-by-value-copy">,
   HelpText<"Warn if a function definition returns or accepts an object larger "
            "in bytes than a given value">, Flags<[HelpHidden]>;

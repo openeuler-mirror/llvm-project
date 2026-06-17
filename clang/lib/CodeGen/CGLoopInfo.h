@@ -44,10 +44,10 @@ struct LoopAttributes {
   enum LVEnableState { Unspecified, Enable, Disable, Full };
 
   /// Vectorization version.
-  enum VectorizeVersionKind { 
-    VectorizeVersion_Unspecified, 
-    VectorizeVersion_SVE, 
-    VectorizeVersion_Neon 
+  enum VectorizeVersionKind {
+    VectorizeVersion_Unspecified,
+    VectorizeVersion_SVE,
+    VectorizeVersion_Neon
   };
 
   /// Value for llvm.loop.vectorize.enable metadata.

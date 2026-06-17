@@ -473,6 +473,9 @@ CheckForIncompatibleAttributes(Sema &S,
     // The vector predication only has a state form that is exposed by
     // #pragma clang loop vectorize_predicate (enable | disable).
     VectorizePredicate,
+    // The vector version only has a state form exposed by
+    // #pragma clang loop vectorize_version (sve | neon).
+    VectorizeVersion,
     // This serves as a indicator to how many category are listed in this enum.
     NumberOfCategories
   };
@@ -495,8 +498,10 @@ CheckForIncompatibleAttributes(Sema &S,
     switch (Option) {
     case LoopHintAttr::Vectorize:
     case LoopHintAttr::VectorizeWidth:
-    case LoopHintAttr::VectorizeVersion:
       Category = Vectorize;
+      break;
+    case LoopHintAttr::VectorizeVersion:
+      Category = VectorizeVersion;
       break;
     case LoopHintAttr::Interleave:
     case LoopHintAttr::InterleaveCount:
@@ -531,7 +536,8 @@ CheckForIncompatibleAttributes(Sema &S,
         Option == LoopHintAttr::UnrollAndJam ||
         Option == LoopHintAttr::VectorizePredicate ||
         Option == LoopHintAttr::PipelineDisabled ||
-        Option == LoopHintAttr::Distribute) {
+        Option == LoopHintAttr::Distribute ||
+        Option == LoopHintAttr::VectorizeVersion) {
       // Enable|Disable|AssumeSafety hint.  For example, vectorize(enable).
       PrevAttr = CategoryState.StateAttr;
       CategoryState.StateAttr = LH;

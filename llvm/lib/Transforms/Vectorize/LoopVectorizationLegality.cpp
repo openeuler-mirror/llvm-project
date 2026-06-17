@@ -137,6 +137,17 @@ LoopVectorizeHints::LoopVectorizeHints(const Loop *L,
       Scalable.Value = SK_FixedWidthOnly;
   }
 
+  switch (getVectorizeVersion()) {
+  case VVK_Undefined:
+    break;
+  case VVK_Neon:
+    Scalable.Value = SK_FixedWidthOnly;
+    break;
+  case VVK_SVE:
+    Scalable.Value = SK_PreferScalable;
+    break;
+  }
+
   // If the flag is set to force any use of scalable vectors, override the loop
   // hints.
   if (ForceScalableVectorization.getValue() !=
