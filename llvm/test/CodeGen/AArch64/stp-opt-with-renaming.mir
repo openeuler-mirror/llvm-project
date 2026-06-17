@@ -327,9 +327,10 @@ body:             |
 
 # CHECK:         renamable $q7 = FADDv2f64 renamable $q7, renamable $q7, implicit $fpcr
 # CHECK-NEXT:    STRQui killed renamable $q7, renamable $x0, 100 :: (store (s128), align 4)
-# CHECK-NEXT:    $q7 = LDRQui $x0, 0 :: (load (s128))
+# CHECK-NEXT:    renamable $q9 = LDRQui $x0, 0 :: (load (s128))
+# CHECK-NEXT:    STRQui killed renamable $q9, renamable $x0, 11 :: (store (s128), align 4)
 # CHECK-NEXT:    renamable $q9 = LDRQui $x0, 1 :: (load (s128))
-# CHECK-NEXT:    STPQi killed renamable $q9, killed $q7, renamable $x0, 10 :: (store (s128), align 4)
+# CHECK-NEXT:    STRQui killed renamable $q9, renamable $x0, 10 :: (store (s128), align 4)
 # CHECK-NEXT:    RET undef $lr
 
 name:            test10

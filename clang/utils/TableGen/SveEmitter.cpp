@@ -863,6 +863,13 @@ void SVEType::applyModifier(char Mod) {
     NumVectors = 0;
     Signed = false;
     break;
+  case '$':
+    Predicate = false;
+    Svcount = false;
+    Float = false;
+    BFloat = true;
+    ElementBitwidth = 16;
+    break;
   case '}':
     Predicate = false;
     Signed = true;

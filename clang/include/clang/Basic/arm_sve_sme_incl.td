@@ -98,6 +98,7 @@
 // O: svfloat16_t
 // M: svfloat32_t
 // N: svfloat64_t
+// $: svbfloat16_t
 
 // J: Prefetch type (sv_prfop)
 
