@@ -1768,10 +1768,9 @@ def MSR_FPCR : Pseudo<(outs), (ins GPR64:$val),
                PseudoInstExpansion<(MSR 0xda20, GPR64:$val)>,
                Sched<[WriteSys]>;
 
-let Defs = [FPMR] in
+let Uses = [FPMR], Defs = [FPMR, NZCV], usesCustomInserter = 1 in
 def MSR_FPMR : Pseudo<(outs), (ins GPR64:$val),
                       [(int_aarch64_set_fpmr i64:$val)]>,
-               PseudoInstExpansion<(MSR 0xda22, GPR64:$val)>,
                Sched<[WriteSys]>;
 
 // Generic system instructions
