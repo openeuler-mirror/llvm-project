@@ -8800,6 +8800,12 @@ multiclass sve_float_dot<bit bf, bit o2, ZPRRegOp dst_ty, ZPRRegOp src_ty,
   def : SVE_3_Op_Pat<nxv4f32, op, nxv4f32, InVT, InVT, !cast<Instruction>(NAME)>;
 }
 
+multiclass sve_fp8_dot<bit bf, ZPRRegOp dst_ty, string asm> {
+  def NAME : sve_float_dot<bf, 0b1, dst_ty, ZPR8, asm>{
+    let Uses = [FPMR, FPCR];
+  }
+}
+
 class sve_float_dot_indexed<bit bf, ZPRRegOp dst_ty, ZPRRegOp src1_ty,
                             ZPRRegOp src2_ty, Operand iop_ty, string asm>
 : I<(outs dst_ty:$Zda), (ins dst_ty:$_Zda, src1_ty:$Zn, src2_ty:$Zm, iop_ty:$iop),
@@ -8830,30 +8836,6 @@ multiclass sve_float_dot_indexed<bit bf, bits<2> opc, ZPRRegOp src1_ty,
     let Inst{11-10} = opc;
   }
   def : SVE_4_Op_Imm_Pat<nxv4f32, op, nxv4f32, InVT, InVT, i32, VectorIndexS32b_timm, !cast<Instruction>(NAME)>;
-}
-
-class sve_bfloat_matmul<string asm>
-: I<(outs ZPR32:$Zda), (ins ZPR32:$_Zda, ZPR16:$Zn, ZPR16:$Zm),
-  asm, "\t$Zda, $Zn, $Zm", "", []>, Sched<[]> {
-  bits<5> Zm;
-  bits<5> Zda;
-  bits<5> Zn;
-  let Inst{31-21} = 0b01100100011;
-  let Inst{20-16} = Zm;
-  let Inst{15-10} = 0b111001;
-  let Inst{9-5}   = Zn;
-  let Inst{4-0}   = Zda;
-
-  let Constraints = "$Zda = $_Zda";
-  let DestructiveInstType = DestructiveOther;
-  let ElementSize = ElementSizeH;
-  let hasSideEffects = 0;
-  let mayRaiseFPException = 1;
-}
-
-multiclass sve_bfloat_matmul<string asm, SDPatternOperator op> {
-  def NAME : sve_bfloat_matmul<asm>;
-  def : SVE_3_Op_Pat<nxv4f32, op, nxv4f32, nxv8bf16, nxv8bf16 ,!cast<Instruction>(NAME)>;
 }
 
 class sve_bfloat_convert<bit N, string asm>
@@ -8974,14 +8956,14 @@ multiclass sve_int_dot_mixed_indexed<bit U, string asm, SDPatternOperator op> {
 // SVE Floating Point Matrix Multiply Accumulate Group
 //===----------------------------------------------------------------------===//
 
-class sve_fp_matrix_mla<bit sz, string asm, ZPRRegOp zprty>
-: I<(outs zprty:$Zda), (ins zprty:$_Zda, zprty:$Zn, zprty:$Zm),
+class sve_fp_matrix_mla<bits<2> opc, string asm, ZPRRegOp zda_ty, ZPRRegOp reg_ty>
+: I<(outs zda_ty:$Zda), (ins zda_ty:$_Zda, reg_ty:$Zn, reg_ty:$Zm),
     asm, "\t$Zda, $Zn, $Zm", "", []>, Sched<[]> {
   bits<5> Zda;
   bits<5> Zn;
   bits<5> Zm;
-  let Inst{31-23} = 0b011001001;
-  let Inst{22}    = sz;
+  let Inst{31-24} = 0b01100100;
+  let Inst{23-22} = opc;
   let Inst{21}    = 1;
   let Inst{20-16} = Zm;
   let Inst{15-10} = 0b111001;
@@ -8990,15 +8972,14 @@ class sve_fp_matrix_mla<bit sz, string asm, ZPRRegOp zprty>
 
   let Constraints = "$Zda = $_Zda";
   let DestructiveInstType = DestructiveOther;
-  let ElementSize = zprty.ElementSize;
   let hasSideEffects = 0;
   let mayRaiseFPException = 1;
 }
 
-multiclass sve_fp_matrix_mla<bit sz, string asm, ZPRRegOp zprty, SDPatternOperator op, ValueType vt> {
-  def NAME : sve_fp_matrix_mla<sz, asm, zprty>;
+multiclass sve_fp_matrix_mla<bits<2> opc, string asm, ZPRRegOp zda_ty, ZPRRegOp reg_ty, SDPatternOperator op, ValueType zda_vt, ValueType reg_vt> {
+  def NAME : sve_fp_matrix_mla<opc, asm, zda_ty, reg_ty>;
 
-  def : SVE_3_Op_Pat<vt, op , vt, vt, vt, !cast<Instruction>(NAME)>;
+  def : SVE_3_Op_Pat<zda_vt, op , zda_vt, reg_vt, reg_vt, !cast<Instruction>(NAME)>;
 }
 
 //===----------------------------------------------------------------------===//
@@ -10150,6 +10131,7 @@ class sve2_fp8_cvt_single<bit L, bits<2> opc, string mnemonic,
   let Inst{11-10} = opc;
   let Inst{9-5}   = Zn;
   let Inst{4-0}   = Zd;
+  let Uses = [FPMR, FPCR];
 }
 
 multiclass sve2_fp8_cvt_single<bit L, bits<2> opc, string mnemonic> {
@@ -10169,6 +10151,7 @@ class sve2_fp8_down_cvt_single<bits<2> opc, string mnemonic,
   let Inst{9-6} = Zn;
   let Inst{5} = 0b0;
   let Inst{4-0} = Zd;
+  let Uses = [FPMR, FPCR];
 }
 
 multiclass sve2_fp8_down_cvt_single<bits<2> opc, string mnemonic, RegisterOperand src> {
@@ -10197,6 +10180,7 @@ class sve2_fp8_mla_long_by_indexed_elem<bit T, string mnemonic>
   let Constraints = "$Zda = $_Zda";
   let DestructiveInstType = DestructiveOther;
   let ElementSize         = ZPR16.ElementSize;
+  let Uses = [FPMR, FPCR];
 }
 
 // FP8 Widening Multiply-Add (Long)/(Long Long) Group
@@ -10220,6 +10204,7 @@ class sve2_fp8_mla<bits<3>opc, ZPRRegOp dst_ty, string mnemonic>
   let Constraints = "$Zda = $_Zda";
   let DestructiveInstType = DestructiveOther;
   let ElementSize         = dst_ty.ElementSize;
+  let Uses = [FPMR, FPCR];
 }
 
 // FP8 Widening Multiply-Add Long Long - Indexed Group
@@ -10244,15 +10229,70 @@ class sve2_fp8_mla_long_long_by_indexed_elem<bits<2> TT, string mnemonic>
   let Constraints = "$Zda = $_Zda";
   let DestructiveInstType = DestructiveOther;
   let ElementSize         = ZPR32.ElementSize;
+  let Uses = [FPMR, FPCR];
+}
+
+// FP8 Matrix Multiply-accumulate Group
+class sve2_fp8_mmla<bit opc, ZPRRegOp dst_ty, string mnemonic>
+    : I<(outs dst_ty:$Zda),
+      (ins dst_ty:$_Zda, ZPR8:$Zn, ZPR8:$Zm),
+      mnemonic, "\t$Zda, $Zn, $Zm",
+      "", []>, Sched<[]>{
+  bits<5> Zda;
+  bits<5> Zn;
+  bits<5> Zm;
+  let Inst{31-23} = 0b011001000;
+  let Inst{22}    = opc;
+  let Inst{21}    = 0b1;
+  let Inst{20-16} = Zm;
+  let Inst{15-10} = 0b111000;
+  let Inst{9-5}   = Zn;
+  let Inst{4-0}   = Zda;
+  let Constraints = "$Zda = $_Zda";
+  let DestructiveInstType = DestructiveOther;
+  let ElementSize         = dst_ty.ElementSize;
+  let Uses = [FPMR, FPCR];
+}
+
+class sve_fp8_dot_indexed<bits<4> opc, ZPRRegOp dst_ty, Operand iop_ty, string mnemonic>
+: I<(outs dst_ty:$Zda), (ins dst_ty:$_Zda, ZPR8:$Zn, ZPR3b8:$Zm, iop_ty:$iop),
+    mnemonic, "\t$Zda, $Zn, $Zm$iop", "", []>, Sched<[]> {
+  bits<5> Zda;
+  bits<5> Zn;
+  bits<3> Zm;
+  let Inst{31-23} = 0b011001000;
+  let Inst{22}    = opc{3};
+  let Inst{21}    = 0b1;
+  let Inst{20-19} = opc{2-1};
+  let Inst{18-16} = Zm;
+  let Inst{15-12} = 0b0100;
+  let Inst{11}    = opc{0};
+  let Inst{10}    = 0b1;
+  let Inst{9-5}   = Zn;
+  let Inst{4-0}   = Zda;
+
+  let Uses = [FPMR, FPCR];
+  let Constraints = "$Zda = $_Zda";
+  let DestructiveInstType = DestructiveOther;
+  let hasSideEffects = 0;
+  let mayRaiseFPException = 1;
 }
 
 // FP8 Widening Dot-Product - Indexed Group
-multiclass sve2_fp8_dot_indexed<string mnemonic>{
-  def NAME : sve_float_dot_indexed<0b0, ZPR16, ZPR8, ZPR3b8, VectorIndexH, mnemonic> {
+multiclass sve2_fp8_dot_indexed_h<string asm>{
+  def NAME : sve_fp8_dot_indexed<{0, ?, ?, ?}, ZPR16, VectorIndexH, asm> {
     bits<3> iop;
+
     let Inst{20-19} = iop{2-1};
-    let Inst{11} = iop{0};
-    let Inst{10} = 0b1;
+    let Inst{11}    = iop{0};
+  }
+}
+
+multiclass sve2_fp8_dot_indexed_s<string asm>{
+  def NAME : sve_fp8_dot_indexed<{1, ?, ?, 0}, ZPR32, VectorIndexS32b, asm> {
+    bits<2> iop;
+
+    let Inst{20-19} = iop{1-0};
   }
 }
 

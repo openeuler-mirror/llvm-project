@@ -1767,7 +1767,10 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
       AArch64::AEK_FP8DOT4,     AArch64::AEK_SSVE_FP8DOT4, AArch64::AEK_LUT,
       AArch64::AEK_SME_LUTv2,   AArch64::AEK_SMEF8F16,     AArch64::AEK_SMEF8F32,
       AArch64::AEK_SMEFA64,     AArch64::AEK_FPAC,         AArch64::AEK_CMPBR,
-      AArch64::AEK_LSUI};
+      AArch64::AEK_LSUI,        AArch64::AEK_SVE2P2,       AArch64::AEK_SME2P2,
+      AArch64::AEK_SVE_F16F32MM, AArch64::AEK_SVE_AES2,    AArch64::AEK_SSVE_AES,
+      AArch64::AEK_F8F32MM,      AArch64::AEK_F8F16MM,     AArch64::AEK_LSFE,
+      AArch64::AEK_FPRCVT};
 
   std::vector<StringRef> Features;
 
@@ -1800,13 +1803,17 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+spe"));
   EXPECT_TRUE(llvm::is_contained(Features, "+ras"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sve-f16f32mm"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2-aes"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2-sm4"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2-sha3"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2-bitperm"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sve-aes2"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+ssve-aes"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sve2p1"));
   EXPECT_TRUE(llvm::is_contained(Features, "+b16b16"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sve2p2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+rcpc"));
   EXPECT_TRUE(llvm::is_contained(Features, "+rand"));
   EXPECT_TRUE(llvm::is_contained(Features, "+mte"));
@@ -1828,6 +1835,7 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-f16f16"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme2p1"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sme2p2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+hbc"));
   EXPECT_TRUE(llvm::is_contained(Features, "+mops"));
   EXPECT_TRUE(llvm::is_contained(Features, "+perfmon"));
@@ -1848,6 +1856,8 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+ssve-fp8dot2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+fp8dot4"));
   EXPECT_TRUE(llvm::is_contained(Features, "+ssve-fp8dot4"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+f8f32mm"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+f8f16mm"));
   EXPECT_TRUE(llvm::is_contained(Features, "+lut"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-lutv2"));
   EXPECT_TRUE(llvm::is_contained(Features, "+sme-f8f16"));
@@ -1856,6 +1866,8 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+fpac"));
   EXPECT_TRUE(llvm::is_contained(Features, "+cmpbr"));
   EXPECT_TRUE(llvm::is_contained(Features, "+lsui"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+lsfe"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+fprcvt"));
 
   // Assuming we listed every extension above, this should produce the same
   // result. (note that AEK_NONE doesn't have a name so it won't be in the
@@ -1953,13 +1965,17 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"lse", "nolse", "+lse", "-lse"},
       {"rdm", "nordm", "+rdm", "-rdm"},
       {"sve", "nosve", "+sve", "-sve"},
+      {"sve-f16f32mm", "nosve-f16f32mm", "+sve-f16f32mm", "-sve-f16f32mm"},
       {"sve2", "nosve2", "+sve2", "-sve2"},
       {"sve2-aes", "nosve2-aes", "+sve2-aes", "-sve2-aes"},
       {"sve2-sm4", "nosve2-sm4", "+sve2-sm4", "-sve2-sm4"},
       {"sve2-sha3", "nosve2-sha3", "+sve2-sha3", "-sve2-sha3"},
       {"sve2p1", "nosve2p1", "+sve2p1", "-sve2p1"},
       {"b16b16", "nob16b16", "+b16b16", "-b16b16"},
+      {"sve2p2", "nosve2p2", "+sve2p2", "-sve2p2"},
       {"sve2-bitperm", "nosve2-bitperm", "+sve2-bitperm", "-sve2-bitperm"},
+      {"sve-aes2", "nosve-aes2", "+sve-aes2", "-sve-aes2"},
+      {"ssve-aes", "nossve-aes", "+ssve-aes", "-ssve-aes"},
       {"dotprod", "nodotprod", "+dotprod", "-dotprod"},
       {"rcpc", "norcpc", "+rcpc", "-rcpc"},
       {"rng", "norng", "+rand", "-rand"},
@@ -1972,6 +1988,8 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"i8mm", "noi8mm", "+i8mm", "-i8mm"},
       {"f32mm", "nof32mm", "+f32mm", "-f32mm"},
       {"f64mm", "nof64mm", "+f64mm", "-f64mm"},
+      {"f8f32mm", "nof8f32mm", "+f8f32mm", "-f8f32mm"},
+      {"f8f16mm", "nof8f16mm", "+f8f16mm", "-f8f16mm"},
       {"sme", "nosme", "+sme", "-sme"},
       {"sme-fa64", "nosme-fa64", "+sme-fa64", "-sme-fa64"},
       {"sme-f64f64", "nosme-f64f64", "+sme-f64f64", "-sme-f64f64"},
@@ -1979,6 +1997,7 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"sme-f16f16", "nosme-f16f16", "+sme-f16f16", "-sme-f16f16"},
       {"sme2", "nosme2", "+sme2", "-sme2"},
       {"sme2p1", "nosme2p1", "+sme2p1", "-sme2p1"},
+      {"sme2p2", "nosme2p2", "+sme2p2", "-sme2p2"},
       {"hbc", "nohbc", "+hbc", "-hbc"},
       {"mops", "nomops", "+mops", "-mops"},
       {"pmuv3", "nopmuv3", "+perfmon", "-perfmon"},
@@ -2000,7 +2019,8 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"sme-f8f32", "nosme-f8f32", "+sme-f8f32", "-sme-f8f32"},
       {"cmpbr", "nocmpbr", "+cmpbr", "-cmpbr"},
       {"lsui", "nolsui", "+lsui", "-lsui"},
-  };
+      {"lsfe", "nolsfe", "+lsfe", "-lsfe"},
+      {"fprcvt", "nofprcvt", "+fprcvt", "-fprcvt"}};
 
   for (unsigned i = 0; i < std::size(ArchExt); i++) {
     EXPECT_EQ(StringRef(ArchExt[i][2]),

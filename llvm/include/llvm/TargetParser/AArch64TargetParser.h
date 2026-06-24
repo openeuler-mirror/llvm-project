@@ -175,6 +175,15 @@ enum ArchExtKind : uint64_t {
   AEK_FPAC =         72, // FEAT_FPAC
   AEK_CMPBR =        73, // FEAT_CMPBR
   AEK_LSUI =         74, // FEAT_LSUI
+  AEK_SVE2P2 =       75, // AEK_SVE2P2
+  AEK_SME2P2 =       76, // AEK_SME2P2
+  AEK_SVE_F16F32MM = 77, // AEK_SVE_F16F32MM
+  AEK_SVE_AES2 =     78, // AEK_SVE_AES2
+  AEK_SSVE_AES =     79, // AEK_SSVE_AES
+  AEK_F8F32MM =      80, // AEK_F8F32MM
+  AEK_F8F16MM =      81, // AEK_F8F16MM
+  AEK_LSFE =         82, // AEK_LSFE
+  AEK_FPRCVT =       83, // AEK_FPRCVT
   AEK_NUM_EXTENSIONS
 };
 using ExtensionBitset = Bitset<AEK_NUM_EXTENSIONS>;
@@ -300,6 +309,15 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"fpac",  AArch64::AEK_FPAC,  "+fpac", "-fpac",  FEAT_MAX, "", 0},
     {"cmpbr", AArch64::AEK_CMPBR, "+cmpbr", "-cmpbr", FEAT_CMPBR, "", 0},
     {"lsui", AArch64::AEK_LSUI, "+lsui", "-lsui", FEAT_LSUI, "", 0},
+    {"f8f32mm", AArch64::AEK_F8F32MM, "+f8f32mm", "-f8f32mm", FEAT_INIT, "+f8f32mm", 0},
+    {"f8f16mm", AArch64::AEK_F8F16MM, "+f8f16mm", "-f8f16mm", FEAT_INIT, "+f8f16mm", 0},
+    {"sve-f16f32mm", AArch64::AEK_SVE_F16F32MM, "+sve-f16f32mm", "-sve-f16f32mm", FEAT_INIT, "+sve-f16f32mm", 0},
+    {"sve2p2", AArch64::AEK_SVE2P2, "+sve2p2", "-sve2p2", FEAT_INIT, "+sve2p2", 0},
+    {"sve-aes2", AArch64::AEK_SVE_AES2, "+sve-aes2", "-sve-aes2", FEAT_INIT, "+sve-aes2", 0},
+    {"ssve-aes", AArch64::AEK_SSVE_AES, "+ssve-aes", "-ssve-aes", FEAT_INIT, "+ssve-aes", 0},
+    {"sme2p2", AArch64::AEK_SME2P2, "+sme2p2", "-sme2p2", FEAT_INIT, "+sme2p2", 0},
+    {"lsfe", AArch64::AEK_LSFE, "+lsfe", "-lsfe", FEAT_INIT, "+lsfe", 0},
+    {"fprcvt", AArch64::AEK_FPRCVT, "+fprcvt", "-fprcvt", FEAT_INIT, "+fprcvt", 0},
     // Special cases
     {"none", AArch64::AEK_NONE, {}, {}, FEAT_MAX, "", ExtensionInfo::MaxFMVPriority},
 };
