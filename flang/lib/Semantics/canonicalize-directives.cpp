@@ -53,7 +53,9 @@ bool CanonicalizeDirectives(
 }
 
 static bool IsExecutionDirective(const parser::CompilerDirective &dir) {
-  return std::holds_alternative<parser::CompilerDirective::VectorAlways>(dir.u);
+  return std::holds_alternative<parser::CompilerDirective::VectorAlways>(
+             dir.u) ||
+      std::holds_alternative<parser::CompilerDirective::VectorVersion>(dir.u);
 }
 
 void CanonicalizationOfDirectives::Post(parser::SpecificationPart &spec) {
@@ -115,6 +117,9 @@ void CanonicalizationOfDirectives::Post(parser::Block &block) {
           common::visitors{[&](parser::CompilerDirective::VectorAlways &) {
                              CheckLoopDirective(*dir, block, it);
                            },
+              [&](parser::CompilerDirective::VectorVersion &) {
+                CheckLoopDirective(*dir, block, it);
+              },
               [&](auto &) {}},
           dir->u);
     }

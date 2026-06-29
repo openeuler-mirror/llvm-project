@@ -207,6 +207,7 @@ public:
   NODE(CompilerDirective, NameValue)
   NODE(CompilerDirective, Unrecognized)
   NODE(CompilerDirective, VectorAlways)
+  NODE_ENUM(CompilerDirective, VectorVersion)
   NODE(parser, ComplexLiteralConstant)
   NODE(parser, ComplexPart)
   NODE(parser, ComponentArraySpec)

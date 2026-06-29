@@ -39,6 +39,10 @@ A list of non-standard directives supported by Flang
 * `!dir$ vector always` forces vectorization on the following loop regardless
   of cost model decisions. The loop must still be vectorizable.
   [This directive currently only works on plain do loops without labels].
+* `!dir$ vector sve` and `!dir$ vector neon` request scalable SVE or fixed-width
+  Neon loop vectorization respectively on the following loop. The loop must
+  still be vectorizable.
+  [This directive currently only works on plain do loops without labels].
 
 # Directive Details
 

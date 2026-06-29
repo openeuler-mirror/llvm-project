@@ -109,6 +109,7 @@ void LoopAnnotationConversion::convertLoopOptions(LoopVectorizeAttr options) {
   convertBoolNode("llvm.loop.vectorize.scalable.enable",
                   options.getScalableEnable());
   convertI32Node("llvm.loop.vectorize.width", options.getWidth());
+  convertI32Node("llvm.loop.vectorize.version", options.getVersion());
   convertFollowupNode("llvm.loop.vectorize.followup_vectorized",
                       options.getFollowupVectorized());
   convertFollowupNode("llvm.loop.vectorize.followup_epilogue",

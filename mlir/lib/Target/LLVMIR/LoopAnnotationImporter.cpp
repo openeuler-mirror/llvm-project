@@ -292,6 +292,7 @@ FailureOr<LoopVectorizeAttr> LoopMetadataConversion::convertVectorizeAttr() {
   FailureOr<BoolAttr> scalableEnable =
       lookupBoolNode("llvm.loop.vectorize.scalable.enable");
   FailureOr<IntegerAttr> width = lookupIntNode("llvm.loop.vectorize.width");
+  FailureOr<IntegerAttr> version = lookupIntNode("llvm.loop.vectorize.version");
   FailureOr<LoopAnnotationAttr> followupVec =
       lookupFollowupNode("llvm.loop.vectorize.followup_vectorized");
   FailureOr<LoopAnnotationAttr> followupEpi =
@@ -299,9 +300,9 @@ FailureOr<LoopVectorizeAttr> LoopMetadataConversion::convertVectorizeAttr() {
   FailureOr<LoopAnnotationAttr> followupAll =
       lookupFollowupNode("llvm.loop.vectorize.followup_all");
 
-  return createIfNonNull<LoopVectorizeAttr>(ctx, enable, predicateEnable,
-                                            scalableEnable, width, followupVec,
-                                            followupEpi, followupAll);
+  return createIfNonNull<LoopVectorizeAttr>(
+      ctx, enable, predicateEnable, scalableEnable, width, version, followupVec,
+      followupEpi, followupAll);
 }
 
 FailureOr<LoopInterleaveAttr> LoopMetadataConversion::convertInterleaveAttr() {

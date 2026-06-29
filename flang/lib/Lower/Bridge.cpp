@@ -2085,10 +2085,15 @@ private:
     return builder->createIntegerConstant(loc, controlType, 1); // step
   }
 
-  void addLoopAnnotationAttr(IncrementLoopInfo &info) {
+  void addLoopAnnotationAttr(IncrementLoopInfo &info,
+                             std::optional<std::uint32_t> vectorVersion = {}) {
     mlir::BoolAttr f = mlir::BoolAttr::get(builder->getContext(), false);
+    mlir::IntegerAttr version;
+    if (vectorVersion)
+      version = builder->getI32IntegerAttr(*vectorVersion);
     mlir::LLVM::LoopVectorizeAttr va = mlir::LLVM::LoopVectorizeAttr::get(
-        builder->getContext(), /*disable=*/f, {}, {}, {}, {}, {}, {});
+        builder->getContext(), /*disable=*/f, {}, {}, {}, /*version=*/version,
+        {}, {}, {});
     mlir::LLVM::LoopAnnotationAttr la = mlir::LLVM::LoopAnnotationAttr::get(
         builder->getContext(), {}, /*vectorize=*/va, {}, {}, {}, {}, {}, {}, {},
         {}, {}, {}, {}, {}, {});
@@ -2164,14 +2169,26 @@ private:
         if (info.hasLocalitySpecs())
           handleLocalitySpecs(info);
 
+        std::optional<std::uint32_t> vectorVersion;
+        bool vectorize = false;
         for (const auto *dir : dirs) {
           Fortran::common::visit(
               Fortran::common::visitors{
                   [&](const Fortran::parser::CompilerDirective::VectorAlways
-                          &d) { addLoopAnnotationAttr(info); },
+                          &d) { vectorize = true; },
+                  [&](const Fortran::parser::CompilerDirective::VectorVersion
+                          &v) {
+                    vectorize = true;
+                    vectorVersion = v == Fortran::parser::CompilerDirective::
+                                                VectorVersion::Sve
+                                        ? 1
+                                        : 0;
+                  },
                   [&](const auto &) {}},
               dir->u);
         }
+        if (vectorize)
+          addLoopAnnotationAttr(info, vectorVersion);
         continue;
       }
 
@@ -2720,6 +2737,9 @@ private:
     Fortran::common::visit(
         Fortran::common::visitors{
             [&](const Fortran::parser::CompilerDirective::VectorAlways &) {
+              attachDirectiveToLoop(dir, &eval);
+            },
+            [&](const Fortran::parser::CompilerDirective::VectorVersion &) {
               attachDirectiveToLoop(dir, &eval);
             },
             [&](const auto &) {}},
