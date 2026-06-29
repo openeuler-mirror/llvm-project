@@ -49,14 +49,15 @@ static void pyListToVector(const nb::list &list,
   for (nb::handle item : list) {
     try {
       result.push_back(nb::cast<PyType>(item));
-    } catch (nb::cast_error &err) {
+    } catch (std::exception &err) {
+      if (item.is_none()) {
+        std::string msg = (llvm::Twine("Invalid expression (None?) when ") +
+                           action + " (" + err.what() + ")")
+                              .str();
+        throw std::runtime_error(msg.c_str());
+      }
       std::string msg = (llvm::Twine("Invalid expression when ") + action +
                          " (" + err.what() + ")")
-                            .str();
-      throw std::runtime_error(msg.c_str());
-    } catch (std::runtime_error &err) {
-      std::string msg = (llvm::Twine("Invalid expression (None?) when ") +
-                         action + " (" + err.what() + ")")
                             .str();
       throw std::runtime_error(msg.c_str());
     }
