@@ -137,6 +137,7 @@ static Attr *handleLoopHintAttr(Sema &S, Stmt *St, const ParsedAttr &A,
                  OptionLoc->Ident->getName())
                  .Case("vectorize", LoopHintAttr::Vectorize)
                  .Case("vectorize_width", LoopHintAttr::VectorizeWidth)
+                 .Case("vectorize_version", LoopHintAttr::VectorizeVersion)
                  .Case("interleave", LoopHintAttr::Interleave)
                  .Case("vectorize_predicate", LoopHintAttr::VectorizePredicate)
                  .Case("interleave_count", LoopHintAttr::InterleaveCount)
@@ -157,6 +158,14 @@ static Attr *handleLoopHintAttr(Sema &S, Stmt *St, const ParsedAttr &A,
         State = LoopHintAttr::ScalableWidth;
       else
         State = LoopHintAttr::FixedWidth;
+    } else if (Option == LoopHintAttr::VectorizeVersion) {
+      assert(StateLoc && StateLoc->Ident && "Loop hint must have an argument");
+      if (StateLoc->Ident->isStr("sve"))
+        State = LoopHintAttr::SVE;
+      else if (StateLoc->Ident->isStr("neon"))
+        State = LoopHintAttr::Neon;
+      else
+        llvm_unreachable("bad loop hint argument");
     } else if (Option == LoopHintAttr::InterleaveCount ||
                Option == LoopHintAttr::UnrollCount ||
                Option == LoopHintAttr::PipelineInitiationInterval) {
@@ -464,6 +473,9 @@ CheckForIncompatibleAttributes(Sema &S,
     // The vector predication only has a state form that is exposed by
     // #pragma clang loop vectorize_predicate (enable | disable).
     VectorizePredicate,
+    // The vector version only has a state form exposed by
+    // #pragma clang loop vectorize_version (sve | neon).
+    VectorizeVersion,
     // This serves as a indicator to how many category are listed in this enum.
     NumberOfCategories
   };
@@ -487,6 +499,9 @@ CheckForIncompatibleAttributes(Sema &S,
     case LoopHintAttr::Vectorize:
     case LoopHintAttr::VectorizeWidth:
       Category = Vectorize;
+      break;
+    case LoopHintAttr::VectorizeVersion:
+      Category = VectorizeVersion;
       break;
     case LoopHintAttr::Interleave:
     case LoopHintAttr::InterleaveCount:
@@ -521,7 +536,8 @@ CheckForIncompatibleAttributes(Sema &S,
         Option == LoopHintAttr::UnrollAndJam ||
         Option == LoopHintAttr::VectorizePredicate ||
         Option == LoopHintAttr::PipelineDisabled ||
-        Option == LoopHintAttr::Distribute) {
+        Option == LoopHintAttr::Distribute ||
+        Option == LoopHintAttr::VectorizeVersion) {
       // Enable|Disable|AssumeSafety hint.  For example, vectorize(enable).
       PrevAttr = CategoryState.StateAttr;
       CategoryState.StateAttr = LH;

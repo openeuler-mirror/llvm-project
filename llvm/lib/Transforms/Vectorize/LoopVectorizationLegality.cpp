@@ -94,6 +94,7 @@ bool LoopVectorizeHints::Hint::validate(unsigned Val) {
   case HK_ISVECTORIZED:
   case HK_PREDICATE:
   case HK_SCALABLE:
+  case HK_VECTORIZE_VERSION:
     return (Val == 0 || Val == 1);
   }
   return false;
@@ -109,6 +110,7 @@ LoopVectorizeHints::LoopVectorizeHints(const Loop *L,
       IsVectorized("isvectorized", 0, HK_ISVECTORIZED),
       Predicate("vectorize.predicate.enable", FK_Undefined, HK_PREDICATE),
       Scalable("vectorize.scalable.enable", SK_Unspecified, HK_SCALABLE),
+      VectorizeVersion("vectorize.version", VVK_Undefined, HK_VECTORIZE_VERSION),
       TheLoop(L), ORE(ORE) {
   // Populate values with existing loop metadata.
   getHintsFromMetadata();
@@ -133,6 +135,17 @@ LoopVectorizeHints::LoopVectorizeHints(const Loop *L,
       // property, then assume it concerns only a fixed-width UserVF.
       // If width is not set, the flag takes precedence.
       Scalable.Value = SK_FixedWidthOnly;
+  }
+
+  switch (getVectorizeVersion()) {
+  case VVK_Undefined:
+    break;
+  case VVK_Neon:
+    Scalable.Value = SK_FixedWidthOnly;
+    break;
+  case VVK_SVE:
+    Scalable.Value = SK_PreferScalable;
+    break;
   }
 
   // If the flag is set to force any use of scalable vectors, override the loop
@@ -299,7 +312,8 @@ void LoopVectorizeHints::setHint(StringRef Name, Metadata *Arg) {
   unsigned Val = C->getZExtValue();
 
   Hint *Hints[] = {&Width,        &Interleave, &Force,
-                   &IsVectorized, &Predicate,  &Scalable};
+                   &IsVectorized, &Predicate,  &Scalable,
+                   &VectorizeVersion};
   for (auto *H : Hints) {
     if (Name == H->Name) {
       if (H->validate(Val))

@@ -4133,19 +4133,19 @@ def LoopHint : Attr {
 
   /// State of the loop optimization specified by the spelling.
   let Args = [EnumArgument<"Option", "OptionType", /*is_string=*/false,
-                          ["vectorize", "vectorize_width", "interleave", "interleave_count",
+                          ["vectorize", "vectorize_width", "vectorize_version", "interleave", "interleave_count",
                            "unroll", "unroll_count", "unroll_and_jam", "unroll_and_jam_count",
                            "pipeline", "pipeline_initiation_interval", "distribute",
                            "vectorize_predicate"],
-                          ["Vectorize", "VectorizeWidth", "Interleave", "InterleaveCount",
+                          ["Vectorize", "VectorizeWidth", "VectorizeVersion", "Interleave", "InterleaveCount",
                            "Unroll", "UnrollCount", "UnrollAndJam", "UnrollAndJamCount",
                            "PipelineDisabled", "PipelineInitiationInterval", "Distribute",
                            "VectorizePredicate"]>,
               EnumArgument<"State", "LoopHintState", /*is_string=*/false,
                            ["enable", "disable", "numeric", "fixed_width",
-                            "scalable_width", "assume_safety", "full"],
+                            "scalable_width", "assume_safety", "full", "sve", "neon"],
                            ["Enable", "Disable", "Numeric", "FixedWidth",
-                            "ScalableWidth", "AssumeSafety", "Full"]>,
+                            "ScalableWidth", "AssumeSafety", "Full", "SVE", "Neon"]>,
               ExprArgument<"Value">];
 
   let AdditionalMembers = [{
@@ -4153,6 +4153,7 @@ def LoopHint : Attr {
     switch(Option) {
     case Vectorize: return "vectorize";
     case VectorizeWidth: return "vectorize_width";
+    case VectorizeVersion: return "vectorize_version";
     case Interleave: return "interleave";
     case InterleaveCount: return "interleave_count";
     case Unroll: return "unroll";

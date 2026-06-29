@@ -43,6 +43,13 @@ struct LoopAttributes {
   /// State of loop vectorization or unrolling.
   enum LVEnableState { Unspecified, Enable, Disable, Full };
 
+  /// Vectorization version.
+  enum VectorizeVersionKind {
+    VectorizeVersion_Unspecified,
+    VectorizeVersion_SVE,
+    VectorizeVersion_Neon
+  };
+
   /// Value for llvm.loop.vectorize.enable metadata.
   LVEnableState VectorizeEnable;
 
@@ -84,6 +91,14 @@ struct LoopAttributes {
 
   /// Value for whether the loop is required to make progress.
   bool MustProgress;
+
+  /// Value for vectorize.version attribute.
+  VectorizeVersionKind VectorizeVersion;
+
+  /// Set the vectorize.version state.
+  void setVectorizeVersion(VectorizeVersionKind Kind) {
+    VectorizeVersion = Kind;
+  }
 };
 
 /// Information used when generating a structured loop.

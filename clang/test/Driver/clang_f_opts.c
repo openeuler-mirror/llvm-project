@@ -159,6 +159,11 @@
 // CHECK-VECTORIZE: "-vectorize-loops"
 // CHECK-NO-VECTORIZE-NOT: "-vectorize-loops"
 
+// RUN: %clang -### -S -fvectorize-version=sve %s 2>&1 | FileCheck -check-prefix=CHECK-VECTORIZE-VERSION-SVE %s
+// RUN: %clang -### -S -fvectorize-version=neon %s 2>&1 | FileCheck -check-prefix=CHECK-VECTORIZE-VERSION-NEON %s
+// CHECK-VECTORIZE-VERSION-SVE: "-fvectorize-version=sve"
+// CHECK-VECTORIZE-VERSION-NEON: "-fvectorize-version=neon"
+
 // RUN: %clang -### -S -fslp-vectorize %s 2>&1 | FileCheck -check-prefix=CHECK-SLP-VECTORIZE %s
 // RUN: %clang -### -S -fno-slp-vectorize -fslp-vectorize %s 2>&1 | FileCheck -check-prefix=CHECK-SLP-VECTORIZE %s
 // RUN: %clang -### -S -fno-slp-vectorize %s 2>&1 | FileCheck -check-prefix=CHECK-NO-SLP-VECTORIZE %s

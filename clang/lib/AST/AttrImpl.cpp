@@ -58,6 +58,10 @@ std::string LoopHintAttr::getValueString(const PrintingPolicy &Policy) const {
     OS << "full";
   else if (state == AssumeSafety)
     OS << "assume_safety";
+  else if (state == SVE)
+    OS << "sve";
+  else if (state == Neon)
+    OS << "neon";
   else
     OS << "disable";
   OS << ")";
