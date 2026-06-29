@@ -73,7 +73,7 @@ end:
 ; // -----
 
 ; CHECK-DAG: #[[FOLLOWUP:.*]] = #llvm.loop_annotation<disableNonforced = true>
-; CHECK-DAG: #[[VECTORIZE_ATTR:.*]] = #llvm.loop_vectorize<disable = false, predicateEnable = true, scalableEnable = false, width = 16 : i32, followupVectorized = #[[FOLLOWUP]], followupEpilogue = #[[FOLLOWUP]], followupAll = #[[FOLLOWUP]]>
+; CHECK-DAG: #[[VECTORIZE_ATTR:.*]] = #llvm.loop_vectorize<disable = false, predicateEnable = true, scalableEnable = false, width = 16 : i32, version = 1 : i32, followupVectorized = #[[FOLLOWUP]], followupEpilogue = #[[FOLLOWUP]], followupAll = #[[FOLLOWUP]]>
 ; CHECK-DAG: #[[$ANNOT_ATTR:.*]] = #llvm.loop_annotation<vectorize = #[[VECTORIZE_ATTR]]>
 
 ; CHECK-LABEL: @vectorize
@@ -85,7 +85,7 @@ end:
   ret void
 }
 
-!1 = distinct !{!1, !2, !3, !4, !5, !6, !7, !8}
+!1 = distinct !{!1, !2, !3, !4, !5, !6, !7, !8, !11}
 !2 = !{!"llvm.loop.vectorize.enable", i1 1}
 !3 = !{!"llvm.loop.vectorize.predicate.enable", i1 1}
 !4 = !{!"llvm.loop.vectorize.scalable.enable", i1 0}
@@ -93,6 +93,7 @@ end:
 !6 = !{!"llvm.loop.vectorize.followup_vectorized", !9}
 !7 = !{!"llvm.loop.vectorize.followup_epilogue", !9}
 !8 = !{!"llvm.loop.vectorize.followup_all", !9}
+!11 = !{!"llvm.loop.vectorize.version", i32 1}
 
 !9 = distinct !{!9, !10}
 !10 = !{!"llvm.loop.disable_nonforced"}

@@ -17,3 +17,14 @@ subroutine execution_part
   !dir$ vector always
   end do
 end subroutine execution_part
+
+subroutine vector_version_empty
+  ! WARNING: A DO loop must follow the VECTOR SVE directive
+  !dir$ vector sve
+end subroutine vector_version_empty
+
+subroutine vector_version_non_do
+  ! WARNING: A DO loop must follow the VECTOR NEON directive
+  !dir$ vector neon
+  a = 1
+end subroutine vector_version_non_do

@@ -1279,11 +1279,15 @@ constexpr auto assumeAligned{"ASSUME_ALIGNED" >>
         indirect(designator), ":"_tok >> digitString64))};
 constexpr auto vectorAlways{
     "VECTOR ALWAYS" >> construct<CompilerDirective::VectorAlways>()};
+constexpr auto vectorVersion{
+    "VECTOR " >> ("SVE" >> pure(CompilerDirective::VectorVersion::Sve) ||
+                     "NEON" >> pure(CompilerDirective::VectorVersion::Neon))};
 TYPE_PARSER(beginDirective >> "DIR$ "_tok >>
     sourced((construct<CompilerDirective>(ignore_tkr) ||
                 construct<CompilerDirective>(loopCount) ||
                 construct<CompilerDirective>(assumeAligned) ||
                 construct<CompilerDirective>(vectorAlways) ||
+                construct<CompilerDirective>(vectorVersion) ||
                 construct<CompilerDirective>(
                     many(construct<CompilerDirective::NameValue>(
                         name, maybe(("="_tok || ":"_tok) >> digitString64))))) /

@@ -1837,6 +1837,11 @@ public:
             [&](const CompilerDirective::VectorAlways &valways) {
               Word("!DIR$ VECTOR ALWAYS");
             },
+            [&](const CompilerDirective::VectorVersion &version) {
+              Word(version == CompilerDirective::VectorVersion::Sve
+                      ? "!DIR$ VECTOR SVE"
+                      : "!DIR$ VECTOR NEON");
+            },
             [&](const std::list<CompilerDirective::NameValue> &names) {
               Walk("!DIR$ ", names, " ");
             },

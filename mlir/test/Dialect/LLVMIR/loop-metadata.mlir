@@ -3,9 +3,9 @@
 // CHECK-DAG: #[[FOLLOWUP:.*]] = #llvm.loop_annotation<disableNonforced = true>
 #followup = #llvm.loop_annotation<disableNonforced = true>
 
-// CHECK-DAG: #[[VECTORIZE:.*]] = #llvm.loop_vectorize<disable = false, predicateEnable = false, scalableEnable = true, width = 16 : i32, followupVectorized = #[[FOLLOWUP]], followupEpilogue = #[[FOLLOWUP]], followupAll = #[[FOLLOWUP]]>
+// CHECK-DAG: #[[VECTORIZE:.*]] = #llvm.loop_vectorize<disable = false, predicateEnable = false, scalableEnable = true, width = 16 : i32, version = 1 : i32, followupVectorized = #[[FOLLOWUP]], followupEpilogue = #[[FOLLOWUP]], followupAll = #[[FOLLOWUP]]>
 #vectorize = #llvm.loop_vectorize<
-  disable = false, predicateEnable = false, scalableEnable = true, width = 16 : i32,
+  disable = false, predicateEnable = false, scalableEnable = true, width = 16 : i32, version = 1 : i32,
   followupVectorized = #followup, followupEpilogue = #followup, followupAll = #followup
 >
 

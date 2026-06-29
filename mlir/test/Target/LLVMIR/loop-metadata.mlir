@@ -46,6 +46,7 @@ llvm.func @vectorizeOptions() {
   // CHECK: br {{.*}} !llvm.loop ![[LOOP_NODE:[0-9]+]]
   llvm.br ^bb1 {loop_annotation = #llvm.loop_annotation<vectorize = <
     disable = false, predicateEnable = true, scalableEnable = false, width = 16 : i32,
+    version = 0 : i32,
     followupVectorized = #followup, followupEpilogue = #followup, followupAll = #followup>
   >}
 ^bb1:
@@ -54,11 +55,12 @@ llvm.func @vectorizeOptions() {
 
 // CHECK-DAG: ![[NON_FORCED:[0-9]+]] = !{!"llvm.loop.disable_nonforced"}
 // CHECK-DAG: ![[FOLLOWUP:[0-9]+]] = distinct !{![[FOLLOWUP]], ![[NON_FORCED]]}
-// CHECK-DAG: ![[LOOP_NODE]] = distinct !{![[LOOP_NODE]], !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}}
+// CHECK-DAG: ![[LOOP_NODE]] = distinct !{![[LOOP_NODE]], !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}, !{{[0-9]+}}}
 // CHECK-DAG: !{{[0-9]+}} = !{!"llvm.loop.vectorize.enable", i1 true}
 // CHECK-DAG: !{{[0-9]+}} = !{!"llvm.loop.vectorize.predicate.enable", i1 true}
 // CHECK-DAG: !{{[0-9]+}} = !{!"llvm.loop.vectorize.scalable.enable", i1 false}
 // CHECK-DAG: !{{[0-9]+}} = !{!"llvm.loop.vectorize.width", i32 16}
+// CHECK-DAG: !{{[0-9]+}} = !{!"llvm.loop.vectorize.version", i32 0}
 // CHECK-DAG: !{{[0-9]+}} = !{!"llvm.loop.vectorize.followup_vectorized", ![[FOLLOWUP]]}
 // CHECK-DAG: !{{[0-9]+}} = !{!"llvm.loop.vectorize.followup_epilogue", ![[FOLLOWUP]]}
 // CHECK-DAG: !{{[0-9]+}} = !{!"llvm.loop.vectorize.followup_all", ![[FOLLOWUP]]}

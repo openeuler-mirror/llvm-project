@@ -35,3 +35,14 @@ subroutine vector_always
   do i=1,10
   enddo
 end subroutine
+
+subroutine vector_version
+  !dir$ vector sve
+  ! CHECK: !DIR$ VECTOR SVE
+  do i=1,10
+  enddo
+  !dir$ vector neon
+  ! CHECK: !DIR$ VECTOR NEON
+  do j=1,10
+  enddo
+end subroutine

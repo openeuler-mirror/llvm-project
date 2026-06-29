@@ -73,6 +73,7 @@ def LoopVectorizeAttr : LLVM_Attr<"LoopVectorize", "loop_vectorize"> {
     OptionalParameter<"BoolAttr">:$predicateEnable,
     OptionalParameter<"BoolAttr">:$scalableEnable,
     OptionalParameter<"IntegerAttr">:$width,
+    OptionalParameter<"IntegerAttr">:$version,
     OptionalParameter<"LoopAnnotationAttr">:$followupVectorized,
     OptionalParameter<"LoopAnnotationAttr">:$followupEpilogue,
     OptionalParameter<"LoopAnnotationAttr">:$followupAll
