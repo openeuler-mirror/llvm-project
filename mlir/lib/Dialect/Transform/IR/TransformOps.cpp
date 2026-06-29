@@ -3290,18 +3290,21 @@ int64_t transform::LegalizeOp::getMaxUnrollingFactor(
   return 1;
 }
 
-SmallVector<int64_t> transform::LegalizeOp::getAllDimsMaxUnrollingFactor(
+std::optional<SmallVector<int64_t>> transform::LegalizeOp::getAllDimsMaxUnrollingFactor(
     ArrayRef<int64_t> dstShape, unsigned elementSize,
     unsigned hardwareVectorLength, unsigned vscale) {
   SmallVector<int64_t> ret;
+  if (dstShape.size() == 0)
+      return std::nullopt;
+
   for (size_t dimension = 0; dimension < dstShape.size() - 1; dimension++) {
     ret.push_back(getMaxUnrollingFactor(dstShape[dimension], elementSize,
                                         hardwareVectorLength));
   }
-  // we use vscale * size only on the last dimension as it is the only one
+
+  // use vscale * size only on the last dimension as it is the only one
   // possibly scalable
-  if (dstShape.size() > 0)
-    ret.push_back(getMaxUnrollingFactor(dstShape[dstShape.size() - 1],
+  ret.push_back(getMaxUnrollingFactor(dstShape[dstShape.size() - 1],
                                         elementSize,
                                         hardwareVectorLength * vscale));
   return ret;
@@ -3335,11 +3338,13 @@ transform::LegalizeOp::getShape(Operation *op, unsigned hardwareVectorLength,
     // we give vscale = 1 as handling of last dim depends on indexing Maps
     auto unrollingFactor = getAllDimsMaxUnrollingFactor(
         maybeShape.value(), elementSize, hardwareVectorLength, 1);
+    if (!unrollingFactor.has_value())
+      return std::nullopt;
     if (vscale > 1) {
       // only the last dim of the res is of size vscale * RegSize
       auto accMap = contractOp.getIndexingMapsArray()[2];
       auto accLastDimIdx = accMap.getDimPosition(destType.getRank() - 1);
-      unrollingFactor[accLastDimIdx] *= 2;
+      unrollingFactor.value()[accLastDimIdx] *= vscale;
     }
     return unrollingFactor;
   }
