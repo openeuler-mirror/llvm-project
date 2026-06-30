@@ -23,7 +23,8 @@ def HIP12Model : SchedMachineModel {
                                                     PAUnsupported.F,
                                                     SMEUnsupported.F,
                                                     [HasMTE, HasCSSC,
-                                                     HasSVE2p1_or_HasSME]);
+                                                     HasSVE2p1_or_HasSME,
+                                                     HasCPA]);
 }
 
 let SchedModel = HIP12Model in {

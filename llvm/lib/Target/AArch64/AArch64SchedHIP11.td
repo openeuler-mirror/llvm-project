@@ -22,7 +22,8 @@ def HIP11Model : SchedMachineModel {
   list<Predicate> UnsupportedFeatures = !listconcat(PAUnsupported.F,
                                                     SME2Unsupported.F,
                                                     SVE2p1Unsupported.F,
-                                                    [HasMTE, HasSMEI16I64]);
+                                                    [HasMTE, HasSMEI16I64,
+                                                     HasCPA]);
 }
 
 let SchedModel = HIP11Model in {
