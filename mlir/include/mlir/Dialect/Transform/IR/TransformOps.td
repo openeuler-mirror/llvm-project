@@ -1453,16 +1453,16 @@ def LegalizeOp : TransformDialectOp<"legalize",
   let assemblyFormat = "attr-dict";
 
   let extraClassDeclaration = [{
+    static std::optional<SmallVector<int64_t>>  getAllDimsMaxUnrollingFactor(ArrayRef<int64_t> dstShape,
+                                                unsigned elementSize,
+                                                unsigned hardwareVectorLength,
+                                                unsigned vscale);
     static std::optional<SmallVector<int64_t>> getShape(mlir::Operation *op,
                                                            unsigned hardwareVectorLength,
                                                            unsigned vscale);
     static int64_t getMaxUnrollingFactor(unsigned vectorSize,
                                          unsigned dataBitSize,
                                          unsigned hardwareVectorLength);
-    static SmallVector<int64_t> getAllDimsMaxUnrollingFactor(ArrayRef<int64_t> dstShape,
-                                                unsigned elementSize,
-                                                unsigned hardwareVectorLength,
-                                                unsigned vscale);
   }];
 }
 
