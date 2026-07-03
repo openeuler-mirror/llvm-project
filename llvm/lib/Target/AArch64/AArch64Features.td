@@ -612,6 +612,13 @@ def FeatureD128 : SubtargetFeature<"d128", "HasD128",
     [FeatureLSE128]>;
 
 //===----------------------------------------------------------------------===//
+//  Armv9.5 Architecture Extensions
+//===----------------------------------------------------------------------===//
+
+def FeatureCPA : SubtargetFeature<"cpa", "HasCPA", "true",
+  "Enable ARMv9.5-A Checked Pointer Arithmetic (FEAT_CPA)">;
+
+//===----------------------------------------------------------------------===//
 //  Armv9.6 Architecture Extensions
 //===----------------------------------------------------------------------===//
 
@@ -719,7 +726,7 @@ def HasV9_4aOps : SubtargetFeature<
 
 def HasV9_5aOps : SubtargetFeature<
   "v9.5a", "HasV9_5aOps", "true", "Support ARM v9.5a instructions",
-  [HasV9_4aOps]>;
+  [HasV9_4aOps, FeatureCPA]>;
 
 def HasV9_6aOps : SubtargetFeature<
   "v9.6a", "HasV9_6aOps", "true", "Support ARM v9.6a instructions",
