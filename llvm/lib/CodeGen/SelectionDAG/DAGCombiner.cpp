@@ -142,6 +142,12 @@ static cl::opt<bool> EnableVectorFCopySignExtendRound(
     cl::desc(
         "Enable merging extends and rounds into FCOPYSIGN on vector types"));
 
+static cl::opt<bool> DisableBF16SignFold(
+    "combiner-disable-bf16-sign-fold", cl::Hidden,
+    cl::init(true),
+    cl::desc("Disable DAGCombiner folding of bf16 sign-bit logic to FP sign "
+             "operations"));
+
 namespace {
 
   class DAGCombiner {
@@ -14744,6 +14750,10 @@ SDValue DAGCombiner::foldBitcastedFPLogic(SDNode *N, SelectionDAG &DAG,
   ConstantSDNode *LogicOp1 = isConstOrConstSplat(N0.getOperand(1), true);
   if (LogicOp1 && LogicOp1->getAPIntValue() == SignMask &&
       IsBitCastOrFree(LogicOp0, VT)) {
+    if (DisableBF16SignFold && VT.isScalableVector() &&
+	    VT.getScalarType() == MVT::bf16)
+	  return SDValue();
+
     SDValue CastOp0 = DAG.getNode(ISD::BITCAST, SDLoc(N), VT, LogicOp0);
     SDValue FPOp = DAG.getNode(FPOpcode, SDLoc(N), VT, CastOp0);
     NumFPLogicOpsConv++;
