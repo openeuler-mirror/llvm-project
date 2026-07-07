@@ -437,6 +437,38 @@ static bool isAddSub2RegAndConstOnePair(const MachineInstr *FirstMI,
   return false;
 }
 
+static bool isOrrEorPair(const MachineInstr *FirstMI,
+                         const MachineInstr &SecondMI) {
+  switch (SecondMI.getOpcode()) {
+  case AArch64::EORv8i8:
+  case AArch64::EORv16i8:
+    break;
+  default:
+    return false;
+  }
+
+  if (FirstMI == nullptr)
+    return true;
+
+  switch (FirstMI->getOpcode()) {
+  case AArch64::ORRv8i8:
+  case AArch64::ORRv16i8: {
+    // Fuse only when ORR and EOR share the same destination register, e.g.
+    //   ORR V3, V1, V2
+    //   EOR V3, V3, V4
+    Register Dst = FirstMI->getOperand(0).getReg();
+    if (Dst == SecondMI.getOperand(0).getReg() &&
+        (Dst == SecondMI.getOperand(1).getReg() ||
+         Dst == SecondMI.getOperand(2).getReg()))
+      return true;
+    break;
+  }
+  default:
+    return false;
+  }
+  return false;
+}
+
 /// \brief Check if the instr pair, FirstMI and SecondMI, should be fused
 /// together. Given SecondMI, when FirstMI is unspecified, then check if
 /// SecondMI may be part of a fused pair at all.
@@ -471,6 +503,8 @@ static bool shouldScheduleAdjacent(const TargetInstrInfo &TII,
     return true;
   if (ST.hasFuseAddSub2RegAndConstOne() &&
       isAddSub2RegAndConstOnePair(FirstMI, SecondMI))
+    return true;
+  if (ST.hasFuseOrrEor() && isOrrEorPair(FirstMI, SecondMI))
     return true;
 
   return false;

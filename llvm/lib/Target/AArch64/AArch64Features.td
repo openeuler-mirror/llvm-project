@@ -750,6 +750,10 @@ def FeatureFuseAddSub2RegAndConstOne : SubtargetFeature<
    "fuse-addsub-2reg-const1", "HasFuseAddSub2RegAndConstOne", "true",
    "CPU fuses (a + b + 1) and (a - b - 1)">;
 
+def FeatureFuseOrrEor : SubtargetFeature<
+    "fuse-orr-eor", "HasFuseOrrEor", "true",
+    "CPU fuses orr+eor operations">;
+
 def FeatureDisableLatencySchedHeuristic : SubtargetFeature<
     "disable-latency-sched-heuristic", "DisableLatencySchedHeuristic", "true",
     "Disable latency scheduling heuristic">;
