@@ -34,6 +34,7 @@
 #include "llvm/CodeGen/MachineInstrBuilder.h"
 #include "llvm/CodeGen/MachineOperand.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
+#include "llvm/CodeGen/RegisterScavenging.h"
 #include "llvm/CodeGen/TargetRegisterInfo.h"
 #include "llvm/IR/DebugLoc.h"
 #include "llvm/MC/MCAsmInfo.h"
@@ -64,6 +65,11 @@ STATISTIC(NumUnscaledPairCreated,
 STATISTIC(NumZeroStoresPromoted, "Number of narrow zero stores promoted");
 STATISTIC(NumLoadsFromStoresPromoted, "Number of loads from stores promoted");
 
+STATISTIC(NumBaseAdjustLdpCreated,
+          "Number of LDP created with base register adjustment");
+STATISTIC(NumBaseAdjustStpCreated,
+          "Number of STP created with base register adjustment");
+
 DEBUG_COUNTER(RegRenamingCounter, DEBUG_TYPE "-reg-renaming",
               "Controls which pairs are considered for renaming");
 
@@ -79,6 +85,12 @@ static cl::opt<unsigned> UpdateLimit("aarch64-update-scan-limit", cl::init(100),
 // Enable register renaming to find additional store pairing opportunities.
 static cl::opt<bool> EnableRenaming("aarch64-load-store-renaming",
                                     cl::init(true), cl::Hidden);
+
+// Enable base register adjustment to form LDP/STP when the immediate offset
+// is out of the 7-bit signed pair range.  When enabled, an ADDXri is inserted
+// before the paired instruction to compute the adjusted base address.
+static cl::opt<bool> EnableLdpStpBaseAdjust("aarch64-ldp-stp-base-adjust",
+                                            cl::init(true), cl::Hidden);
 
 #define AARCH64_LOAD_STORE_OPT_NAME "AArch64 load / store optimization pass"
 
@@ -101,6 +113,14 @@ using LdStPairFlags = struct LdStPairFlags {
   // forward.
   std::optional<MCPhysReg> RenameReg;
 
+  // If true, the LDP/STP offset is out of range and we need to insert an
+  // ADDXri to compute an adjusted base register before the pair.
+  bool RequiresBaseAdjust = false;
+  // Byte offset added to the base register (encoded in ADDXri).
+  int64_t BaseAdjustByteOffset = 0;
+  // Scratch register used as the adjusted base for the pair.
+  Register BaseAdjustScratchReg = AArch64::NoRegister;
+
   LdStPairFlags() = default;
 
   void setMergeForward(bool V = true) { MergeForward = V; }
@@ -112,7 +132,20 @@ using LdStPairFlags = struct LdStPairFlags {
   void setRenameReg(MCPhysReg R) { RenameReg = R; }
   void clearRenameReg() { RenameReg = std::nullopt; }
   std::optional<MCPhysReg> getRenameReg() const { return RenameReg; }
+
+  void setRequiresBaseAdjust(bool V = true) { RequiresBaseAdjust = V; }
+  bool getRequiresBaseAdjust() const { return RequiresBaseAdjust; }
+  void setBaseAdjustByteOffset(int64_t V) { BaseAdjustByteOffset = V; }
+  int64_t getBaseAdjustByteOffset() const { return BaseAdjustByteOffset; }
+  void setBaseAdjustScratchReg(Register R) { BaseAdjustScratchReg = R; }
+  Register getBaseAdjustScratchReg() const { return BaseAdjustScratchReg; }
 };
+
+static bool canEncodeAddXriImm(int64_t Val) {
+  if (Val < 0) return false;
+  if (Val <= 0xFFF) return true;
+  return (Val & 0xFFF) == 0 && (Val >> 12) <= 0xFFF;
+}
 
 struct AArch64LoadStoreOpt : public MachineFunctionPass {
   static char ID;
@@ -913,6 +946,36 @@ AArch64LoadStoreOpt::mergePairedInsns(MachineBasicBlock::iterator I,
 #endif
   }
 
+  // --- Base register adjustment for far-offset LDP/STP ---
+  if (Flags.getRequiresBaseAdjust()) {
+    Register Scratch = Flags.getBaseAdjustScratchReg();
+    int64_t ByteOffset = Flags.getBaseAdjustByteOffset();
+
+    // Encode the byte offset as an ADDXri immediate.
+    // The shift operand is the actual shift amount (0 or 12), not a boolean.
+    unsigned Imm12, Shift;
+    if (ByteOffset <= 0xFFF) {
+      Imm12 = ByteOffset;
+      Shift = 0;
+    } else {
+      Imm12 = ByteOffset >> 12;
+      Shift = 12;
+    }
+
+    // Insert: add Scratch, BaseReg, #Imm12, LSL #Shift
+    MachineBasicBlock *MBB = I->getParent();
+    DebugLoc DL = I->getDebugLoc();
+    Register BaseReg = AArch64InstrInfo::getLdStBaseOp(*I).getReg();
+    BuildMI(*MBB, I, DL, TII->get(AArch64::ADDXri))
+        .addDef(Scratch)
+        .addUse(BaseReg)
+        .addImm(Imm12)
+        .addImm(Shift);
+
+    // Force merge backward: the pair replaces I, with ADD before it.
+    MergeForward = false;
+  }
+
   // Insert our new paired instruction after whichever of the paired
   // instructions MergeForward indicates.
   MachineBasicBlock::iterator InsertionPoint = MergeForward ? Paired : I;
@@ -921,6 +984,14 @@ AArch64LoadStoreOpt::mergePairedInsns(MachineBasicBlock::iterator I,
   const MachineOperand &BaseRegOp =
       MergeForward ? AArch64InstrInfo::getLdStBaseOp(*Paired)
                    : AArch64InstrInfo::getLdStBaseOp(*I);
+  // If base adjustment is used, override the base register to the scratch
+  // register.  The operand must be non-const so we can pass it to BuildMI.
+  MachineOperand BaseRegOpForLDP = BaseRegOp;
+  if (Flags.getRequiresBaseAdjust()) {
+    Register Scratch = Flags.getBaseAdjustScratchReg();
+    BaseRegOpForLDP = MachineOperand::CreateReg(Scratch, false, false, false,
+                                                false, false, false, false);
+  }
 
   int Offset = AArch64InstrInfo::getLdStOffsetOp(*I).getImm();
   int PairedOffset = AArch64InstrInfo::getLdStOffsetOp(*Paired).getImm();
@@ -965,6 +1036,10 @@ AArch64LoadStoreOpt::mergePairedInsns(MachineBasicBlock::iterator I,
            "Unscaled offset cannot be scaled.");
     OffsetImm /= TII->getMemScale(*RtMI);
   }
+  // When using base adjustment, the LDP uses the scratch register with
+  // offset 0 — the full byte offset is already in the ADDXri.
+  if (Flags.getRequiresBaseAdjust())
+    OffsetImm = 0;
 
   // Construct the new instruction.
   MachineInstrBuilder MIB;
@@ -1001,7 +1076,7 @@ AArch64LoadStoreOpt::mergePairedInsns(MachineBasicBlock::iterator I,
 
   MIB.add(RegOp0)
       .add(RegOp1)
-      .add(BaseRegOp)
+      .add(BaseRegOpForLDP)
       .addImm(OffsetImm)
       .cloneMergedMemRefs({&*I, &*Paired})
       .setMIFlags(I->mergeFlagsWith(*Paired));
@@ -1547,6 +1622,33 @@ AArch64LoadStoreOpt::findMatchingInsn(MachineBasicBlock::iterator I,
   ModifiedRegUnits.clear();
   UsedRegUnits.clear();
 
+  // Lazily-computed register availability at the point just before FirstMI,
+  // used only when a far-offset pair candidate requires base register
+  // adjustment.  Computed at most once per findMatchingInsn call.
+  //
+  // ScavengerReady is only meaningful after computeScratchAvailability() has
+  // run.  When liveness isn't tracked we cannot soundly pick a scratch
+  // register (ModifiedRegUnits/UsedRegUnits only cover the region between
+  // the two paired insns, not liveness at FirstMI), so base adjustment is
+  // deliberately skipped in that case.
+  BitVector AvailableScratchRegs;
+  bool ScavengerReady = false;
+  bool ScavengerComputed = false;
+  auto computeScratchAvailability = [&] {
+    if (ScavengerComputed)
+      return;
+    ScavengerComputed = true;
+    const MachineFunction &MF = *FirstMI.getParent()->getParent();
+    if (MF.getRegInfo().tracksLiveness()) {
+      RegScavenger RS;
+      RS.enterBasicBlockEnd(*I->getParent());
+      RS.backward(I);
+      AvailableScratchRegs =
+          RS.getRegsAvailable(&AArch64::GPR64commonRegClass);
+      ScavengerReady = true;
+    }
+  };
+
   // Remember any instructions that read/write memory between FirstMI and MI.
   SmallVector<MachineInstr *, 4> MemInsns;
 
@@ -1647,16 +1749,59 @@ AArch64LoadStoreOpt::findMatchingInsn(MachineBasicBlock::iterator I,
           // Pairwise instructions have a 7-bit signed offset field. Single
           // insns have a 12-bit unsigned offset field.  If the resultant
           // immediate offset of merging these instructions is out of range for
-          // a pairwise instruction, bail and keep looking.
+          // a pairwise instruction, try base register adjustment.
           if (!inBoundsForPair(IsUnscaled, MinOffset, OffsetStride)) {
+            if (EnableLdpStpBaseAdjust) {
+              // Out of range — try base register adjustment.
+              int MemScale = TII->getMemScale(FirstMI);
+              int64_t ByteOffset = static_cast<int64_t>(MinOffset) *
+                  (IsUnscaled ? 1 : MemScale);
+              if (ByteOffset >= 0 && canEncodeAddXriImm(ByteOffset)) {
+                // Compute scratch-register availability lazily; skipped
+                // entirely when no candidate needs it.
+                computeScratchAvailability();
+                Register Scratch = AArch64::NoRegister;
+                static const MCPhysReg ScratchCandidates[] = {
+                    AArch64::X16, AArch64::X17, AArch64::X9,  AArch64::X10,
+                    AArch64::X11, AArch64::X12, AArch64::X13, AArch64::X14,
+                    AArch64::X15};
+                Register Reg0 = getLdStRegOp(FirstMI).getReg();
+                Register Reg1 = getLdStRegOp(MI).getReg();
+                // Only the scavenger gives sound liveness at FirstMI; without
+                // it we cannot safely pick a scratch register, so skip base
+                // adjustment and keep looking for a normal pair.
+                if (ScavengerReady) {
+                  for (MCPhysReg Reg : ScratchCandidates) {
+                    if (Reg == Reg0 || Reg == Reg1)
+                      continue;
+                    if (AvailableScratchRegs[Reg]) {
+                      Scratch = Reg;
+                      break;
+                    }
+                  }
+                }
+                if (Scratch != AArch64::NoRegister) {
+                  Flags.setRequiresBaseAdjust(true);
+                  Flags.setBaseAdjustByteOffset(ByteOffset);
+                  Flags.setBaseAdjustScratchReg(Scratch);
+                  goto base_adjust_accepted;
+                }
+              }
+            }
             LiveRegUnits::accumulateUsedDefed(MI, ModifiedRegUnits,
                                               UsedRegUnits, TRI);
             MemInsns.push_back(&MI);
+            LLVM_DEBUG(dbgs() << "Offset doesn't fit in immediate"
+                              << " (no base adjust opportunity), keep looking.\n");
             continue;
           }
+base_adjust_accepted:
           // If the alignment requirements of the paired (scaled) instruction
           // can't express the offset of the unscaled input, bail and keep
-          // looking.
+          // looking.  (Base register adjustment is restricted to scaled
+          // accesses by the gate in tryToPairLdStInst, so an unscaled access
+          // reaching here is never mid base-adjust and must respect this
+          // check.)
           if (IsUnscaled && (alignTo(MinOffset, OffsetStride) != MinOffset)) {
             LiveRegUnits::accumulateUsedDefed(MI, ModifiedRegUnits,
                                               UsedRegUnits, TRI);
@@ -1693,6 +1838,13 @@ AArch64LoadStoreOpt::findMatchingInsn(MachineBasicBlock::iterator I,
             !(MI.mayLoad() &&
               !UsedRegUnits.available(getLdStRegOp(MI).getReg())) &&
             !mayAlias(MI, MemInsns, AA)) {
+          if (Flags.getRequiresBaseAdjust()) {
+            // With base adjustment, we must pair backward: keep I, remove
+            // Paired, and insert ADDXri at I's position.
+            Flags.setMergeForward(false);
+            Flags.clearRenameReg();
+            return MBBI;
+          }
 
           Flags.setMergeForward(false);
           Flags.clearRenameReg();
@@ -1707,6 +1859,13 @@ AArch64LoadStoreOpt::findMatchingInsn(MachineBasicBlock::iterator I,
               !UsedRegUnits.available(getLdStRegOp(FirstMI).getReg())) &&
             !mayAlias(FirstMI, MemInsns, AA)) {
 
+          if (Flags.getRequiresBaseAdjust()) {
+            // Base adjustment forces backward merge; if backward didn't work,
+            // forward won't work either (would place ADD after the pair).
+            LLVM_DEBUG(dbgs() << "Cannot pair with base adjustment, "
+                              << "backward direction unavailable.\n");
+            goto cannot_pair_keep_looking;
+          }
           if (ModifiedRegUnits.available(getLdStRegOp(FirstMI).getReg())) {
             Flags.setMergeForward(true);
             Flags.clearRenameReg();
@@ -1731,8 +1890,11 @@ AArch64LoadStoreOpt::findMatchingInsn(MachineBasicBlock::iterator I,
             }
           }
         }
-        // Unable to combine these instructions due to interference in between.
-        // Keep looking.
+        LLVM_DEBUG(dbgs() << "Unable to combine these instructions due to "
+                          << "interference in between, keep looking.\n");
+      cannot_pair_keep_looking:
+        if (Flags.getRequiresBaseAdjust())
+          Flags.setRequiresBaseAdjust(false);
       }
     }
 
@@ -2133,8 +2295,30 @@ bool AArch64LoadStoreOpt::tryToPairLdStInst(MachineBasicBlock::iterator &MBBI) {
   // Allow one more for offset.
   if (Offset > 0)
     Offset -= OffsetStride;
-  if (!inBoundsForPair(IsUnscaled, Offset, OffsetStride))
-    return false;
+  if (!inBoundsForPair(IsUnscaled, Offset, OffsetStride)) {
+    // Base register adjustment only applies to scaled loads/stores: an
+    // unscaled (LDUR/STUR/pre-indexed) far offset cannot occur in practice
+    // (the LDUR signed-9-bit range coincides with the LDP/STP pair range),
+    // and pairing an unscaled access whose byte offset is not a multiple of
+    // the scale would silently truncate it during merge.  Bail out for
+    // unscaled accesses so they stay unpaired (matching pre-feature
+    // behavior) and to avoid the early-return bypass below.
+    if (!EnableLdpStpBaseAdjust || IsUnscaled)
+      return false;
+    // Out of LDP/STP 7-bit signed range; may still pair via base register
+    // adjustment if the byte offset fits in an ADDXri immediate.
+    int MemScale = TII->getMemScale(MI);
+    int64_t ByteOffset =
+        static_cast<int64_t>(Offset) * (IsUnscaled ? 1 : MemScale);
+    if (ByteOffset < 0 || !canEncodeAddXriImm(ByteOffset)) {
+      // Negative offsets or offsets too large for ADDXri: skip.
+      return false;
+    }
+    // Positive offset fits in ADDXri — proceed to findMatchingInsn,
+    // which will decide whether to use base adjustment.
+    LLVM_DEBUG(dbgs() << "Offset " << Offset
+                      << " out of LDP/STP range, may use base adjustment\n");
+  }
 
   // Look ahead up to LdStLimit instructions for a pairable instruction.
   LdStPairFlags Flags;
@@ -2144,6 +2328,13 @@ bool AArch64LoadStoreOpt::tryToPairLdStInst(MachineBasicBlock::iterator &MBBI) {
     ++NumPairCreated;
     if (TII->hasUnscaledLdStOffset(MI))
       ++NumUnscaledPairCreated;
+    if (Flags.getRequiresBaseAdjust()) {
+      if (MI.mayLoad())
+        ++NumBaseAdjustLdpCreated;
+      else
+        ++NumBaseAdjustStpCreated;
+    }
+
     // Keeping the iterator straight is a pain, so we let the merge routine tell
     // us what the next instruction is after it's done mucking about.
     auto Prev = std::prev(MBBI);
