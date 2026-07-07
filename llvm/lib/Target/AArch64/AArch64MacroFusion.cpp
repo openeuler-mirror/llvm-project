@@ -424,6 +424,33 @@ static bool isMvnClzPair(const MachineInstr *FirstMI,
   return false;
 }
 
+static bool isOrrEorPair(const MachineInstr *FirstMI,
+                         const MachineInstr &SecondMI) {
+  switch (SecondMI.getOpcode()) {
+  case AArch64::EORv8i8:
+  case AArch64::EORv16i8:
+    break;
+  default:
+    return false;
+  }
+
+  if (FirstMI == nullptr)
+    return true;
+
+  switch (FirstMI->getOpcode()) {
+  case AArch64::ORRv8i8:
+  case AArch64::ORRv16i8:
+    // Support pattern:
+    // ORR V3,v1,v2
+    // EOR v3,v3,v4
+    if (FirstMI->getOperand(0).getReg() == SecondMI.getOperand(1).getReg() ||
+        FirstMI->getOperand(0).getReg() == SecondMI.getOperand(2).getReg())
+      return true;
+  default:
+    return false;
+  }
+}
+
 /// \brief Check if the instr pair, FirstMI and SecondMI, should be fused
 /// together. Given SecondMI, when FirstMI is unspecified, then check if
 /// SecondMI may be part of a fused pair at all.
@@ -457,6 +484,8 @@ static bool shouldScheduleAdjacent(const TargetInstrInfo &TII,
   if (ST.hasFuseArithmeticLogic() && isArithmeticLogicPair(FirstMI, SecondMI))
     return true;
   if (ST.hasFuseMvnClz() && isMvnClzPair(FirstMI, SecondMI))
+    return true;
+  if (ST.hasFuseOrrEor() && isOrrEorPair(FirstMI, SecondMI))
     return true;
 
   return false;
