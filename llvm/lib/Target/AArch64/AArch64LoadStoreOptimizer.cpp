@@ -1361,12 +1361,13 @@ static bool needsWinCFI(const MachineFunction *MF) {
 static bool areCandidatesToMergeOrPair(MachineInstr &FirstMI, MachineInstr &MI,
                                        LdStPairFlags &Flags,
                                        const AArch64InstrInfo *TII) {
-  // If this is volatile or if pairing is suppressed, not a candidate.
-  if (MI.hasOrderedMemoryRef() || TII->isLdStPairSuppressed(MI))
+  // If this is volatile, non-relaxed-atomic, or pair-suppressed, not a
+  // candidate.  Relaxed (monotonic) atomics are safe to pair on AArch64.
+  if (!AArch64InstrInfo::isSafeToPairMemRef(MI) || TII->isLdStPairSuppressed(MI))
     return false;
 
   // We should have already checked FirstMI for pair suppression and volatility.
-  assert(!FirstMI.hasOrderedMemoryRef() &&
+  assert(AArch64InstrInfo::isSafeToPairMemRef(FirstMI) &&
          !TII->isLdStPairSuppressed(FirstMI) &&
          "FirstMI shouldn't get here if either of these checks are true.");
 
@@ -2227,8 +2228,8 @@ MachineBasicBlock::iterator AArch64LoadStoreOpt::findMatchingUpdateInsnBackward(
 bool AArch64LoadStoreOpt::tryToPromoteLoadFromStore(
     MachineBasicBlock::iterator &MBBI) {
   MachineInstr &MI = *MBBI;
-  // If this is a volatile load, don't mess with it.
-  if (MI.hasOrderedMemoryRef())
+  // If this is a volatile or non-relaxed-atomic load, don't mess with it.
+  if (!AArch64InstrInfo::isSafeToPairMemRef(MI))
     return false;
 
   if (needsWinCFI(MI.getMF()) && MI.getFlag(MachineInstr::FrameDestroy))
