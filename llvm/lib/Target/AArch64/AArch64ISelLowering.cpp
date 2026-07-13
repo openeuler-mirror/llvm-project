@@ -29253,8 +29253,15 @@ AArch64TargetLowering::LowerFixedLengthFPExtendToSVE(SDValue Op,
 
   SDLoc DL(Op);
   SDValue Val = Op.getOperand(0);
-  SDValue Pg = getPredicateForVector(DAG, DL, VT);
   EVT SrcVT = Val.getValueType();
+
+  if (VT.getScalarType() == MVT::f64 && SrcVT.getScalarType() == MVT::bf16) {
+    return DAG.getNode(
+        ISD::FP_EXTEND, DL, VT,
+        DAG.getNode(ISD::FP_EXTEND, DL, VT.changeElementType(MVT::f32), Val));
+  }
+
+  SDValue Pg = getPredicateForVector(DAG, DL, VT);
   EVT ContainerVT = getContainerForFixedLengthVector(DAG, VT);
   EVT ExtendVT = ContainerVT.changeVectorElementType(
       SrcVT.getVectorElementType());
