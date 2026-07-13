@@ -166,8 +166,8 @@ LogicalResult DecomposeProjectedPermutation::matchAndRewrite(
   // out which operand can supply that runtime-value (tensor.dim).
   // Leaving it as a future TODO.
   if (llvm::any_of(op->getOpOperands(), [](OpOperand &oper) {
-        auto opType = cast<RankedTensorType>(oper.get().getType());
-        return ShapedType::isDynamicShape(opType.getShape());
+        auto opType = dyn_cast<RankedTensorType>(oper.get().getType());
+        return !opType || ShapedType::isDynamicShape(opType.getShape());
       }))
     return failure();
 
@@ -212,7 +212,7 @@ LogicalResult DecomposeProjectedPermutation::matchAndRewrite(
     if (!broadcastedDims.empty()) {
       assert(broadcastedDims.size() && "should have non size broadcast");
       Value emptyTensor = rewriter.create<tensor::EmptyOp>(
-          loc, outputShape, inputRTType.getElementType());
+          loc, outputShape, elType);
 
       auto broadcastOp = rewriter.create<linalg::BroadcastOp>(
           loc, newInitValues[i], emptyTensor, broadcastedDims);
