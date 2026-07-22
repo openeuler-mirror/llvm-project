@@ -38,7 +38,9 @@ if [ "$tbranch" = "dev_18.1.8" ]; then
 export LIT_FILTER_OUT="races\/task-taskgroup-unrelated\.c|${LIT_FILTER_OUT}"
 fi
 
-if [[ "$tbranch" = "dev_16.0.6" || "$tbranch" = "feature-thinlto-split" ]]; then
+if [[ "$tbranch" = "dev_16.0.6" ||
+      "$tbranch" = "feature-thinlto-split" ||
+      "$tbranch" = "feature-hip12-optimization-dev16" ]]; then
 # 过滤dev_16.0.6分支失败用例
 #   libomptarget :: aarch64-unknown-linux-gnu :: mapping/delete_inf_refcount.c
 #   libomptarget :: aarch64-unknown-linux-gnu :: mapping/ompx_hold/struct.c

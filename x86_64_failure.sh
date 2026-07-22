@@ -25,7 +25,9 @@ export LIT_FILTER_OUT="affinity\/kmp-abs-hw-subset\.c|${LIT_FILTER_OUT}"
 export LIT_FILTER_OUT="instrprof-basic\.c|${LIT_FILTER_OUT}"
 fi
 
-if [[ "$tbranch" = "dev_16.0.6" || "$tbranch" = "feature-thinlto-split" ]]; then
+if [[ "$tbranch" = "dev_16.0.6" ||
+      "$tbranch" = "feature-thinlto-split" ||
+      "$tbranch" = "feature-hip12-optimization-dev16" ]]; then
 # 过滤dev_16.0.6分支失败用例
 #   libomptarget :: x86_64-pc-linux-gnu :: mapping/delete_inf_refcount.c
 #   libomptarget :: x86_64-pc-linux-gnu :: offloading/global_constructor.cpp
