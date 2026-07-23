@@ -293,6 +293,10 @@ def FeatureFuseMvnClz : SubtargetFeature<
     "fuse-mvn-clz", "HasFuseMvnClz", "true",
     "CPU fuses mvn+clz operations">;
 
+def FeatureFuseOrrEor : SubtargetFeature<
+    "fuse-orr-eor", "HasFuseOrrEor", "true",
+    "CPU fuses orr+eor operations">;
+
 def FeatureDisableLatencySchedHeuristic : SubtargetFeature<
     "disable-latency-sched-heuristic", "DisableLatencySchedHeuristic", "true",
     "Disable latency scheduling heuristic">;
@@ -1191,7 +1195,8 @@ def TuneHIP12 : SubtargetFeature<"hip12", "ARMProcFamily", "HIP12",
                                     FeatureFuseAES,
                                     FeatureLSLFast,
                                     FeatureAscendStoreAddress,
-                                    FeaturePostRAScheduler]>;
+                                    FeaturePostRAScheduler,
+                                    FeatureFuseOrrEor]>;
 
 def TuneAmpere1 : SubtargetFeature<"ampere1", "ARMProcFamily", "Ampere1",
                                    "Ampere Computing Ampere-1 processors", [

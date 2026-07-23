@@ -46,6 +46,25 @@ using namespace llvm;
 
 #define AARCH64_EXPAND_PSEUDO_NAME "AArch64 pseudo instruction expansion pass"
 
+static cl::opt<bool> TransformMovToMovprfx(
+    "aarch64-sve-transform-mov-to-movprfx", cl::init(true), cl::Hidden,
+    cl::desc("Enable the transform from mov to movprfx when the use of mov is "
+             "destructive instruction."));
+
+static cl::opt<unsigned>
+    TraversalInstThreshold("aarch64-traversal-inst-threshold", cl::Hidden,
+                           cl::init(26),
+                           cl::desc("The maximum number of instructions "
+                                    "traversed after the move instruction"));
+static cl::opt<bool>
+    GenMovprfxOrMovForUnary("aarch64-movprfx-or-mov-for-unary", cl::Hidden,
+                            cl::init(true),
+                            cl::desc("Generate movprfx or mov for unary inst"));
+
+static cl::opt<bool> GenMovForLongLatencyInst(
+    "aarch64-mov-for-long-latency-inst", cl::Hidden, cl::init(true),
+    cl::desc("Generate mov for long latency instructions like fsqrt."));
+
 namespace {
 
 class AArch64ExpandPseudo : public MachineFunctionPass {
@@ -66,6 +85,17 @@ private:
   bool expandMBB(MachineBasicBlock &MBB);
   bool expandMI(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
                 MachineBasicBlock::iterator &NextMBBI);
+  bool expandMI(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
+                MachineBasicBlock::iterator &NextMBBI,
+                SmallPtrSet<MachineInstr *, 16> &RemoveMIs);
+  bool optimizeMI(MachineInstr &MI, MachineInstr &DefUseMI,
+                  MachineBasicBlock &MBB,
+                  MachineBasicBlock::iterator MBBI,
+                  MachineBasicBlock::iterator DefUseMBBI,
+                  SmallPtrSet<MachineInstr *, 16> &RemoveMIs,
+                  bool isMoveOrr);
+  bool IsInSpecificInstOpcList(ArrayRef<unsigned> &SpecificInstOpcList,
+                               unsigned UseOpcode);
   bool expandMOVImm(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
                     unsigned BitSize);
 
@@ -95,6 +125,11 @@ private:
                                         MachineBasicBlock::iterator MBBI);
 };
 
+static const unsigned LongLatencyInstOpcode[] = {
+  AArch64::FSQRT_ZPmZ_D,
+  AArch64::FSQRT_ZPmZ_H,
+  AArch64::FSQRT_ZPmZ_S,
+};
 } // end anonymous namespace
 
 char AArch64ExpandPseudo::ID = 0;
@@ -489,6 +524,10 @@ bool AArch64ExpandPseudo::expand_DestructiveOp(
   // is the destructive operand, not as any other operand,
   // so the Destructive Operand must be unique.
   bool DOPRegIsUnique = false;
+  bool ShouldGenMovprfxOrMov = true;
+  auto LongLatencyInstOpcodeArr = llvm::ArrayRef(LongLatencyInstOpcode);
+  bool IsLongLatencyInst =
+      IsInSpecificInstOpcList(LongLatencyInstOpcodeArr, Opcode);
   switch (DType) {
   case AArch64::DestructiveBinary:
     DOPRegIsUnique = DstReg != MI.getOperand(SrcIdx).getReg();
@@ -500,6 +539,8 @@ bool AArch64ExpandPseudo::expand_DestructiveOp(
       MI.getOperand(DOPIdx).getReg() != MI.getOperand(SrcIdx).getReg();
     break;
   case AArch64::DestructiveUnaryPassthru:
+    ShouldGenMovprfxOrMov = GenMovprfxOrMovForUnary;
+    [[fallthrough]];
   case AArch64::DestructiveBinaryImm:
     DOPRegIsUnique = true;
     break;
@@ -585,7 +626,15 @@ bool AArch64ExpandPseudo::expand_DestructiveOp(
           .addReg(DstReg)
           .addImm(0);
     }
-  } else if (DstReg != MI.getOperand(DOPIdx).getReg()) {
+  } else if (ShouldGenMovprfxOrMov && GenMovForLongLatencyInst &&
+             IsLongLatencyInst && DstReg != MI.getOperand(DOPIdx).getReg()) {
+    PRFX = BuildMI(MBB, MBBI, MI.getDebugLoc(), TII->get(AArch64::ORR_ZZZ))
+               .addReg(DstReg, RegState::Define)
+               .addReg(MI.getOperand(DOPIdx).getReg())
+               .addReg(MI.getOperand(DOPIdx).getReg());
+    DOPIdx = 0;
+  } else if (DstReg != MI.getOperand(DOPIdx).getReg() &&
+             ShouldGenMovprfxOrMov) {
     assert(DOPRegIsUnique && "The destructive operand should be unique");
     PRFX = BuildMI(MBB, MBBI, MI.getDebugLoc(), TII->get(MovPrfx))
                .addReg(DstReg, RegState::Define)
@@ -621,7 +670,7 @@ bool AArch64ExpandPseudo::expand_DestructiveOp(
     break;
   }
 
-  if (PRFX) {
+  if (PRFX && PRFX.getInstr()->getOpcode() != AArch64::ORR_ZZZ) {
     finalizeBundle(MBB, PRFX->getIterator(), MBBI->getIterator());
     transferImpOps(MI, PRFX, DOP);
   } else
@@ -1457,17 +1506,927 @@ bool AArch64ExpandPseudo::expandMI(MachineBasicBlock &MBB,
   return false;
 }
 
+bool AArch64ExpandPseudo::optimizeMI(
+    MachineInstr &MI, MachineInstr &DefUseMI, MachineBasicBlock &MBB,
+    MachineBasicBlock::iterator MovMBBI, MachineBasicBlock::iterator DefUseMBBI,
+    SmallPtrSet<MachineInstr *, 16> &RemoveMIs, bool IsMoveOrr) {
+  MCPhysReg CopyDstReg = MI.getOperand(0).getReg();
+  MCPhysReg CopySrcReg = MI.getOperand(1).getReg();
+  unsigned Opcode = DefUseMI.getOpcode();
+  uint64_t DType = TII->get(Opcode).TSFlags & AArch64::DestructiveInstTypeMask;
+  Register DefUseDstReg = DefUseMI.getOperand(0).getReg();
+  bool DstIsDead = DefUseMI.getOperand(0).isDead();
+  bool UseRev = false;
+  unsigned PredIdx, DOPIdx, SrcIdx, Src2Idx, Src3Idx;
+  switch(DType) {
+  case AArch64::DestructiveBinaryComm:
+  case AArch64::DestructiveBinaryCommWithRev:
+    if (DefUseDstReg == DefUseMI.getOperand(3).getReg()) {
+      std::tie(PredIdx, DOPIdx, SrcIdx) = std::make_tuple(1, 3, 2);
+      UseRev = true;
+      break;
+    }
+    [[fallthrough]];
+  case AArch64::DestructiveBinary:
+  case AArch64::DestructiveBinaryImm:
+    std::tie(PredIdx, DOPIdx, SrcIdx) = std::make_tuple(1, 2, 3);
+    break;
+  case AArch64::DestructiveUnaryPassthru:
+    std::tie(PredIdx, DOPIdx, SrcIdx) = std::make_tuple(2, 1, 3);
+    break;
+  case AArch64::DestructiveTernaryCommWithRev:
+    std::tie(PredIdx, DOPIdx, SrcIdx, Src2Idx) = std::make_tuple(1, 2, 3, 4);
+    if (DefUseDstReg == DefUseMI.getOperand(3).getReg()) {
+      std::tie(PredIdx, DOPIdx, SrcIdx, Src2Idx) = std::make_tuple(1, 3, 4, 2);
+      UseRev = true;
+    } else if (DefUseDstReg == DefUseMI.getOperand(4).getReg()) {
+      std::tie(PredIdx, DOPIdx, SrcIdx, Src2Idx) = std::make_tuple(1, 4, 3, 2);
+      UseRev = true;
+    }
+    break;
+  case AArch64::DestructiveOther:
+    switch (Opcode) {
+    case AArch64::FMAD_ZPmZZ_D:
+    case AArch64::FMAD_ZPmZZ_H:
+    case AArch64::FMAD_ZPmZZ_S:
+    case AArch64::FMSB_ZPmZZ_D:
+    case AArch64::FMSB_ZPmZZ_H:
+    case AArch64::FMSB_ZPmZZ_S:
+    case AArch64::MAD_ZPmZZ_B:
+    case AArch64::MAD_ZPmZZ_D:
+    case AArch64::MAD_ZPmZZ_H:
+    case AArch64::MAD_ZPmZZ_S:
+    case AArch64::MLA_ZPmZZ_B:
+    case AArch64::MLA_ZPmZZ_D:
+    case AArch64::MLA_ZPmZZ_H:
+    case AArch64::MLA_ZPmZZ_S:
+    case AArch64::MLS_ZPmZZ_B:
+    case AArch64::MLS_ZPmZZ_D:
+    case AArch64::MLS_ZPmZZ_H:
+    case AArch64::MLS_ZPmZZ_S:
+    case AArch64::MSB_ZPmZZ_B:
+    case AArch64::MSB_ZPmZZ_D:
+    case AArch64::MSB_ZPmZZ_H:
+    case AArch64::MSB_ZPmZZ_S:
+    case AArch64::FNMAD_ZPmZZ_H:
+    case AArch64::FNMAD_ZPmZZ_S:
+    case AArch64::FNMAD_ZPmZZ_D:
+    case AArch64::FNMSB_ZPmZZ_H:
+    case AArch64::FNMSB_ZPmZZ_S:
+    case AArch64::FNMSB_ZPmZZ_D:
+      std::tie(PredIdx, DOPIdx, SrcIdx, Src2Idx) = std::make_tuple(1, 2, 3, 4);
+      break;
+    case AArch64::FCMLA_ZPmZZ_H:
+    case AArch64::FCMLA_ZPmZZ_S:
+    case AArch64::FCMLA_ZPmZZ_D:
+      std::tie(PredIdx, DOPIdx, SrcIdx, Src2Idx, Src3Idx) =
+          std::make_tuple(1, 2, 3, 4, 5);
+      break;
+    case AArch64::SHADD_ZPmZ_B:
+    case AArch64::SHADD_ZPmZ_H:
+    case AArch64::SHADD_ZPmZ_S:
+    case AArch64::SHADD_ZPmZ_D:
+    case AArch64::UHADD_ZPmZ_B:
+    case AArch64::UHADD_ZPmZ_H:
+    case AArch64::UHADD_ZPmZ_S:
+    case AArch64::UHADD_ZPmZ_D:
+    case AArch64::SHSUB_ZPmZ_B:
+    case AArch64::SHSUB_ZPmZ_H:
+    case AArch64::SHSUB_ZPmZ_S:
+    case AArch64::SHSUB_ZPmZ_D:
+    case AArch64::UHSUB_ZPmZ_B:
+    case AArch64::UHSUB_ZPmZ_H:
+    case AArch64::UHSUB_ZPmZ_S:
+    case AArch64::UHSUB_ZPmZ_D:
+    case AArch64::SHSUBR_ZPmZ_B:
+    case AArch64::SHSUBR_ZPmZ_H:
+    case AArch64::SHSUBR_ZPmZ_S:
+    case AArch64::SHSUBR_ZPmZ_D:
+    case AArch64::UHSUBR_ZPmZ_B:
+    case AArch64::UHSUBR_ZPmZ_H:
+    case AArch64::UHSUBR_ZPmZ_S:
+    case AArch64::UHSUBR_ZPmZ_D:
+    case AArch64::SRHADD_ZPmZ_B:
+    case AArch64::SRHADD_ZPmZ_H:
+    case AArch64::SRHADD_ZPmZ_S:
+    case AArch64::SRHADD_ZPmZ_D:
+    case AArch64::URHADD_ZPmZ_B:
+    case AArch64::URHADD_ZPmZ_H:
+    case AArch64::URHADD_ZPmZ_S:
+    case AArch64::URHADD_ZPmZ_D:
+    case AArch64::SQADD_ZPmZ_B:
+    case AArch64::SQADD_ZPmZ_H:
+    case AArch64::SQADD_ZPmZ_S:
+    case AArch64::SQADD_ZPmZ_D:
+    case AArch64::UQADD_ZPmZ_B:
+    case AArch64::UQADD_ZPmZ_H:
+    case AArch64::UQADD_ZPmZ_S:
+    case AArch64::UQADD_ZPmZ_D:
+    case AArch64::SQSUB_ZPmZ_B:
+    case AArch64::SQSUB_ZPmZ_H:
+    case AArch64::SQSUB_ZPmZ_S:
+    case AArch64::SQSUB_ZPmZ_D:
+    case AArch64::UQSUB_ZPmZ_B:
+    case AArch64::UQSUB_ZPmZ_H:
+    case AArch64::UQSUB_ZPmZ_S:
+    case AArch64::UQSUB_ZPmZ_D:
+    case AArch64::SUQADD_ZPmZ_B:
+    case AArch64::SUQADD_ZPmZ_H:
+    case AArch64::SUQADD_ZPmZ_S:
+    case AArch64::SUQADD_ZPmZ_D:
+    case AArch64::USQADD_ZPmZ_B:
+    case AArch64::USQADD_ZPmZ_H:
+    case AArch64::USQADD_ZPmZ_S:
+    case AArch64::USQADD_ZPmZ_D:
+    case AArch64::SQSUBR_ZPmZ_B:
+    case AArch64::SQSUBR_ZPmZ_H:
+    case AArch64::SQSUBR_ZPmZ_S:
+    case AArch64::SQSUBR_ZPmZ_D:
+    case AArch64::UQSUBR_ZPmZ_B:
+    case AArch64::UQSUBR_ZPmZ_H:
+    case AArch64::UQSUBR_ZPmZ_S:
+    case AArch64::UQSUBR_ZPmZ_D:
+    case AArch64::ADDP_ZPmZ_B:
+    case AArch64::ADDP_ZPmZ_H:
+    case AArch64::ADDP_ZPmZ_S:
+    case AArch64::ADDP_ZPmZ_D:
+    case AArch64::SADALP_ZPmZ_H:
+    case AArch64::SADALP_ZPmZ_S:
+    case AArch64::SADALP_ZPmZ_D:
+    case AArch64::UADALP_ZPmZ_H:
+    case AArch64::UADALP_ZPmZ_S:
+    case AArch64::UADALP_ZPmZ_D:
+    case AArch64::SMAXP_ZPmZ_B:
+    case AArch64::SMAXP_ZPmZ_H:
+    case AArch64::SMAXP_ZPmZ_S:
+    case AArch64::SMAXP_ZPmZ_D:
+    case AArch64::UMAXP_ZPmZ_B:
+    case AArch64::UMAXP_ZPmZ_H:
+    case AArch64::UMAXP_ZPmZ_S:
+    case AArch64::UMAXP_ZPmZ_D:
+    case AArch64::SMINP_ZPmZ_B:
+    case AArch64::SMINP_ZPmZ_H:
+    case AArch64::SMINP_ZPmZ_S:
+    case AArch64::SMINP_ZPmZ_D:
+    case AArch64::UMINP_ZPmZ_B:
+    case AArch64::UMINP_ZPmZ_H:
+    case AArch64::UMINP_ZPmZ_S:
+    case AArch64::UMINP_ZPmZ_D:
+    case AArch64::FABD_ZPmZ_H:
+    case AArch64::FABD_ZPmZ_S:
+    case AArch64::FABD_ZPmZ_D:
+    case AArch64::FADDP_ZPmZZ_H:
+    case AArch64::FADDP_ZPmZZ_S:
+    case AArch64::FADDP_ZPmZZ_D:
+    case AArch64::FCADD_ZPmZ_H:
+    case AArch64::FCADD_ZPmZ_S:
+    case AArch64::FCADD_ZPmZ_D:
+    case AArch64::FMAXNMP_ZPmZZ_H:
+    case AArch64::FMAXNMP_ZPmZZ_S:
+    case AArch64::FMAXNMP_ZPmZZ_D:
+    case AArch64::FMINNMP_ZPmZZ_H:
+    case AArch64::FMINNMP_ZPmZZ_S:
+    case AArch64::FMINNMP_ZPmZZ_D:
+    case AArch64::FMAXP_ZPmZZ_H:
+    case AArch64::FMAXP_ZPmZZ_S:
+    case AArch64::FMAXP_ZPmZZ_D:
+    case AArch64::FMINP_ZPmZZ_H:
+    case AArch64::FMINP_ZPmZZ_S:
+    case AArch64::FMINP_ZPmZZ_D:
+    case AArch64::FSCALE_ZPmZ_H:
+    case AArch64::FSCALE_ZPmZ_S:
+    case AArch64::FSCALE_ZPmZ_D:
+    case AArch64::FMULX_ZPmZ_H:
+    case AArch64::FMULX_ZPmZ_S:
+    case AArch64::FMULX_ZPmZ_D:
+      std::tie(PredIdx, DOPIdx, SrcIdx) = std::make_tuple(1, 2, 3);
+      break;
+    case AArch64::SQABS_ZPmZ_B:
+    case AArch64::SQABS_ZPmZ_H:
+    case AArch64::SQABS_ZPmZ_S:
+    case AArch64::SQABS_ZPmZ_D:
+    case AArch64::SQNEG_ZPmZ_B:
+    case AArch64::SQNEG_ZPmZ_H:
+    case AArch64::SQNEG_ZPmZ_S:
+    case AArch64::SQNEG_ZPmZ_D:
+      std::tie(PredIdx, DOPIdx, SrcIdx) = std::make_tuple(2, 1, 3);
+      break;
+    case AArch64::SABALB_ZZZ_D:
+    case AArch64::SABALB_ZZZ_H:
+    case AArch64::SABALB_ZZZ_S:
+    case AArch64::SABALT_ZZZ_D:
+    case AArch64::SABALT_ZZZ_H:
+    case AArch64::SABALT_ZZZ_S:
+    case AArch64::UABALB_ZZZ_D:
+    case AArch64::UABALB_ZZZ_H:
+    case AArch64::UABALB_ZZZ_S:
+    case AArch64::UABALT_ZZZ_D:
+    case AArch64::UABALT_ZZZ_H:
+    case AArch64::UABALT_ZZZ_S:
+    case AArch64::SABA_ZZZ_D:
+    case AArch64::SABA_ZZZ_H:
+    case AArch64::SABA_ZZZ_S:
+    case AArch64::SABA_ZZZ_B:
+    case AArch64::ADCLB_ZZZ_S:
+    case AArch64::ADCLB_ZZZ_D:
+    case AArch64::ADCLT_ZZZ_S:
+    case AArch64::ADCLT_ZZZ_D:
+    case AArch64::SBCLB_ZZZ_S:
+    case AArch64::SBCLB_ZZZ_D:
+    case AArch64::SBCLT_ZZZ_S:
+    case AArch64::SBCLT_ZZZ_D:
+    case AArch64::BSL_ZZZZ:
+    case AArch64::BSL1N_ZZZZ:
+    case AArch64::BSL2N_ZZZZ:
+    case AArch64::NBSL_ZZZZ:
+    case AArch64::SSRA_ZZI_B:
+    case AArch64::SSRA_ZZI_H:
+    case AArch64::SSRA_ZZI_S:
+    case AArch64::SSRA_ZZI_D:
+    case AArch64::USRA_ZZI_B:
+    case AArch64::USRA_ZZI_H:
+    case AArch64::USRA_ZZI_S:
+    case AArch64::USRA_ZZI_D:
+    case AArch64::SRSRA_ZZI_B:
+    case AArch64::SRSRA_ZZI_H:
+    case AArch64::SRSRA_ZZI_S:
+    case AArch64::SRSRA_ZZI_D:
+    case AArch64::URSRA_ZZI_B:
+    case AArch64::URSRA_ZZI_H:
+    case AArch64::URSRA_ZZI_S:
+    case AArch64::URSRA_ZZI_D:
+    case AArch64::EXT_ZZI:
+    case AArch64::CADD_ZZI_B:
+    case AArch64::CADD_ZZI_H:
+    case AArch64::CADD_ZZI_S:
+    case AArch64::CADD_ZZI_D:
+    case AArch64::SQCADD_ZZI_B:
+    case AArch64::SQCADD_ZZI_H:
+    case AArch64::SQCADD_ZZI_S:
+    case AArch64::SQCADD_ZZI_D:
+    case AArch64::CMLA_ZZZ_B:
+    case AArch64::CMLA_ZZZ_H:
+    case AArch64::CMLA_ZZZ_S:
+    case AArch64::CMLA_ZZZ_D:
+    case AArch64::SMLALB_ZZZ_H:
+    case AArch64::SMLALB_ZZZ_S:
+    case AArch64::SMLALB_ZZZ_D:
+    case AArch64::SMLALT_ZZZ_H:
+    case AArch64::SMLALT_ZZZ_S:
+    case AArch64::SMLALT_ZZZ_D:
+    case AArch64::SMLSLB_ZZZ_H:
+    case AArch64::SMLSLB_ZZZ_S:
+    case AArch64::SMLSLB_ZZZ_D:
+    case AArch64::SMLSLT_ZZZ_H:
+    case AArch64::SMLSLT_ZZZ_S:
+    case AArch64::SMLSLT_ZZZ_D:
+    case AArch64::UMLSLB_ZZZ_H:
+    case AArch64::UMLSLB_ZZZ_S:
+    case AArch64::UMLSLB_ZZZ_D:
+    case AArch64::UMLSLT_ZZZ_H:
+    case AArch64::UMLSLT_ZZZ_S:
+    case AArch64::UMLSLT_ZZZ_D:
+    case AArch64::SQDMLALBT_ZZZ_H:
+    case AArch64::SQDMLALBT_ZZZ_S:
+    case AArch64::SQDMLALBT_ZZZ_D:
+    case AArch64::SQDMLSLBT_ZZZ_H:
+    case AArch64::SQDMLSLBT_ZZZ_S:
+    case AArch64::SQDMLSLBT_ZZZ_D:
+    case AArch64::SQRDCMLAH_ZZZ_B:
+    case AArch64::SQRDCMLAH_ZZZ_H:
+    case AArch64::SQRDCMLAH_ZZZ_S:
+    case AArch64::SQRDCMLAH_ZZZ_D:
+    case AArch64::SQDMLALB_ZZZ_H:
+    case AArch64::SQDMLALB_ZZZ_S:
+    case AArch64::SQDMLALB_ZZZ_D:
+    case AArch64::SQDMLALT_ZZZ_H:
+    case AArch64::SQDMLALT_ZZZ_S:
+    case AArch64::SQDMLALT_ZZZ_D:
+    case AArch64::SQDMLSLB_ZZZ_H:
+    case AArch64::SQDMLSLB_ZZZ_S:
+    case AArch64::SQDMLSLB_ZZZ_D:
+    case AArch64::SQDMLSLT_ZZZ_H:
+    case AArch64::SQDMLSLT_ZZZ_S:
+    case AArch64::SQDMLSLT_ZZZ_D:
+    case AArch64::SQRDMLAH_ZZZ_B:
+    case AArch64::SQRDMLAH_ZZZ_H:
+    case AArch64::SQRDMLAH_ZZZ_S:
+    case AArch64::SQRDMLAH_ZZZ_D:
+    case AArch64::SQRDMLSH_ZZZ_B:
+    case AArch64::SQRDMLSH_ZZZ_H:
+    case AArch64::SQRDMLSH_ZZZ_S:
+    case AArch64::SQRDMLSH_ZZZ_D:
+    case AArch64::XAR_ZZZI_B:
+    case AArch64::XAR_ZZZI_H:
+    case AArch64::XAR_ZZZI_S:
+    case AArch64::XAR_ZZZI_D:
+    case AArch64::EOR3_ZZZZ:
+    case AArch64::BCAX_ZZZZ:
+    case AArch64::FTMAD_ZZI_H:
+    case AArch64::FTMAD_ZZI_S:
+    case AArch64::FTMAD_ZZI_D:
+      std::tie(DOPIdx, SrcIdx, Src2Idx) = std::make_tuple(1, 2, 3);
+      break;
+    case AArch64::ADD_ZI_D:
+    case AArch64::ADD_ZI_H:
+    case AArch64::ADD_ZI_S:
+    case AArch64::ADD_ZI_B:
+    case AArch64::SUB_ZI_D:
+    case AArch64::SUB_ZI_H:
+    case AArch64::SUB_ZI_S:
+    case AArch64::SUB_ZI_B:
+    case AArch64::SUBR_ZI_D:
+    case AArch64::SUBR_ZI_H:
+    case AArch64::SUBR_ZI_S:
+    case AArch64::SUBR_ZI_B:
+    case AArch64::SQADD_ZI_B:
+    case AArch64::SQADD_ZI_H:
+    case AArch64::SQADD_ZI_S:
+    case AArch64::SQADD_ZI_D:
+    case AArch64::UQADD_ZI_B:
+    case AArch64::UQADD_ZI_H:
+    case AArch64::UQADD_ZI_S:
+    case AArch64::UQADD_ZI_D:
+    case AArch64::SQSUB_ZI_B:
+    case AArch64::SQSUB_ZI_H:
+    case AArch64::SQSUB_ZI_S:
+    case AArch64::SQSUB_ZI_D:
+    case AArch64::UQSUB_ZI_B:
+    case AArch64::UQSUB_ZI_H:
+    case AArch64::UQSUB_ZI_S:
+    case AArch64::UQSUB_ZI_D:
+    case AArch64::SMAX_ZI_B:
+    case AArch64::SMAX_ZI_H:
+    case AArch64::SMAX_ZI_S:
+    case AArch64::SMAX_ZI_D:
+    case AArch64::UMAX_ZI_B:
+    case AArch64::UMAX_ZI_H:
+    case AArch64::UMAX_ZI_S:
+    case AArch64::UMAX_ZI_D:
+    case AArch64::SMIN_ZI_B:
+    case AArch64::SMIN_ZI_H:
+    case AArch64::SMIN_ZI_S:
+    case AArch64::SMIN_ZI_D:
+    case AArch64::UMIN_ZI_B:
+    case AArch64::UMIN_ZI_H:
+    case AArch64::UMIN_ZI_S:
+    case AArch64::UMIN_ZI_D:
+    case AArch64::MUL_ZI_B:
+    case AArch64::MUL_ZI_H:
+    case AArch64::MUL_ZI_S:
+    case AArch64::MUL_ZI_D:
+      std::tie(DOPIdx, SrcIdx, Src2Idx) = std::make_tuple(1, 2, 3);
+      break;
+    case AArch64::AND_ZI:
+    case AArch64::EOR_ZI:
+    case AArch64::ORR_ZI:
+      std::tie(DOPIdx, SrcIdx) = std::make_tuple(1, 2);
+      break;
+    default:
+      return false;
+    }
+    break;
+  default:
+    llvm_unreachable("Unsupported Destructive Operand type.");
+  }
+  if (UseRev) {
+    int NewOpcode;
+    if ((NewOpcode = AArch64::getSVERevInstr(Opcode)) != -1)
+      Opcode = NewOpcode;
+  }
+
+  MachineInstrBuilder PRFX, DOP;
+  MachineBasicBlock::iterator insertPos;
+  if (IsMoveOrr)
+    insertPos = DefUseMBBI;
+  else
+    insertPos = MovMBBI;
+  PRFX =
+      BuildMI(MBB, insertPos, MI.getDebugLoc(), TII->get(AArch64::MOVPRFX_ZZ))
+          .addReg(CopyDstReg, RegState::Define)
+          .addReg(CopySrcReg);
+  DOPIdx = 0;
+
+  DOP = BuildMI(MBB, insertPos, DefUseMI.getDebugLoc(), TII->get(Opcode))
+            .addReg(
+                DefUseDstReg,
+                RegState::Define | getDeadRegState(DstIsDead) |
+                    getRenamableRegState(DefUseMI.getOperand(0).isRenamable()));
+  DOP.setMIFlags(DefUseMI.getFlags());
+
+  switch (DType) {
+  case AArch64::DestructiveUnaryPassthru:
+    DOP.addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+       .add(DefUseMI.getOperand(PredIdx))
+       .add(DefUseMI.getOperand(SrcIdx));
+    break;
+  case AArch64::DestructiveBinary:
+  case AArch64::DestructiveBinaryImm:
+  case AArch64::DestructiveBinaryComm:
+  case AArch64::DestructiveBinaryCommWithRev:
+    DOP.add(DefUseMI.getOperand(PredIdx))
+       .addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+       .add(DefUseMI.getOperand(SrcIdx));
+    break;
+  case AArch64::DestructiveTernaryCommWithRev:
+    DOP.add(DefUseMI.getOperand(PredIdx))
+       .addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+       .add(DefUseMI.getOperand(SrcIdx))
+       .add(DefUseMI.getOperand(Src2Idx));
+    break;
+  case AArch64::DestructiveOther:
+    switch (Opcode) {
+    default:
+      return false;
+    case AArch64::FMAD_ZPmZZ_D:
+    case AArch64::FMAD_ZPmZZ_H:
+    case AArch64::FMAD_ZPmZZ_S:
+    case AArch64::FMSB_ZPmZZ_D:
+    case AArch64::FMSB_ZPmZZ_H:
+    case AArch64::FMSB_ZPmZZ_S:
+    case AArch64::MAD_ZPmZZ_B:
+    case AArch64::MAD_ZPmZZ_D:
+    case AArch64::MAD_ZPmZZ_H:
+    case AArch64::MAD_ZPmZZ_S:
+    case AArch64::MLA_ZPmZZ_B:
+    case AArch64::MLA_ZPmZZ_D:
+    case AArch64::MLA_ZPmZZ_H:
+    case AArch64::MLA_ZPmZZ_S:
+    case AArch64::MLS_ZPmZZ_B:
+    case AArch64::MLS_ZPmZZ_D:
+    case AArch64::MLS_ZPmZZ_H:
+    case AArch64::MLS_ZPmZZ_S:
+    case AArch64::MSB_ZPmZZ_B:
+    case AArch64::MSB_ZPmZZ_D:
+    case AArch64::MSB_ZPmZZ_H:
+    case AArch64::MSB_ZPmZZ_S:
+    case AArch64::FNMAD_ZPmZZ_H:
+    case AArch64::FNMAD_ZPmZZ_S:
+    case AArch64::FNMAD_ZPmZZ_D:
+    case AArch64::FNMSB_ZPmZZ_H:
+    case AArch64::FNMSB_ZPmZZ_S: 
+    case AArch64::FNMSB_ZPmZZ_D:
+      DOP.add(DefUseMI.getOperand(PredIdx))
+         .addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+         .add(DefUseMI.getOperand(SrcIdx))
+         .add(DefUseMI.getOperand(Src2Idx));
+      break;
+    case AArch64::FCMLA_ZPmZZ_H:
+    case AArch64::FCMLA_ZPmZZ_S:
+    case AArch64::FCMLA_ZPmZZ_D:
+      DOP.add(DefUseMI.getOperand(PredIdx))
+         .addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+         .add(DefUseMI.getOperand(SrcIdx))
+         .add(DefUseMI.getOperand(Src2Idx))
+         .add(DefUseMI.getOperand(Src3Idx));
+      break;
+    case AArch64::SHADD_ZPmZ_B:
+    case AArch64::SHADD_ZPmZ_H:
+    case AArch64::SHADD_ZPmZ_S:
+    case AArch64::SHADD_ZPmZ_D:
+    case AArch64::UHADD_ZPmZ_B:
+    case AArch64::UHADD_ZPmZ_H:
+    case AArch64::UHADD_ZPmZ_S:
+    case AArch64::UHADD_ZPmZ_D:
+    case AArch64::SHSUB_ZPmZ_B:
+    case AArch64::SHSUB_ZPmZ_H:
+    case AArch64::SHSUB_ZPmZ_S:
+    case AArch64::SHSUB_ZPmZ_D:
+    case AArch64::UHSUB_ZPmZ_B:
+    case AArch64::UHSUB_ZPmZ_H:
+    case AArch64::UHSUB_ZPmZ_S:
+    case AArch64::UHSUB_ZPmZ_D:
+    case AArch64::SHSUBR_ZPmZ_B:
+    case AArch64::SHSUBR_ZPmZ_H:
+    case AArch64::SHSUBR_ZPmZ_S:
+    case AArch64::SHSUBR_ZPmZ_D:
+    case AArch64::UHSUBR_ZPmZ_B:
+    case AArch64::UHSUBR_ZPmZ_H:
+    case AArch64::UHSUBR_ZPmZ_S:
+    case AArch64::UHSUBR_ZPmZ_D:
+    case AArch64::SRHADD_ZPmZ_B:
+    case AArch64::SRHADD_ZPmZ_H:
+    case AArch64::SRHADD_ZPmZ_S:
+    case AArch64::SRHADD_ZPmZ_D:
+    case AArch64::URHADD_ZPmZ_B:
+    case AArch64::URHADD_ZPmZ_H:
+    case AArch64::URHADD_ZPmZ_S:
+    case AArch64::URHADD_ZPmZ_D:
+    case AArch64::SQADD_ZPmZ_B:
+    case AArch64::SQADD_ZPmZ_H:
+    case AArch64::SQADD_ZPmZ_S:
+    case AArch64::SQADD_ZPmZ_D:
+    case AArch64::UQADD_ZPmZ_B:
+    case AArch64::UQADD_ZPmZ_H:
+    case AArch64::UQADD_ZPmZ_S:
+    case AArch64::UQADD_ZPmZ_D:
+    case AArch64::SQSUB_ZPmZ_B:
+    case AArch64::SQSUB_ZPmZ_H:
+    case AArch64::SQSUB_ZPmZ_S:
+    case AArch64::SQSUB_ZPmZ_D:
+    case AArch64::UQSUB_ZPmZ_B:
+    case AArch64::UQSUB_ZPmZ_H:
+    case AArch64::UQSUB_ZPmZ_S:
+    case AArch64::UQSUB_ZPmZ_D:
+    case AArch64::SUQADD_ZPmZ_B:
+    case AArch64::SUQADD_ZPmZ_H:
+    case AArch64::SUQADD_ZPmZ_S:
+    case AArch64::SUQADD_ZPmZ_D:
+    case AArch64::USQADD_ZPmZ_B:
+    case AArch64::USQADD_ZPmZ_H:
+    case AArch64::USQADD_ZPmZ_S:
+    case AArch64::USQADD_ZPmZ_D:
+    case AArch64::SQSUBR_ZPmZ_B:
+    case AArch64::SQSUBR_ZPmZ_H:
+    case AArch64::SQSUBR_ZPmZ_S:
+    case AArch64::SQSUBR_ZPmZ_D:
+    case AArch64::UQSUBR_ZPmZ_B:
+    case AArch64::UQSUBR_ZPmZ_H:
+    case AArch64::UQSUBR_ZPmZ_S:
+    case AArch64::UQSUBR_ZPmZ_D:
+    case AArch64::ADDP_ZPmZ_B:
+    case AArch64::ADDP_ZPmZ_H:
+    case AArch64::ADDP_ZPmZ_S:
+    case AArch64::ADDP_ZPmZ_D:
+    case AArch64::SADALP_ZPmZ_H:
+    case AArch64::SADALP_ZPmZ_S:
+    case AArch64::SADALP_ZPmZ_D:
+    case AArch64::UADALP_ZPmZ_H: 
+    case AArch64::UADALP_ZPmZ_S:
+    case AArch64::UADALP_ZPmZ_D:
+    case AArch64::SMAXP_ZPmZ_B:
+    case AArch64::SMAXP_ZPmZ_H:
+    case AArch64::SMAXP_ZPmZ_S:
+    case AArch64::SMAXP_ZPmZ_D:
+    case AArch64::UMAXP_ZPmZ_B:
+    case AArch64::UMAXP_ZPmZ_H:
+    case AArch64::UMAXP_ZPmZ_S:
+    case AArch64::UMAXP_ZPmZ_D:
+    case AArch64::SMINP_ZPmZ_B:
+    case AArch64::SMINP_ZPmZ_H:
+    case AArch64::SMINP_ZPmZ_S:
+    case AArch64::SMINP_ZPmZ_D:
+    case AArch64::UMINP_ZPmZ_B:
+    case AArch64::UMINP_ZPmZ_H:
+    case AArch64::UMINP_ZPmZ_S:
+    case AArch64::UMINP_ZPmZ_D:
+    case AArch64::FABD_ZPmZ_H:
+    case AArch64::FABD_ZPmZ_S:
+    case AArch64::FABD_ZPmZ_D:
+    case AArch64::FADDP_ZPmZZ_H:
+    case AArch64::FADDP_ZPmZZ_S:
+    case AArch64::FADDP_ZPmZZ_D:
+    case AArch64::FCADD_ZPmZ_H:
+    case AArch64::FCADD_ZPmZ_S:
+    case AArch64::FCADD_ZPmZ_D:
+    case AArch64::FMAXNMP_ZPmZZ_H:
+    case AArch64::FMAXNMP_ZPmZZ_S:
+    case AArch64::FMAXNMP_ZPmZZ_D:
+    case AArch64::FMINNMP_ZPmZZ_H:
+    case AArch64::FMINNMP_ZPmZZ_S:
+    case AArch64::FMINNMP_ZPmZZ_D:
+    case AArch64::FMAXP_ZPmZZ_H:
+    case AArch64::FMAXP_ZPmZZ_S:
+    case AArch64::FMAXP_ZPmZZ_D:
+    case AArch64::FMINP_ZPmZZ_H:
+    case AArch64::FMINP_ZPmZZ_S:
+    case AArch64::FMINP_ZPmZZ_D:
+    case AArch64::FSCALE_ZPmZ_H:
+    case AArch64::FSCALE_ZPmZ_S:
+    case AArch64::FSCALE_ZPmZ_D:
+    case AArch64::FMULX_ZPmZ_H:
+    case AArch64::FMULX_ZPmZ_S:
+    case AArch64::FMULX_ZPmZ_D:
+      DOP.add(DefUseMI.getOperand(PredIdx))
+         .addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+         .add(DefUseMI.getOperand(SrcIdx));
+      break;
+    case AArch64::SQABS_ZPmZ_B:
+    case AArch64::SQABS_ZPmZ_H:
+    case AArch64::SQABS_ZPmZ_S:
+    case AArch64::SQABS_ZPmZ_D:
+    case AArch64::SQNEG_ZPmZ_B:
+    case AArch64::SQNEG_ZPmZ_H:
+    case AArch64::SQNEG_ZPmZ_S:
+    case AArch64::SQNEG_ZPmZ_D:
+      DOP.addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+         .add(DefUseMI.getOperand(PredIdx))
+         .add(DefUseMI.getOperand(SrcIdx));
+      break;
+    case AArch64::SABALB_ZZZ_D:
+    case AArch64::SABALB_ZZZ_H:
+    case AArch64::SABALB_ZZZ_S:
+    case AArch64::SABALT_ZZZ_D:
+    case AArch64::SABALT_ZZZ_H:
+    case AArch64::SABALT_ZZZ_S:
+    case AArch64::UABALB_ZZZ_D:
+    case AArch64::UABALB_ZZZ_H:
+    case AArch64::UABALB_ZZZ_S:
+    case AArch64::UABALT_ZZZ_D:
+    case AArch64::UABALT_ZZZ_H:
+    case AArch64::UABALT_ZZZ_S:
+    case AArch64::SABA_ZZZ_D:
+    case AArch64::SABA_ZZZ_H:
+    case AArch64::SABA_ZZZ_S:
+    case AArch64::SABA_ZZZ_B:
+    case AArch64::ADCLB_ZZZ_S:
+    case AArch64::ADCLB_ZZZ_D:
+    case AArch64::ADCLT_ZZZ_S:
+    case AArch64::ADCLT_ZZZ_D:
+    case AArch64::SBCLB_ZZZ_S:
+    case AArch64::SBCLB_ZZZ_D:
+    case AArch64::SBCLT_ZZZ_S:
+    case AArch64::SBCLT_ZZZ_D:
+    case AArch64::BSL_ZZZZ:
+    case AArch64::BSL1N_ZZZZ:
+    case AArch64::BSL2N_ZZZZ:
+    case AArch64::NBSL_ZZZZ:
+    case AArch64::SSRA_ZZI_B:
+    case AArch64::SSRA_ZZI_H:
+    case AArch64::SSRA_ZZI_S:
+    case AArch64::SSRA_ZZI_D:
+    case AArch64::USRA_ZZI_B:
+    case AArch64::USRA_ZZI_H:
+    case AArch64::USRA_ZZI_S:
+    case AArch64::USRA_ZZI_D:
+    case AArch64::SRSRA_ZZI_B:
+    case AArch64::SRSRA_ZZI_H:
+    case AArch64::SRSRA_ZZI_S:
+    case AArch64::SRSRA_ZZI_D:
+    case AArch64::URSRA_ZZI_B:
+    case AArch64::URSRA_ZZI_H:
+    case AArch64::URSRA_ZZI_S:
+    case AArch64::URSRA_ZZI_D:
+    case AArch64::EXT_ZZI:
+    case AArch64::CADD_ZZI_B:
+    case AArch64::CADD_ZZI_H:
+    case AArch64::CADD_ZZI_S:
+    case AArch64::CADD_ZZI_D:
+    case AArch64::SQCADD_ZZI_B:
+    case AArch64::SQCADD_ZZI_H:
+    case AArch64::SQCADD_ZZI_S:
+    case AArch64::SQCADD_ZZI_D:
+    case AArch64::CMLA_ZZZ_B:
+    case AArch64::CMLA_ZZZ_H:
+    case AArch64::CMLA_ZZZ_S:
+    case AArch64::CMLA_ZZZ_D:
+    case AArch64::SMLALB_ZZZ_H:
+    case AArch64::SMLALB_ZZZ_S:
+    case AArch64::SMLALB_ZZZ_D:
+    case AArch64::SMLALT_ZZZ_H:
+    case AArch64::SMLALT_ZZZ_S:
+    case AArch64::SMLALT_ZZZ_D:
+    case AArch64::SMLSLB_ZZZ_H:
+    case AArch64::SMLSLB_ZZZ_S:
+    case AArch64::SMLSLB_ZZZ_D:
+    case AArch64::SMLSLT_ZZZ_H:
+    case AArch64::SMLSLT_ZZZ_S:
+    case AArch64::SMLSLT_ZZZ_D:
+    case AArch64::UMLSLB_ZZZ_H:
+    case AArch64::UMLSLB_ZZZ_S:
+    case AArch64::UMLSLB_ZZZ_D:
+    case AArch64::UMLSLT_ZZZ_H:
+    case AArch64::UMLSLT_ZZZ_S:
+    case AArch64::UMLSLT_ZZZ_D:
+    case AArch64::SQDMLALBT_ZZZ_H:
+    case AArch64::SQDMLALBT_ZZZ_S:
+    case AArch64::SQDMLALBT_ZZZ_D:
+    case AArch64::SQDMLSLBT_ZZZ_H:
+    case AArch64::SQDMLSLBT_ZZZ_S:
+    case AArch64::SQDMLSLBT_ZZZ_D:
+    case AArch64::SQRDCMLAH_ZZZ_B:
+    case AArch64::SQRDCMLAH_ZZZ_H:
+    case AArch64::SQRDCMLAH_ZZZ_S:
+    case AArch64::SQRDCMLAH_ZZZ_D:
+    case AArch64::SQDMLALB_ZZZ_H:
+    case AArch64::SQDMLALB_ZZZ_S:
+    case AArch64::SQDMLALB_ZZZ_D:
+    case AArch64::SQDMLALT_ZZZ_H:
+    case AArch64::SQDMLALT_ZZZ_S:
+    case AArch64::SQDMLALT_ZZZ_D:
+    case AArch64::SQDMLSLB_ZZZ_H:
+    case AArch64::SQDMLSLB_ZZZ_S:
+    case AArch64::SQDMLSLB_ZZZ_D:
+    case AArch64::SQDMLSLT_ZZZ_H:
+    case AArch64::SQDMLSLT_ZZZ_S:
+    case AArch64::SQDMLSLT_ZZZ_D:
+    case AArch64::SQRDMLAH_ZZZ_B:
+    case AArch64::SQRDMLAH_ZZZ_H:
+    case AArch64::SQRDMLAH_ZZZ_S:
+    case AArch64::SQRDMLAH_ZZZ_D:
+    case AArch64::SQRDMLSH_ZZZ_B:
+    case AArch64::SQRDMLSH_ZZZ_H:
+    case AArch64::SQRDMLSH_ZZZ_S:
+    case AArch64::SQRDMLSH_ZZZ_D:
+    case AArch64::XAR_ZZZI_B:
+    case AArch64::XAR_ZZZI_H:
+    case AArch64::XAR_ZZZI_S:
+    case AArch64::XAR_ZZZI_D:
+    case AArch64::EOR3_ZZZZ:
+    case AArch64::BCAX_ZZZZ:
+    case AArch64::FTMAD_ZZI_H:
+    case AArch64::FTMAD_ZZI_S:
+    case AArch64::FTMAD_ZZI_D:
+      DOP.addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+         .add(DefUseMI.getOperand(SrcIdx))
+         .add(DefUseMI.getOperand(Src2Idx));
+      break;
+    case AArch64::ADD_ZI_B:
+    case AArch64::ADD_ZI_D:
+    case AArch64::ADD_ZI_H:
+    case AArch64::ADD_ZI_S:
+    case AArch64::SUB_ZI_B:
+    case AArch64::SUB_ZI_D:
+    case AArch64::SUB_ZI_H:
+    case AArch64::SUB_ZI_S:
+    case AArch64::SUBR_ZI_B:
+    case AArch64::SUBR_ZI_H:
+    case AArch64::SUBR_ZI_S:
+    case AArch64::SUBR_ZI_D:
+    case AArch64::SQADD_ZI_B:
+    case AArch64::SQADD_ZI_H:
+    case AArch64::SQADD_ZI_S:
+    case AArch64::SQADD_ZI_D:
+    case AArch64::UQADD_ZI_B:
+    case AArch64::UQADD_ZI_H:
+    case AArch64::UQADD_ZI_S:
+    case AArch64::UQADD_ZI_D:
+    case AArch64::SQSUB_ZI_B:
+    case AArch64::SQSUB_ZI_H:
+    case AArch64::SQSUB_ZI_S:
+    case AArch64::SQSUB_ZI_D:
+    case AArch64::UQSUB_ZI_B:
+    case AArch64::UQSUB_ZI_H:
+    case AArch64::UQSUB_ZI_S:
+    case AArch64::UQSUB_ZI_D:
+    case AArch64::SMAX_ZI_B:
+    case AArch64::SMAX_ZI_H:
+    case AArch64::SMAX_ZI_S:
+    case AArch64::SMAX_ZI_D:
+    case AArch64::UMAX_ZI_B:
+    case AArch64::UMAX_ZI_H:
+    case AArch64::UMAX_ZI_S:
+    case AArch64::UMAX_ZI_D:
+    case AArch64::SMIN_ZI_B:
+    case AArch64::SMIN_ZI_H:
+    case AArch64::SMIN_ZI_S:
+    case AArch64::SMIN_ZI_D:
+    case AArch64::UMIN_ZI_B:
+    case AArch64::UMIN_ZI_H:
+    case AArch64::UMIN_ZI_S:
+    case AArch64::UMIN_ZI_D:
+    case AArch64::MUL_ZI_B:
+    case AArch64::MUL_ZI_S:
+    case AArch64::MUL_ZI_D:
+    case AArch64::MUL_ZI_H:
+      DOP.addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+         .add(DefUseMI.getOperand(SrcIdx))
+         .add(DefUseMI.getOperand(Src2Idx));
+      break;
+    case AArch64::AND_ZI:
+    case AArch64::EOR_ZI:
+    case AArch64::ORR_ZI:
+      DOP.addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+         .add(DefUseMI.getOperand(SrcIdx));
+      break;
+    }
+    break;
+  }
+
+  if (IsMoveOrr) {
+    finalizeBundle(MBB, PRFX->getIterator(), DefUseMBBI->getIterator());
+    transferImpOps(MI, PRFX, DOP);
+  } else {
+    finalizeBundle(MBB, PRFX->getIterator(), MovMBBI->getIterator());
+    transferImpOps(DefUseMI, PRFX, DOP);
+  }
+  RemoveMIs.insert(&DefUseMI);
+  MI.eraseFromParent();
+  return true;
+}
+
+bool AArch64ExpandPseudo::IsInSpecificInstOpcList(
+    ArrayRef<unsigned> &SpecificInstOpcList, unsigned UseOpcode) {
+  assert(llvm::is_sorted(SpecificInstOpcList));
+  const unsigned *Opc = llvm::lower_bound(SpecificInstOpcList, UseOpcode);
+  if (Opc != SpecificInstOpcList.end() && *Opc == UseOpcode)
+    return true;
+  return false;
+}
+
+bool AArch64ExpandPseudo::expandMI(MachineBasicBlock &MBB,
+                                   MachineBasicBlock::iterator MBBI,
+                                   MachineBasicBlock::iterator &NextMBBI,
+                                   SmallPtrSet<MachineInstr *, 16> &RemoveMIs) {
+  if (expandMI(MBB, MBBI, NextMBBI))
+    return true;
+
+  MachineInstr &MI = *MBBI;
+  const TargetRegisterInfo *TRI =
+      MBB.getParent()->getSubtarget().getRegisterInfo();
+  unsigned Opcode = MI.getOpcode();
+  if (TransformMovToMovprfx &&
+      MBB.getParent()->getSubtarget().getCPU() == "hip12" &&
+      Opcode == AArch64::ORR_ZZZ && !MI.getOperand(0).isDead() &&
+      MI.getOperand(1).getReg() == MI.getOperand(2).getReg()) {
+    MCPhysReg CopyDstReg = MI.getOperand(0).getReg();
+    MCPhysReg CopySrcReg = MI.getOperand(1).getReg();
+
+    MachineBasicBlock::iterator NMBBI = std::next(MBBI), E = MBB.end();
+    unsigned TraversalCount = 0;
+    bool MovOrrInst = true;
+    while (NMBBI != E) {
+      if (TraversalCount > TraversalInstThreshold)
+        return false;
+      if (RemoveMIs.count(&*NMBBI)) {
+        NMBBI++;
+        continue;
+      }
+
+      TraversalCount++;
+      MachineInstr &NMI = *NMBBI;
+
+      bool FindSameCopyDstReg = false;
+      unsigned SameCopyDstRegNum = 0;
+      for (unsigned i = 0; i < NMI.getNumOperands(); i++) {
+        if (!NMI.getOperand(i).isReg())
+          continue;
+        if (NMI.getOperand(i).isDef() &&
+            TRI->regsOverlap(NMI.getOperand(i).getReg(), CopySrcReg))
+          MovOrrInst = false;
+        if (NMI.getOperand(i).getReg() == CopyDstReg) {
+          SameCopyDstRegNum++;
+          FindSameCopyDstReg = true;
+        }
+      }
+
+      if (!FindSameCopyDstReg) {
+        NMBBI++;
+        continue;
+      }
+
+      if (!MovOrrInst) {
+        for (unsigned i = 0; i < NMI.getNumOperands(); i++) {
+          if (!NMI.getOperand(i).isReg())
+            continue;
+          MCPhysReg OperandReg = NMI.getOperand(i).getReg();
+          MachineBasicBlock::iterator I = std::next(MBBI);
+          for (; I != NMBBI; I++) {
+            for (unsigned j = 0; j < I->getNumOperands(); j++) {
+              if (!I->getOperand(j).isReg())
+                continue;
+              if (I->getOperand(j).isDef() &&
+                  TRI->regsOverlap(I->getOperand(j).getReg(), OperandReg))
+                return false;
+            }
+          }
+        }
+      }
+
+      unsigned UseOpcode = NMI.getOpcode();
+      uint64_t DType =
+          TII->get(UseOpcode).TSFlags & AArch64::DestructiveInstTypeMask;
+      if (DType == AArch64::NotDestructive)
+        return false;
+      if (DType == AArch64::DestructiveBinary)
+        assert(CopyDstReg != NMI.getOperand(3).getReg());
+
+      if (DType == AArch64::DestructiveOther) {
+        if (NMI.getNumOperands() > 4 &&
+            ((NMI.getOperand(3).isReg() &&
+              CopyDstReg == NMI.getOperand(3).getReg()) ||
+             (NMI.getOperand(4).isReg() &&
+              CopyDstReg == NMI.getOperand(4).getReg())))
+          return false;
+      }
+
+      if (SameCopyDstRegNum != 2 || !NMI.getOperand(0).isReg() ||
+          !NMI.getOperand(0).isTied() || NMI.findTiedOperandIdx(0) < 1 ||
+          NMI.getOperand(0).getReg() != CopyDstReg)
+        return false;
+      return optimizeMI(MI, NMI, MBB, MBBI, NMBBI, RemoveMIs, MovOrrInst);
+    }
+    return false;
+  }
+  return false;
+}
+
 /// Iterate over the instructions in basic block MBB and expand any
 /// pseudo instructions.  Return true if anything was modified.
 bool AArch64ExpandPseudo::expandMBB(MachineBasicBlock &MBB) {
   bool Modified = false;
 
+  SmallPtrSet<MachineInstr *, 16> RemoveMIs;
   MachineBasicBlock::iterator MBBI = MBB.begin(), E = MBB.end();
   while (MBBI != E) {
     MachineBasicBlock::iterator NMBBI = std::next(MBBI);
-    Modified |= expandMI(MBB, MBBI, NMBBI);
+    if (!RemoveMIs.count(&*MBBI))
+      Modified |= expandMI(MBB, MBBI, NMBBI, RemoveMIs);
     MBBI = NMBBI;
   }
+
+  for (MachineInstr *MI : RemoveMIs)
+    MI->eraseFromParent();
 
   return Modified;
 }
