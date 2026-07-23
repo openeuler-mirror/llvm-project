@@ -1375,10 +1375,10 @@ define void @merge_zr32_2_offset(ptr %p) {
 ; CHECK-LABEL: merge_zr32_2_offset:
 ; CHECK: // %entry
 ; NOSTRICTALIGN-NEXT: stp xzr, xzr, [x{{[0-9]+}}, #504]
-; STRICTALIGN-NEXT: str wzr, [x{{[0-9]+}}, #504]
-; STRICTALIGN-NEXT: str wzr, [x{{[0-9]+}}, #508]
-; STRICTALIGN-NEXT: str wzr, [x{{[0-9]+}}, #512]
-; STRICTALIGN-NEXT: str wzr, [x{{[0-9]+}}, #516]
+; STRICTALIGN-NEXT: add x{{[0-9]+}}, x{{[0-9]+}}, #504
+; STRICTALIGN-NEXT: stp wzr, wzr, [x{{[0-9]+}}]
+; STRICTALIGN-NEXT: add x{{[0-9]+}}, x{{[0-9]+}}, #512
+; STRICTALIGN-NEXT: stp wzr, wzr, [x{{[0-9]+}}]
 ; CHECK-NEXT: ret
 entry:
   %p0 = getelementptr i32, ptr %p, i32 126
@@ -1400,10 +1400,10 @@ define void @no_merge_zr32_2_offset(ptr %p) {
 ; CHECK: // %entry
 ; NOSTRICTALIGN-NEXT: movi v[[REG:[0-9]]].2d, #0000000000000000
 ; NOSTRICTALIGN-NEXT: str q[[REG]], [x{{[0-9]+}}, #4096]
-; STRICTALIGN-NEXT: str wzr, [x{{[0-9]+}}, #4096]
-; STRICTALIGN-NEXT: str wzr, [x{{[0-9]+}}, #4100]
+; STRICTALIGN-NEXT: add x{{[0-9]+}}, x{{[0-9]+}}, #1, lsl #12
 ; STRICTALIGN-NEXT: str wzr, [x{{[0-9]+}}, #4104]
 ; STRICTALIGN-NEXT: str wzr, [x{{[0-9]+}}, #4108]
+; STRICTALIGN-NEXT: stp wzr, wzr, [x{{[0-9]+}}]
 ; CHECK-NEXT: ret
 entry:
   %p0 = getelementptr i32, ptr %p, i32 1024

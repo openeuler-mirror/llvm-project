@@ -104,6 +104,13 @@ public:
   /// Returns whether the instruction is a paired load/store.
   static bool isPairedLdSt(const MachineInstr &MI);
 
+  /// Returns true if the instruction's memory references are safe to pair
+  /// into an LDP/STP on AArch64.  Relaxed (monotonic) atomic loads/stores
+  /// are safe — they produce regular LDR/STR and LDP/STP preserves
+  /// per-access atomicity (each access is still individually atomic).
+  /// Volatile and acquire/release/seq_cst atomics are NOT safe.
+  static bool isSafeToPairMemRef(const MachineInstr &MI);
+
   /// Returns the base register operator of a load/store.
   static const MachineOperand &getLdStBaseOp(const MachineInstr &MI);
 

@@ -35,17 +35,33 @@
 // 5. %reg = INSERT_SUBREG %reg(tied-def 0), %subreg, subidx
 //     ==> %reg:subidx =  SUBREG_TO_REG 0, %subreg, subidx
 //
+// 10. Coalesce sibling ADDXri/SUBXri base-materializations that share a common
+//     source register with nearby constant offsets, rewriting subsequent
+//     loads/stores to use one shared base with an adjusted immediate offset.
+//     This recovers a common base for far-offset accesses (positive or
+//     negative) that ISel could not fold into a single immediate, enabling
+//     LDP/STP formation by the load/store optimizer.
+//
 //===----------------------------------------------------------------------===//
 
 #include "AArch64ExpandImm.h"
 #include "AArch64InstrInfo.h"
 #include "MCTargetDesc/AArch64AddressingModes.h"
+#include "llvm/ADT/MapVector.h"
 #include "llvm/CodeGen/MachineDominators.h"
 #include "llvm/CodeGen/MachineLoopInfo.h"
+#include "llvm/Support/CommandLine.h"
 
 using namespace llvm;
 
 #define DEBUG_TYPE "aarch64-mi-peephole-opt"
+
+// When enabled, the pass coalesces sibling ADDXri/SUBXri base-materializations
+// that share a common source register with nearby constant offsets, so that
+// subsequent load/store pairing can form LDP/STP even for far offsets (positive
+// or negative) that ISel could not fold into a single immediate.
+static cl::opt<bool> EnableBaseAddressCSE("aarch64-base-address-cse",
+                                          cl::init(true), cl::Hidden);
 
 namespace {
 
@@ -99,6 +115,12 @@ struct AArch64MIPeepholeOpt : public MachineFunctionPass {
   bool visitAND(unsigned Opc, MachineInstr &MI);
   bool visitORR(MachineInstr &MI);
   bool visitINSERT(MachineInstr &MI);
+
+  /// Coalesce sibling ADDXri/SUBXri base-materializations sharing a common
+  /// source register so that their loads/stores use one shared base.  See the
+  /// header comment, item 10.
+  bool shareBaseAddresses(MachineBasicBlock &MBB);
+
   bool runOnMachineFunction(MachineFunction &MF) override;
 
   StringRef getPassName() const override {
@@ -523,6 +545,128 @@ bool AArch64MIPeepholeOpt::splitTwoPartImm(
   return true;
 }
 
+bool AArch64MIPeepholeOpt::shareBaseAddresses(MachineBasicBlock &MBB) {
+  if (!EnableBaseAddressCSE)
+    return false;
+
+  bool Changed = false;
+
+  // Give each instruction a position index so we can check that a base def
+  // dominates the load/store that will reuse it (both are in this MBB).
+  DenseMap<MachineInstr *, unsigned> Pos;
+  unsigned Idx = 0;
+  for (MachineInstr &MI : MBB.instrs())
+    Pos[&MI] = Idx++;
+
+  // A candidate base materialization: ADDXri/SUBXri %src, #C, #0 (shift 0)
+  // whose result is used by exactly one scaled, immediate-offset load/store.
+  struct Cand {
+    MachineInstr *DefMI;
+    Register SrcReg;
+    unsigned Opc; // ADDXri or SUBXri
+    int64_t C;    // immediate operand value
+    Register BaseReg;
+    MachineInstr *UserMI; // the single load/store user
+    int Scale;            // getMemScale(UserMI)
+    int64_t OldOff;       // current scaled offset of UserMI
+  };
+  SmallVector<Cand, 8> Cands;
+  using Key = std::pair<Register, unsigned>; // (SrcReg, Opc)
+  MapVector<Key, SmallVector<unsigned, 4>> Groups;
+
+  for (MachineInstr &MI : MBB.instrs()) {
+    unsigned Opc = MI.getOpcode();
+    if (Opc != AArch64::ADDXri && Opc != AArch64::SUBXri)
+      continue;
+    if (!MI.getOperand(2).isImm() || !MI.getOperand(3).isImm())
+      continue;
+    if (MI.getOperand(3).getImm() != 0) // shift must be 0 (no LSL #12)
+      continue;
+    Register SrcReg = MI.getOperand(1).getReg();
+    Register BaseReg = MI.getOperand(0).getReg();
+    if (!SrcReg.isVirtual() || !BaseReg.isVirtual())
+      continue;
+    if (!MRI->hasOneUse(BaseReg))
+      continue;
+    MachineInstr &User = *MRI->use_instr_begin(BaseReg);
+    if (!User.mayLoadOrStore())
+      continue;
+    if (AArch64InstrInfo::isPairedLdSt(User) ||
+        AArch64InstrInfo::isPreLdSt(User))
+      continue;
+    if (TII->hasUnscaledLdStOffset(User))
+      continue; // only scaled LDR/STR (unsigned immediate offset)
+    if (!AArch64InstrInfo::getLdStOffsetOp(User).isImm())
+      continue;
+    const MachineOperand &BaseOp = AArch64InstrInfo::getLdStBaseOp(User);
+    if (!BaseOp.isReg() || BaseOp.getReg() != BaseReg)
+      continue;
+    unsigned CIdx = Cands.size();
+    Cands.push_back({&MI, SrcReg, Opc, MI.getOperand(2).getImm(), BaseReg, &User,
+                     TII->getMemScale(User),
+                     AArch64InstrInfo::getLdStOffsetOp(User).getImm()});
+    Groups[{SrcReg, Opc}].push_back(CIdx);
+  }
+
+  // Effective offset (in bytes) of a base materialization from its source:
+  // ADDXri -> +C, SUBXri -> -C.
+  auto Eff = [](const Cand &C) { return C.Opc == AArch64::ADDXri ? C.C : -C.C; };
+
+  for (auto &[K, Idxs] : Groups) {
+    if (Idxs.size() < 2)
+      continue;
+    // Pick the primary as the candidate with the smallest effective offset, so
+    // that every other base is at a non-negative byte delta from it (and thus
+    // expressible as an unsigned scaled load/store immediate).
+    unsigned PrimaryIdx = Idxs[0];
+    for (unsigned i : Idxs)
+      if (Eff(Cands[i]) < Eff(Cands[PrimaryIdx]))
+        PrimaryIdx = i;
+    const Cand &Primary = Cands[PrimaryIdx];
+    Register PrimaryBaseReg = Primary.BaseReg;
+    MachineInstr *PrimaryDef = Primary.DefMI;
+
+    for (unsigned i : Idxs) {
+      if (i == PrimaryIdx)
+        continue;
+      Cand &Sec = Cands[i];
+      int64_t Delta = Eff(Sec) - Eff(Primary); // bytes, >= 0 by construction
+      if (Delta % Sec.Scale != 0)
+        continue;
+      int64_t NewOff = Sec.OldOff + Delta / Sec.Scale;
+      if (NewOff < 0 || NewOff > 0xFFF)
+        continue;
+      // The primary def must come before this load/store (MBB dominance).
+      if (Pos[PrimaryDef] >= Pos[Sec.UserMI])
+        continue;
+      // Rewrite the load/store: base -> primary, offset -> NewOff.  We
+      // access the operands by index (rather than the const-returning
+      // getLdStBaseOp/getLdStOffsetOp) so we can mutate them.
+      bool IsPairOrPre = AArch64InstrInfo::isPairedLdSt(*Sec.UserMI) ||
+                         AArch64InstrInfo::isPreLdSt(*Sec.UserMI);
+      unsigned BaseIdx = IsPairOrPre ? 2 : 1;
+      unsigned OffIdx = IsPairOrPre ? 3 : 2;
+      MachineOperand &BaseOp = Sec.UserMI->getOperand(BaseIdx);
+      BaseOp.setReg(PrimaryBaseReg);
+      BaseOp.setIsKill(false);
+      Sec.UserMI->getOperand(OffIdx).setImm(NewOff);
+      // The primary base now reaches further; clear kill flags so later
+      // liveness analysis recomputes its live range correctly.
+      for (MachineInstr &UseMI : MRI->use_instructions(PrimaryBaseReg))
+        for (MachineOperand &MO : UseMI.operands())
+          if (MO.isReg() && MO.getReg() == PrimaryBaseReg)
+            MO.setIsKill(false);
+      // The secondary's base register now has no uses; drop its materialization.
+      LLVM_DEBUG(dbgs() << "Shared base: removed " << *Sec.DefMI
+                        << " rewrote user offset to " << NewOff << "\n");
+      Sec.DefMI->eraseFromParent();
+      Changed = true;
+    }
+  }
+
+  return Changed;
+}
+
 bool AArch64MIPeepholeOpt::runOnMachineFunction(MachineFunction &MF) {
   if (skipFunction(MF.getFunction()))
     return false;
@@ -538,6 +682,10 @@ bool AArch64MIPeepholeOpt::runOnMachineFunction(MachineFunction &MF) {
   bool Changed = false;
 
   for (MachineBasicBlock &MBB : MF) {
+    // Coalesce sibling base materializations before the local peephole
+    // visitors run, so that the resulting common-base loads/stores can be
+    // paired by the downstream load/store optimizer.
+    Changed |= shareBaseAddresses(MBB);
     for (MachineInstr &MI : make_early_inc_range(MBB)) {
       switch (MI.getOpcode()) {
       default:

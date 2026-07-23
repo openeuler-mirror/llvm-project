@@ -62,6 +62,11 @@ static cl::opt<unsigned> TBZDisplacementBits(
     "aarch64-tbz-offset-bits", cl::Hidden, cl::init(14),
     cl::desc("Restrict range of TB[N]Z instructions (DEBUG)"));
 
+static cl::opt<bool> EnableAtomicRelaxedPairing(
+    "aarch64-atomic-relaxed-pairing", cl::init(true), cl::Hidden,
+    cl::desc("Allow relaxed (monotonic) atomic loads/stores to pair into "
+             "LDP/STP"));
+
 static cl::opt<unsigned> CBZDisplacementBits(
     "aarch64-cbz-offset-bits", cl::Hidden, cl::init(19),
     cl::desc("Restrict range of CB[N]Z instructions (DEBUG)"));
@@ -2595,8 +2600,9 @@ bool AArch64InstrInfo::isCandidateToMergeOrPair(const MachineInstr &MI) const {
 
   bool IsPreLdSt = isPreLdSt(MI);
 
-  // If this is a volatile load/store, don't mess with it.
-  if (MI.hasOrderedMemoryRef())
+  // If this is a volatile or non-relaxed-atomic load/store, don't pair.
+  // Relaxed (monotonic) atomics are safe — see isSafeToPairMemRef.
+  if (!isSafeToPairMemRef(MI))
     return false;
 
   // Make sure this is a reg/fi+imm (as opposed to an address reloc).
@@ -3289,6 +3295,28 @@ bool AArch64InstrInfo::isPairedLdSt(const MachineInstr &MI) {
   case AArch64::STGPi:
     return true;
   }
+}
+
+bool AArch64InstrInfo::isSafeToPairMemRef(const MachineInstr &MI) {
+  // If there are no memory operands, conservatively assume unsafe (matching
+  // hasOrderedMemoryRef's behavior for empty memoperands).
+  if (MI.memoperands_empty())
+    return false;
+  for (const MachineMemOperand *MMO : MI.memoperands()) {
+    if (MMO->isVolatile())
+      return false;
+    AtomicOrdering Ord = MMO->getSuccessOrdering();
+    if (Ord == AtomicOrdering::NotAtomic)
+      continue;
+    // Relaxed (monotonic) atomics are safe to pair on AArch64 when the
+    // flag is enabled — they produce regular LDR/STR and LDP/STP
+    // preserves per-access atomicity.  Acquire/release/seq_cst need
+    // LDAR/STLR which LDP/STP cannot provide.
+    if (EnableAtomicRelaxedPairing && Ord == AtomicOrdering::Monotonic)
+      continue;
+    return false;
+  }
+  return true;
 }
 
 const MachineOperand &AArch64InstrInfo::getLdStBaseOp(const MachineInstr &MI) {
