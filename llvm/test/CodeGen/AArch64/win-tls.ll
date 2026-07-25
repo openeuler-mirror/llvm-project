@@ -3,6 +3,7 @@
 @tlsVar = thread_local global i32 0
 @tlsVar8 = thread_local global i8 0
 @tlsVar64 = thread_local global i64 0
+@tlsArr = thread_local global [64 x i8] zeroinitializer, align 64
 
 define i32 @getVar() {
   %1 = load i32, ptr @tlsVar
@@ -27,6 +28,20 @@ define i64 @getVar64() {
   %1 = load i64, ptr @tlsVar64
   ret i64 %1
 }
+
+; The ELF local-exec offset folding must not leak into the COFF :secrel_lo12:
+; low part, so the field offset stays on the load.
+define i64 @getField() {
+  %base = call ptr @llvm.threadlocal.address.p0(ptr @tlsArr)
+  %p = getelementptr inbounds i8, ptr %base, i64 8
+  %v = load volatile i64, ptr %p, align 8
+  %q = getelementptr inbounds i8, ptr %base, i64 16
+  %w = load volatile i64, ptr %q, align 8
+  %s = add i64 %v, %w
+  ret i64 %s
+}
+
+declare ptr @llvm.threadlocal.address.p0(ptr)
 
 ; CHECK-LABEL: getVar
 ; CHECK: adrp [[TLS_INDEX_ADDR:x[0-9]+]], _tls_index
@@ -62,3 +77,9 @@ define i64 @getVar64() {
 ; CHECK-LABEL: getVar64
 ; CHECK: add [[TLS:x[0-9]+]], [[TLS]], :secrel_hi12:tlsVar64
 ; CHECK: ldr x0, [[[TLS]], :secrel_lo12:tlsVar64]
+
+; CHECK-LABEL: getField
+; CHECK: add [[TLS:x[0-9]+]], [[TLS]], :secrel_hi12:tlsArr
+; CHECK: add [[TLS]], [[TLS]], :secrel_lo12:tlsArr
+; CHECK: ldr x{{[0-9]+}}, [[[TLS]], #8]
+; CHECK: ldr x{{[0-9]+}}, [[[TLS]], #16]

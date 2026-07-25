@@ -61,6 +61,9 @@
 //   %6:fpr128 = IMPLICIT_DEF
 //   %7:fpr128 = INSERT_SUBREG %6:fpr128(tied-def 0), killed %1:fpr64, %subreg.dsub
 //
+// 8. Fold a local-exec TLS low add into scalar load/store relocations when the
+//    TLS symbol alignment proves that the added field offset cannot carry.
+//
 //===----------------------------------------------------------------------===//
 
 #include "AArch64ExpandImm.h"
@@ -68,6 +71,7 @@
 #include "MCTargetDesc/AArch64AddressingModes.h"
 #include "llvm/CodeGen/MachineDominators.h"
 #include "llvm/CodeGen/MachineLoopInfo.h"
+#include <algorithm>
 
 using namespace llvm;
 
@@ -127,6 +131,7 @@ struct AArch64MIPeepholeOpt : public MachineFunctionPass {
   bool visitINSERT(MachineInstr &MI);
   bool visitINSviGPR(MachineInstr &MI, unsigned Opc);
   bool visitINSvi64lane(MachineInstr &MI);
+  bool visitADDlowTLS(MachineInstr &MI);
   bool runOnMachineFunction(MachineFunction &MF) override;
 
   StringRef getPassName() const override {
@@ -278,6 +283,80 @@ bool AArch64MIPeepholeOpt::visitORR(MachineInstr &MI) {
   LLVM_DEBUG(dbgs() << "Removed: " << MI << "\n");
   MI.eraseFromParent();
 
+  return true;
+}
+
+bool AArch64MIPeepholeOpt::visitADDlowTLS(MachineInstr &MI) {
+  // The flags below are also used by the COFF :secrel_lo12: low part, whose
+  // relocations behave differently, and the reasoning here is specific to the
+  // ELF local-exec TPREL relocations, so restrict this to ELF.
+  if (!MI.getMF()->getTarget().getTargetTriple().isOSBinFormatELF())
+    return false;
+
+  MachineOperand &Low = MI.getOperand(2);
+  if (!Low.isGlobal() || Low.getOffset() != 0 ||
+      Low.getTargetFlags() !=
+          (AArch64II::MO_TLS | AArch64II::MO_PAGEOFF | AArch64II::MO_NC))
+    return false;
+
+  // The high add carries bits [23:12] of TPREL(S) and the folded access
+  // carries bits [11:0] of TPREL(S+C), so C must not carry out of bit 11.
+  // TPREL(S) is a multiple of the alignment A of S, hence its low 12 bits are
+  // at most 4096 - A and any C < min(A, 4096) is safe.
+  Align Alignment =
+      Low.getGlobal()->getPointerAlignment(MI.getMF()->getDataLayout());
+  uint64_t MaxFoldOffset = std::min<uint64_t>(Alignment.value(), 4096);
+
+  Register DstReg = MI.getOperand(0).getReg();
+  SmallVector<std::pair<MachineInstr *, uint64_t>, 4> FoldableUses;
+  for (MachineInstr &UseMI : MRI->use_nodbg_instructions(DstReg)) {
+    if (UseMI.getNumExplicitOperands() != 3 || !UseMI.getOperand(1).isReg() ||
+        UseMI.getOperand(1).getReg() != DstReg ||
+        UseMI.getOperand(1).getSubReg() || !UseMI.getOperand(2).isImm())
+      return false;
+
+    for (unsigned I = 0, E = UseMI.getNumOperands(); I != E; ++I) {
+      const MachineOperand &MO = UseMI.getOperand(I);
+      if (I != 1 && MO.isReg() && MO.isUse() && MO.getReg() == DstReg)
+        return false;
+    }
+
+    // Only unsigned-immediate loads and stores whose scale matches their
+    // access width can carry a :tprel_lo12_nc: relocation. 128 bit accesses
+    // are excluded because R_AARCH64_TLSLE_LDST128_TPREL_LO12_NC is not
+    // supported by the GNU bfd linker.
+    TypeSize Scale = TypeSize::getFixed(0);
+    unsigned Width = 0;
+    int64_t MinOffset, MaxOffset;
+    if (!AArch64InstrInfo::getMemOpInfo(UseMI.getOpcode(), Scale, Width,
+                                        MinOffset, MaxOffset) ||
+        Scale.isScalable() || MinOffset != 0 || MaxOffset != 4095 ||
+        Scale.getFixedValue() != Width || Scale.getFixedValue() > 8 ||
+        Alignment < Scale.getFixedValue())
+      return false;
+
+    int64_t ScaledOffset = UseMI.getOperand(2).getImm();
+    if (ScaledOffset < 0)
+      return false;
+    uint64_t ByteOffset =
+        static_cast<uint64_t>(ScaledOffset) * Scale.getFixedValue();
+    if (ByteOffset >= MaxFoldOffset)
+      return false;
+    FoldableUses.emplace_back(&UseMI, ByteOffset);
+  }
+
+  if (FoldableUses.empty())
+    return false;
+
+  for (auto [UseMI, ByteOffset] : FoldableUses)
+    UseMI->getOperand(2).ChangeToGA(Low.getGlobal(), ByteOffset,
+                                    Low.getTargetFlags());
+
+  Register SrcReg = MI.getOperand(1).getReg();
+  MRI->markUsesInDebugValueAsUndef(DstReg);
+  MRI->replaceRegWith(DstReg, SrcReg);
+  MRI->clearKillFlags(SrcReg);
+  MI.eraseFromParent();
   return true;
 }
 
@@ -747,6 +826,9 @@ bool AArch64MIPeepholeOpt::runOnMachineFunction(MachineFunction &MF) {
         break;
       case AArch64::INSvi64lane:
         Changed |= visitINSvi64lane(MI);
+        break;
+      case AArch64::ADDlowTLS:
+        Changed |= visitADDlowTLS(MI);
         break;
       }
     }
