@@ -25,6 +25,7 @@
 #include "llvm/Support/KnownBits.h"
 #include "llvm/Support/MathExtras.h"
 #include "llvm/Support/raw_ostream.h"
+#include <algorithm>
 
 using namespace llvm;
 
@@ -1044,6 +1045,38 @@ static bool isTLSLo12(const GlobalAddressSDNode *GAN) {
          (AArch64II::MO_TLS | AArch64II::MO_PAGEOFF | AArch64II::MO_NC);
 }
 
+/// Decide whether the byte offset \p Offset of a \p Size byte access to the ELF
+/// local-exec TLS symbol \p GAN can be folded into the low relocation of the
+/// access, i.e. whether ":tprel_lo12_nc:sym" can become
+/// ":tprel_lo12_nc:sym+Offset".
+///
+/// The address is built from two independent relocations: the add carries
+/// bits [23:12] of TPREL(S) and the access carries bits [11:0] of TPREL(S+C).
+/// Folding is only valid when adding C does not carry out of bit 11, since
+/// the add is not going to be relocated again.
+///
+/// The static TLS block starts at an address aligned to the alignment of the
+/// TLS segment, and S sits at a multiple of its own alignment A within that
+/// block, so TPREL(S) is a multiple of A. Therefore the low 12 bits of
+/// TPREL(S) are at most 4096 - A and any C < min(A, 4096) stays below 4096.
+///
+/// 128 bit accesses are excluded because they would need
+/// R_AARCH64_TLSLE_LDST128_TPREL_LO12_NC, which the GNU bfd linker does not
+/// support.
+static bool canFoldELFTLSLocalExecOffset(const GlobalAddressSDNode *GAN,
+                                         int64_t Offset, unsigned Size,
+                                         const DataLayout &DL) {
+  if (Size > 8 || Offset < 0 || (Offset & (Size - 1)) != 0)
+    return false;
+
+  Align Alignment = GAN->getGlobal()->getPointerAlignment(DL);
+  if (Alignment < Size)
+    return false;
+
+  uint64_t MaxFoldOffset = std::min<uint64_t>(Alignment.value(), 4096);
+  return static_cast<uint64_t>(Offset) < MaxFoldOffset;
+}
+
 /// Check if the immediate offset is valid as a scaled immediate.
 static bool isValidAsScaledImmediate(int64_t Offset, unsigned Range,
                                      unsigned Size) {
@@ -1139,18 +1172,32 @@ bool AArch64DAGToDAGISel::SelectAddrModeIndexed(SDValue N, unsigned Size,
     if (!GAN)
       return true;
 
-    // Folding the low part of an ELF local-exec TLS address into a 128-bit
-    // access needs R_AARCH64_TLSLE_LDST128_TPREL_LO12_NC, which the GNU bfd
-    // linker does not support, so keep materialising the address with an add.
-    if (GAN->getOffset() % Size == 0 &&
-        GAN->getGlobal()->getPointerAlignment(DL) >= Size &&
-        !(Size > 8 && Subtarget->isTargetELF() && isTLSLo12(GAN)))
+    bool IsELFTLSLo12 = Subtarget->isTargetELF() && isTLSLo12(GAN);
+    if ((IsELFTLSLo12 &&
+         canFoldELFTLSLocalExecOffset(GAN, GAN->getOffset(), Size, DL)) ||
+        (!IsELFTLSLo12 && GAN->getOffset() % Size == 0 &&
+         GAN->getGlobal()->getPointerAlignment(DL) >= Size))
       return true;
   }
 
   if (CurDAG->isBaseWithConstantOffset(N)) {
     if (ConstantSDNode *RHS = dyn_cast<ConstantSDNode>(N.getOperand(1))) {
-      int64_t RHSC = (int64_t)RHS->getZExtValue();
+      int64_t RHSC = RHS->getSExtValue();
+      SDValue Addr = N.getOperand(0);
+
+      if (Subtarget->isTargetELF() && Addr.getOpcode() == AArch64ISD::ADDlow) {
+        SDValue Lo = Addr.getOperand(1);
+        auto *GAN = dyn_cast<GlobalAddressSDNode>(Lo);
+        if (GAN && isTLSLo12(GAN) && GAN->getOffset() == 0 &&
+            canFoldELFTLSLocalExecOffset(GAN, RHSC, Size, DL)) {
+          Base = Addr.getOperand(0);
+          OffImm = CurDAG->getTargetGlobalAddress(GAN->getGlobal(), SDLoc(Lo),
+                                                  Lo.getValueType(), RHSC,
+                                                  GAN->getTargetFlags());
+          return true;
+        }
+      }
+
       unsigned Scale = Log2_32(Size);
       if (isValidAsScaledImmediate(RHSC, 0x1000, Size)) {
         Base = N.getOperand(0);
