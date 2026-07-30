@@ -645,7 +645,8 @@ def TuneHIP12 : SubtargetFeature<"hip12", "ARMProcFamily", "HIP12",
                                  FeatureAddrLSLSlow14,
                                  FeatureALULSLFast,
                                  FeatureStorePairSuppress,
-                                 FeaturePostRAScheduler]>;
+                                 FeaturePostRAScheduler,
+                                 FeatureFuseOrrEor]>;
 
 def TuneAmpere1 : SubtargetFeature<"ampere1", "ARMProcFamily", "Ampere1",
                                    "Ampere Computing Ampere-1 processors", [

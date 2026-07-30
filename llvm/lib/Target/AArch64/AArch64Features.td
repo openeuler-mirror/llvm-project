@@ -732,6 +732,10 @@ def FeatureFuseMvnClz : SubtargetFeature<
     "fuse-mvn-clz", "HasFuseMvnClz", "true",
     "CPU fuses mvn+clz operations">;
 
+def FeatureFuseOrrEor : SubtargetFeature<
+    "fuse-orr-eor", "HasFuseOrrEor", "true",
+    "CPU fuses orr+eor operations">;
+
 def FeatureDisableLatencySchedHeuristic : SubtargetFeature<
     "disable-latency-sched-heuristic", "DisableLatencySchedHeuristic", "true",
     "Disable latency scheduling heuristic">;
