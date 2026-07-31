@@ -1506,6 +1506,25 @@ bool AArch64ExpandPseudo::expandMI(MachineBasicBlock &MBB,
   return false;
 }
 
+/// This function transforms "mov + destructive instruction" to
+/// "movprfx + destructive instrction". That is, delete the "mov" instruction
+/// and insert "movprfx" just at the front of the destructive instruction.
+/// Eg:
+/// Transfrom:
+///   mov z0.d, z3.d
+///   ...
+///   other inst (no use z3/z0 and no def z3/z0)
+///   ...
+///   fmul z0.d, p0/m, z0.d, z3.d
+/// To:
+///   ...
+///   other inst (no use z3/z0 and no def z3/z0)
+///   ...
+///   movprfx z0, z3
+///   fmul z0.d, p0/m, z0.d, z3.d
+///   ...
+///   other inst (no use z3/z0 and no def z3/z0)
+///   ...
 bool AArch64ExpandPseudo::optimizeMI(
     MachineInstr &MI, MachineInstr &DefUseMI, MachineBasicBlock &MBB,
     MachineBasicBlock::iterator MovMBBI, MachineBasicBlock::iterator DefUseMBBI,
@@ -1825,8 +1844,6 @@ bool AArch64ExpandPseudo::optimizeMI(
     case AArch64::FTMAD_ZZI_H:
     case AArch64::FTMAD_ZZI_S:
     case AArch64::FTMAD_ZZI_D:
-      std::tie(DOPIdx, SrcIdx, Src2Idx) = std::make_tuple(1, 2, 3);
-      break;
     case AArch64::ADD_ZI_D:
     case AArch64::ADD_ZI_H:
     case AArch64::ADD_ZI_S:
@@ -1855,6 +1872,8 @@ bool AArch64ExpandPseudo::optimizeMI(
     case AArch64::UQSUB_ZI_H:
     case AArch64::UQSUB_ZI_S:
     case AArch64::UQSUB_ZI_D:
+      std::tie(DOPIdx, SrcIdx, Src2Idx) = std::make_tuple(1, 2, 3);
+      break;
     case AArch64::SMAX_ZI_B:
     case AArch64::SMAX_ZI_H:
     case AArch64::SMAX_ZI_S:
@@ -1875,8 +1894,6 @@ bool AArch64ExpandPseudo::optimizeMI(
     case AArch64::MUL_ZI_H:
     case AArch64::MUL_ZI_S:
     case AArch64::MUL_ZI_D:
-      std::tie(DOPIdx, SrcIdx, Src2Idx) = std::make_tuple(1, 2, 3);
-      break;
     case AArch64::AND_ZI:
     case AArch64::EOR_ZI:
     case AArch64::ORR_ZI:
@@ -2227,10 +2244,6 @@ bool AArch64ExpandPseudo::optimizeMI(
     case AArch64::FTMAD_ZZI_H:
     case AArch64::FTMAD_ZZI_S:
     case AArch64::FTMAD_ZZI_D:
-      DOP.addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
-         .add(DefUseMI.getOperand(SrcIdx))
-         .add(DefUseMI.getOperand(Src2Idx));
-      break;
     case AArch64::ADD_ZI_B:
     case AArch64::ADD_ZI_D:
     case AArch64::ADD_ZI_H:
@@ -2259,6 +2272,10 @@ bool AArch64ExpandPseudo::optimizeMI(
     case AArch64::UQSUB_ZI_H:
     case AArch64::UQSUB_ZI_S:
     case AArch64::UQSUB_ZI_D:
+      DOP.addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
+         .add(DefUseMI.getOperand(SrcIdx))
+         .add(DefUseMI.getOperand(Src2Idx));
+      break;
     case AArch64::SMAX_ZI_B:
     case AArch64::SMAX_ZI_H:
     case AArch64::SMAX_ZI_S:
@@ -2279,10 +2296,6 @@ bool AArch64ExpandPseudo::optimizeMI(
     case AArch64::MUL_ZI_S:
     case AArch64::MUL_ZI_D:
     case AArch64::MUL_ZI_H:
-      DOP.addReg(DefUseMI.getOperand(DOPIdx).getReg(), RegState::Kill)
-         .add(DefUseMI.getOperand(SrcIdx))
-         .add(DefUseMI.getOperand(Src2Idx));
-      break;
     case AArch64::AND_ZI:
     case AArch64::EOR_ZI:
     case AArch64::ORR_ZI:
