@@ -1033,6 +1033,17 @@ static bool isWorthFoldingADDlow(SDValue N) {
   return true;
 }
 
+/// Check whether \p GAN is the low part of a TLS address computation, i.e. the
+/// second operand of an ADDlow. The target flags on their own do not tell the
+/// ELF local-exec (:tprel_lo12_nc:) case apart from the ELF local-dynamic
+/// (:dtprel_lo12_nc:) or the COFF (:secrel_lo12:) one, so callers that depend
+/// on local-exec semantics have to check the object format as well. Local
+/// dynamic never gets here because it does not build an ADDlow.
+static bool isTLSLo12(const GlobalAddressSDNode *GAN) {
+  return GAN->getTargetFlags() ==
+         (AArch64II::MO_TLS | AArch64II::MO_PAGEOFF | AArch64II::MO_NC);
+}
+
 /// Check if the immediate offset is valid as a scaled immediate.
 static bool isValidAsScaledImmediate(int64_t Offset, unsigned Range,
                                      unsigned Size) {
@@ -1128,8 +1139,12 @@ bool AArch64DAGToDAGISel::SelectAddrModeIndexed(SDValue N, unsigned Size,
     if (!GAN)
       return true;
 
+    // Folding the low part of an ELF local-exec TLS address into a 128-bit
+    // access needs R_AARCH64_TLSLE_LDST128_TPREL_LO12_NC, which the GNU bfd
+    // linker does not support, so keep materialising the address with an add.
     if (GAN->getOffset() % Size == 0 &&
-        GAN->getGlobal()->getPointerAlignment(DL) >= Size)
+        GAN->getGlobal()->getPointerAlignment(DL) >= Size &&
+        !(Size > 8 && Subtarget->isTargetELF() && isTLSLo12(GAN)))
       return true;
   }
 

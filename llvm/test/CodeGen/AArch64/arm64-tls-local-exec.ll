@@ -27,6 +27,7 @@
 ; RUN: llc -mtriple=arm64-none-linux-gnu -filetype=obj < %s -code-model=large | llvm-objdump -r - | FileCheck --check-prefix=CHECK-24-RELOC %s
 
 @local_exec_var = thread_local(localexec) global i32 0
+@vec_local_exec_var = thread_local(localexec) global <2 x i64> zeroinitializer, align 16
 
 define i32 @test_local_exec() {
 ; CHECK-LABEL: test_local_exec:
@@ -40,11 +41,10 @@ define i32 @test_local_exec() {
 
 ; CHECK-24: mrs x[[R1:[0-9]+]], TPIDR_EL0
 ; CHECK-24: add x[[R2:[0-9]+]], x[[R1]], :tprel_hi12:local_exec_var
-; CHECK-24: add x[[R3:[0-9]+]], x[[R2]], :tprel_lo12_nc:local_exec_var
-; CHECK-24: ldr w0, [x[[R3]]]
+; CHECK-24: ldr w0, [x[[R2]], :tprel_lo12_nc:local_exec_var]
 
 ; CHECK-24-RELOC: R_AARCH64_TLSLE_ADD_TPREL_HI12
-; CHECK-24-RELOC: R_AARCH64_TLSLE_ADD_TPREL_LO12_NC
+; CHECK-24-RELOC: R_AARCH64_TLSLE_LDST32_TPREL_LO12_NC
 
 ; CHECK-32: movz x[[R2:[0-9]+]], #:tprel_g1:local_exec_var
 ; CHECK-32: mrs x[[R1:[0-9]+]], TPIDR_EL0
@@ -103,4 +103,20 @@ define ptr @test_local_exec_addr() {
 ; CHECK-48-RELOC: R_AARCH64_TLSLE_MOVW_TPREL_G2
 ; CHECK-48-RELOC: R_AARCH64_TLSLE_MOVW_TPREL_G1_NC
 ; CHECK-48-RELOC: R_AARCH64_TLSLE_MOVW_TPREL_G0_NC
+}
+
+; A 128-bit access would need R_AARCH64_TLSLE_LDST128_TPREL_LO12_NC, which not
+; every linker implements, so the low part stays in a separate add.
+define <2 x i64> @test_local_exec_128bit() {
+; CHECK-LABEL: test_local_exec_128bit:
+  %val = load <2 x i64>, ptr @vec_local_exec_var
+
+; CHECK-24: mrs x[[R1:[0-9]+]], TPIDR_EL0
+; CHECK-24: add x[[R2:[0-9]+]], x[[R1]], :tprel_hi12:vec_local_exec_var
+; CHECK-24: add x[[R3:[0-9]+]], x[[R2]], :tprel_lo12_nc:vec_local_exec_var
+; CHECK-24: ldr q0, [x[[R3]]]
+
+; CHECK-24-RELOC: R_AARCH64_TLSLE_ADD_TPREL_HI12 vec_local_exec_var
+; CHECK-24-RELOC-NEXT: R_AARCH64_TLSLE_ADD_TPREL_LO12_NC vec_local_exec_var
+  ret <2 x i64> %val
 }
