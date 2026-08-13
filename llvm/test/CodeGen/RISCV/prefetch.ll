@@ -660,6 +660,76 @@ define void @test_prefetch_offsetable_8(ptr %a) nounwind {
   ret void
 }
 
+define void @test_prefetch_offsetable_10(ptr %a) nounwind {
+; RV32I-LABEL: test_prefetch_offsetable_10:
+; RV32I:       # %bb.0:
+; RV32I-NEXT:    ret
+;
+; RV64I-LABEL: test_prefetch_offsetable_10:
+; RV64I:       # %bb.0:
+; RV64I-NEXT:    ret
+;
+; RV32ZICBOP-LABEL: test_prefetch_offsetable_10:
+; RV32ZICBOP:       # %bb.0:
+; RV32ZICBOP-NEXT:    addi a0, a0, 2047
+; RV32ZICBOP-NEXT:    prefetch.r 2016(a0)
+; RV32ZICBOP-NEXT:    ret
+;
+; RV64ZICBOP-LABEL: test_prefetch_offsetable_10:
+; RV64ZICBOP:       # %bb.0:
+; RV64ZICBOP-NEXT:    addi a0, a0, 2047
+; RV64ZICBOP-NEXT:    prefetch.r 2016(a0)
+; RV64ZICBOP-NEXT:    ret
+;
+; RV64ZICBOPZIHINTNTL-LABEL: test_prefetch_offsetable_10:
+; RV64ZICBOPZIHINTNTL:       # %bb.0:
+; RV64ZICBOPZIHINTNTL-NEXT:    addi a0, a0, 2047
+; RV64ZICBOPZIHINTNTL-NEXT:    ntl.all
+; RV64ZICBOPZIHINTNTL-NEXT:    prefetch.r 2016(a0)
+; RV64ZICBOPZIHINTNTL-NEXT:    ret
+  %addr = getelementptr i8, ptr %a, i64 4063
+  call void @llvm.prefetch(ptr %addr, i32 0, i32 0, i32 1)
+  ret void
+}
+
+; The upper bound of the ADDI-adjustment range. 4064 = 2016 + 2048 would
+; overflow simm12 (max 2047) in the folded ADDI, so it must instead be split
+; into LUI + simm12 by selectConstantAddr.
+define void @test_prefetch_offsetable_11(ptr %a) nounwind {
+; RV32I-LABEL: test_prefetch_offsetable_11:
+; RV32I:       # %bb.0:
+; RV32I-NEXT:    ret
+;
+; RV64I-LABEL: test_prefetch_offsetable_11:
+; RV64I:       # %bb.0:
+; RV64I-NEXT:    ret
+;
+; RV32ZICBOP-LABEL: test_prefetch_offsetable_11:
+; RV32ZICBOP:       # %bb.0:
+; RV32ZICBOP-NEXT:    lui a1, 1
+; RV32ZICBOP-NEXT:    add a0, a0, a1
+; RV32ZICBOP-NEXT:    prefetch.r -32(a0)
+; RV32ZICBOP-NEXT:    ret
+;
+; RV64ZICBOP-LABEL: test_prefetch_offsetable_11:
+; RV64ZICBOP:       # %bb.0:
+; RV64ZICBOP-NEXT:    lui a1, 1
+; RV64ZICBOP-NEXT:    add a0, a0, a1
+; RV64ZICBOP-NEXT:    prefetch.r -32(a0)
+; RV64ZICBOP-NEXT:    ret
+;
+; RV64ZICBOPZIHINTNTL-LABEL: test_prefetch_offsetable_11:
+; RV64ZICBOPZIHINTNTL:       # %bb.0:
+; RV64ZICBOPZIHINTNTL-NEXT:    lui a1, 1
+; RV64ZICBOPZIHINTNTL-NEXT:    add a0, a0, a1
+; RV64ZICBOPZIHINTNTL-NEXT:    ntl.all
+; RV64ZICBOPZIHINTNTL-NEXT:    prefetch.r -32(a0)
+; RV64ZICBOPZIHINTNTL-NEXT:    ret
+  %addr = getelementptr i8, ptr %a, i64 4064
+  call void @llvm.prefetch(ptr %addr, i32 0, i32 0, i32 1)
+  ret void
+}
+
 define void @test_prefetch_frameindex_0() nounwind {
 ; RV32I-LABEL: test_prefetch_frameindex_0:
 ; RV32I:       # %bb.0:
