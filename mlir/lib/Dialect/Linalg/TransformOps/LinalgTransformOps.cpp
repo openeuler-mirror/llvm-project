@@ -3714,6 +3714,11 @@ DiagnosedSilenceableFailure transform::FlattenElementwiseLinalgOp::applyToOne(
   // Attempt to flatten all dims to one.
   ReassociationIndices reassociation(target.getNumLoops());
   std::iota(reassociation.begin(), reassociation.end(), 0);
+  if (!areDimSequencesPreserved(target.getIndexingMapsArray(), reassociation)) {
+    results.push_back(target);
+    return mlir::emitSilenceableFailure(target->getLoc())
+           << "iteration dimensions cannot be flattened";
+  }
   auto maybeFlattened =
       collapseOpIterationDims(target, reassociation, rewriter);
   if (failed(maybeFlattened))

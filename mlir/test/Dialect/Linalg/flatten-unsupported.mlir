@@ -17,6 +17,23 @@ module attributes {transform.with_named_sequence} {
 
 // -----
 
+func.func @unsupported_transpose(%arg0: tensor<2x4xi8>, %arg1: tensor<4x2xi8>) -> tensor<4x2xi8> {
+  // expected-error @below {{iteration dimensions cannot be flattened}}
+  %0 = linalg.transpose ins(%arg0 : tensor<2x4xi8>) outs(%arg1 : tensor<4x2xi8>) permutation = [1, 0]
+  return %0 : tensor<4x2xi8>
+}
+
+module attributes {transform.with_named_sequence} {
+  transform.named_sequence @__transform_main(%arg1: !transform.any_op {transform.readonly}) {
+    %0 = transform.structured.match interface{LinalgOp} in %arg1 : (!transform.any_op) -> !transform.any_op
+    %flattened = transform.structured.flatten_elementwise %0
+      : (!transform.any_op) -> !transform.any_op
+    transform.yield
+  }
+}
+
+// -----
+
 func.func @unsupported_memref(%arg0: memref<32x7xf32, strided<[7, 2]>>, %arg1: memref<32x7xf32, strided<[7, 2]>>, %arg2: memref<32x7xf32, strided<[7, 2]>>) {
   // expected-error @below {{attempted to flatten, but failed}}
   linalg.map {arith.addf} ins(%arg0, %arg1: memref<32x7xf32, strided<[7, 2]>>, memref<32x7xf32, strided<[7, 2]>>) outs(%arg2: memref<32x7xf32, strided<[7, 2]>>)
