@@ -3689,8 +3689,24 @@ DiagnosedSilenceableFailure transform::FlattenElementwiseLinalgOp::applyToOne(
     return mlir::emitSilenceableFailure(target->getLoc())
            << "only elementwise flattening is supported";
 
+  if (!llvm::all_of(target.getIndexingMapsArray(), [](AffineMap m) {
+        return m.isPermutation() || m.getNumResults() == 0;
+      })) {
+    results.push_back(target);
+    return mlir::emitSilenceableFailure(target->getLoc())
+           << "broadcasting of non scalar operands is not supported";
+  }
+
   // If rank <= 1, do nothing
   if (target.getNumLoops() <= 1) {
+    results.push_back(target);
+    return DiagnosedSilenceableFailure::success();
+  }
+
+  // Only broadcasts with a 0-D input are handled; leave anything else
+  // unchanged.
+  if (auto broadcastOp = dyn_cast<linalg::BroadcastOp>(target.getOperation());
+      broadcastOp && broadcastOp.getInput().getType().getRank() != 0) {
     results.push_back(target);
     return DiagnosedSilenceableFailure::success();
   }
@@ -3698,6 +3714,11 @@ DiagnosedSilenceableFailure transform::FlattenElementwiseLinalgOp::applyToOne(
   // Attempt to flatten all dims to one.
   ReassociationIndices reassociation(target.getNumLoops());
   std::iota(reassociation.begin(), reassociation.end(), 0);
+  if (!areDimSequencesPreserved(target.getIndexingMapsArray(), reassociation)) {
+    results.push_back(target);
+    return mlir::emitSilenceableFailure(target->getLoc())
+           << "iteration dimensions cannot be flattened";
+  }
   auto maybeFlattened =
       collapseOpIterationDims(target, reassociation, rewriter);
   if (failed(maybeFlattened))

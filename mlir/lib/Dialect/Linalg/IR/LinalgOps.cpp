@@ -2148,6 +2148,10 @@ LogicalResult BroadcastOp::verify() {
                            << initRank - 1 << "], got: " << dim;
   }
 
+  DenseSet<int64_t> uniquedDims(dimensionsRef.begin(), dimensionsRef.end());
+  if (uniquedDims.size() != dimensionsRef.size())
+    return emitOpError() << "dimensions should not contain duplicates";
+
   // Mapping from input dims to init dims.
   SmallVector<int64_t> dimMap;
   for (auto dim : llvm::seq<int64_t>(0, initRank)) {
