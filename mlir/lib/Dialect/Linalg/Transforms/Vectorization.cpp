@@ -1925,6 +1925,11 @@ static LogicalResult vectorizeLinalgOpPrecondition(
         })) {
       return failure();
     }
+    if (!isa<linalg::YieldOp, linalg::IndexOp, affine::AffineApplyOp,
+             arith::ConstantOp, func::ConstantOp>(innerOp) &&
+        !OpTrait::hasElementwiseMappableTraits(&innerOp)) {
+      return failure();
+    }
   }
   if (isElementwise(linalgOp))
     return success();
