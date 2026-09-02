@@ -36,6 +36,7 @@
 #include "mlir/IR/Verifier.h"
 #include "mlir/Interfaces/CallInterfaces.h"
 #include "mlir/Interfaces/ControlFlowInterfaces.h"
+#include "mlir/Interfaces/DataLayoutInterfaces.h"
 #include "mlir/Interfaces/FunctionImplementation.h"
 #include "mlir/Interfaces/FunctionInterfaces.h"
 #include "mlir/Pass/Pass.h"
@@ -3314,14 +3315,19 @@ std::optional<SmallVector<int64_t>> transform::LegalizeOp::getAllDimsMaxUnrollin
 std::optional<SmallVector<int64_t>>
 transform::LegalizeOp::getShape(Operation *op, unsigned hardwareVectorLength,
                                 unsigned vscale) {
+  auto getElementSize = [op](Type elementType) {
+    return DataLayout::closest(op)
+        .getTypeSizeInBits(elementType)
+        .getFixedValue();
+  };
+
   if (isa<arith::MulFOp, arith::AddFOp, arith::SelectOp, arith::CmpFOp,
           vector::TransposeOp, vector::TransferReadOp>(op)) {
     auto dstVecType = dyn_cast<VectorType>(op->getResult(0).getType());
     if (!dstVecType)
       return std::nullopt;
     auto dstShape = dstVecType.getShape();
-    auto elementSize =
-        mlir::LLVM::getPrimitiveTypeSizeInBits(dstVecType.getElementType());
+    auto elementSize = getElementSize(dstVecType.getElementType());
     return getAllDimsMaxUnrollingFactor(dstShape, elementSize,
                                         hardwareVectorLength, vscale);
   }
@@ -3333,8 +3339,7 @@ transform::LegalizeOp::getShape(Operation *op, unsigned hardwareVectorLength,
     if (!maybeShape) {
       return std::nullopt;
     }
-    auto elementSize = mlir::LLVM::getPrimitiveTypeSizeInBits(
-        contractOp.getLhsType().getElementType());
+    auto elementSize = getElementSize(contractOp.getLhsType().getElementType());
     // we give vscale = 1 as handling of last dim depends on indexing Maps
     auto unrollingFactor = getAllDimsMaxUnrollingFactor(
         maybeShape.value(), elementSize, hardwareVectorLength, 1);
@@ -3350,8 +3355,7 @@ transform::LegalizeOp::getShape(Operation *op, unsigned hardwareVectorLength,
   }
   if (auto writeOp = dyn_cast<vector::TransferWriteOp>(op)) {
     auto vecType = cast<VectorType>(writeOp.getVector().getType());
-    auto elementSize =
-        mlir::LLVM::getPrimitiveTypeSizeInBits(vecType.getElementType());
+    auto elementSize = getElementSize(vecType.getElementType());
     return getAllDimsMaxUnrollingFactor(vecType.getShape(), elementSize,
                                         hardwareVectorLength, vscale);
   }

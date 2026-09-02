@@ -139,6 +139,13 @@ module attributes {transform.with_named_sequence} {
     return %res0, %res1, %res2, %res3 : vector<12xf32>, vector<6x12xf32>, vector<4x12x6xf32>, vector<f32>
   }
 
+  // CHECK-LABEL: @legalizeIndexTranspose
+  func.func @legalizeIndexTranspose(%arg0: vector<16x16xindex>) -> vector<16x16xindex> {
+    // CHECK: vector.transpose
+    %0 = vector.transpose %arg0, [1, 0] : vector<16x16xindex> to vector<16x16xindex>
+    return %0 : vector<16x16xindex>
+  }
+
   // CHECK-LABEL: @legalizeContract
   // CHECK-SAME: (%[[arg0:.*]]: vector<4x3xf32>, %[[arg1:.*]]: vector<3x6xf32>, %[[arg2:.*]]: vector<6x3x2x8xf32>
   // CHECK-SAME: %[[arg3:.*]]: vector<3x2x6x2xf32>, %[[arg4:.*]]: vector<8xf32>, %[[arg5:.*]]: vector<8xf16>
