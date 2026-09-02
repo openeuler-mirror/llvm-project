@@ -590,8 +590,7 @@ static Operation *matchLinalgReduction(OpOperand *outputOperand) {
 /// otherwise.
 static Value broadcastIfNeeded(OpBuilder &b, Value value, Type dstType) {
   auto dstVecType = dyn_cast<VectorType>(dstType);
-  // If no shape to broadcast to, just return `value`.
-  if (dstVecType.getRank() == 0)
+  if (value.getType() == dstType)
     return value;
   if (vector::isBroadcastableTo(value.getType(), dstVecType) !=
       vector::BroadcastableToResult::Success)

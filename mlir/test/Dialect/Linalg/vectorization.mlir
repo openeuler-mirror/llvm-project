@@ -1,5 +1,39 @@
 // RUN: mlir-opt %s -transform-interpreter -split-input-file | FileCheck %s
 
+func.func @vectorize_0d_with_scalar_operand(%input: tensor<?xi8>, %scalar: i8,
+                                             %output: tensor<i1>) -> tensor<i1> {
+  %c0 = arith.constant 0 : index
+  %0 = linalg.generic {
+    indexing_maps = [affine_map<() -> ()>],
+    iterator_types = []
+  } outs(%output : tensor<i1>) {
+  ^bb0(%out: i1):
+    %1 = tensor.extract %input[%c0] : tensor<?xi8>
+    %2 = arith.cmpi ne, %1, %scalar : i8
+    linalg.yield %2 : i1
+  } -> tensor<i1>
+  return %0 : tensor<i1>
+}
+
+// CHECK-LABEL: func.func @vectorize_0d_with_scalar_operand(
+// CHECK-SAME: %{{.*}}: tensor<?xi8>, %[[SCALAR:.*]]: i8,
+// CHECK: %[[READ:.*]] = vector.transfer_read {{.*}} : tensor<?xi8>, vector<i8>
+// CHECK: %[[BCAST:.*]] = vector.broadcast %[[SCALAR]] : i8 to vector<i8>
+// CHECK: %[[CMP:.*]] = arith.cmpi ne, %[[READ]], %[[BCAST]] : vector<i8>
+// CHECK: vector.transfer_write %[[CMP]], {{.*}} : vector<i1>, tensor<i1>
+
+module attributes {transform.with_named_sequence} {
+  transform.named_sequence @__transform_main(
+      %arg0: !transform.any_op {transform.readonly}) {
+    %0 = transform.structured.match ops{["linalg.generic"]} in %arg0
+      : (!transform.any_op) -> !transform.any_op
+    transform.structured.vectorize %0 : !transform.any_op
+    transform.yield
+  }
+}
+
+// -----
+
 func.func @vectorize_dynamic_identity(%arg0: tensor<?xf32>,
                                       %arg1: tensor<?xf32>,
                                       %arg2: tensor<?xf32>) -> tensor<?xf32> {
