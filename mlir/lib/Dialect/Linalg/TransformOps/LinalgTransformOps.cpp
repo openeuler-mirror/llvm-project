@@ -249,6 +249,21 @@ void transform::ApplyFoldUnitExtentDimsViaSlicesPatternsOp::populatePatterns(
   linalg::ControlDropUnitDims options;
   options.rankReductionStrategy =
       linalg::ControlDropUnitDims::RankReductionStrategy::ExtractInsertSlice;
+  options.controlFn = [](Operation *op) {
+    if (auto genericOp = dyn_cast_or_null<linalg::GenericOp>(op)) {
+      // Rank-reducing slices alias their destinations. Conservatively avoid
+      // folding multi-use destinations that bufferization may modify in place.
+      if (llvm::any_of(genericOp.getDpsInits(),
+                       [](Value init) { return !init.hasOneUse(); }))
+        return SmallVector<unsigned>{};
+      return llvm::to_vector(
+          llvm::seq<unsigned>(0, genericOp.getNumLoops()));
+    }
+    if (auto padOp = dyn_cast_or_null<tensor::PadOp>(op))
+      return llvm::to_vector(
+          llvm::seq<unsigned>(0, padOp.getSourceType().getRank()));
+    return SmallVector<unsigned>{};
+  };
   linalg::populateFoldUnitExtentDimsPatterns(patterns, options);
 }
 
