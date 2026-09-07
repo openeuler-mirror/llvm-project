@@ -1704,6 +1704,49 @@ module attributes {transform.with_named_sequence} {
 
 // -----
 
+// Regression test: unsupported region ops must be rejected before
+// vectorization starts modifying the payload IR.
+
+#map = affine_map<(d0) -> (d0)>
+// CHECK-LABEL: @unsupported_region_op
+// CHECK-NOT: vector.
+// CHECK: linalg.generic
+// CHECK-NOT: vector.
+// CHECK: scf.if
+// CHECK-NOT: vector.
+// CHECK: return
+func.func @unsupported_region_op(%condition: tensor<4xi1>,
+                                 %input: tensor<4xf32>,
+                                 %output: tensor<4xf32>) -> tensor<4xf32> {
+  %result = linalg.generic {
+      indexing_maps = [#map, #map, #map],
+      iterator_types = ["parallel"]}
+      ins(%condition, %input : tensor<4xi1>, tensor<4xf32>)
+      outs(%output : tensor<4xf32>) {
+    ^bb0(%cond: i1, %in: f32, %out: f32):
+      %selected = scf.if %cond -> (f32) {
+        scf.yield %in : f32
+      } else {
+        scf.yield %out : f32
+      }
+      linalg.yield %selected : f32
+  } -> tensor<4xf32>
+  return %result : tensor<4xf32>
+}
+
+module attributes {transform.with_named_sequence} {
+  transform.named_sequence @__transform_main(
+      %arg0: !transform.any_op {transform.readonly}) {
+    %0 = transform.structured.match ops{["func.func"]} in %arg0
+        : (!transform.any_op) -> !transform.any_op
+    %1 = transform.structured.vectorize_children_and_apply_patterns %0
+        : (!transform.any_op) -> !transform.any_op
+    transform.yield
+  }
+}
+
+// -----
+
 // Regression test: %13 was incorrectly detected as a reduction and
 // vectorization failed.
 

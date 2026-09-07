@@ -590,8 +590,7 @@ static Operation *matchLinalgReduction(OpOperand *outputOperand) {
 /// otherwise.
 static Value broadcastIfNeeded(OpBuilder &b, Value value, Type dstType) {
   auto dstVecType = dyn_cast<VectorType>(dstType);
-  // If no shape to broadcast to, just return `value`.
-  if (dstVecType.getRank() == 0)
+  if (value.getType() == dstType)
     return value;
   if (vector::isBroadcastableTo(value.getType(), dstVecType) !=
       vector::BroadcastableToResult::Success)
@@ -999,6 +998,11 @@ getTensorExtractMemoryAccessPattern(tensor::ExtractOp extractOp,
   if (inputShape.getShape().empty())
     return VectorMemoryAccessKind::ScalarBroadcast;
 
+  // 0a. Is the result a 0-D vector? If yes, there are no iteration dimensions
+  // so the tensor.extract is a single scalar load regardless of the index.
+  if (resType.getRank() == 0)
+    return VectorMemoryAccessKind::ScalarBroadcast;
+
   // True for vectors that are effectively 1D, e.g. `vector<1x4x1xi32>`, false
   // otherwise.
   bool isOutput1DVector =
@@ -1160,18 +1164,21 @@ vectorizeTensorExtract(RewriterBase &rewriter, VectorizationState &state,
         loc, resultType, extractOp.getTensor(), transferReadIdxs,
         permutationMap, inBounds);
 
-    // Mask this broadcasting xfer_read here rather than relying on the generic
-    // path (the generic path assumes identity masking map, which wouldn't be
-    // valid here).
-    SmallVector<int64_t> readMaskShape = {1};
-    auto readMaskType = VectorType::get(readMaskShape, rewriter.getI1Type());
-    auto allTrue = rewriter.create<vector::ConstantMaskOp>(
-        loc, readMaskType, vector::ConstantMaskKind::AllTrue);
-    auto *maskedReadOp =
-        mlir::vector::maskOperation(rewriter, transferReadOp, allTrue);
+    Operation *readOrMaskedReadOp = transferReadOp;
+    if (dstRank > 0) {
+      // Mask this broadcasting xfer_read here rather than relying on the
+      // generic path (the generic path assumes identity masking map, which
+      // wouldn't be valid here).
+      SmallVector<int64_t> readMaskShape = {1};
+      auto readMaskType = VectorType::get(readMaskShape, rewriter.getI1Type());
+      auto allTrue = rewriter.create<vector::ConstantMaskOp>(
+          loc, readMaskType, vector::ConstantMaskKind::AllTrue);
+      readOrMaskedReadOp =
+          mlir::vector::maskOperation(rewriter, transferReadOp, allTrue);
+    }
 
     LDBG("Vectorised as scalar broadcast load: " << extractOp << "\n");
-    return VectorizationResult{VectorizationStatus::NewOp, maskedReadOp};
+    return VectorizationResult{VectorizationStatus::NewOp, readOrMaskedReadOp};
   }
 
   // 2b. Handle contiguous access.
@@ -1916,6 +1923,11 @@ static LogicalResult vectorizeLinalgOpPrecondition(
     if (llvm::any_of(innerOp.getResultTypes(), [](Type type) {
           return !VectorType::isValidElementType(type);
         })) {
+      return failure();
+    }
+    if (!isa<linalg::YieldOp, linalg::IndexOp, affine::AffineApplyOp,
+             arith::ConstantOp, func::ConstantOp>(innerOp) &&
+        !OpTrait::hasElementwiseMappableTraits(&innerOp)) {
       return failure();
     }
   }

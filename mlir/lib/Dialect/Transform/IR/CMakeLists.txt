@@ -14,6 +14,7 @@ add_mlir_dialect_library(MLIRTransformDialect
   MLIRAsyncTransforms
   MLIRCastInterfaces
   MLIRComplexToLLVM
+  MLIRDataLayoutInterfaces
   MLIRFunctionInterfaces
   MLIRIR
   MLIRIndexToLLVM
