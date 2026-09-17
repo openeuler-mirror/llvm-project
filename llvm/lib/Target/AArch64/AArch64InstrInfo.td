@@ -220,6 +220,10 @@ def HasSVEAES2      : Predicate<"Subtarget->hasSVEAES2()">,
                                  AssemblerPredicateWithAll<(all_of FeatureSVEAES2), "sve-aes2">;
 def HasSVE_F16F32MM : Predicate<"Subtarget->isSVEAvailable() && Subtarget->hasSVE_F16F32MM()">,
                                  AssemblerPredicateWithAll<(all_of FeatureSVE_F16F32MM), "sve-f16f32mm">;
+def HasF16MM        : Predicate<"Subtarget->hasF16MM()">,
+                                 AssemblerPredicateWithAll<(all_of FeatureF16MM), "f16mm">;
+def HasF16F32MM     : Predicate<"Subtarget->hasF16F32MM()">,
+                                 AssemblerPredicateWithAll<(all_of FeatureF16F32MM), "f16f32mm">;
 // A subset of SVE(2) instructions are legal in Streaming SVE execution mode,
 // they should be enabled if either has been specified.
 def HasSVEorSME
@@ -4402,6 +4406,19 @@ defm FCVTZU : FPToIntegerUnscaled<0b11, 0b001, "fcvtzu", any_fp_to_uint>;
 defm FCVTZS : FPToIntegerScaled<0b11, 0b000, "fcvtzs", any_fp_to_sint>;
 defm FCVTZU : FPToIntegerScaled<0b11, 0b001, "fcvtzu", any_fp_to_uint>;
 
+let Predicates = [HasNEON, HasFPRCVT] in{
+  defm FCVTAS : FPToIntegerSIMDScalar<0b11, 0b010, "fcvtas">;
+  defm FCVTAU : FPToIntegerSIMDScalar<0b11, 0b011, "fcvtau">;
+  defm FCVTMS : FPToIntegerSIMDScalar<0b10, 0b100, "fcvtms">;
+  defm FCVTMU : FPToIntegerSIMDScalar<0b10, 0b101, "fcvtmu">;
+  defm FCVTNS : FPToIntegerSIMDScalar<0b01, 0b010, "fcvtns">;
+  defm FCVTNU : FPToIntegerSIMDScalar<0b01, 0b011, "fcvtnu">;
+  defm FCVTPS : FPToIntegerSIMDScalar<0b10, 0b010, "fcvtps">;
+  defm FCVTPU : FPToIntegerSIMDScalar<0b10, 0b011, "fcvtpu">;
+  defm FCVTZS : FPToIntegerSIMDScalar<0b10, 0b110, "fcvtzs">;
+  defm FCVTZU : FPToIntegerSIMDScalar<0b10, 0b111, "fcvtzu">;
+}
+
 // AArch64's FCVT instructions saturate when out of range.
 multiclass FPToIntegerSatPats<SDNode to_int_sat, string INST> {
   let Predicates = [HasFullFP16] in {
@@ -4530,8 +4547,13 @@ def : Pat<(i64 (any_llround f64:$Rn)),
 // Scaled integer to floating point conversion instructions.
 //===----------------------------------------------------------------------===//
 
-defm SCVTF : IntegerToFP<0, "scvtf", any_sint_to_fp>;
-defm UCVTF : IntegerToFP<1, "ucvtf", any_uint_to_fp>;
+defm SCVTF : IntegerToFP<0b00, 0b010, "scvtf", any_sint_to_fp>;
+defm UCVTF : IntegerToFP<0b00, 0b011, "ucvtf", any_uint_to_fp>;
+
+let Predicates = [HasNEON, HasFPRCVT] in {
+  defm SCVTF : IntegerToFPSIMDScalar<0b11, 0b100, "scvtf">;
+  defm UCVTF : IntegerToFPSIMDScalar<0b11, 0b101, "ucvtf">;
+}
 
 //===----------------------------------------------------------------------===//
 // Unscaled integer to floating point conversion instruction.
@@ -9453,6 +9475,15 @@ let Predicates = [HasCMPBR] in {
  defm : CmpBranchWRegisterAlias<"cbhls", "CBHHS">;
  defm : CmpBranchWRegisterAlias<"cbhlt", "CBHGT">;
 } // HasCMPBR
+
+let Predicates = [HasF16MM] in
+  defm FMMLA : SIMDThreeSameVectorFMLA<"fmmla">;
+
+let Predicates = [HasF16F32MM] in
+  defm FMMLA : SIMDThreeSameVectorFMLAWiden<"fmmla">;
+
+let Uses = [FPMR, FPCR] in
+  defm FMMLA : SIMDThreeSameVectorFP8MatrixMul<"fmmla">;
 
 include "AArch64InstrAtomics.td"
 include "AArch64SVEInstrInfo.td"

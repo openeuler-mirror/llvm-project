@@ -129,6 +129,7 @@ def FeatureFPMR : SubtargetFeature<"fpmr", "HasFPMR", "true",
 def FeatureFP8 : SubtargetFeature<"fp8", "HasFP8", "true",
   "Enable FP8 instructions (FEAT_FP8)">;
 
+
 // This flag is currently still labeled as Experimental, but when fully
 // implemented this should tell the compiler to use the zeroing pseudos to
 // benefit from the reverse instructions (e.g. SUB vs SUBR) if the inactive
@@ -655,6 +656,18 @@ def FeatureSVE_F16F32MM : SubtargetFeature<"sve-f16f32mm", "HasSVE_F16F32MM", "t
 
 def FeatureLSUI : SubtargetFeature<"lsui", "HasLSUI",
     "true", "Enable Armv9.6-A unprivileged load/store instructions">;
+
+//===----------------------------------------------------------------------===//
+// Armv9.7 Architecture Extensions
+//===----------------------------------------------------------------------===//
+
+def FeatureF16MM : SubtargetFeature<"f16mm", "HasF16MM", "true",
+  "Enable non-widening half-precision matrix multiply-accumulate (FEAT_F16MM)",
+  [FeatureFullFP16]>;
+
+def FeatureF16F32MM : SubtargetFeature<"f16f32mm", "HasF16F32MM", "true",
+  "Enable Armv9.7-A Advanced SIMD half-precision matrix multiply-accumulate to single-precision",
+  [FeatureNEON, FeatureFullFP16]>;
 
 //===----------------------------------------------------------------------===//
 // Architectures.
