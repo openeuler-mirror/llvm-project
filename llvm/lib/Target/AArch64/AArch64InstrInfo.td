@@ -937,6 +937,17 @@ def smullwithsignbits : PatFrag<(ops node:$l, node:$r), (mul node:$l, node:$r), 
          CurDAG->ComputeNumSignBits(N->getOperand(1)) > 32;
 }]>;
 
+// Match "nnan" flagged calls to fminnum and fmmaxnum. Then semantically equivalent
+// to fmaximum/fminimum.
+def fmaxnum_nnan : PatFrag<(ops node:$Rn, node:$Rm),
+                           (fmaxnum node:$Rn, node:$Rm), [{
+  return N->getFlags().hasNoNaNs();
+  }]>;
+def fminnum_nnan : PatFrag<(ops node:$Rn, node:$Rm),
+                           (fminnum node:$Rn, node:$Rm), [{
+  return N->getFlags().hasNoNaNs();
+  }]>;
+
 //===----------------------------------------------------------------------===//
 
 //===----------------------------------------------------------------------===//
@@ -6076,6 +6087,46 @@ def : Pat<(v16i8 (int_aarch64_neon_tbx1 (v16i8 V128:$Rd),
 let Predicates = [HasLUT] in {
   defm LUT2 : BaseSIMDTableLookupIndexed2<"luti2">;
   defm LUT4 : BaseSIMDTableLookupIndexed4<"luti4">;
+  
+  multiclass Luti2_patterns<Instruction Instr, ValueType VT64, ValueType VT128>{
+    def : Pat<(VT128 (int_aarch64_neon_vluti2_lane VT64:$Rn, 
+                   v8i8:$Rm, i32:$idx)),
+              (Instr (INSERT_SUBREG (IMPLICIT_DEF), V64:$Rn, dsub), 
+              (INSERT_SUBREG (IMPLICIT_DEF), V64:$Rm, dsub),  VectorIndexS32b_timm:$idx)>;
+    def : Pat<(VT128 (int_aarch64_neon_vluti2_laneq VT64:$Rn,
+                   v16i8:$Rm, i32:$idx)),
+              (Instr (INSERT_SUBREG (IMPLICIT_DEF), V64:$Rn, dsub), 
+              V128:$Rm,  VectorIndexS32b_timm:$idx)>;
+    def : Pat<(VT128 (int_aarch64_neon_vluti2_lane VT128:$Rn, 
+                   v8i8:$Rm, i32:$idx)),
+              (Instr V128:$Rn, (INSERT_SUBREG (IMPLICIT_DEF), V64:$Rm, dsub),  
+              VectorIndexS32b_timm:$idx)>;
+    def : Pat<(VT128 (int_aarch64_neon_vluti2_laneq VT128:$Rn,
+                   v16i8:$Rm, i32:$idx)),
+              (Instr V128:$Rn, V128:$Rm,  VectorIndexS32b_timm:$idx)>;
+  }
+
+  defm : Luti2_patterns<LUT2_B, v8i8, v16i8>;
+  defm : Luti2_patterns<LUT2_H, v4i16, v8i16>;
+  defm : Luti2_patterns<LUT2_H, v4f16, v8f16>;
+  defm : Luti2_patterns<LUT2_H, v4bf16, v8bf16>;
+ 
+  def : Pat<(v16i8 (int_aarch64_neon_vluti4q_laneq v16i8:$Rn, 
+                    v16i8:$Rm, i32:$idx)),
+            (LUT4_B VecListOne16b:$Rn, V128:$Rm,  VectorIndexD32b_timm:$idx)>;
+  def : Pat<(v16i8 (int_aarch64_neon_vluti4q_lane v16i8:$Rn,
+                    v8i8:$Rm, i32:$idx)),
+            (LUT4_B VecListOne16b:$Rn, (INSERT_SUBREG (IMPLICIT_DEF), V64:$Rm, dsub),  VectorIndexD32b_timm:$idx)>;
+
+  foreach VT = [v8i16, v8f16, v8bf16] in {
+    def : Pat<(VT (int_aarch64_neon_vluti4q_laneq_x2 VT:$Rn1, 
+                   VT:$Rn2, v16i8:$Rm, i32:$idx)),
+              (LUT4_H (REG_SEQUENCE QQ, VecListOne8h:$Rn1, qsub0, VecListOne8h:$Rn2, qsub1), V128:$Rm,  VectorIndexS32b_timm:$idx)>;
+    def : Pat<(VT (int_aarch64_neon_vluti4q_lane_x2 VT:$Rn1,
+                   VT:$Rn2, v8i8:$Rm, i32:$idx)),
+              (LUT4_H (REG_SEQUENCE QQ, VecListOne8h:$Rn1, qsub0, VecListOne8h:$Rn2, qsub1),
+                      (INSERT_SUBREG (IMPLICIT_DEF), V64:$Rm, dsub),  VectorIndexS32b_timm:$idx)>;
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -9382,10 +9433,22 @@ let Uses = [FPMR, FPCR], Predicates = [HasFP8] in {
   defm FSCALE : SIMDThreeSameVectorFP<0b1, 0b1, 0b111, "fscale", null_frag>;
 } // End let Predicates = [HasFP8]
 
-let Predicates = [HasFAMINMAX] in {
- defm FAMAX : SIMDThreeSameVectorFP<0b0, 0b1, 0b011, "famax", null_frag>;
- defm FAMIN : SIMDThreeSameVectorFP<0b1, 0b1, 0b011, "famin", null_frag>;
-} // End let Predicates = [HasFAMAXMIN]
+// fminimum(abs(a), abs(b)) -> famin(a, b)
+// fminnum[nnan](abs(a), abs(b)) -> famin(a, b)
+def AArch64famin : PatFrags<(ops node:$Rn, node:$Rm),
+                             [(fminimum (fabs node:$Rn), (fabs node:$Rm)),
+                              (fminnum_nnan (fabs node:$Rn), (fabs node:$Rm))]>;
+
+// fmaximum(abs(a), abs(b)) -> famax(a, b)
+// fmaxnum[nnan](abs(a), abs(b)) -> famax(a, b)
+def AArch64famax : PatFrags<(ops node:$Rn, node:$Rm),
+                             [(fmaximum (fabs node:$Rn), (fabs node:$Rm)),
+                              (fmaxnum_nnan (fabs node:$Rn), (fabs node:$Rm))]>;
+
+let Predicates = [HasNEON, HasFAMINMAX] in {
+ defm FAMAX : SIMDThreeSameVectorFP<0b0, 0b1, 0b011, "famax", AArch64famax>;
+ defm FAMIN : SIMDThreeSameVectorFP<0b1, 0b1, 0b011, "famin", AArch64famin>;
+} // End let Predicates = [HasNEON, HasFAMINMAX]
 
 let Uses = [FPMR, FPCR], Predicates = [HasFP8FMA] in {
  defm FMLALBlane : SIMDThreeSameVectorMLAIndex<0b0, "fmlalb">;

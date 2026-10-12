@@ -9326,12 +9326,19 @@ Value *CodeGenFunction::EmitSVEStructLoad(const SVETypeFlags &TypeFlags,
   unsigned N;
   switch (IntID) {
   case Intrinsic::aarch64_sve_ld2_sret:
+  case Intrinsic::aarch64_sve_ld1_pn_x2:
+  case Intrinsic::aarch64_sve_ldnt1_pn_x2:
+  case Intrinsic::aarch64_sve_ld2q_sret:
     N = 2;
     break;
   case Intrinsic::aarch64_sve_ld3_sret:
+  case Intrinsic::aarch64_sve_ld3q_sret:
     N = 3;
     break;
   case Intrinsic::aarch64_sve_ld4_sret:
+  case Intrinsic::aarch64_sve_ld1_pn_x4:
+  case Intrinsic::aarch64_sve_ldnt1_pn_x4:
+  case Intrinsic::aarch64_sve_ld4q_sret:
     N = 4;
     break;
   default:
@@ -9370,12 +9377,19 @@ Value *CodeGenFunction::EmitSVEStructStore(const SVETypeFlags &TypeFlags,
   unsigned N;
   switch (IntID) {
   case Intrinsic::aarch64_sve_st2:
+  case Intrinsic::aarch64_sve_st1_pn_x2:
+  case Intrinsic::aarch64_sve_stnt1_pn_x2:
+  case Intrinsic::aarch64_sve_st2q:
     N = 2;
     break;
   case Intrinsic::aarch64_sve_st3:
+  case Intrinsic::aarch64_sve_st3q:
     N = 3;
     break;
   case Intrinsic::aarch64_sve_st4:
+  case Intrinsic::aarch64_sve_st1_pn_x4:
+  case Intrinsic::aarch64_sve_stnt1_pn_x4:
+  case Intrinsic::aarch64_sve_st4q:
     N = 4;
     break;
   default:
@@ -9453,7 +9467,7 @@ Value *CodeGenFunction::EmitSVEPrefetchLoad(const SVETypeFlags &TypeFlags,
 Value *CodeGenFunction::EmitSVEMaskedLoad(const CallExpr *E,
                                           llvm::Type *ReturnTy,
                                           SmallVectorImpl<Value *> &Ops,
-                                          unsigned BuiltinID,
+                                          unsigned IntrinsicID,
                                           bool IsZExtReturn) {
   QualType LangPTy = E->getArg(1)->getType();
   llvm::Type *MemEltTy = CGM.getTypes().ConvertType(
@@ -9462,28 +9476,46 @@ Value *CodeGenFunction::EmitSVEMaskedLoad(const CallExpr *E,
   // The vector type that is returned may be different from the
   // eventual type loaded from memory.
   auto VectorTy = cast<llvm::ScalableVectorType>(ReturnTy);
-  auto MemoryTy = llvm::ScalableVectorType::get(MemEltTy, VectorTy);
+  llvm::ScalableVectorType *MemoryTy = nullptr;
+  llvm::ScalableVectorType *PredTy = nullptr;
+  bool IsQuadLoad = false;
+  switch (IntrinsicID) {
+  case Intrinsic::aarch64_sve_ld1uwq:
+  case Intrinsic::aarch64_sve_ld1udq:
+    MemoryTy = llvm::ScalableVectorType::get(MemEltTy, 1);
+    PredTy = llvm::ScalableVectorType::get(
+        llvm::Type::getInt1Ty(getLLVMContext()), 1);
+    IsQuadLoad = true;
+    break;
+  default:
+    MemoryTy = llvm::ScalableVectorType::get(MemEltTy, VectorTy);
+    PredTy = MemoryTy;
+    break;
+  }
 
-  Value *Predicate = EmitSVEPredicateCast(Ops[0], MemoryTy);
+  Value *Predicate = EmitSVEPredicateCast(Ops[0], PredTy);
   Value *BasePtr = Ops[1];
 
   // Does the load have an offset?
   if (Ops.size() > 2)
     BasePtr = Builder.CreateGEP(MemoryTy, BasePtr, Ops[2]);
 
-  Function *F = CGM.getIntrinsic(BuiltinID, MemoryTy);
+  Function *F = CGM.getIntrinsic(IntrinsicID, IsQuadLoad ? VectorTy : MemoryTy);
   auto *Load =
       cast<llvm::Instruction>(Builder.CreateCall(F, {Predicate, BasePtr}));
   auto TBAAInfo = CGM.getTBAAAccessInfo(LangPTy->getPointeeType());
   CGM.DecorateInstructionWithTBAA(Load, TBAAInfo);
 
+  if (IsQuadLoad)
+    return Load;
+
   return IsZExtReturn ? Builder.CreateZExt(Load, VectorTy)
-                     : Builder.CreateSExt(Load, VectorTy);
+                      : Builder.CreateSExt(Load, VectorTy);
 }
 
 Value *CodeGenFunction::EmitSVEMaskedStore(const CallExpr *E,
                                            SmallVectorImpl<Value *> &Ops,
-                                           unsigned BuiltinID) {
+                                           unsigned IntrinsicID) {
   QualType LangPTy = E->getArg(1)->getType();
   llvm::Type *MemEltTy = CGM.getTypes().ConvertType(
       LangPTy->castAs<PointerType>()->getPointeeType());
@@ -9493,17 +9525,34 @@ Value *CodeGenFunction::EmitSVEMaskedStore(const CallExpr *E,
   auto VectorTy = cast<llvm::ScalableVectorType>(Ops.back()->getType());
   auto MemoryTy = llvm::ScalableVectorType::get(MemEltTy, VectorTy);
 
-  Value *Predicate = EmitSVEPredicateCast(Ops[0], MemoryTy);
+  auto PredTy = MemoryTy;
+  auto AddrMemoryTy = MemoryTy;
+  bool IsQuadStore = false;
+
+  switch (IntrinsicID) {
+  case Intrinsic::aarch64_sve_st1uwq:
+  case Intrinsic::aarch64_sve_st1udq:
+    AddrMemoryTy = llvm::ScalableVectorType::get(MemEltTy, 1);
+    PredTy =
+        llvm::ScalableVectorType::get(IntegerType::get(getLLVMContext(), 1), 1);
+    IsQuadStore = true;
+    break;
+  default:
+    break;
+  }
+  Value *Predicate = EmitSVEPredicateCast(Ops[0], PredTy);
   Value *BasePtr = Ops[1];
 
   // Does the store have an offset?
   if (Ops.size() == 4)
-    BasePtr = Builder.CreateGEP(MemoryTy, BasePtr, Ops[2]);
+    BasePtr = Builder.CreateGEP(AddrMemoryTy, BasePtr, Ops[2]);
 
   // Last value is always the data
-  llvm::Value *Val = Builder.CreateTrunc(Ops.back(), MemoryTy);
+  Value *Val =
+      IsQuadStore ? Ops.back() : Builder.CreateTrunc(Ops.back(), MemoryTy);
 
-  Function *F = CGM.getIntrinsic(BuiltinID, MemoryTy);
+  Function *F =
+      CGM.getIntrinsic(IntrinsicID, IsQuadStore ? VectorTy : MemoryTy);
   auto *Store =
       cast<llvm::Instruction>(Builder.CreateCall(F, {Val, Predicate, BasePtr}));
   auto TBAAInfo = CGM.getTBAAAccessInfo(LangPTy->getPointeeType());
@@ -9625,6 +9674,10 @@ CodeGenFunction::getSVEOverloadTypes(const SVETypeFlags &TypeFlags,
   if (TypeFlags.isOverloadCvt())
     return {Ops[0]->getType(), Ops.back()->getType()};
 
+  if (TypeFlags.isReductionQV() && !ResultType->isScalableTy() &&
+      ResultType->isVectorTy())
+    return {ResultType, Ops[1]->getType()};
+
   assert(TypeFlags.isOverloadDefault() && "Unexpected value for overloads");
   return {DefaultType};
 }
@@ -9658,6 +9711,41 @@ Value *CodeGenFunction::EmitSVETupleCreate(const SVETypeFlags &TypeFlags,
     Value *Idx = ConstantInt::get(CGM.Int64Ty, I * MinElts);
     Call = Builder.CreateInsertVector(Ty, Call, Ops[I], Idx);
   }
+
+  return Call;
+}
+
+Value *CodeGenFunction::FormSVEBuiltinResult(Value *Call) {
+  // Multi-vector results should be broken up into a single (wide) result
+  // vector.
+  auto *StructTy = dyn_cast<StructType>(Call->getType());
+  if (!StructTy)
+    return Call;
+
+  auto *VTy = dyn_cast<ScalableVectorType>(StructTy->getTypeAtIndex(0U));
+  if (!VTy)
+    return Call;
+  unsigned N = StructTy->getNumElements();
+
+  // We may need to emit a cast to a svbool_t
+  bool IsPredTy = VTy->getElementType()->isIntegerTy(1);
+  unsigned MinElts = IsPredTy ? 16 : VTy->getMinNumElements();
+
+  ScalableVectorType *WideVTy =
+      ScalableVectorType::get(VTy->getElementType(), MinElts * N);
+  Value *Ret = llvm::PoisonValue::get(WideVTy);
+  for (unsigned I = 0; I < N; ++I) {
+    Value *SRet = Builder.CreateExtractValue(Call, I);
+    assert(SRet->getType() == VTy && "Unexpected type for result value");
+    Value *Idx = ConstantInt::get(CGM.Int64Ty, I * MinElts);
+
+    if (IsPredTy)
+      SRet = EmitSVEPredicateCast(
+          SRet, ScalableVectorType::get(Builder.getInt1Ty(), 16));
+
+    Ret = Builder.CreateInsertVector(WideVTy, Ret, SRet, Idx);
+  }
+  Call = Ret;
 
   return Call;
 }
@@ -9810,13 +9898,39 @@ Value *CodeGenFunction::EmitAArch64SVEBuiltinExpr(unsigned BuiltinID,
       if (PredTy->getScalarType()->isIntegerTy(1))
         Call = EmitSVEPredicateCast(Call, cast<llvm::ScalableVectorType>(Ty));
 
-    return Call;
+    return FormSVEBuiltinResult(Call);
   }
 
   switch (BuiltinID) {
   default:
     return nullptr;
+  case SVE::BI__builtin_sve_svpsel_lane_b8:
+  case SVE::BI__builtin_sve_svpsel_lane_b16:
+  case SVE::BI__builtin_sve_svpsel_lane_b32:
+  case SVE::BI__builtin_sve_svpsel_lane_b64:
+  case SVE::BI__builtin_sve_svpsel_lane_c8:
+  case SVE::BI__builtin_sve_svpsel_lane_c16:
+  case SVE::BI__builtin_sve_svpsel_lane_c32:
+  case SVE::BI__builtin_sve_svpsel_lane_c64: {
+    bool IsSVCount = isa<TargetExtType>(Ops[0]->getType());
+    assert(((!IsSVCount || cast<TargetExtType>(Ops[0]->getType())->getName() ==
+                               "aarch64.svcount")) &&
+           "Unexpected TargetExtType");
+    auto SVCountTy =
+        llvm::TargetExtType::get(getLLVMContext(), "aarch64.svcount");
+    Function *CastFromSVCountF =
+        CGM.getIntrinsic(Intrinsic::aarch64_sve_convert_to_svbool, SVCountTy);
+    Function *CastToSVCountF =
+        CGM.getIntrinsic(Intrinsic::aarch64_sve_convert_from_svbool, SVCountTy);
 
+    auto OverloadedTy = getSVEType(SVETypeFlags(Builtin->TypeModifier));
+    Function *F = CGM.getIntrinsic(Intrinsic::aarch64_sve_psel, OverloadedTy);
+    llvm::Value *Ops0 =
+        IsSVCount ? Builder.CreateCall(CastFromSVCountF, Ops[0]) : Ops[0];
+    llvm::Value *Ops1 = EmitSVEPredicateCast(Ops[1], OverloadedTy);
+    llvm::Value *PSel = Builder.CreateCall(F, {Ops0, Ops1, Ops[2]});
+    return IsSVCount ? Builder.CreateCall(CastToSVCountF, PSel) : PSel;
+  }
   case SVE::BI__builtin_sve_svmov_b_z: {
     // svmov_b_z(pg, op) <=> svand_b_z(pg, op, op)
     SVETypeFlags TypeFlags(Builtin->TypeModifier);
@@ -10068,7 +10182,7 @@ Value *CodeGenFunction::EmitAArch64SMEBuiltinExpr(unsigned BuiltinID,
           : CGM.getIntrinsic(Builtin->LLVMIntrinsic, {getSVEType(TypeFlags)});
   Value *Call = Builder.CreateCall(F, Ops);
 
-  return Call;
+  return FormSVEBuiltinResult(Call);
 }
 
 Value *CodeGenFunction::EmitAArch64BuiltinExpr(unsigned BuiltinID,
@@ -12637,6 +12751,95 @@ Value *CodeGenFunction::EmitAArch64BuiltinExpr(unsigned BuiltinID,
   case NEON::BI__builtin_neon_vuqaddq_v: {
     Int = Intrinsic::aarch64_neon_suqadd;
     return EmitNeonCall(CGM.getIntrinsic(Int, Ty), Ops, "vuqadd");
+  }
+
+  case NEON::BI__builtin_neon_vluti2_laneq_bf16:
+  case NEON::BI__builtin_neon_vluti2_laneq_f16:
+  case NEON::BI__builtin_neon_vluti2_laneq_p16:
+  case NEON::BI__builtin_neon_vluti2_laneq_p8:
+  case NEON::BI__builtin_neon_vluti2_laneq_s16:
+  case NEON::BI__builtin_neon_vluti2_laneq_s8:
+  case NEON::BI__builtin_neon_vluti2_laneq_u16:
+  case NEON::BI__builtin_neon_vluti2_laneq_u8: {
+    Int = Intrinsic::aarch64_neon_vluti2_laneq;
+    llvm::Type *Tys[2];
+    Tys[0] = Ty;
+    Tys[1] = GetNeonType(this, NeonTypeFlags(Type.getEltType(), false,
+                                             /*isQuad*/ false));
+    return EmitNeonCall(CGM.getIntrinsic(Int, Tys), Ops, "vluti2_laneq");
+  }
+  case NEON::BI__builtin_neon_vluti2q_laneq_bf16:
+  case NEON::BI__builtin_neon_vluti2q_laneq_f16:
+  case NEON::BI__builtin_neon_vluti2q_laneq_p16:
+  case NEON::BI__builtin_neon_vluti2q_laneq_p8:
+  case NEON::BI__builtin_neon_vluti2q_laneq_s16:
+  case NEON::BI__builtin_neon_vluti2q_laneq_s8:
+  case NEON::BI__builtin_neon_vluti2q_laneq_u16:
+  case NEON::BI__builtin_neon_vluti2q_laneq_u8: {
+    Int = Intrinsic::aarch64_neon_vluti2_laneq;
+    llvm::Type *Tys[2];
+    Tys[0] = Ty;
+    Tys[1] = GetNeonType(this, NeonTypeFlags(Type.getEltType(), false,
+                                             /*isQuad*/ true));
+    return EmitNeonCall(CGM.getIntrinsic(Int, Tys), Ops, "vluti2_laneq");
+  }
+  case NEON::BI__builtin_neon_vluti2_lane_bf16:
+  case NEON::BI__builtin_neon_vluti2_lane_f16:
+  case NEON::BI__builtin_neon_vluti2_lane_p16:
+  case NEON::BI__builtin_neon_vluti2_lane_p8:
+  case NEON::BI__builtin_neon_vluti2_lane_s16:
+  case NEON::BI__builtin_neon_vluti2_lane_s8:
+  case NEON::BI__builtin_neon_vluti2_lane_u16:
+  case NEON::BI__builtin_neon_vluti2_lane_u8: {
+    Int = Intrinsic::aarch64_neon_vluti2_lane;
+    llvm::Type *Tys[2];
+    Tys[0] = Ty;
+    Tys[1] = GetNeonType(this, NeonTypeFlags(Type.getEltType(), false,
+                                             /*isQuad*/ false));
+    return EmitNeonCall(CGM.getIntrinsic(Int, Tys), Ops, "vluti2_lane");
+  }
+  case NEON::BI__builtin_neon_vluti2q_lane_bf16:
+  case NEON::BI__builtin_neon_vluti2q_lane_f16:
+  case NEON::BI__builtin_neon_vluti2q_lane_p16:
+  case NEON::BI__builtin_neon_vluti2q_lane_p8:
+  case NEON::BI__builtin_neon_vluti2q_lane_s16:
+  case NEON::BI__builtin_neon_vluti2q_lane_s8:
+  case NEON::BI__builtin_neon_vluti2q_lane_u16:
+  case NEON::BI__builtin_neon_vluti2q_lane_u8: {
+    Int = Intrinsic::aarch64_neon_vluti2_lane;
+    llvm::Type *Tys[2];
+    Tys[0] = Ty;
+    Tys[1] = GetNeonType(this, NeonTypeFlags(Type.getEltType(), false,
+                                             /*isQuad*/ true));
+    return EmitNeonCall(CGM.getIntrinsic(Int, Tys), Ops, "vluti2_lane");
+  }
+  case NEON::BI__builtin_neon_vluti4q_lane_p8:
+  case NEON::BI__builtin_neon_vluti4q_lane_s8:
+  case NEON::BI__builtin_neon_vluti4q_lane_u8: {
+    Int = Intrinsic::aarch64_neon_vluti4q_lane;
+    return EmitNeonCall(CGM.getIntrinsic(Int, Ty), Ops, "vluti4q_lane");
+  }
+  case NEON::BI__builtin_neon_vluti4q_laneq_p8:
+  case NEON::BI__builtin_neon_vluti4q_laneq_s8:
+  case NEON::BI__builtin_neon_vluti4q_laneq_u8: {
+    Int = Intrinsic::aarch64_neon_vluti4q_laneq;
+    return EmitNeonCall(CGM.getIntrinsic(Int, Ty), Ops, "vluti4q_laneq");
+  }
+  case NEON::BI__builtin_neon_vluti4q_lane_bf16_x2:
+  case NEON::BI__builtin_neon_vluti4q_lane_f16_x2:
+  case NEON::BI__builtin_neon_vluti4q_lane_p16_x2:
+  case NEON::BI__builtin_neon_vluti4q_lane_s16_x2:
+  case NEON::BI__builtin_neon_vluti4q_lane_u16_x2: {
+    Int = Intrinsic::aarch64_neon_vluti4q_lane_x2;
+    return EmitNeonCall(CGM.getIntrinsic(Int, Ty), Ops, "vluti4q_lane_x2");
+  }
+  case NEON::BI__builtin_neon_vluti4q_laneq_bf16_x2:
+  case NEON::BI__builtin_neon_vluti4q_laneq_f16_x2:
+  case NEON::BI__builtin_neon_vluti4q_laneq_p16_x2:
+  case NEON::BI__builtin_neon_vluti4q_laneq_s16_x2:
+  case NEON::BI__builtin_neon_vluti4q_laneq_u16_x2: {
+    Int = Intrinsic::aarch64_neon_vluti4q_laneq_x2;
+    return EmitNeonCall(CGM.getIntrinsic(Int, Ty), Ops, "vluti4q_laneq_x2");
   }
   }
 }

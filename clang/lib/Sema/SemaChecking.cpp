@@ -2895,7 +2895,15 @@ static QualType getNeonEltType(NeonTypeFlags Flags, ASTContext &Context,
   llvm_unreachable("Invalid NeonTypeFlag!");
 }
 
-enum ArmStreamingType { ArmNonStreaming, ArmStreaming, ArmStreamingCompatible };
+enum ArmStreamingType {
+  ArmNonStreaming, /// Intrinsic is only available in normal mode
+  ArmStreaming,    /// Intrinsic is only available in Streaming-SVE mode.
+  ArmStreamingCompatible, /// Intrinsic is available both in normal and
+                          /// Streaming-SVE mode.
+  VerifyRuntimeMode       /// Intrinsic is available in normal mode with
+                          /// SVE flags, or in Streaming-SVE mode with SME
+                          /// flags. Do Sema checks for the runtime mode.
+};
 
 enum ArmSMEState : unsigned {
   ArmNoState = 0,
@@ -2950,6 +2958,18 @@ bool Sema::ParseSVEImmChecks(
       break;
     case SVETypeFlags::ImmCheck0_7:
       if (SemaBuiltinConstantArgRange(TheCall, ArgNum, 0, 7))
+        HasError = true;
+      break;
+    case SVETypeFlags::ImmCheck1_1:
+      if (SemaBuiltinConstantArgRange(TheCall, ArgNum, 1, 1))
+        HasError = true;
+      break;
+    case SVETypeFlags::ImmCheck1_3:
+      if (SemaBuiltinConstantArgRange(TheCall, ArgNum, 1, 3))
+        HasError = true;
+      break;
+    case SVETypeFlags::ImmCheck1_7:
+      if (SemaBuiltinConstantArgRange(TheCall, ArgNum, 1, 7))
         HasError = true;
       break;
     case SVETypeFlags::ImmCheckExtract:
@@ -3023,6 +3043,11 @@ bool Sema::ParseSVEImmChecks(
       if (SemaBuiltinConstantArgRange(TheCall, ArgNum, 0, 255))
         HasError = true;
       break;
+    case SVETypeFlags::ImmCheck2_4_Mul2:
+      if (SemaBuiltinConstantArgRange(TheCall, ArgNum, 2, 4) ||
+          SemaBuiltinConstantArgMultiple(TheCall, ArgNum, 2))
+        HasError = true;
+      break;
     }
   }
 
@@ -3041,26 +3066,76 @@ static ArmStreamingType getArmStreamingFnType(const FunctionDecl *FD) {
   return ArmNonStreaming;
 }
 
-static void checkArmStreamingBuiltin(Sema &S, CallExpr *TheCall,
-                                     const FunctionDecl *FD,
-                                     ArmStreamingType BuiltinType) {
+static bool checkArmStreamingBuiltin(Sema &S, CallExpr *TheCall,
+                                      const FunctionDecl *FD,
+                                      ArmStreamingType BuiltinType,
+                                      unsigned BuiltinID) {
   ArmStreamingType FnType = getArmStreamingFnType(FD);
-  if (FnType == ArmStreaming && BuiltinType == ArmNonStreaming) {
-    S.Diag(TheCall->getBeginLoc(), diag::warn_attribute_arm_sm_incompat_builtin)
-        << TheCall->getSourceRange() << "streaming";
+
+  // Check if the intrinsic is available in the right mode, i.e.
+  // * When compiling for SME only, the caller must be in streaming mode.
+  // * When compiling for SVE only, the caller must be in non-streaming mode.
+  // * When compiling for both SVE and SME, the caller can be in either mode.
+  if (BuiltinType == VerifyRuntimeMode) {
+    auto DisableFeatures = [](llvm::StringMap<bool> &Map, StringRef S) {
+      for (StringRef K : Map.keys())
+        if (K.starts_with(S))
+          Map[K] = false;
+    };
+
+    llvm::StringMap<bool> CallerFeatureMapWithoutSVE;
+    S.Context.getFunctionFeatureMap(CallerFeatureMapWithoutSVE, FD);
+    DisableFeatures(CallerFeatureMapWithoutSVE, "sve");
+
+    // Avoid emitting diagnostics for a function that can never compile.
+    if (FnType == ArmStreaming && !CallerFeatureMapWithoutSVE["sme"])
+      return false;
+
+    llvm::StringMap<bool> CallerFeatureMapWithoutSME;
+    S.Context.getFunctionFeatureMap(CallerFeatureMapWithoutSME, FD);
+    DisableFeatures(CallerFeatureMapWithoutSME, "sme");
+
+    // We know the builtin requires either some combination of SVE flags, or
+    // some combination of SME flags, but we need to figure out which part
+    // of the required features is satisfied by the target features.
+    //
+    // For a builtin with target guard 'sve2p1|sme2', if we compile with
+    // '+sve2p1,+sme', then we know that it satisfies the 'sve2p1' part if we
+    // evaluate the features for '+sve2p1,+sme,+nosme'.
+    //
+    // Similarly, if we compile with '+sve2,+sme2', then we know it satisfies
+    // the 'sme2' part if we evaluate the features for '+sve2,+sme2,+nosve'.
+    StringRef BuiltinTargetGuards(
+        S.Context.BuiltinInfo.getRequiredFeatures(BuiltinID));
+    bool SatisfiesSVE = Builtin::evaluateRequiredTargetFeatures(
+        BuiltinTargetGuards, CallerFeatureMapWithoutSME);
+    bool SatisfiesSME = Builtin::evaluateRequiredTargetFeatures(
+        BuiltinTargetGuards, CallerFeatureMapWithoutSVE);
+
+    if ((SatisfiesSVE && SatisfiesSME) ||
+        (SatisfiesSVE && FnType == ArmStreamingCompatible))
+      return false;
+    else if (SatisfiesSVE)
+      BuiltinType = ArmNonStreaming;
+    else if (SatisfiesSME)
+      BuiltinType = ArmStreaming;
+    else
+      // This should be diagnosed by CodeGen
+      return false;
   }
 
-  if (FnType == ArmStreamingCompatible &&
-      BuiltinType != ArmStreamingCompatible) {
-    S.Diag(TheCall->getBeginLoc(), diag::warn_attribute_arm_sm_incompat_builtin)
-        << TheCall->getSourceRange() << "streaming compatible";
-    return;
-  }
-
-  if (FnType == ArmNonStreaming && BuiltinType == ArmStreaming) {
-    S.Diag(TheCall->getBeginLoc(), diag::warn_attribute_arm_sm_incompat_builtin)
+  if (FnType != ArmNonStreaming &&
+      BuiltinType == ArmNonStreaming)
+    S.Diag(TheCall->getBeginLoc(), diag::err_attribute_arm_sm_incompat_builtin)
         << TheCall->getSourceRange() << "non-streaming";
-  }
+  else if (FnType != ArmStreaming &&
+           BuiltinType == ArmStreaming)
+    S.Diag(TheCall->getBeginLoc(), diag::err_attribute_arm_sm_incompat_builtin)
+        << TheCall->getSourceRange() << "streaming";
+  else
+    return false;
+
+  return true;
 }
 
 static bool hasArmZAState(const FunctionDecl *FD) {
@@ -3090,8 +3165,9 @@ bool Sema::CheckSMEBuiltinFunctionCall(unsigned BuiltinID, CallExpr *TheCall) {
 #undef GET_SME_STREAMING_ATTRS
     }
 
-    if (BuiltinType)
-      checkArmStreamingBuiltin(*this, TheCall, FD, *BuiltinType);
+    if (BuiltinType &&
+        checkArmStreamingBuiltin(*this, TheCall, FD, *BuiltinType, BuiltinID))
+      return true;
 
     if ((getSMEState(BuiltinID) & ArmZAMask) && !hasArmZAState(FD))
       Diag(TheCall->getBeginLoc(),
@@ -3122,8 +3198,9 @@ bool Sema::CheckSVEBuiltinFunctionCall(unsigned BuiltinID, CallExpr *TheCall) {
 #include "clang/Basic/arm_sve_streaming_attrs.inc"
 #undef GET_SVE_STREAMING_ATTRS
     }
-    if (BuiltinType)
-      checkArmStreamingBuiltin(*this, TheCall, FD, *BuiltinType);
+    if (BuiltinType &&
+        checkArmStreamingBuiltin(*this, TheCall, FD, *BuiltinType, BuiltinID))
+      return true;
   }
   // Range check SVE intrinsics that take immediate values.
   SmallVector<std::tuple<int, int, int>, 3> ImmChecks;
@@ -3150,7 +3227,9 @@ bool Sema::CheckNeonBuiltinFunctionCall(const TargetInfo &TI,
 #define TARGET_BUILTIN(id, ...) case NEON::BI##id:
 #define BUILTIN(id, ...) case NEON::BI##id:
 #include "clang/Basic/arm_neon.inc"
-      checkArmStreamingBuiltin(*this, TheCall, FD, ArmNonStreaming);
+      if (checkArmStreamingBuiltin(*this, TheCall, FD, ArmNonStreaming,
+                                   BuiltinID))
+        return true;
       break;
 #undef TARGET_BUILTIN
 #undef BUILTIN
@@ -7446,6 +7525,28 @@ void Sema::checkCall(NamedDecl *FDecl, const FunctionProtoType *Proto,
 
       if (!CallerHasZAState)
         Diag(Loc, diag::err_sme_za_call_no_za_state);
+    }
+
+    // If the callee uses AArch64 SME ZT0 state but the caller doesn't define
+    // any, then this is an error.
+    FunctionType::ArmStateValue ArmZT0State =
+        FunctionType::getArmZT0State(ExtInfo.AArch64SMEAttributes);
+    if (ArmZT0State != FunctionType::ARM_None) {
+      bool CallerHasZT0State = false;
+      if (const auto *CallerFD = dyn_cast<FunctionDecl>(CurContext)) {
+        auto *Attr = CallerFD->getAttr<ArmNewAttr>();
+        if (Attr && Attr->isNewZT0())
+          CallerHasZT0State = true;
+        else if (const auto *FPT =
+                     CallerFD->getType()->getAs<FunctionProtoType>())
+          CallerHasZT0State =
+              FunctionType::getArmZT0State(
+                  FPT->getExtProtoInfo().AArch64SMEAttributes) !=
+              FunctionType::ARM_None;
+      }
+
+      if (!CallerHasZT0State)
+        Diag(Loc, diag::err_sme_zt0_call_no_zt0_state);
     }
   }
 

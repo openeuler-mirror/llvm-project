@@ -3101,9 +3101,8 @@ def err_attribute_bad_sve_vector_size : Error<
 def err_attribute_arm_feature_sve_bits_unsupported : Error<
   "%0 is only supported when '-msve-vector-bits=<bits>' is specified with a "
   "value of 128, 256, 512, 1024 or 2048.">;
-def warn_attribute_arm_sm_incompat_builtin : Warning<
-  "builtin call has undefined behaviour when called from a %0 function">,
-  InGroup<DiagGroup<"undefined-arm-streaming">>;
+def err_attribute_arm_sm_incompat_builtin : Error<
+  "builtin can only be called from a %0 function">;
 def warn_attribute_arm_za_builtin_no_za_state : Warning<
   "builtin call is not valid when calling from a function without active ZA state">,
   InGroup<DiagGroup<"undefined-arm-za">>;
@@ -3637,10 +3636,14 @@ def err_sme_call_in_non_sme_target : Error<
   "call to a streaming function requires 'sme'">;
 def err_sme_za_call_no_za_state : Error<
   "call to a shared ZA function requires the caller to have ZA state">;
+def err_sme_zt0_call_no_zt0_state : Error<
+  "call to a shared ZT0 function requires the caller to have ZT0 state">;
 def err_sme_definition_using_sm_in_non_sme_target : Error<
   "function executed in streaming-SVE mode requires 'sme'">;
 def err_sme_definition_using_za_in_non_sme_target : Error<
   "function using ZA state requires 'sme'">;
+def err_sme_definition_using_zt0_in_non_sme2_target : Error<
+  "function using ZT0 state requires 'sme2'">;
 def err_conflicting_attributes_arm_state : Error<
   "conflicting attributes for state '%0'">;
 def err_unknown_arm_state : Error<

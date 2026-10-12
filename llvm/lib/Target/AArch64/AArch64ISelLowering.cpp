@@ -1279,7 +1279,7 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
     }
   }
 
-  if (Subtarget->hasSVE()) {
+  if (Subtarget->isSVEorStreamingSVEAvailable()) {
     for (auto VT : {MVT::nxv16i8, MVT::nxv8i16, MVT::nxv4i32, MVT::nxv2i64}) {
       setOperationAction(ISD::BITREVERSE, VT, Custom);
       setOperationAction(ISD::BSWAP, VT, Custom);
@@ -1291,8 +1291,6 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
       setOperationAction(ISD::SINT_TO_FP, VT, Custom);
       setOperationAction(ISD::FP_TO_UINT, VT, Custom);
       setOperationAction(ISD::FP_TO_SINT, VT, Custom);
-      setOperationAction(ISD::MGATHER, VT, Custom);
-      setOperationAction(ISD::MSCATTER, VT, Custom);
       setOperationAction(ISD::MLOAD, VT, Custom);
       setOperationAction(ISD::MUL, VT, Custom);
       setOperationAction(ISD::MULHS, VT, Custom);
@@ -1382,14 +1380,13 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
       }
     }
 
-    // NEON doesn't support masked loads/stores/gathers/scatters, but SVE does
-    for (auto VT : {MVT::v4f16, MVT::v8f16, MVT::v2f32, MVT::v4f32, MVT::v1f64,
-                    MVT::v2f64, MVT::v8i8, MVT::v16i8, MVT::v4i16, MVT::v8i16,
-                    MVT::v2i32, MVT::v4i32, MVT::v1i64, MVT::v2i64}) {
+    // NEON doesn't support masked loads/stores, but SME and SVE do.
+    for (auto VT :
+         {MVT::v4f16, MVT::v8f16, MVT::v2f32, MVT::v4f32, MVT::v1f64,
+          MVT::v2f64, MVT::v8i8, MVT::v16i8, MVT::v4i16, MVT::v8i16,
+          MVT::v2i32, MVT::v4i32, MVT::v1i64, MVT::v2i64}) {
       setOperationAction(ISD::MLOAD, VT, Custom);
       setOperationAction(ISD::MSTORE, VT, Custom);
-      setOperationAction(ISD::MGATHER, VT, Custom);
-      setOperationAction(ISD::MSCATTER, VT, Custom);
     }
 
     // Firstly, exclude all scalable vector extending loads/truncating stores,
@@ -1430,8 +1427,6 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
                     MVT::nxv4f32, MVT::nxv2f64}) {
       setOperationAction(ISD::CONCAT_VECTORS, VT, Custom);
       setOperationAction(ISD::INSERT_SUBVECTOR, VT, Custom);
-      setOperationAction(ISD::MGATHER, VT, Custom);
-      setOperationAction(ISD::MSCATTER, VT, Custom);
       setOperationAction(ISD::MLOAD, VT, Custom);
       setOperationAction(ISD::SPLAT_VECTOR, VT, Legal);
       setOperationAction(ISD::SELECT, VT, Custom);
@@ -1463,8 +1458,6 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
       setOperationAction(ISD::VECREDUCE_FMIN, VT, Custom);
       setOperationAction(ISD::VECREDUCE_FMAXIMUM, VT, Custom);
       setOperationAction(ISD::VECREDUCE_FMINIMUM, VT, Custom);
-      if (Subtarget->isSVEAvailable())
-        setOperationAction(ISD::VECREDUCE_SEQ_FADD, VT, Custom);
       setOperationAction(ISD::VECTOR_SPLICE, VT, Custom);
       setOperationAction(ISD::VECTOR_DEINTERLEAVE, VT, Custom);
       setOperationAction(ISD::VECTOR_INTERLEAVE, VT, Custom);
@@ -1497,8 +1490,6 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
 
     for (auto VT : {MVT::nxv2bf16, MVT::nxv4bf16, MVT::nxv8bf16}) {
       setOperationAction(ISD::CONCAT_VECTORS, VT, Custom);
-      setOperationAction(ISD::MGATHER, VT, Custom);
-      setOperationAction(ISD::MSCATTER, VT, Custom);
       setOperationAction(ISD::MLOAD, VT, Custom);
       setOperationAction(ISD::INSERT_SUBVECTOR, VT, Custom);
       setOperationAction(ISD::SPLAT_VECTOR, VT, Legal);
@@ -1517,13 +1508,6 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
     // NEON doesn't support 64-bit vector integer muls, but SVE does.
     setOperationAction(ISD::MUL, MVT::v1i64, Custom);
     setOperationAction(ISD::MUL, MVT::v2i64, Custom);
-
-    if (Subtarget->isSVEAvailable()) {
-      // NEON doesn't support across-vector reductions, but SVE does.
-      for (auto VT :
-           {MVT::v4f16, MVT::v8f16, MVT::v2f32, MVT::v4f32, MVT::v2f64})
-        setOperationAction(ISD::VECREDUCE_SEQ_FADD, VT, Custom);
-    }
 
     if (!Subtarget->isNeonAvailable()) {
       setTruncStoreAction(MVT::v2f32, MVT::v2f16, Custom);
@@ -1611,7 +1595,30 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
     setOperationPromotedToType(ISD::VECTOR_SPLICE, MVT::nxv16i1, MVT::nxv16i8);
 
     setOperationAction(ISD::VSCALE, MVT::i32, Custom);
+
+    for (auto VT : {MVT::v16i1, MVT::v8i1, MVT::v4i1, MVT::v2i1})
+      setOperationAction(ISD::INTRINSIC_WO_CHAIN, VT, Custom);
   }
+
+  // Handle operations that are only available in non-streaming SVE mode.
+  if (Subtarget->isSVEAvailable()) {
+    for (auto VT : {MVT::nxv16i8,  MVT::nxv8i16, MVT::nxv4i32,  MVT::nxv2i64,
+                    MVT::nxv2f16,  MVT::nxv4f16, MVT::nxv8f16,  MVT::nxv2f32,
+                    MVT::nxv4f32,  MVT::nxv2f64, MVT::nxv2bf16, MVT::nxv4bf16,
+                    MVT::nxv8bf16, MVT::v4f16,   MVT::v8f16,    MVT::v2f32,
+                    MVT::v4f32,    MVT::v1f64,   MVT::v2f64,    MVT::v8i8,
+                    MVT::v16i8,    MVT::v4i16,   MVT::v8i16,    MVT::v2i32,
+                    MVT::v4i32,    MVT::v1i64,   MVT::v2i64}) {
+      setOperationAction(ISD::MGATHER, VT, Custom);
+      setOperationAction(ISD::MSCATTER, VT, Custom);
+    }
+
+    for (auto VT : {MVT::nxv2f16, MVT::nxv4f16, MVT::nxv8f16, MVT::nxv2f32,
+                    MVT::nxv4f32, MVT::nxv2f64, MVT::v4f16, MVT::v8f16,
+                    MVT::v2f32, MVT::v4f32, MVT::v2f64})
+      setOperationAction(ISD::VECREDUCE_SEQ_FADD, VT, Custom);
+  }
+
 
   if (Subtarget->hasMOPS() && Subtarget->hasMTE()) {
     // Only required for llvm.aarch64.mops.memset.tag
@@ -2531,6 +2538,8 @@ const char *AArch64TargetLowering::getTargetNodeName(unsigned Opcode) const {
     MAKE_CASE(AArch64ISD::GLD1_SXTW_SCALED_MERGE_ZERO)
     MAKE_CASE(AArch64ISD::GLD1_UXTW_SCALED_MERGE_ZERO)
     MAKE_CASE(AArch64ISD::GLD1_IMM_MERGE_ZERO)
+    MAKE_CASE(AArch64ISD::GLD1Q_MERGE_ZERO)
+    MAKE_CASE(AArch64ISD::GLD1Q_INDEX_MERGE_ZERO)
     MAKE_CASE(AArch64ISD::GLD1S_MERGE_ZERO)
     MAKE_CASE(AArch64ISD::GLD1S_SCALED_MERGE_ZERO)
     MAKE_CASE(AArch64ISD::GLD1S_SXTW_MERGE_ZERO)
@@ -2555,6 +2564,8 @@ const char *AArch64TargetLowering::getTargetNodeName(unsigned Opcode) const {
     MAKE_CASE(AArch64ISD::GLDNT1_MERGE_ZERO)
     MAKE_CASE(AArch64ISD::GLDNT1_INDEX_MERGE_ZERO)
     MAKE_CASE(AArch64ISD::GLDNT1S_MERGE_ZERO)
+    MAKE_CASE(AArch64ISD::SST1Q_PRED)
+    MAKE_CASE(AArch64ISD::SST1Q_INDEX_PRED)
     MAKE_CASE(AArch64ISD::ST1_PRED)
     MAKE_CASE(AArch64ISD::SST1_PRED)
     MAKE_CASE(AArch64ISD::SST1_SCALED_PRED)
@@ -6249,7 +6260,7 @@ bool AArch64TargetLowering::useSVEForFixedLengthVectorVT(
 
   // All SVE implementations support NEON sized vectors.
   if (OverrideNEON && (VT.is128BitVector() || VT.is64BitVector()))
-    return Subtarget->hasSVE();
+    return Subtarget->isSVEorStreamingSVEAvailable();
 
   // Ensure NEON MVTs only belong to a single register class.
   if (VT.getFixedSizeInBits() <= 128)
@@ -15080,14 +15091,13 @@ bool AArch64TargetLowering::isLegalInterleavedAccessType(
 
   UseScalable = false;
 
-  if (!VecTy->isScalableTy() && !Subtarget->hasNEON())
+  if (!VecTy->isScalableTy() && !Subtarget->isNeonAvailable() &&
+      (!Subtarget->useSVEForFixedLengthVectors() ||
+       !getSVEPredPatternFromNumElements(MinElts)))
     return false;
 
-  if (VecTy->isScalableTy() && !Subtarget->hasSVEorSME())
-    return false;
-
-  // Ensure that the predicate for this number of elements is available.
-  if (Subtarget->hasSVE() && !getSVEPredPatternFromNumElements(MinElts))
+  if (VecTy->isScalableTy() &&
+      !Subtarget->isSVEorStreamingSVEAvailable())
     return false;
 
   // Ensure the number of vector elements is greater than 1.
@@ -22716,8 +22726,12 @@ static SDValue performScatterStoreCombine(SDNode *N, SelectionDAG &DAG,
     return SDValue();
 
   // For FPs, ACLE only supports _packed_ single and double precision types.
+  // SST1Q_[INDEX_]PRED is the ST1Q for sve2p1 and should allow all sizes.
   if (SrcElVT.isFloatingPoint())
-    if ((SrcVT != MVT::nxv4f32) && (SrcVT != MVT::nxv2f64))
+    if ((SrcVT != MVT::nxv4f32) && (SrcVT != MVT::nxv2f64) &&
+        ((Opcode != AArch64ISD::SST1Q_PRED &&
+          Opcode != AArch64ISD::SST1Q_INDEX_PRED) ||
+         ((SrcVT != MVT::nxv8f16) && (SrcVT != MVT::nxv8bf16))))
       return SDValue();
 
   // Depending on the addressing mode, this is either a pointer or a vector of
@@ -22734,6 +22748,10 @@ static SDValue performScatterStoreCombine(SDNode *N, SelectionDAG &DAG,
     Offset =
         getScaledOffsetForBitWidth(DAG, Offset, DL, SrcElVT.getSizeInBits());
     Opcode = AArch64ISD::SSTNT1_PRED;
+  } else if (Opcode == AArch64ISD::SST1Q_INDEX_PRED) {
+    Offset =
+        getScaledOffsetForBitWidth(DAG, Offset, DL, SrcElVT.getSizeInBits());
+    Opcode = AArch64ISD::SST1Q_PRED;
   }
 
   // In the case of non-temporal gather loads there's only one SVE instruction
@@ -22741,7 +22759,8 @@ static SDValue performScatterStoreCombine(SDNode *N, SelectionDAG &DAG,
   //    * stnt1{b|h|w|d} { z0.s }, p0/z, [z0.s, x0]
   // Since we do have intrinsics that allow the arguments to be in a different
   // order, we may need to swap them to match the spec.
-  if (Opcode == AArch64ISD::SSTNT1_PRED && Offset.getValueType().isVector())
+  if ((Opcode == AArch64ISD::SSTNT1_PRED || Opcode == AArch64ISD::SST1Q_PRED) &&
+      Offset.getValueType().isVector())
     std::swap(Base, Offset);
 
   // SST1_IMM requires that the offset is an immediate that is:
@@ -22824,21 +22843,26 @@ static SDValue performGatherLoadCombine(SDNode *N, SelectionDAG &DAG,
   // vector of offsets  (that fits into one register)
   SDValue Offset = N->getOperand(4);
 
-  // For "scalar + vector of indices", just scale the indices. This only
-  // applies to non-temporal gathers because there's no instruction that takes
-  // indicies.
+  // For "scalar + vector of indices", scale the indices to obtain unscaled
+  // offsets. This applies to non-temporal and quadword gathers, which do not
+  // have an addressing mode with scaled offset.
   if (Opcode == AArch64ISD::GLDNT1_INDEX_MERGE_ZERO) {
     Offset = getScaledOffsetForBitWidth(DAG, Offset, DL,
                                         RetVT.getScalarSizeInBits());
     Opcode = AArch64ISD::GLDNT1_MERGE_ZERO;
+  } else if (Opcode == AArch64ISD::GLD1Q_INDEX_MERGE_ZERO) {
+    Offset = getScaledOffsetForBitWidth(DAG, Offset, DL,
+                                        RetVT.getScalarSizeInBits());
+    Opcode = AArch64ISD::GLD1Q_MERGE_ZERO;
   }
 
-  // In the case of non-temporal gather loads there's only one SVE instruction
-  // per data-size: "scalar + vector", i.e.
-  //    * ldnt1{b|h|w|d} { z0.s }, p0/z, [z0.s, x0]
+  // In the case of non-temporal gather loads and quadword gather loads there's
+  // only one addressing mode : "vector + scalar", e.g.
+  //   ldnt1{b|h|w|d} { z0.s }, p0/z, [z0.s, x0]
   // Since we do have intrinsics that allow the arguments to be in a different
   // order, we may need to swap them to match the spec.
-  if (Opcode == AArch64ISD::GLDNT1_MERGE_ZERO &&
+  if ((Opcode == AArch64ISD::GLDNT1_MERGE_ZERO ||
+       Opcode == AArch64ISD::GLD1Q_MERGE_ZERO) &&
       Offset.getValueType().isVector())
     std::swap(Base, Offset);
 
@@ -23636,6 +23660,12 @@ SDValue AArch64TargetLowering::PerformDAGCombine(SDNode *N,
       return performScatterStoreCombine(N, DAG, AArch64ISD::SSTNT1_INDEX_PRED);
     case Intrinsic::aarch64_sve_ld1_gather:
       return performGatherLoadCombine(N, DAG, AArch64ISD::GLD1_MERGE_ZERO);
+    case Intrinsic::aarch64_sve_ld1q_gather_scalar_offset:
+    case Intrinsic::aarch64_sve_ld1q_gather_vector_offset:
+      return performGatherLoadCombine(N, DAG, AArch64ISD::GLD1Q_MERGE_ZERO);
+    case Intrinsic::aarch64_sve_ld1q_gather_index:
+      return performGatherLoadCombine(N, DAG,
+                                      AArch64ISD::GLD1Q_INDEX_MERGE_ZERO);
     case Intrinsic::aarch64_sve_ld1_gather_index:
       return performGatherLoadCombine(N, DAG,
                                       AArch64ISD::GLD1_SCALED_MERGE_ZERO);
@@ -23679,6 +23709,11 @@ SDValue AArch64TargetLowering::PerformDAGCombine(SDNode *N,
     case Intrinsic::aarch64_sve_ldff1_gather_scalar_offset:
       return performGatherLoadCombine(N, DAG,
                                       AArch64ISD::GLDFF1_IMM_MERGE_ZERO);
+    case Intrinsic::aarch64_sve_st1q_scatter_scalar_offset:
+    case Intrinsic::aarch64_sve_st1q_scatter_vector_offset:
+      return performScatterStoreCombine(N, DAG, AArch64ISD::SST1Q_PRED);
+    case Intrinsic::aarch64_sve_st1q_scatter_index:
+      return performScatterStoreCombine(N, DAG, AArch64ISD::SST1Q_INDEX_PRED);
     case Intrinsic::aarch64_sve_st1_scatter:
       return performScatterStoreCombine(N, DAG, AArch64ISD::SST1_PRED);
     case Intrinsic::aarch64_sve_st1_scatter_index:

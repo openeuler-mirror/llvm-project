@@ -7818,6 +7818,9 @@ static bool handleArmStateAttribute(Sema &S,
     if (StateName == "za") {
       Shift = FunctionType::SME_ZAShift;
       ExistingState = FunctionType::getArmZAState(EPI.AArch64SMEAttributes);
+    } else if (StateName == "zt0") {
+      Shift = FunctionType::SME_ZT0Shift;
+      ExistingState = FunctionType::getArmZT0State(EPI.AArch64SMEAttributes);
     } else {
       S.Diag(LiteralLoc, diag::err_unknown_arm_state) << StateName;
       Attr.setInvalid();
@@ -8340,12 +8343,25 @@ static void HandleNeonVectorTypeAttr(QualType &CurType, const ParsedAttr &Attr,
   // not to need a separate attribute)
   if (!(S.Context.getTargetInfo().hasFeature("neon") ||
         S.Context.getTargetInfo().hasFeature("mve") ||
-        IsTargetCUDAAndHostARM)) {
+        S.Context.getTargetInfo().hasFeature("sve") ||
+        S.Context.getTargetInfo().hasFeature("sme") ||
+        IsTargetCUDAAndHostARM) &&
+      VecKind == VectorType::NeonVector) {
+    S.Diag(Attr.getLoc(), diag::err_attribute_unsupported)
+        << Attr << "'neon', 'mve', 'sve' or 'sme'";
+    Attr.setInvalid();
+    return;
+  }
+  if (!(S.Context.getTargetInfo().hasFeature("neon") ||
+        S.Context.getTargetInfo().hasFeature("mve") ||
+        IsTargetCUDAAndHostARM) &&
+      VecKind == VectorType::NeonPolyVector) {
     S.Diag(Attr.getLoc(), diag::err_attribute_unsupported)
         << Attr << "'neon' or 'mve'";
     Attr.setInvalid();
     return;
   }
+
   // Check the attribute arguments.
   if (Attr.getNumArgs() != 1) {
     S.Diag(Attr.getLoc(), diag::err_attribute_wrong_number_arguments)

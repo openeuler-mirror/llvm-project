@@ -2,7 +2,7 @@
 ; RUN: llc -mtriple=aarch64--linux-gnu -mattr=+sve < %s | FileCheck %s
 
 ; FIXME: Streaming-compatible SVE doesn't include FADDA, so this shouldn't compile!
-; RUN: llc -mtriple=aarch64--linux-gnu -mattr=+sve -force-streaming-compatible-sve < %s | FileCheck %s
+; RUN: llc -mtriple=aarch64--linux-gnu -mattr=+sve -force-streaming-compatible < %s | FileCheck %s
 
 ;
 ; FADDA

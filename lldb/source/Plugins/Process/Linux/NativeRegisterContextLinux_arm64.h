@@ -84,6 +84,7 @@ private:
   bool m_sve_buffer_is_valid;
   bool m_mte_ctrl_is_valid;
   bool m_tls_tpidr_is_valid;
+  bool m_fpmr_is_valid;
 
   bool m_sve_header_is_valid;
   bool m_pac_mask_is_valid;
@@ -110,6 +111,8 @@ private:
 
   uint64_t m_tls_tpidr_reg;
 
+  uint64_t m_fpmr_reg;
+
   bool IsGPR(unsigned reg) const;
 
   bool IsFPR(unsigned reg) const;
@@ -132,10 +135,15 @@ private:
 
   Status WriteTLSTPIDR();
 
+  Status ReadFPMR();
+
+  Status WriteFPMR();
+
   bool IsSVE(unsigned reg) const;
   bool IsPAuth(unsigned reg) const;
   bool IsMTE(unsigned reg) const;
   bool IsTLS(unsigned reg) const;
+  bool IsFPMR(unsigned reg) const;
 
   uint64_t GetSVERegVG() { return m_sve_header.vl / 8; }
 
@@ -151,6 +159,8 @@ private:
 
   void *GetSVEBuffer() { return m_sve_ptrace_payload.data(); };
 
+  void *GetFPMRBuffer() { return &m_fpmr_reg; }
+
   size_t GetSVEHeaderSize() { return sizeof(m_sve_header); }
 
   size_t GetPACMaskSize() { return sizeof(m_pac_mask); }
@@ -160,6 +170,8 @@ private:
   size_t GetMTEControlSize() { return sizeof(m_mte_ctrl_reg); }
 
   size_t GetTLSTPIDRSize() { return sizeof(m_tls_tpidr_reg); }
+
+  size_t GetFPMRBufferSize() { return sizeof(m_fpmr_reg); }
 
   llvm::Error ReadHardwareDebugInfo() override;
 

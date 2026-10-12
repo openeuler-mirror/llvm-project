@@ -44,8 +44,14 @@
 #define NT_ARM_TAGGED_ADDR_CTRL 0x409 /* Tagged address control register */
 #endif
 
+#ifndef NT_ARM_FPMR
+#define NT_ARM_FPMR 0x40e /* Floating point mode register */
+#endif
+
 #define HWCAP_PACA (1 << 30)
 #define HWCAP2_MTE (1 << 18)
+
+#define HWCAP2_FPMR (1UL << 48)
 
 using namespace lldb;
 using namespace lldb_private;
@@ -83,8 +89,12 @@ NativeRegisterContextLinux::CreateHostNativeRegisterContextLinux(
 
     std::optional<uint64_t> auxv_at_hwcap2 =
         process.GetAuxValue(AuxVector::AUXV_AT_HWCAP2);
-    if (auxv_at_hwcap2 && (*auxv_at_hwcap2 & HWCAP2_MTE))
-      opt_regsets.Set(RegisterInfoPOSIX_arm64::eRegsetMaskMTE);
+    if (auxv_at_hwcap2) {
+      if (*auxv_at_hwcap2 & HWCAP2_MTE)
+        opt_regsets.Set(RegisterInfoPOSIX_arm64::eRegsetMaskMTE);
+      if (*auxv_at_hwcap2 & HWCAP2_FPMR)
+        opt_regsets.Set(RegisterInfoPOSIX_arm64::eRegsetMaskFPMR);
+    }
 
     opt_regsets.Set(RegisterInfoPOSIX_arm64::eRegsetMaskTLS);
 
@@ -119,6 +129,7 @@ NativeRegisterContextLinux_arm64::NativeRegisterContextLinux_arm64(
 
   m_mte_ctrl_reg = 0;
   m_tls_tpidr_reg = 0;
+  m_fpmr_reg = 0;
 
   // 16 is just a maximum value, query hardware for actual watchpoint count
   m_max_hwp_supported = 16;
@@ -133,6 +144,7 @@ NativeRegisterContextLinux_arm64::NativeRegisterContextLinux_arm64(
   m_pac_mask_is_valid = false;
   m_mte_ctrl_is_valid = false;
   m_tls_tpidr_is_valid = false;
+  m_fpmr_is_valid = false;
 
   if (GetRegisterInfo().IsSVEEnabled())
     m_sve_state = SVEState::Unknown;
@@ -292,6 +304,14 @@ NativeRegisterContextLinux_arm64::ReadRegister(const RegisterInfo *reg_info,
     offset = reg_info->byte_offset - GetRegisterInfo().GetMTEOffset();
     assert(offset < GetMTEControlSize());
     src = (uint8_t *)GetMTEControl() + offset;
+  } else if (IsFPMR(reg)) {
+    error = ReadFPMR();
+    if (error.Fail())
+      return error;
+
+    offset = reg_info->byte_offset - GetRegisterInfo().GetFPMROffset();
+    assert(offset < GetFPMRBufferSize());
+    src = (uint8_t *)GetFPMRBuffer() + offset;
   } else
     return Status("failed - register wasn't recognized to be a GPR or an FPR, "
                   "write strategy unknown");
@@ -472,6 +492,17 @@ Status NativeRegisterContextLinux_arm64::WriteRegister(
     ::memcpy(dst, reg_value.GetBytes(), reg_info->byte_size);
 
     return WriteTLSTPIDR();
+  } else if (IsFPMR(reg)) {
+    error = ReadFPMR();
+    if (error.Fail())
+      return error;
+
+    offset = reg_info->byte_offset - GetRegisterInfo().GetFPMROffset();
+    assert(offset < GetFPMRBufferSize());
+    dst = (uint8_t *)GetFPMRBuffer() + offset;
+    ::memcpy(dst, reg_value.GetBytes(), reg_info->byte_size);
+
+    return WriteFPMR();
   }
 
   return Status("Failed to write register value");
@@ -686,6 +717,10 @@ bool NativeRegisterContextLinux_arm64::IsTLS(unsigned reg) const {
   return GetRegisterInfo().IsTLSReg(reg);
 }
 
+bool NativeRegisterContextLinux_arm64::IsFPMR(unsigned reg) const {
+  return GetRegisterInfo().IsFPMRReg(reg);
+}
+
 llvm::Error NativeRegisterContextLinux_arm64::ReadHardwareDebugInfo() {
   if (!m_refresh_hwdebug_info) {
     return llvm::Error::success();
@@ -830,6 +865,7 @@ void NativeRegisterContextLinux_arm64::InvalidateAllRegisters() {
   m_pac_mask_is_valid = false;
   m_mte_ctrl_is_valid = false;
   m_tls_tpidr_is_valid = false;
+  m_fpmr_is_valid = false;
 
   // Update SVE registers in case there is change in configuration.
   ConfigureRegisterContext();
@@ -992,6 +1028,40 @@ Status NativeRegisterContextLinux_arm64::WriteTLSTPIDR() {
   m_tls_tpidr_is_valid = false;
 
   return WriteRegisterSet(&ioVec, GetTLSTPIDRSize(), NT_ARM_TLS);
+}
+
+Status NativeRegisterContextLinux_arm64::ReadFPMR() {
+  Status error;
+
+  if (m_fpmr_is_valid)
+    return error;
+
+  struct iovec ioVec;
+  ioVec.iov_base = GetFPMRBuffer();
+  ioVec.iov_len = GetFPMRBufferSize();
+
+  error = ReadRegisterSet(&ioVec, GetFPMRBufferSize(), NT_ARM_FPMR);
+
+  if (error.Success())
+    m_fpmr_is_valid = true;
+
+  return error;
+}
+
+Status NativeRegisterContextLinux_arm64::WriteFPMR() {
+  Status error;
+
+  error = ReadFPMR();
+  if (error.Fail())
+    return error;
+
+  struct iovec ioVec;
+  ioVec.iov_base = GetFPMRBuffer();
+  ioVec.iov_len = GetFPMRBufferSize();
+
+  m_fpmr_is_valid = false;
+
+  return WriteRegisterSet(&ioVec, GetFPMRBufferSize(), NT_ARM_FPMR);
 }
 
 void NativeRegisterContextLinux_arm64::ConfigureRegisterContext() {

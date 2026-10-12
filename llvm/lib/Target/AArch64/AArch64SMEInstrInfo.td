@@ -573,11 +573,11 @@ def STR_TX : sme2_spill_fill_vector<"str", 0b11111100>;
 def MOVT_XTI : sme2_movt_zt_to_scalar<"movt", 0b0011111>;
 def MOVT_TIX : sme2_movt_scalar_to_zt<"movt", 0b0011111>;
 
-defm LUTI2_ZTZI  : sme2_luti2_vector_index<"luti2">;
+defm LUTI2_ZTZI  : sme2_luti2_vector_index<"luti2", int_aarch64_sme_luti2_lane_zt>;
 defm LUTI2_2ZTZI : sme2_luti2_vector_vg2_index<"luti2">;
 defm LUTI2_4ZTZI : sme2_luti2_vector_vg4_index<"luti2">;
 
-defm LUTI4_ZTZI  : sme2_luti4_vector_index<"luti4">;
+defm LUTI4_ZTZI  : sme2_luti4_vector_index<"luti4", int_aarch64_sme_luti4_lane_zt>;
 defm LUTI4_2ZTZI : sme2_luti4_vector_vg2_index<"luti4">;
 defm LUTI4_4ZTZI : sme2_luti4_vector_vg4_index<"luti4">;
 
@@ -912,10 +912,10 @@ defm FAMAX_4Z4Z : sme2_fp_sve_destructive_vector_vg4_multi<"famax", 0b0010100>;
 defm FAMIN_4Z4Z : sme2_fp_sve_destructive_vector_vg4_multi<"famin", 0b0010101>;
 } //[HasSME2, HasFAMINMAX]
 
-let Predicates = [HasSME2, HasSME_LUTv2] in {
+let Predicates = [HasSME_LUTv2] in {
 defm MOVT : sme2_movt_zt_to_zt<"movt",  0b0011111>;
-def LUTI4_4ZZT2Z    : sme2_luti4_vector_vg4<0b00, 0b00,"luti4">;
-} //[HasSME2, HasSME_LUTv2]
+def LUTI4_4ZZT2Z : sme2_luti4_vector_vg4<0b00, 0b00,"luti4">;
+} //[HasSME_LUTv2]
 
 let Predicates = [HasSME2p1, HasSME_LUTv2] in {
 def LUTI4_S_4ZZT2Z  : sme2_luti4_vector_vg4_strided<0b00, 0b00, "luti4">;
