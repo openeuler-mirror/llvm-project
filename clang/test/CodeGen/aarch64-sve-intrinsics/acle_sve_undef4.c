@@ -148,3 +148,16 @@ svfloat64x4_t test_svundef4_f64()
 {
   return svundef4_f64();
 }
+
+// CHECK-LABEL: @test_svundef4_mf8(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    ret <vscale x 64 x i8> undef
+//
+// CPP-CHECK-LABEL: @_Z17test_svundef4_mf8v(
+// CPP-CHECK-NEXT:  entry:
+// CPP-CHECK-NEXT:    ret <vscale x 64 x i8> undef
+//
+svmfloat8x4_t test_svundef4_mf8()
+{
+  return svundef4_mf8();
+}

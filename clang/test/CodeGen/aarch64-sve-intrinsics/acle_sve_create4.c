@@ -247,3 +247,24 @@ svfloat64x4_t test_svcreate4_f64(svfloat64_t x0, svfloat64_t x1, svfloat64_t x2,
 {
   return SVE_ACLE_FUNC(svcreate4,_f64,,)(x0, x1, x2, x4);
 }
+
+// CHECK-LABEL: @test_svcreate4_mf8(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 64 x i8> @llvm.vector.insert.nxv64i8.nxv16i8(<vscale x 64 x i8> poison, <vscale x 16 x i8> [[X0:%.*]], i64 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 64 x i8> @llvm.vector.insert.nxv64i8.nxv16i8(<vscale x 64 x i8> [[TMP0]], <vscale x 16 x i8> [[X1:%.*]], i64 16)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 64 x i8> @llvm.vector.insert.nxv64i8.nxv16i8(<vscale x 64 x i8> [[TMP1]], <vscale x 16 x i8> [[X2:%.*]], i64 32)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call <vscale x 64 x i8> @llvm.vector.insert.nxv64i8.nxv16i8(<vscale x 64 x i8> [[TMP2]], <vscale x 16 x i8> [[X4:%.*]], i64 48)
+// CHECK-NEXT:    ret <vscale x 64 x i8> [[TMP3]]
+//
+// CPP-CHECK-LABEL: @_Z18test_svcreate4_mf8u13__SVMfloat8_tu13__SVMfloat8_tu13__SVMfloat8_tu13__SVMfloat8_t(
+// CPP-CHECK-NEXT:  entry:
+// CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 64 x i8> @llvm.vector.insert.nxv64i8.nxv16i8(<vscale x 64 x i8> poison, <vscale x 16 x i8> [[X0:%.*]], i64 0)
+// CPP-CHECK-NEXT:    [[TMP1:%.*]] = tail call <vscale x 64 x i8> @llvm.vector.insert.nxv64i8.nxv16i8(<vscale x 64 x i8> [[TMP0]], <vscale x 16 x i8> [[X1:%.*]], i64 16)
+// CPP-CHECK-NEXT:    [[TMP2:%.*]] = tail call <vscale x 64 x i8> @llvm.vector.insert.nxv64i8.nxv16i8(<vscale x 64 x i8> [[TMP1]], <vscale x 16 x i8> [[X2:%.*]], i64 32)
+// CPP-CHECK-NEXT:    [[TMP3:%.*]] = tail call <vscale x 64 x i8> @llvm.vector.insert.nxv64i8.nxv16i8(<vscale x 64 x i8> [[TMP2]], <vscale x 16 x i8> [[X4:%.*]], i64 48)
+// CPP-CHECK-NEXT:    ret <vscale x 64 x i8> [[TMP3]]
+//
+svmfloat8x4_t test_svcreate4_mf8(svmfloat8_t x0, svmfloat8_t x1, svmfloat8_t x2, svmfloat8_t x4) ATTR
+{
+  return SVE_ACLE_FUNC(svcreate4,_mf8,,)(x0, x1, x2, x4);
+}

@@ -72,6 +72,7 @@ enum ClassKind {
   ClassI,     // generic integer instruction, e.g., "i8" suffix
   ClassS,     // signed/unsigned/poly, e.g., "s8", "u8" or "p8" suffix
   ClassW,     // width-specific instruction, e.g., "8" suffix
+  ClassV,     // void-suffix instruction, no suffix
   ClassB,     // bitcast arguments with enum argument to specify type
   ClassL,     // Logical instructions which are op instructions
               // but we need to not emit any suffix for in our
@@ -99,7 +100,8 @@ enum EltType {
   Float16,
   Float32,
   Float64,
-  BFloat16
+  BFloat16,
+  MFloat8
 };
 
 } // end namespace NeonTypeFlags
@@ -148,6 +150,8 @@ private:
     UInt,
     Poly,
     BFloat16,
+    MFloat8,
+    FPM
   };
   TypeKind Kind;
   bool Immediate, Constant, Pointer;
@@ -201,6 +205,8 @@ public:
   bool isLong() const { return isInteger() && ElementBitwidth == 64; }
   bool isVoid() const { return Kind == Void; }
   bool isBFloat16() const { return Kind == BFloat16; }
+  bool isMFloat8() const { return Kind == MFloat8; }
+  bool isFPM() const { return Kind == FPM; }
   unsigned getNumElements() const { return Bitwidth / ElementBitwidth; }
   unsigned getSizeInBits() const { return Bitwidth; }
   unsigned getElementSizeInBits() const { return ElementBitwidth; }
@@ -570,6 +576,7 @@ public:
     Record *SI = R.getClass("SInst");
     Record *II = R.getClass("IInst");
     Record *WI = R.getClass("WInst");
+    Record *VI = R.getClass("VInst");
     Record *SOpI = R.getClass("SOpInst");
     Record *IOpI = R.getClass("IOpInst");
     Record *WOpI = R.getClass("WOpInst");
@@ -579,6 +586,7 @@ public:
     ClassMap[SI] = ClassS;
     ClassMap[II] = ClassI;
     ClassMap[WI] = ClassW;
+    ClassMap[VI] = ClassV;
     ClassMap[SOpI] = ClassS;
     ClassMap[IOpI] = ClassI;
     ClassMap[WOpI] = ClassW;
@@ -611,6 +619,9 @@ public:
 std::string Type::str() const {
   if (isVoid())
     return "void";
+  if (isFPM())
+    return "fpm_t";
+
   std::string S;
 
   if (isInteger() && !isSigned())
@@ -622,6 +633,8 @@ std::string Type::str() const {
     S += "float";
   else if (isBFloat16())
     S += "bfloat";
+  else if (isMFloat8())
+    S += "mfloat";
   else
     S += "int";
 
@@ -664,6 +677,11 @@ std::string Type::builtin_str() const {
   else if (isBFloat16()) {
     assert(ElementBitwidth == 16 && "BFloat16 can only be 16 bits");
     S += "y";
+  } else if (isMFloat8()) {
+    assert(ElementBitwidth == 8 && "MFloat8 can only be 8 bits");
+    S += "m";
+  } else if (isFPM()) {
+    S += "UWi";
   } else
     switch (ElementBitwidth) {
     case 16: S += "h"; break;
@@ -723,6 +741,10 @@ unsigned Type::getNeonEnum() const {
     Base = (unsigned)NeonTypeFlags::BFloat16;
   }
 
+  if (isMFloat8()) {
+    Base = (unsigned)NeonTypeFlags::MFloat8;
+  }
+
   if (Bitwidth == 128)
     Base |= (unsigned)NeonTypeFlags::QuadFlag;
   if (isInteger() && !isSigned())
@@ -748,6 +770,9 @@ Type Type::fromTypedefName(StringRef Name) {
     Name = Name.drop_front(4);
   } else if (Name.startswith("bfloat")) {
     T.Kind = BFloat16;
+    Name = Name.drop_front(6);
+  } else if (Name.startswith("mfloat")) {
+    T.Kind = MFloat8;
     Name = Name.drop_front(6);
   } else {
     assert(Name.startswith("int"));
@@ -851,6 +876,10 @@ void Type::applyTypespec(bool &Quad) {
       Kind = BFloat16;
       ElementBitwidth = 16;
       break;
+    case 'm':
+      Kind = MFloat8;
+      ElementBitwidth = 8;
+      break;
     default:
       llvm_unreachable("Unhandled type code!");
     }
@@ -886,6 +915,13 @@ void Type::applyModifiers(StringRef Mods) {
       break;
     case 'P':
       Kind = Poly;
+      break;
+    case 'V':
+      Kind = FPM;
+      Bitwidth = ElementBitwidth = 64;
+      NumVectors = 0;
+      Immediate = Constant = Pointer = false;
+      ScalarForMangling = NoManglingQ = true;
       break;
     case '>':
       assert(ElementBitwidth < 128);
@@ -961,6 +997,12 @@ std::string Intrinsic::getInstTypeCode(Type T, ClassKind CK) const {
 
   if (CK == ClassB && TargetGuard == "")
     return "";
+
+  if (this->CK == ClassV)
+    return "";
+
+  if (T.isMFloat8())
+    return "mf8";
 
   if (T.isBFloat16())
     return "bf16";
@@ -2590,8 +2632,66 @@ void NeonEmitter::runVectorTypes(raw_ostream &OS) {
   OS << "typedef __fp16 float16_t;\n";
 
   OS << "#ifdef __aarch64__\n";
+  OS << "typedef __MFloat8_t __mfp8;\n";
+  OS << "typedef __mfp8 mfloat8_t;\n";
+  OS << "typedef __attribute__((neon_vector_type(8))) mfloat8_t mfloat8x8_t;\n";
+  OS << "typedef __attribute__((neon_vector_type(16))) mfloat8_t mfloat8x16_t;\n";
   OS << "typedef double float64_t;\n";
   OS << "#endif\n\n";
+
+  OS << R"(
+typedef uint64_t fpm_t;
+
+enum __ARM_FPM_FORMAT { __ARM_FPM_E5M2, __ARM_FPM_E4M3 };
+
+enum __ARM_FPM_OVERFLOW { __ARM_FPM_INFNAN, __ARM_FPM_SATURATE };
+
+static __inline__ fpm_t __attribute__((__always_inline__, __nodebug__))
+__arm_fpm_init(void) {
+  return 0;
+}
+
+static __inline__ fpm_t __attribute__((__always_inline__, __nodebug__))
+__arm_set_fpm_src1_format(fpm_t __fpm, enum __ARM_FPM_FORMAT __format) {
+  return (__fpm & ~7ull) | (fpm_t)__format;
+}
+
+static __inline__ fpm_t __attribute__((__always_inline__, __nodebug__))
+__arm_set_fpm_src2_format(fpm_t __fpm, enum __ARM_FPM_FORMAT __format) {
+  return (__fpm & ~0x38ull) | ((fpm_t)__format << 3u);
+}
+
+static __inline__ fpm_t __attribute__((__always_inline__, __nodebug__))
+__arm_set_fpm_dst_format(fpm_t __fpm, enum __ARM_FPM_FORMAT __format) {
+  return (__fpm & ~0x1c0ull) | ((fpm_t)__format << 6u);
+}
+
+static __inline__ fpm_t __attribute__((__always_inline__, __nodebug__))
+__arm_set_fpm_overflow_mul(fpm_t __fpm, enum __ARM_FPM_OVERFLOW __behaviour) {
+  return (__fpm & ~0x4000ull) | ((fpm_t)__behaviour << 14u);
+}
+
+static __inline__ fpm_t __attribute__((__always_inline__, __nodebug__))
+__arm_set_fpm_overflow_cvt(fpm_t __fpm, enum __ARM_FPM_OVERFLOW __behaviour) {
+  return (__fpm & ~0x8000ull) | ((fpm_t)__behaviour << 15u);
+}
+
+static __inline__ fpm_t __attribute__((__always_inline__, __nodebug__))
+__arm_set_fpm_lscale(fpm_t __fpm, uint64_t __scale) {
+  return (__fpm & ~0x7f0000ull) | (__scale << 16u);
+}
+
+static __inline__ fpm_t __attribute__((__always_inline__, __nodebug__))
+__arm_set_fpm_nscale(fpm_t __fpm, int64_t __scale) {
+  return (__fpm & ~0xff000000ull) | (((fpm_t)__scale & 0xffu) << 24u);
+}
+
+static __inline__ fpm_t __attribute__((__always_inline__, __nodebug__))
+__arm_set_fpm_lscale2(fpm_t __fpm, uint64_t __scale) {
+  return (uint32_t)__fpm | (__scale << 32u);
+}
+
+)";
 
   emitNeonTypeDefs("cQcsQsiQilQlUcQUcUsQUsUiQUiUlQUlhQhfQfdQd", OS);
 

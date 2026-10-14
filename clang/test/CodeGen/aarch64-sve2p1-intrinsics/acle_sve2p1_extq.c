@@ -211,3 +211,19 @@ svfloat64_t test_svextq_lane_f64(svfloat64_t zn, svfloat64_t zm) {
 svbfloat16_t test_svextq_lane_bf16(svbfloat16_t zn, svbfloat16_t zm) {
     return SVE_ACLE_FUNC(svextq_lane, _bf16,,)(zn, zm, 11);
 }
+
+// CHECK-LABEL: define dso_local <vscale x 16 x i8> @test_svextq_lane_mf8
+// CHECK-SAME: (<vscale x 16 x i8> [[ZN:%.*]], <vscale x 16 x i8> [[ZM:%.*]]) #[[ATTR0]] {
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 16 x i8> @llvm.aarch64.sve.extq.lane.nxv16i8(<vscale x 16 x i8> [[ZN]], <vscale x 16 x i8> [[ZM]], i32 12)
+// CHECK-NEXT:    ret <vscale x 16 x i8> [[TMP0]]
+//
+// CPP-CHECK-LABEL: define dso_local <vscale x 16 x i8> @_Z20test_svextq_lane_mf8u13__SVMfloat8_tu13__SVMfloat8_t
+// CPP-CHECK-SAME: (<vscale x 16 x i8> [[ZN:%.*]], <vscale x 16 x i8> [[ZM:%.*]]) #[[ATTR0]] {
+// CPP-CHECK-NEXT:  entry:
+// CPP-CHECK-NEXT:    [[TMP0:%.*]] = tail call <vscale x 16 x i8> @llvm.aarch64.sve.extq.lane.nxv16i8(<vscale x 16 x i8> [[ZN]], <vscale x 16 x i8> [[ZM]], i32 12)
+// CPP-CHECK-NEXT:    ret <vscale x 16 x i8> [[TMP0]]
+//
+svmfloat8_t test_svextq_lane_mf8(svmfloat8_t zn, svmfloat8_t zm) {
+    return SVE_ACLE_FUNC(svextq_lane, _mf8,,)(zn, zm, 12);
+}

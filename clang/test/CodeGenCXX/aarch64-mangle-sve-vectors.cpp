@@ -29,6 +29,8 @@ void f10(S<__SVFloat32_t>) {}
 void f11(S<__SVFloat64_t>) {}
 // CHECK: _Z3f121SIu14__SVBFloat16_tE
 void f12(S<__SVBFloat16_t>) {}
+// CHECK: _Z3f131SIu13__SVMfloat8_tE
+void f13(S<__SVMfloat8_t>) {}
 // CHECK: _Z3f131SIu10__SVBool_tE
 void f13(S<__SVBool_t>) {}
 // CHECK: _Z3f141SIu11__SVCount_tE

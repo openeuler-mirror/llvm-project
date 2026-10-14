@@ -400,11 +400,9 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
     addRegisterClass(MVT::nxv4f32, &AArch64::ZPRRegClass);
     addRegisterClass(MVT::nxv2f64, &AArch64::ZPRRegClass);
 
-    if (Subtarget->hasBF16()) {
-      addRegisterClass(MVT::nxv2bf16, &AArch64::ZPRRegClass);
-      addRegisterClass(MVT::nxv4bf16, &AArch64::ZPRRegClass);
-      addRegisterClass(MVT::nxv8bf16, &AArch64::ZPRRegClass);
-    }
+    addRegisterClass(MVT::nxv2bf16, &AArch64::ZPRRegClass);
+    addRegisterClass(MVT::nxv4bf16, &AArch64::ZPRRegClass);
+    addRegisterClass(MVT::nxv8bf16, &AArch64::ZPRRegClass);
 
     if (Subtarget->useSVEForFixedLengthVectors()) {
       for (MVT VT : MVT::integer_fixedlen_vector_valuetypes())
@@ -7272,11 +7270,14 @@ void AArch64TargetLowering::AdjustInstrPostInstrSelection(MachineInstr &MI,
         MI.removeOperand(I);
 
     // The SVE vector length can change when entering/leaving streaming mode.
+    // FPMR is set to 0 when entering/leaving streaming mode.
     if (MI.getOperand(0).getImm() == AArch64SVCR::SVCRSM ||
         MI.getOperand(0).getImm() == AArch64SVCR::SVCRSMZA) {
       MI.addOperand(MachineOperand::CreateReg(AArch64::VG, /*IsDef=*/false,
                                               /*IsImplicit=*/true));
       MI.addOperand(MachineOperand::CreateReg(AArch64::VG, /*IsDef=*/true,
+                                              /*IsImplicit=*/true));
+      MI.addOperand(MachineOperand::CreateReg(AArch64::FPMR, /*IsDef=*/true,
                                               /*IsImplicit=*/true));
     }
   }

@@ -127,7 +127,7 @@ def FeatureFPMR : SubtargetFeature<"fpmr", "HasFPMR", "true",
   "Enable FPMR Register (FEAT_FPMR)">;
 
 def FeatureFP8 : SubtargetFeature<"fp8", "HasFP8", "true",
-  "Enable FP8 instructions (FEAT_FP8)">;
+  "Enable FP8 instructions (FEAT_FP8)", [FeatureNEON]>;
 
 
 // This flag is currently still labeled as Experimental, but when fully
@@ -520,7 +520,7 @@ def FeatureSME2p1 : SubtargetFeature<"sme2p1", "HasSME2p1", "true",
   "Enable Scalable Matrix Extension 2.1 (FEAT_SME2p1) instructions", [FeatureSME2]>;
 
 def FeatureFAMINMAX: SubtargetFeature<"faminmax", "HasFAMINMAX", "true",
-   "Enable FAMIN and FAMAX instructions (FEAT_FAMINMAX)">;
+   "Enable FAMIN and FAMAX instructions (FEAT_FAMINMAX)", [FeatureNEON]>;
 
 def FeatureFP8FMA : SubtargetFeature<"fp8fma", "HasFP8FMA", "true",
   "Enable fp8 multiply-add instructions (FEAT_FP8FMA)">;
@@ -529,18 +529,18 @@ def FeatureSSVE_FP8FMA : SubtargetFeature<"ssve-fp8fma", "HasSSVE_FP8FMA", "true
   "Enable SVE2 fp8 multiply-add instructions (FEAT_SSVE_FP8FMA)", [FeatureSME2]>;
 
 def FeatureFP8DOT2: SubtargetFeature<"fp8dot2", "HasFP8DOT2", "true",
-   "Enable fp8 2-way dot instructions (FEAT_FP8DOT2)">;
+   "Enable fp8 2-way dot instructions (FEAT_FP8DOT2)", [FeatureFP8]>;
 
 def FeatureSSVE_FP8DOT2 : SubtargetFeature<"ssve-fp8dot2", "HasSSVE_FP8DOT2", "true",
-  "Enable SVE2 fp8 2-way dot product instructions (FEAT_SSVE_FP8DOT2)", [FeatureSME2]>;
+  "Enable SVE2 fp8 2-way dot product instructions (FEAT_SSVE_FP8DOT2)", [FeatureSME2, FeatureFP8]>;
 
 def FeatureFP8DOT4: SubtargetFeature<"fp8dot4", "HasFP8DOT4", "true",
-   "Enable fp8 4-way dot instructions (FEAT_FP8DOT4)">;
+   "Enable fp8 4-way dot instructions (FEAT_FP8DOT4)", [FeatureFP8]>;
 
 def FeatureSSVE_FP8DOT4 : SubtargetFeature<"ssve-fp8dot4", "HasSSVE_FP8DOT4", "true",
-  "Enable SVE2 fp8 4-way dot product instructions (FEAT_SSVE_FP8DOT4)", [FeatureSME2]>;
+  "Enable SVE2 fp8 4-way dot product instructions (FEAT_SSVE_FP8DOT4)", [FeatureSME2, FeatureFP8]>;
 def FeatureLUT: SubtargetFeature<"lut", "HasLUT", "true",
-   "Enable Lookup Table instructions (FEAT_LUT)">;
+   "Enable Lookup Table instructions (FEAT_LUT)", [FeatureNEON]>;
 
 def FeatureSME_LUTv2 : SubtargetFeature<"sme-lutv2", "HasSME_LUTv2", "true",
   "Enable Scalable Matrix Extension (SME) LUTv2 instructions (FEAT_SME_LUTv2)", [FeatureSME2]>;

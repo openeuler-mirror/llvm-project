@@ -240,6 +240,7 @@ def OP_UNAVAILABLE : Operation {
 // B: change to BFloat16
 // P: change to polynomial category.
 // p: change polynomial to equivalent integer category. Otherwise nop.
+// V: change to fpm_t
 //
 // >: double element width (vector size unchanged).
 // <: half element width (vector size unchanged).
@@ -303,6 +304,8 @@ class Inst <string n, string p, string t, Operation o> {
 class SInst<string n, string p, string t> : Inst<n, p, t, OP_NONE> {}
 class IInst<string n, string p, string t> : Inst<n, p, t, OP_NONE> {}
 class WInst<string n, string p, string t> : Inst<n, p, t, OP_NONE> {}
+// V: change to fpm_t
+class VInst<string n, string p, string t> : Inst<n, p, t, OP_NONE> {}
 
 // The following instruction classes are implemented via operators
 // instead of builtins. As such these declarations are only used for

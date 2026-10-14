@@ -50,6 +50,7 @@
 // h: half-float
 // d: double
 // b: bfloat
+// m: mfloat8
 
 // Typespec modifiers
 // ------------------
@@ -86,6 +87,7 @@
 // j: element type promoted to 64bits (splat to vector type)
 // K: element type bitcast to a signed integer (splat to vector type)
 // L: element type bitcast to an unsigned integer (splat to vector type)
+// !: mfloat8_t (splat to svmfloat8_t)
 //
 // i: constant uint64_t
 // k: int32_t
@@ -160,6 +162,7 @@ def EltTyBool16  : EltType<10>;
 def EltTyBool32  : EltType<11>;
 def EltTyBool64  : EltType<12>;
 def EltTyBFloat16 : EltType<13>;
+def EltTyMFloat8  : EltType<14>;
 
 class MemEltType<int val> {
   int Value = val;
@@ -230,6 +233,7 @@ def IsInOutZA                 : FlagType<0x80000000000>;
 def IsReductionQV             : FlagType<0x100000000000>;
 def VerifyRuntimeMode         : FlagType<0x200000000000>; // Use for intrinsics that are common between SVE and SME.
 def IsInZT0                   : FlagType<0x400000000000>;
+def SetsFPMR                  : FlagType<0x2000000000000>;
 
 // These must be kept in sync with the flags in include/clang/Basic/TargetBuiltins.h
 class ImmCheckType<int val> {
