@@ -1761,7 +1761,7 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
       // 128bit results imply a bigger than NEON input.
       for (auto VT : {MVT::v16i8, MVT::v8i16, MVT::v4i32})
         setOperationAction(ISD::TRUNCATE, VT, Custom);
-      for (auto VT : {MVT::v8f16, MVT::v4f32})
+      for (auto VT : {MVT::v8f16, MVT::v4f32, MVT::v8bf16})
         setOperationAction(ISD::FP_ROUND, VT, Custom);
 
       // These operations are not supported on NEON but SVE can do them.
@@ -4487,18 +4487,9 @@ SDValue AArch64TargetLowering::LowerFP_EXTEND(SDValue Op,
   if (VT.isScalableVector()) {
     SDValue SrcVal = Op.getOperand(0);
 
-    if (SrcVal.getValueType().getScalarType() == MVT::bf16) {
-      // bf16 and f32 share the same exponent range so the conversion requires
-      // them to be aligned with the new mantissa bits zero'd. This is just a
-      // left shift that is best to isel directly.
-      if (VT == MVT::nxv2f32 || VT == MVT::nxv4f32)
-        return Op;
-
-      if (VT != MVT::nxv2f64)
-        return SDValue();
-
-      // Break other conversions in two with the first part converting to f32
-      // and the second using native f32->VT instructions.
+    if (VT == MVT::nxv2f64 && SrcVal.getValueType() == MVT::nxv2bf16) {
+      // Break conversion in two with the first part converting to f32 and the
+      // second using native f32->VT instructions.
       SDLoc DL(Op);
       return DAG.getNode(ISD::FP_EXTEND, DL, VT,
                          DAG.getNode(ISD::FP_EXTEND, DL, MVT::nxv2f32, SrcVal));
@@ -24021,13 +24012,15 @@ static SDValue performSTORECombine(SDNode *N,
   SDValue Ptr = ST->getBasePtr();
   EVT ValueVT = Value.getValueType();
 
-  auto hasValidElementTypeForFPTruncStore = [](EVT VT) {
-    EVT EltVT = VT.getVectorElementType();
-    return EltVT == MVT::f32 || EltVT == MVT::f64;
-  };
-
   if (SDValue Res = combineI8TruncStore(ST, DAG, Subtarget))
     return Res;
+
+  auto hasValidElementTypeForFPTruncStore = [](EVT DstVT, EVT SrcVT) {
+    if (DstVT.getScalarType() == MVT::bf16)
+      return false;
+    EVT EltVT = SrcVT.getVectorElementType();
+    return EltVT == MVT::f32 || EltVT == MVT::f64;
+  };
 
   // If this is an FP_ROUND followed by a store, fold this into a truncating
   // store. We can do this even if this is already a truncstore.
@@ -24038,7 +24031,8 @@ static SDValue performSTORECombine(SDNode *N,
       Subtarget->useSVEForFixedLengthVectors() &&
       ValueVT.isFixedLengthVector() &&
       ValueVT.getFixedSizeInBits() >= Subtarget->getMinSVEVectorSizeInBits() &&
-      hasValidElementTypeForFPTruncStore(Value.getOperand(0).getValueType()))
+      hasValidElementTypeForFPTruncStore(Value.getValueType(),
+                                         Value.getOperand(0).getValueType()))
     return DAG.getTruncStore(Chain, SDLoc(N), Value.getOperand(0), Ptr,
                              ST->getMemoryVT(), ST->getMemOperand());
 
@@ -29259,8 +29253,15 @@ AArch64TargetLowering::LowerFixedLengthFPExtendToSVE(SDValue Op,
 
   SDLoc DL(Op);
   SDValue Val = Op.getOperand(0);
-  SDValue Pg = getPredicateForVector(DAG, DL, VT);
   EVT SrcVT = Val.getValueType();
+
+  if (VT.getScalarType() == MVT::f64 && SrcVT.getScalarType() == MVT::bf16) {
+    return DAG.getNode(
+        ISD::FP_EXTEND, DL, VT,
+        DAG.getNode(ISD::FP_EXTEND, DL, VT.changeElementType(MVT::f32), Val));
+  }
+
+  SDValue Pg = getPredicateForVector(DAG, DL, VT);
   EVT ContainerVT = getContainerForFixedLengthVector(DAG, VT);
   EVT ExtendVT = ContainerVT.changeVectorElementType(
       SrcVT.getVectorElementType());
@@ -29288,11 +29289,9 @@ AArch64TargetLowering::LowerFixedLengthFPRoundToSVE(SDValue Op,
   EVT ContainerSrcVT = getContainerForFixedLengthVector(DAG, SrcVT);
   EVT RoundVT = ContainerSrcVT.changeVectorElementType(
       VT.getVectorElementType());
-  SDValue Pg = getPredicateForVector(DAG, DL, RoundVT);
 
   Val = convertToScalableVector(DAG, ContainerSrcVT, Val);
-  Val = DAG.getNode(AArch64ISD::FP_ROUND_MERGE_PASSTHRU, DL, RoundVT, Pg, Val,
-                    Op.getOperand(1), DAG.getUNDEF(RoundVT));
+  Val = DAG.getNode(Op.getOpcode(), DL, RoundVT, Val, Op.getOperand(1));
   Val = getSVESafeBitCast(ContainerSrcVT.changeTypeToInteger(), Val, DAG);
   Val = convertFromScalableVector(DAG, SrcVT.changeTypeToInteger(), Val);
 
