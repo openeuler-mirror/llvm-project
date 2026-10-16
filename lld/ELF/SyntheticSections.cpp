@@ -1186,6 +1186,14 @@ void Sw64GotSection::build() {
       auto Addend = P.first.second;
       uint64_t Offset = P.second * config->wordsize;
       assert(0 == Addend);
+      // PltSection::addEntry() records the PLT index into symAux.back(), which
+      // is only this symbol's own slot right after allocateAux().  On sw_64
+      // every GOT/PLT entry is created here (NEEDS_GOT/NEEDS_PLT are never
+      // set), so without an explicit allocateAux() all these symbols keep
+      // auxIdx == 0 and share the single symAux[0].pltIdx cell; Symbol::
+      // getPltVA() would then return the *last* PLT stub for every symbol.
+      if (0 == Sym->auxIdx)
+        Sym->allocateAux();
       in.plt->addEntry(*Sym);
       Addend += target->pltEntrySize * (PltIndex - Sym->getPltIdx());
       relocations.push_back({R_PLT, target->gotRel, Offset, Addend, Sym});
