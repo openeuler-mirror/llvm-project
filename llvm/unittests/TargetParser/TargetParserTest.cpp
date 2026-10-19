@@ -1586,6 +1586,21 @@ INSTANTIATE_TEST_SUITE_P(
                  AArch64::AEK_RDM})),
             "8.2-A"),
         ARMCPUTestParams<AArch64::ExtensionBitset>(
+            "fujitsu-monaka", "armv9.3-a", "neon-fp-armv8",
+            (AArch64::ExtensionBitset(
+                {AArch64::AEK_CRC, AArch64::AEK_FP, AArch64::AEK_SIMD,
+                 AArch64::AEK_RAS, AArch64::AEK_RCPC, AArch64::AEK_RDM,
+                 AArch64::AEK_DOTPROD, AArch64::AEK_FP16, AArch64::AEK_SVE,
+                 AArch64::AEK_SVE2, AArch64::AEK_BF16, AArch64::AEK_I8MM,
+                 AArch64::AEK_MOPS, AArch64::AEK_HBC, AArch64::AEK_PERFMON,
+                 AArch64::AEK_FPAC, AArch64::AEK_FP16FML, AArch64::AEK_RAND,
+                 AArch64::AEK_SSBS, AArch64::AEK_LS64, AArch64::AEK_SPECRES2,
+                 AArch64::AEK_SVE2AES, AArch64::AEK_SVE2SM4,
+                 AArch64::AEK_SVE2SHA3, AArch64::AEK_SVE2BITPERM,
+                 AArch64::AEK_FAMINMAX, AArch64::AEK_FP8DOT2,
+                 AArch64::AEK_LUT})),
+            "9.3-A"),
+        ARMCPUTestParams<AArch64::ExtensionBitset>(
             "carmel", "armv8.2-a", "crypto-neon-fp-armv8",
             (AArch64::ExtensionBitset(
                 {AArch64::AEK_CRC, AArch64::AEK_AES, AArch64::AEK_SHA2,
@@ -1594,7 +1609,7 @@ INSTANTIATE_TEST_SUITE_P(
             "8.2-A")));
 
 // Note: number of CPUs includes aliases.
-static constexpr unsigned NumAArch64CPUArchs = 66;
+static constexpr unsigned NumAArch64CPUArchs = 67;
 
 TEST(TargetParserTest, testAArch64CPUArchList) {
   SmallVector<StringRef, NumAArch64CPUArchs> List;
@@ -1771,7 +1786,7 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
       AArch64::AEK_SME2P2,      AArch64::AEK_SVE_F16F32MM, AArch64::AEK_SVE_AES2,
       AArch64::AEK_SSVE_AES,    AArch64::AEK_F8F32MM,      AArch64::AEK_F8F16MM,
       AArch64::AEK_LSFE,        AArch64::AEK_FPRCVT,       AArch64::AEK_F16MM,
-      AArch64::AEK_F16F32MM};
+      AArch64::AEK_F16F32MM,    AArch64::AEK_SME_MOP4,     AArch64::AEK_SME_TMOP};
 
   std::vector<StringRef> Features;
 
@@ -1872,6 +1887,8 @@ TEST(TargetParserTest, AArch64ExtensionFeatures) {
   EXPECT_TRUE(llvm::is_contained(Features, "+fprcvt"));
   EXPECT_TRUE(llvm::is_contained(Features, "+f16mm"));
   EXPECT_TRUE(llvm::is_contained(Features, "+f16f32mm"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sme-mop4"));
+  EXPECT_TRUE(llvm::is_contained(Features, "+sme-tmop"));
 
   // Assuming we listed every extension above, this should produce the same
   // result. (note that AEK_NONE doesn't have a name so it won't be in the
@@ -2026,7 +2043,9 @@ TEST(TargetParserTest, AArch64ArchExtFeature) {
       {"lsfe", "nolsfe", "+lsfe", "-lsfe"},
       {"fprcvt", "nofprcvt", "+fprcvt", "-fprcvt"},
       {"f16mm", "nof16mm", "+f16mm", "-f16mm"},
-      {"f16f32mm", "nof16f32mm", "+f16f32mm", "-f16f32mm"}};
+      {"f16f32mm", "nof16f32mm", "+f16f32mm", "-f16f32mm"},
+      {"sme-mop4", "nosme-mop4", "+sme-mop4", "-sme-mop4"},
+      {"sme-tmop", "nosme-tmop", "+sme-tmop", "-sme-tmop"}};
 
   for (unsigned i = 0; i < std::size(ArchExt); i++) {
     EXPECT_EQ(StringRef(ArchExt[i][2]),

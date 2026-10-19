@@ -311,18 +311,18 @@ define <16 x i64> @load_zext_v16i16i64(ptr %ap)  {
 ; NONEON-NOSVE-NEXT:    ushll v3.4s, v3.4h, #0
 ; NONEON-NOSVE-NEXT:    stp q2, q0, [sp, #32]
 ; NONEON-NOSVE-NEXT:    stp q3, q1, [sp, #64]
-; NONEON-NOSVE-NEXT:    ldr d5, [sp, #56]
-; NONEON-NOSVE-NEXT:    ldr d7, [sp, #88]
-; NONEON-NOSVE-NEXT:    ldr d16, [sp, #40]
-; NONEON-NOSVE-NEXT:    ldr d17, [sp, #72]
-; NONEON-NOSVE-NEXT:    ushll v0.2d, v0.2s, #0
 ; NONEON-NOSVE-NEXT:    ushll v4.2d, v1.2s, #0
-; NONEON-NOSVE-NEXT:    ushll v2.2d, v2.2s, #0
+; NONEON-NOSVE-NEXT:    ldr d1, [sp, #56]
+; NONEON-NOSVE-NEXT:    ldr d5, [sp, #88]
 ; NONEON-NOSVE-NEXT:    ushll v6.2d, v3.2s, #0
-; NONEON-NOSVE-NEXT:    ushll v1.2d, v5.2s, #0
-; NONEON-NOSVE-NEXT:    ushll v5.2d, v7.2s, #0
-; NONEON-NOSVE-NEXT:    ushll v3.2d, v16.2s, #0
-; NONEON-NOSVE-NEXT:    ushll v7.2d, v17.2s, #0
+; NONEON-NOSVE-NEXT:    ldr d3, [sp, #40]
+; NONEON-NOSVE-NEXT:    ldr d7, [sp, #72]
+; NONEON-NOSVE-NEXT:    ushll v0.2d, v0.2s, #0
+; NONEON-NOSVE-NEXT:    ushll v2.2d, v2.2s, #0
+; NONEON-NOSVE-NEXT:    ushll v1.2d, v1.2s, #0
+; NONEON-NOSVE-NEXT:    ushll v5.2d, v5.2s, #0
+; NONEON-NOSVE-NEXT:    ushll v3.2d, v3.2s, #0
+; NONEON-NOSVE-NEXT:    ushll v7.2d, v7.2s, #0
 ; NONEON-NOSVE-NEXT:    add sp, sp, #96
 ; NONEON-NOSVE-NEXT:    ret
   %a = load <16 x i16>, ptr %ap

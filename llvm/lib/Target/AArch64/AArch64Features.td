@@ -516,6 +516,15 @@ def FeatureSMEFA64 : SubtargetFeature<"sme-fa64", "HasSMEFA64", "true",
 def FeatureSME2 : SubtargetFeature<"sme2", "HasSME2", "true",
   "Enable Scalable Matrix Extension 2 (SME2) instructions", [FeatureSME]>;
 
+def FeatureSME_MOP4 : SubtargetFeature<"sme-mop4", "HasSME_MOP4", "true",
+  "Enable SME Quarter-tile outer product instructions (FEAT_SME_MOP4)", [FeatureSME2]>;
+
+def FeatureSME_TMOP : SubtargetFeature<"sme-tmop", "HasSME_TMOP", "true",
+  "Enable SME Structured sparsity outer product instructions (FEAT_SME_TMOP)", [FeatureSME2]>;
+
+def FeatureSMEB16B16 : SubtargetFeature<"sme-b16b16", "HasSMEB16B16", "true",
+  "Enable SME2.1 ZA-targeting non-widening BFloat16 instructions (FEAT_SME_B16B16)", [FeatureSME2, FeatureB16B16]>;
+
 def FeatureSME2p1 : SubtargetFeature<"sme2p1", "HasSME2p1", "true",
   "Enable Scalable Matrix Extension 2.1 (FEAT_SME2p1) instructions", [FeatureSME2]>;
 
@@ -523,7 +532,7 @@ def FeatureFAMINMAX: SubtargetFeature<"faminmax", "HasFAMINMAX", "true",
    "Enable FAMIN and FAMAX instructions (FEAT_FAMINMAX)", [FeatureNEON]>;
 
 def FeatureFP8FMA : SubtargetFeature<"fp8fma", "HasFP8FMA", "true",
-  "Enable fp8 multiply-add instructions (FEAT_FP8FMA)">;
+  "Enable fp8 multiply-add instructions (FEAT_FP8FMA)", [FeatureFP8]>;
 
 def FeatureSSVE_FP8FMA : SubtargetFeature<"ssve-fp8fma", "HasSSVE_FP8FMA", "true",
   "Enable SVE2 fp8 multiply-add instructions (FEAT_SSVE_FP8FMA)", [FeatureSME2]>;

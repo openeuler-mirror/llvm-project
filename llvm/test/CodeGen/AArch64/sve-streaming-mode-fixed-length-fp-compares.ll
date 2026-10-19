@@ -78,7 +78,6 @@ define <8 x i16> @fcmp_oeq_v8f16(<8 x half> %op1, <8 x half> %op2) {
 ; NONEON-NOSVE-NEXT:    mov h16, v1.h[5]
 ; NONEON-NOSVE-NEXT:    fcvt s2, h2
 ; NONEON-NOSVE-NEXT:    fcvt s3, h3
-; NONEON-NOSVE-NEXT:    fcvt s6, h6
 ; NONEON-NOSVE-NEXT:    fcvt s7, h7
 ; NONEON-NOSVE-NEXT:    fcmp s3, s2
 ; NONEON-NOSVE-NEXT:    mov h2, v1.h[2]
@@ -94,19 +93,20 @@ define <8 x i16> @fcmp_oeq_v8f16(<8 x half> %op1, <8 x half> %op2) {
 ; NONEON-NOSVE-NEXT:    fmov s2, w9
 ; NONEON-NOSVE-NEXT:    fcvt s3, h4
 ; NONEON-NOSVE-NEXT:    fcvt s4, h5
-; NONEON-NOSVE-NEXT:    mov h5, v0.h[5]
+; NONEON-NOSVE-NEXT:    fcvt s5, h6
+; NONEON-NOSVE-NEXT:    mov h6, v0.h[5]
 ; NONEON-NOSVE-NEXT:    mov v2.h[1], w8
 ; NONEON-NOSVE-NEXT:    csetm w8, eq
 ; NONEON-NOSVE-NEXT:    fcmp s4, s3
 ; NONEON-NOSVE-NEXT:    fcvt s3, h16
-; NONEON-NOSVE-NEXT:    fcvt s4, h5
-; NONEON-NOSVE-NEXT:    mov h5, v1.h[6]
-; NONEON-NOSVE-NEXT:    mov v2.h[2], w8
-; NONEON-NOSVE-NEXT:    mov h1, v1.h[7]
-; NONEON-NOSVE-NEXT:    csetm w8, eq
-; NONEON-NOSVE-NEXT:    fcmp s7, s6
+; NONEON-NOSVE-NEXT:    fcvt s4, h6
 ; NONEON-NOSVE-NEXT:    mov h6, v0.h[6]
+; NONEON-NOSVE-NEXT:    mov v2.h[2], w8
 ; NONEON-NOSVE-NEXT:    mov h0, v0.h[7]
+; NONEON-NOSVE-NEXT:    csetm w8, eq
+; NONEON-NOSVE-NEXT:    fcmp s7, s5
+; NONEON-NOSVE-NEXT:    mov h5, v1.h[6]
+; NONEON-NOSVE-NEXT:    mov h1, v1.h[7]
 ; NONEON-NOSVE-NEXT:    mov v2.h[3], w8
 ; NONEON-NOSVE-NEXT:    csetm w8, eq
 ; NONEON-NOSVE-NEXT:    fcmp s4, s3
@@ -493,18 +493,18 @@ define void @fcmp_ueq_v16f16(ptr %a, ptr %b, ptr %c) {
 ; NONEON-NOSVE-NEXT:    csinv w8, w8, wzr, vc
 ; NONEON-NOSVE-NEXT:    fcmp s16, s3
 ; NONEON-NOSVE-NEXT:    fcvt s3, h1
-; NONEON-NOSVE-NEXT:    mov h16, v1.h[5]
+; NONEON-NOSVE-NEXT:    mov h16, v1.h[4]
 ; NONEON-NOSVE-NEXT:    mov v2.h[2], w11
 ; NONEON-NOSVE-NEXT:    csetm w10, eq
 ; NONEON-NOSVE-NEXT:    csinv w10, w10, wzr, vc
 ; NONEON-NOSVE-NEXT:    fcmp s5, s4
-; NONEON-NOSVE-NEXT:    mov h4, v1.h[2]
-; NONEON-NOSVE-NEXT:    mov h5, v0.h[2]
+; NONEON-NOSVE-NEXT:    mov h4, v0.h[2]
+; NONEON-NOSVE-NEXT:    mov h5, v1.h[3]
 ; NONEON-NOSVE-NEXT:    mov v2.h[3], w12
 ; NONEON-NOSVE-NEXT:    csetm w11, eq
 ; NONEON-NOSVE-NEXT:    csinv w11, w11, wzr, vc
 ; NONEON-NOSVE-NEXT:    fcmp s6, s3
-; NONEON-NOSVE-NEXT:    mov h3, v1.h[3]
+; NONEON-NOSVE-NEXT:    mov h3, v1.h[2]
 ; NONEON-NOSVE-NEXT:    mov h6, v0.h[3]
 ; NONEON-NOSVE-NEXT:    fcvt s4, h4
 ; NONEON-NOSVE-NEXT:    fcvt s5, h5
@@ -512,49 +512,49 @@ define void @fcmp_ueq_v16f16(ptr %a, ptr %b, ptr %c) {
 ; NONEON-NOSVE-NEXT:    csinv w12, w12, wzr, vc
 ; NONEON-NOSVE-NEXT:    fcvt s3, h3
 ; NONEON-NOSVE-NEXT:    fcvt s6, h6
-; NONEON-NOSVE-NEXT:    fcmp s5, s4
-; NONEON-NOSVE-NEXT:    mov h4, v1.h[4]
-; NONEON-NOSVE-NEXT:    fmov s7, w12
-; NONEON-NOSVE-NEXT:    mov h5, v0.h[4]
 ; NONEON-NOSVE-NEXT:    mov v2.h[4], w13
+; NONEON-NOSVE-NEXT:    fmov s7, w12
+; NONEON-NOSVE-NEXT:    fcmp s4, s3
+; NONEON-NOSVE-NEXT:    mov h3, v0.h[4]
 ; NONEON-NOSVE-NEXT:    mov v7.h[1], w11
+; NONEON-NOSVE-NEXT:    mov h4, v1.h[5]
+; NONEON-NOSVE-NEXT:    mov v2.h[5], w9
 ; NONEON-NOSVE-NEXT:    csetm w11, eq
 ; NONEON-NOSVE-NEXT:    csinv w11, w11, wzr, vc
-; NONEON-NOSVE-NEXT:    fcmp s6, s3
-; NONEON-NOSVE-NEXT:    fcvt s3, h4
-; NONEON-NOSVE-NEXT:    fcvt s4, h5
+; NONEON-NOSVE-NEXT:    fcmp s6, s5
 ; NONEON-NOSVE-NEXT:    fcvt s5, h16
+; NONEON-NOSVE-NEXT:    fcvt s3, h3
+; NONEON-NOSVE-NEXT:    fcvt s4, h4
 ; NONEON-NOSVE-NEXT:    fcvt s6, h17
 ; NONEON-NOSVE-NEXT:    mov v7.h[2], w11
 ; NONEON-NOSVE-NEXT:    csetm w11, eq
 ; NONEON-NOSVE-NEXT:    csinv w11, w11, wzr, vc
-; NONEON-NOSVE-NEXT:    fcmp s4, s3
+; NONEON-NOSVE-NEXT:    fcmp s3, s5
 ; NONEON-NOSVE-NEXT:    mov h3, v1.h[6]
-; NONEON-NOSVE-NEXT:    mov h4, v0.h[6]
+; NONEON-NOSVE-NEXT:    mov h5, v0.h[6]
 ; NONEON-NOSVE-NEXT:    mov h1, v1.h[7]
 ; NONEON-NOSVE-NEXT:    mov v7.h[3], w11
 ; NONEON-NOSVE-NEXT:    mov h0, v0.h[7]
 ; NONEON-NOSVE-NEXT:    csetm w11, eq
 ; NONEON-NOSVE-NEXT:    csinv w11, w11, wzr, vc
-; NONEON-NOSVE-NEXT:    fcmp s6, s5
+; NONEON-NOSVE-NEXT:    fcmp s6, s4
 ; NONEON-NOSVE-NEXT:    fcvt s3, h3
-; NONEON-NOSVE-NEXT:    fcvt s4, h4
+; NONEON-NOSVE-NEXT:    fcvt s4, h5
 ; NONEON-NOSVE-NEXT:    fcvt s1, h1
 ; NONEON-NOSVE-NEXT:    fcvt s0, h0
 ; NONEON-NOSVE-NEXT:    mov v7.h[4], w11
 ; NONEON-NOSVE-NEXT:    csetm w11, eq
 ; NONEON-NOSVE-NEXT:    csinv w11, w11, wzr, vc
 ; NONEON-NOSVE-NEXT:    fcmp s4, s3
-; NONEON-NOSVE-NEXT:    mov v2.h[5], w9
+; NONEON-NOSVE-NEXT:    mov v2.h[6], w8
 ; NONEON-NOSVE-NEXT:    mov v7.h[5], w11
 ; NONEON-NOSVE-NEXT:    csetm w9, eq
 ; NONEON-NOSVE-NEXT:    csinv w9, w9, wzr, vc
 ; NONEON-NOSVE-NEXT:    fcmp s0, s1
-; NONEON-NOSVE-NEXT:    mov v2.h[6], w8
+; NONEON-NOSVE-NEXT:    mov v2.h[7], w10
 ; NONEON-NOSVE-NEXT:    mov v7.h[6], w9
 ; NONEON-NOSVE-NEXT:    csetm w9, eq
 ; NONEON-NOSVE-NEXT:    csinv w8, w9, wzr, vc
-; NONEON-NOSVE-NEXT:    mov v2.h[7], w10
 ; NONEON-NOSVE-NEXT:    mov v7.h[7], w8
 ; NONEON-NOSVE-NEXT:    stp q7, q2, [x2]
 ; NONEON-NOSVE-NEXT:    ret
@@ -654,18 +654,18 @@ define void @fcmp_one_v16f16(ptr %a, ptr %b, ptr %c) {
 ; NONEON-NOSVE-NEXT:    csinv w8, w8, wzr, le
 ; NONEON-NOSVE-NEXT:    fcmp s16, s3
 ; NONEON-NOSVE-NEXT:    fcvt s3, h1
-; NONEON-NOSVE-NEXT:    mov h16, v1.h[5]
+; NONEON-NOSVE-NEXT:    mov h16, v1.h[4]
 ; NONEON-NOSVE-NEXT:    mov v2.h[2], w11
 ; NONEON-NOSVE-NEXT:    csetm w10, mi
 ; NONEON-NOSVE-NEXT:    csinv w10, w10, wzr, le
 ; NONEON-NOSVE-NEXT:    fcmp s5, s4
-; NONEON-NOSVE-NEXT:    mov h4, v1.h[2]
-; NONEON-NOSVE-NEXT:    mov h5, v0.h[2]
+; NONEON-NOSVE-NEXT:    mov h4, v0.h[2]
+; NONEON-NOSVE-NEXT:    mov h5, v1.h[3]
 ; NONEON-NOSVE-NEXT:    mov v2.h[3], w12
 ; NONEON-NOSVE-NEXT:    csetm w11, mi
 ; NONEON-NOSVE-NEXT:    csinv w11, w11, wzr, le
 ; NONEON-NOSVE-NEXT:    fcmp s6, s3
-; NONEON-NOSVE-NEXT:    mov h3, v1.h[3]
+; NONEON-NOSVE-NEXT:    mov h3, v1.h[2]
 ; NONEON-NOSVE-NEXT:    mov h6, v0.h[3]
 ; NONEON-NOSVE-NEXT:    fcvt s4, h4
 ; NONEON-NOSVE-NEXT:    fcvt s5, h5
@@ -673,49 +673,49 @@ define void @fcmp_one_v16f16(ptr %a, ptr %b, ptr %c) {
 ; NONEON-NOSVE-NEXT:    csinv w12, w12, wzr, le
 ; NONEON-NOSVE-NEXT:    fcvt s3, h3
 ; NONEON-NOSVE-NEXT:    fcvt s6, h6
-; NONEON-NOSVE-NEXT:    fcmp s5, s4
-; NONEON-NOSVE-NEXT:    mov h4, v1.h[4]
-; NONEON-NOSVE-NEXT:    fmov s7, w12
-; NONEON-NOSVE-NEXT:    mov h5, v0.h[4]
 ; NONEON-NOSVE-NEXT:    mov v2.h[4], w13
+; NONEON-NOSVE-NEXT:    fmov s7, w12
+; NONEON-NOSVE-NEXT:    fcmp s4, s3
+; NONEON-NOSVE-NEXT:    mov h3, v0.h[4]
 ; NONEON-NOSVE-NEXT:    mov v7.h[1], w11
+; NONEON-NOSVE-NEXT:    mov h4, v1.h[5]
+; NONEON-NOSVE-NEXT:    mov v2.h[5], w9
 ; NONEON-NOSVE-NEXT:    csetm w11, mi
 ; NONEON-NOSVE-NEXT:    csinv w11, w11, wzr, le
-; NONEON-NOSVE-NEXT:    fcmp s6, s3
-; NONEON-NOSVE-NEXT:    fcvt s3, h4
-; NONEON-NOSVE-NEXT:    fcvt s4, h5
+; NONEON-NOSVE-NEXT:    fcmp s6, s5
 ; NONEON-NOSVE-NEXT:    fcvt s5, h16
+; NONEON-NOSVE-NEXT:    fcvt s3, h3
+; NONEON-NOSVE-NEXT:    fcvt s4, h4
 ; NONEON-NOSVE-NEXT:    fcvt s6, h17
 ; NONEON-NOSVE-NEXT:    mov v7.h[2], w11
 ; NONEON-NOSVE-NEXT:    csetm w11, mi
 ; NONEON-NOSVE-NEXT:    csinv w11, w11, wzr, le
-; NONEON-NOSVE-NEXT:    fcmp s4, s3
+; NONEON-NOSVE-NEXT:    fcmp s3, s5
 ; NONEON-NOSVE-NEXT:    mov h3, v1.h[6]
-; NONEON-NOSVE-NEXT:    mov h4, v0.h[6]
+; NONEON-NOSVE-NEXT:    mov h5, v0.h[6]
 ; NONEON-NOSVE-NEXT:    mov h1, v1.h[7]
 ; NONEON-NOSVE-NEXT:    mov v7.h[3], w11
 ; NONEON-NOSVE-NEXT:    mov h0, v0.h[7]
 ; NONEON-NOSVE-NEXT:    csetm w11, mi
 ; NONEON-NOSVE-NEXT:    csinv w11, w11, wzr, le
-; NONEON-NOSVE-NEXT:    fcmp s6, s5
+; NONEON-NOSVE-NEXT:    fcmp s6, s4
 ; NONEON-NOSVE-NEXT:    fcvt s3, h3
-; NONEON-NOSVE-NEXT:    fcvt s4, h4
+; NONEON-NOSVE-NEXT:    fcvt s4, h5
 ; NONEON-NOSVE-NEXT:    fcvt s1, h1
 ; NONEON-NOSVE-NEXT:    fcvt s0, h0
 ; NONEON-NOSVE-NEXT:    mov v7.h[4], w11
 ; NONEON-NOSVE-NEXT:    csetm w11, mi
 ; NONEON-NOSVE-NEXT:    csinv w11, w11, wzr, le
 ; NONEON-NOSVE-NEXT:    fcmp s4, s3
-; NONEON-NOSVE-NEXT:    mov v2.h[5], w9
+; NONEON-NOSVE-NEXT:    mov v2.h[6], w8
 ; NONEON-NOSVE-NEXT:    mov v7.h[5], w11
 ; NONEON-NOSVE-NEXT:    csetm w9, mi
 ; NONEON-NOSVE-NEXT:    csinv w9, w9, wzr, le
 ; NONEON-NOSVE-NEXT:    fcmp s0, s1
-; NONEON-NOSVE-NEXT:    mov v2.h[6], w8
+; NONEON-NOSVE-NEXT:    mov v2.h[7], w10
 ; NONEON-NOSVE-NEXT:    mov v7.h[6], w9
 ; NONEON-NOSVE-NEXT:    csetm w9, mi
 ; NONEON-NOSVE-NEXT:    csinv w8, w9, wzr, le
-; NONEON-NOSVE-NEXT:    mov v2.h[7], w10
 ; NONEON-NOSVE-NEXT:    mov v7.h[7], w8
 ; NONEON-NOSVE-NEXT:    stp q7, q2, [x2]
 ; NONEON-NOSVE-NEXT:    ret

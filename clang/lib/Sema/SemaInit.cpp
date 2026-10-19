@@ -1508,7 +1508,8 @@ void InitListChecker::CheckSubElementType(const InitializedEntity &Entity,
 
   } else {
     assert((ElemType->isRecordType() || ElemType->isVectorType() ||
-            ElemType->isOpenCLSpecificType()) && "Unexpected type");
+            ElemType->isOpenCLSpecificType() || ElemType->isMFloat8Type()) &&
+           "Unexpected type");
 
     // C99 6.7.8p13:
     //
@@ -1855,6 +1856,8 @@ void InitListChecker::CheckVectorType(const InitializedEntity &Entity,
         typeCode = "s";
       else if (elementType->isUnsignedIntegerType())
         typeCode = "u";
+      else if (elementType->isMFloat8Type())
+        typeCode = "mf";
       else
         llvm_unreachable("Invalid element type!");
 

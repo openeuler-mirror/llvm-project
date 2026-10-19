@@ -927,6 +927,10 @@ X86 Support
 Arm and AArch64 Support
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+- Implementation of modal 8-bit floating point intrinsics in accordance with
+  the Arm C Language Extensions (ACLE)
+  `as specified here <https://github.com/ARM-software/acle/blob/main/main/acle.md#modal-8-bit-floating-point-extensions>`_
+  is now available.
 - The hard-float ABI is now available in Armv8.1-M configurations that
   have integer MVE instructions (and therefore have FP registers) but
   no scalar or vector floating point computation. Previously, trying

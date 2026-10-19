@@ -1339,24 +1339,24 @@ define void @zext_v16i4_to_v16i32_in_loop(ptr %src, ptr %dst) {
 ; CHECK-BE-NEXT:    mov v1.b[15], w9
 ; CHECK-BE-NEXT:    add x9, x1, #16
 ; CHECK-BE-NEXT:    ext v2.16b, v1.16b, v1.16b, #8
-; CHECK-BE-NEXT:    zip2 v3.8b, v1.8b, v0.8b
-; CHECK-BE-NEXT:    zip1 v1.8b, v1.8b, v0.8b
+; CHECK-BE-NEXT:    zip1 v3.8b, v1.8b, v0.8b
+; CHECK-BE-NEXT:    zip2 v1.8b, v1.8b, v0.8b
 ; CHECK-BE-NEXT:    zip1 v4.8b, v2.8b, v0.8b
 ; CHECK-BE-NEXT:    zip2 v2.8b, v2.8b, v0.8b
-; CHECK-BE-NEXT:    rev16 v1.8b, v1.8b
 ; CHECK-BE-NEXT:    rev16 v3.8b, v3.8b
+; CHECK-BE-NEXT:    rev16 v1.8b, v1.8b
 ; CHECK-BE-NEXT:    rev16 v4.8b, v4.8b
 ; CHECK-BE-NEXT:    rev16 v2.8b, v2.8b
-; CHECK-BE-NEXT:    ushll v1.4s, v1.4h, #0
 ; CHECK-BE-NEXT:    ushll v3.4s, v3.4h, #0
+; CHECK-BE-NEXT:    ushll v1.4s, v1.4h, #0
+; CHECK-BE-NEXT:    and v3.16b, v3.16b, v0.16b
 ; CHECK-BE-NEXT:    and v1.16b, v1.16b, v0.16b
-; CHECK-BE-NEXT:    st1 { v1.4s }, [x1]
+; CHECK-BE-NEXT:    st1 { v3.4s }, [x1]
+; CHECK-BE-NEXT:    st1 { v1.4s }, [x9]
 ; CHECK-BE-NEXT:    add x1, x1, #64
 ; CHECK-BE-NEXT:    ushll v1.4s, v2.4h, #0
 ; CHECK-BE-NEXT:    ushll v2.4s, v4.4h, #0
-; CHECK-BE-NEXT:    and v3.16b, v3.16b, v0.16b
 ; CHECK-BE-NEXT:    and v1.16b, v1.16b, v0.16b
-; CHECK-BE-NEXT:    st1 { v3.4s }, [x9]
 ; CHECK-BE-NEXT:    and v2.16b, v2.16b, v0.16b
 ; CHECK-BE-NEXT:    st1 { v1.4s }, [x10]
 ; CHECK-BE-NEXT:    st1 { v2.4s }, [x11]
@@ -2659,24 +2659,24 @@ define void @zext_v8i8_to_v8i33_in_loop(ptr %src, ptr %dst) {
 ; CHECK-NEXT:    cmp x8, #128
 ; CHECK-NEXT:    strb wzr, [x1, #32]
 ; CHECK-NEXT:    ushll.8h v0, v0, #0
-; CHECK-NEXT:    ushll.4s v1, v0, #0
-; CHECK-NEXT:    ushll2.4s v0, v0, #0
+; CHECK-NEXT:    ushll2.4s v1, v0, #0
+; CHECK-NEXT:    ushll.4s v0, v0, #0
 ; CHECK-NEXT:    ushll.2d v2, v1, #0
-; CHECK-NEXT:    ushll2.2d v3, v0, #0
 ; CHECK-NEXT:    ushll2.2d v1, v1, #0
-; CHECK-NEXT:    mov.d x9, v3[1]
-; CHECK-NEXT:    fmov x10, d3
-; CHECK-NEXT:    mov.d x12, v1[1]
-; CHECK-NEXT:    ushll.2d v0, v0, #0
+; CHECK-NEXT:    ushll.2d v3, v0, #0
+; CHECK-NEXT:    mov.d x9, v1[1]
+; CHECK-NEXT:    ushll2.2d v0, v0, #0
+; CHECK-NEXT:    fmov x10, d1
+; CHECK-NEXT:    mov.d x12, v0[1]
+; CHECK-NEXT:    fmov x13, d2
 ; CHECK-NEXT:    lsl x9, x9, #39
 ; CHECK-NEXT:    orr x9, x9, x10, lsl #6
-; CHECK-NEXT:    fmov x10, d1
-; CHECK-NEXT:    mov.d x11, v0[1]
+; CHECK-NEXT:    fmov x10, d0
+; CHECK-NEXT:    mov.d x11, v2[1]
+; CHECK-NEXT:    mov.d x14, v3[1]
 ; CHECK-NEXT:    lsl x12, x12, #35
-; CHECK-NEXT:    mov.d x14, v2[1]
-; CHECK-NEXT:    fmov x13, d0
 ; CHECK-NEXT:    orr x10, x12, x10, lsl #2
-; CHECK-NEXT:    fmov x12, d2
+; CHECK-NEXT:    fmov x12, d3
 ; CHECK-NEXT:    lsl x11, x11, #37
 ; CHECK-NEXT:    orr x11, x11, x13, lsl #4
 ; CHECK-NEXT:    orr x12, x12, x14, lsl #33

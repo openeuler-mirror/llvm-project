@@ -187,6 +187,8 @@ enum ArchExtKind : uint64_t {
   AEK_FPRCVT =       84, // FEAT_FPRCVT
   AEK_F16MM =        85, // FEAT_F16MM
   AEK_F16F32MM =     86, // FEAT_F16F32MM
+  AEK_SME_MOP4 =     87, // FEAT_SME_MOP4
+  AEK_SME_TMOP =     88, // FEAT_SME_TMOP
   AEK_NUM_EXTENSIONS
 };
 using ExtensionBitset = Bitset<AEK_NUM_EXTENSIONS>;
@@ -298,12 +300,12 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"fpmr", AArch64::AEK_FPMR, "+fpmr", "-fpmr", FEAT_INIT, "", 0},
     {"fp8", AArch64::AEK_FP8, "+fp8", "-fp8", FEAT_INIT, "+fpmr", 0},
     {"faminmax", AArch64::AEK_FAMINMAX, "+faminmax", "-faminmax", FEAT_INIT, "", 0},
-    {"fp8fma", AArch64::AEK_FP8FMA, "+fp8fma", "-fp8fma", FEAT_INIT, "+fpmr", 0},
-    {"ssve-fp8fma", AArch64::AEK_SSVE_FP8FMA, "+ssve-fp8fma", "-ssve-fp8fma", FEAT_INIT, "+sme2", 0},
-    {"fp8dot2", AArch64::AEK_FP8DOT2, "+fp8dot2", "-fp8dot2", FEAT_INIT, "", 0},
-    {"ssve-fp8dot2", AArch64::AEK_SSVE_FP8DOT2, "+ssve-fp8dot2", "-ssve-fp8dot2", FEAT_INIT, "+sme2", 0},
-    {"fp8dot4", AArch64::AEK_FP8DOT4, "+fp8dot4", "-fp8dot4", FEAT_INIT, "", 0},
-    {"ssve-fp8dot4", AArch64::AEK_SSVE_FP8DOT4, "+ssve-fp8dot4", "-ssve-fp8dot4", FEAT_INIT, "+sme2", 0},
+    {"fp8fma", AArch64::AEK_FP8FMA, "+fp8fma", "-fp8fma", FEAT_INIT, "+fp8,+fpmr", 0},
+    {"ssve-fp8fma", AArch64::AEK_SSVE_FP8FMA, "+ssve-fp8fma", "-ssve-fp8fma", FEAT_INIT, "+sme2,+fp8,+fpmr", 0},
+    {"fp8dot2", AArch64::AEK_FP8DOT2, "+fp8dot2", "-fp8dot2", FEAT_INIT, "+fp8,+fpmr", 0},
+    {"ssve-fp8dot2", AArch64::AEK_SSVE_FP8DOT2, "+ssve-fp8dot2", "-ssve-fp8dot2", FEAT_INIT, "+sme2,+fp8,+fpmr", 0},
+    {"fp8dot4", AArch64::AEK_FP8DOT4, "+fp8dot4", "-fp8dot4", FEAT_INIT, "+fp8,+fpmr", 0},
+    {"ssve-fp8dot4", AArch64::AEK_SSVE_FP8DOT4, "+ssve-fp8dot4", "-ssve-fp8dot4", FEAT_INIT, "+sme2,+fp8,+fpmr", 0},
     {"lut", AArch64::AEK_LUT, "+lut", "-lut", FEAT_INIT, "", 0},
     {"sme-lutv2", AArch64::AEK_SME_LUTv2, "+sme-lutv2", "-sme-lutv2", FEAT_INIT, "", 0},
     {"sme-f8f16", AArch64::AEK_SMEF8F16, "+sme-f8f16", "-sme-f8f16", FEAT_INIT, "+sme2,+fp8", 0},
@@ -324,6 +326,8 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"fprcvt", AArch64::AEK_FPRCVT, "+fprcvt", "-fprcvt", FEAT_INIT, "+fprcvt", 0},
     {"f16mm", AArch64::AEK_F16MM, "+f16mm", "-f16mm", FEAT_INIT, "+f16mm", 0},
     {"f16f32mm", AArch64::AEK_F16F32MM, "+f16f32mm", "-f16f32mm", FEAT_INIT, "+f16f32mm", 0},
+    {"sme-mop4", AArch64::AEK_SME_MOP4, "+sme-mop4", "-sme-mop4", FEAT_INIT, "+sme-mop4", 0},
+    {"sme-tmop", AArch64::AEK_SME_TMOP, "+sme-tmop", "-sme-tmop", FEAT_INIT, "+sme-tmop", 0},
     // Special cases
     {"none", AArch64::AEK_NONE, {}, {}, FEAT_MAX, "", ExtensionInfo::MaxFMVPriority},
 };
@@ -698,6 +702,13 @@ inline constexpr CpuInfo CpuInfos[] = {
                                            AArch64::AEK_FP16,
                                            AArch64::AEK_SVE,
                                            AArch64::AEK_LSE}))},
+    {"fujitsu-monaka", ARMV9_3A,
+     (AArch64::ExtensionBitset(
+         {AArch64::AEK_PERFMON, AArch64::AEK_FPAC, AArch64::AEK_FP16FML,
+          AArch64::AEK_RAND, AArch64::AEK_SSBS, AArch64::AEK_LS64,
+          AArch64::AEK_SPECRES2, AArch64::AEK_SVE2AES, AArch64::AEK_SVE2SM4,
+          AArch64::AEK_SVE2SHA3, AArch64::AEK_SVE2BITPERM,
+          AArch64::AEK_FAMINMAX, AArch64::AEK_FP8DOT2, AArch64::AEK_LUT}))},
     {"carmel", ARMV8_2A,
      (AArch64::ExtensionBitset(
          {AArch64::AEK_AES, AArch64::AEK_SHA2, AArch64::AEK_FP16,

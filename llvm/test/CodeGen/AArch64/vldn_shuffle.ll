@@ -798,30 +798,30 @@ define dso_local void @store_no_interleave(ptr noalias noundef readonly %a, ptr 
 ; CHECK-NEXT:    movi v0.4h, #1
 ; CHECK-NEXT:    fmov s1, w2
 ; CHECK-NEXT:    ldrb w8, [x0]
-; CHECK-NEXT:    adrp x9, .LCPI18_0
-; CHECK-NEXT:    adrp x10, .LCPI18_3
+; CHECK-NEXT:    adrp x9, .LCPI18_3
+; CHECK-NEXT:    adrp x10, .LCPI18_0
 ; CHECK-NEXT:    and v0.8b, v1.8b, v0.8b
-; CHECK-NEXT:    ldr q3, [x9, :lo12:.LCPI18_0]
+; CHECK-NEXT:    ldr q3, [x9, :lo12:.LCPI18_3]
 ; CHECK-NEXT:    dup v0.16b, v0.b[0]
-; CHECK-NEXT:    adrp x9, .LCPI18_1
+; CHECK-NEXT:    adrp x9, .LCPI18_2
 ; CHECK-NEXT:    dup v1.16b, w2
-; CHECK-NEXT:    ldr q4, [x10, :lo12:.LCPI18_3]
-; CHECK-NEXT:    adrp x10, .LCPI18_2
+; CHECK-NEXT:    ldr q4, [x10, :lo12:.LCPI18_0]
 ; CHECK-NEXT:    mov v2.16b, v1.16b
-; CHECK-NEXT:    ldr q5, [x9, :lo12:.LCPI18_1]
+; CHECK-NEXT:    ldr q5, [x9, :lo12:.LCPI18_2]
 ; CHECK-NEXT:    mov v2.b[2], w8
-; CHECK-NEXT:    ldr q6, [x10, :lo12:.LCPI18_2]
-; CHECK-NEXT:    tbl v4.16b, { v0.16b, v1.16b }, v4.16b
+; CHECK-NEXT:    tbl v3.16b, { v0.16b, v1.16b }, v3.16b
 ; CHECK-NEXT:    tbl v5.16b, { v0.16b, v1.16b }, v5.16b
 ; CHECK-NEXT:    mov v2.b[10], w8
+; CHECK-NEXT:    adrp x8, .LCPI18_1
+; CHECK-NEXT:    ldr q6, [x8, :lo12:.LCPI18_1]
+; CHECK-NEXT:    rev64 v2.4s, v2.4s
 ; CHECK-NEXT:    ldrsw x8, [x1]
 ; CHECK-NEXT:    tbl v6.16b, { v0.16b, v1.16b }, v6.16b
-; CHECK-NEXT:    tbl v0.16b, { v0.16b, v1.16b }, v3.16b
+; CHECK-NEXT:    tbl v0.16b, { v0.16b, v1.16b }, v4.16b
 ; CHECK-NEXT:    lsl x8, x8, #3
-; CHECK-NEXT:    rev64 v2.4s, v2.4s
-; CHECK-NEXT:    trn2 v1.4s, v2.4s, v4.4s
-; CHECK-NEXT:    trn2 v3.4s, v2.4s, v6.4s
-; CHECK-NEXT:    trn2 v4.4s, v2.4s, v5.4s
+; CHECK-NEXT:    trn2 v1.4s, v2.4s, v3.4s
+; CHECK-NEXT:    trn2 v3.4s, v2.4s, v5.4s
+; CHECK-NEXT:    trn2 v4.4s, v2.4s, v6.4s
 ; CHECK-NEXT:    trn2 v0.4s, v2.4s, v0.4s
 ; CHECK-NEXT:    stp q3, q1, [x8, #-32]
 ; CHECK-NEXT:    stp q0, q4, [x8, #-64]

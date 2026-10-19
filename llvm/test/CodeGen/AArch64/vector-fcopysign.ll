@@ -285,13 +285,13 @@ define <4 x half> @test_copysign_v4f16_v4f64(<4 x half> %a, <4 x double> %b) #0 
 ; NOFP16-NEXT:    fcvt s4, d4
 ; NOFP16-NEXT:    fcvt s5, h5
 ; NOFP16-NEXT:    bit.16b v1, v6, v3
-; NOFP16-NEXT:    fcvt s6, d2
-; NOFP16-NEXT:    fcvt s7, h7
+; NOFP16-NEXT:    fcvt s6, h7
+; NOFP16-NEXT:    fcvt s7, d2
 ; NOFP16-NEXT:    mov d2, v2[1]
 ; NOFP16-NEXT:    bit.16b v4, v5, v3
 ; NOFP16-NEXT:    mov h5, v0[3]
 ; NOFP16-NEXT:    fcvt h0, s1
-; NOFP16-NEXT:    bit.16b v6, v7, v3
+; NOFP16-NEXT:    bif.16b v6, v7, v3
 ; NOFP16-NEXT:    fcvt s2, d2
 ; NOFP16-NEXT:    fcvt h1, s4
 ; NOFP16-NEXT:    fcvt s4, h5

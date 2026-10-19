@@ -2827,6 +2827,7 @@ static unsigned RFT(unsigned t, bool shift = false, bool ForceQuad = false) {
   switch (Type.getEltType()) {
   case NeonTypeFlags::Int8:
   case NeonTypeFlags::Poly8:
+  case NeonTypeFlags::MFloat8:
     return shift ? 7 : (8 << IsQuad) - 1;
   case NeonTypeFlags::Int16:
   case NeonTypeFlags::Poly16:

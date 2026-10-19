@@ -1253,6 +1253,9 @@ public:
     case AArch64::ZPRRegClassID:
     case AArch64::ZPR_3bRegClassID:
     case AArch64::ZPR_4bRegClassID:
+    case AArch64::ZPRMul2_LoRegClassID:
+    case AArch64::ZPRMul2_HiRegClassID:
+    case AArch64::ZPR_KRegClassID:
       RK = RegKind::SVEDataVector;
       break;
     case AArch64::PPRRegClassID:
@@ -1418,13 +1421,13 @@ public:
   }
 
   template <RegKind VectorKind, unsigned NumRegs, unsigned NumElements,
-            unsigned ElementWidth>
+            unsigned ElementWidth, unsigned RegClass>
   DiagnosticPredicate isTypedVectorListMultiple() const {
     bool Res =
         isTypedVectorList<VectorKind, NumRegs, NumElements, ElementWidth>();
     if (!Res)
       return DiagnosticPredicateTy::NoMatch;
-    if (((VectorList.RegNum - AArch64::Z0) % NumRegs) != 0)
+    if (!AArch64MCRegisterClasses[RegClass].contains(VectorList.RegNum))
       return DiagnosticPredicateTy::NearMatch;
     return DiagnosticPredicateTy::Match;
   }
@@ -3701,6 +3704,8 @@ static const struct Extension {
     {"sve-f16f32mm", {AArch64::FeatureSVE_F16F32MM}},
     {"f16mm", {AArch64::FeatureF16MM}},
     {"f16f32mm", {AArch64::FeatureF16F32MM}},
+    {"sme-mop4", {AArch64::FeatureSME_MOP4}},
+    {"sme-tmop", {AArch64::FeatureSME_TMOP}},
 };
 
 static void setRequiredFeatureString(FeatureBitset FBS, std::string &Str) {
@@ -5994,6 +5999,33 @@ bool AArch64AsmParser::showMatchError(SMLoc Loc, unsigned ErrCode,
     return Error(Loc, "Invalid restricted vector register, expected z0.s..z15.s");
   case Match_InvalidZPR_4b64:
     return Error(Loc, "Invalid restricted vector register, expected z0.d..z15.d");
+  case Match_InvalidZPRMul2_Lo8:
+    return Error(Loc, "Invalid restricted vector register, expected even "
+                      "register in z0.b..z14.b");
+  case Match_InvalidZPRMul2_Hi8:
+    return Error(Loc, "Invalid restricted vector register, expected even "
+                      "register in z16.b..z30.b");
+  case Match_InvalidZPRMul2_Lo16:
+    return Error(Loc, "Invalid restricted vector register, expected even "
+                      "register in z0.h..z14.h");
+  case Match_InvalidZPRMul2_Hi16:
+    return Error(Loc, "Invalid restricted vector register, expected even "
+                      "register in z16.h..z30.h");
+  case Match_InvalidZPRMul2_Lo32:
+    return Error(Loc, "Invalid restricted vector register, expected even "
+                      "register in z0.s..z14.s");
+  case Match_InvalidZPRMul2_Hi32:
+    return Error(Loc, "Invalid restricted vector register, expected even "
+                      "register in z16.s..z30.s");
+  case Match_InvalidZPRMul2_Lo64:
+    return Error(Loc, "Invalid restricted vector register, expected even "
+                      "register in z0.d..z14.d");
+  case Match_InvalidZPRMul2_Hi64:
+    return Error(Loc, "Invalid restricted vector register, expected even "
+                      "register in z16.d..z30.d");
+  case Match_InvalidZPR_K0:
+    return Error(Loc, "invalid restricted vector register, expected register "
+                      "in z20..z23 or z28..z31");
   case Match_InvalidSVEPattern:
     return Error(Loc, "invalid predicate pattern");
   case Match_InvalidSVEPredicateAnyReg:
@@ -6053,6 +6085,8 @@ bool AArch64AsmParser::showMatchError(SMLoc Loc, unsigned ErrCode,
   case Match_InvalidMatrixTileVectorV128:
     return Error(Loc,
                  "invalid matrix operand, expected za[0-15]h.q or za[0-15]v.q");
+  case Match_InvalidMatrixTile16:
+    return Error(Loc, "invalid matrix operand, expected za[0-1].h");
   case Match_InvalidMatrixTile32:
     return Error(Loc, "invalid matrix operand, expected za[0-3].s");
   case Match_InvalidMatrixTile64:
@@ -6071,17 +6105,36 @@ bool AArch64AsmParser::showMatchError(SMLoc Loc, unsigned ErrCode,
     return Error(Loc, "operand must be a register in range [w12, w15]");
   case Match_InvalidMatrixIndexGPR32_8_11:
     return Error(Loc, "operand must be a register in range [w8, w11]");
-  case Match_InvalidSVEVectorListMul2x8:
-  case Match_InvalidSVEVectorListMul2x16:
-  case Match_InvalidSVEVectorListMul2x32:
-  case Match_InvalidSVEVectorListMul2x64:
+  case Match_InvalidSVEVectorList2x8Mul2:
+  case Match_InvalidSVEVectorList2x16Mul2:
+  case Match_InvalidSVEVectorList2x32Mul2:
+  case Match_InvalidSVEVectorList2x64Mul2:
+  case Match_InvalidSVEVectorList2x128Mul2:
     return Error(Loc, "Invalid vector list, expected list with 2 consecutive "
                       "SVE vectors, where the first vector is a multiple of 2 "
                       "and with matching element types");
-  case Match_InvalidSVEVectorListMul4x8:
-  case Match_InvalidSVEVectorListMul4x16:
-  case Match_InvalidSVEVectorListMul4x32:
-  case Match_InvalidSVEVectorListMul4x64:
+  case Match_InvalidSVEVectorList2x8Mul2_Lo:
+  case Match_InvalidSVEVectorList2x16Mul2_Lo:
+  case Match_InvalidSVEVectorList2x32Mul2_Lo:
+  case Match_InvalidSVEVectorList2x64Mul2_Lo:
+    return Error(Loc, "Invalid vector list, expected list with 2 consecutive "
+                      "SVE vectors in the range z0-z14, where the first vector "
+                      "is a multiple of 2 "
+                      "and with matching element types");
+  case Match_InvalidSVEVectorList2x8Mul2_Hi:
+  case Match_InvalidSVEVectorList2x16Mul2_Hi:
+  case Match_InvalidSVEVectorList2x32Mul2_Hi:
+  case Match_InvalidSVEVectorList2x64Mul2_Hi:
+    return Error(Loc,
+                 "Invalid vector list, expected list with 2 consecutive "
+                 "SVE vectors in the range z16-z30, where the first vector "
+                 "is a multiple of 2 "
+                 "and with matching element types");
+  case Match_InvalidSVEVectorList4x8Mul4:
+  case Match_InvalidSVEVectorList4x16Mul4:
+  case Match_InvalidSVEVectorList4x32Mul4:
+  case Match_InvalidSVEVectorList4x64Mul4:
+  case Match_InvalidSVEVectorList4x128Mul4:
     return Error(Loc, "Invalid vector list, expected list with 4 consecutive "
                       "SVE vectors, where the first vector is a multiple of 4 "
                       "and with matching element types");
@@ -6652,6 +6705,7 @@ bool AArch64AsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   case Match_InvalidSVEExactFPImmOperandHalfOne:
   case Match_InvalidSVEExactFPImmOperandHalfTwo:
   case Match_InvalidSVEExactFPImmOperandZeroOne:
+  case Match_InvalidMatrixTile16:
   case Match_InvalidMatrixTile32:
   case Match_InvalidMatrixTile64:
   case Match_InvalidMatrix:
@@ -6673,14 +6727,33 @@ bool AArch64AsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   case Match_InvalidMatrixIndexGPR32_12_15:
   case Match_InvalidMatrixIndexGPR32_8_11:
   case Match_InvalidLookupTable:
-  case Match_InvalidSVEVectorListMul2x8:
-  case Match_InvalidSVEVectorListMul2x16:
-  case Match_InvalidSVEVectorListMul2x32:
-  case Match_InvalidSVEVectorListMul2x64:
-  case Match_InvalidSVEVectorListMul4x8:
-  case Match_InvalidSVEVectorListMul4x16:
-  case Match_InvalidSVEVectorListMul4x32:
-  case Match_InvalidSVEVectorListMul4x64:
+  case Match_InvalidZPRMul2_Lo8:
+  case Match_InvalidZPRMul2_Hi8:
+  case Match_InvalidZPRMul2_Lo16:
+  case Match_InvalidZPRMul2_Hi16:
+  case Match_InvalidZPRMul2_Lo32:
+  case Match_InvalidZPRMul2_Hi32:
+  case Match_InvalidZPRMul2_Lo64:
+  case Match_InvalidZPRMul2_Hi64:
+  case Match_InvalidZPR_K0:
+  case Match_InvalidSVEVectorList2x8Mul2:
+  case Match_InvalidSVEVectorList2x16Mul2:
+  case Match_InvalidSVEVectorList2x32Mul2:
+  case Match_InvalidSVEVectorList2x64Mul2:
+  case Match_InvalidSVEVectorList2x128Mul2:
+  case Match_InvalidSVEVectorList4x8Mul4:
+  case Match_InvalidSVEVectorList4x16Mul4:
+  case Match_InvalidSVEVectorList4x32Mul4:
+  case Match_InvalidSVEVectorList4x64Mul4:
+  case Match_InvalidSVEVectorList4x128Mul4:
+  case Match_InvalidSVEVectorList2x8Mul2_Lo:
+  case Match_InvalidSVEVectorList2x16Mul2_Lo:
+  case Match_InvalidSVEVectorList2x32Mul2_Lo:
+  case Match_InvalidSVEVectorList2x64Mul2_Lo:
+  case Match_InvalidSVEVectorList2x8Mul2_Hi:
+  case Match_InvalidSVEVectorList2x16Mul2_Hi:
+  case Match_InvalidSVEVectorList2x32Mul2_Hi:
+  case Match_InvalidSVEVectorList2x64Mul2_Hi:
   case Match_InvalidSVEVectorListStrided2x8:
   case Match_InvalidSVEVectorListStrided2x16:
   case Match_InvalidSVEVectorListStrided2x32:

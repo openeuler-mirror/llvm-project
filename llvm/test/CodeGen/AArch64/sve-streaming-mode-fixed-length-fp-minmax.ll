@@ -142,111 +142,111 @@ define void @fmaxnm_v16f16(ptr %a, ptr %b) {
 ; NONEON-NOSVE-NEXT:    mov h17, v0.h[1]
 ; NONEON-NOSVE-NEXT:    fcvt s21, h0
 ; NONEON-NOSVE-NEXT:    ldp q1, q3, [x1]
-; NONEON-NOSVE-NEXT:    mov h7, v2.h[1]
-; NONEON-NOSVE-NEXT:    fcvt s6, h2
+; NONEON-NOSVE-NEXT:    mov h6, v2.h[1]
+; NONEON-NOSVE-NEXT:    fcvt s16, h2
 ; NONEON-NOSVE-NEXT:    mov h19, v2.h[2]
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
-; NONEON-NOSVE-NEXT:    mov h16, v1.h[1]
+; NONEON-NOSVE-NEXT:    mov h7, v1.h[1]
 ; NONEON-NOSVE-NEXT:    fcvt s20, h1
-; NONEON-NOSVE-NEXT:    fcvt s7, h7
-; NONEON-NOSVE-NEXT:    mov h5, v3.h[1]
-; NONEON-NOSVE-NEXT:    fcvt s4, h3
+; NONEON-NOSVE-NEXT:    fcvt s6, h6
+; NONEON-NOSVE-NEXT:    mov h4, v3.h[1]
+; NONEON-NOSVE-NEXT:    fcvt s5, h3
 ; NONEON-NOSVE-NEXT:    mov h18, v3.h[2]
-; NONEON-NOSVE-NEXT:    fcvt s16, h16
-; NONEON-NOSVE-NEXT:    fcvt s5, h5
+; NONEON-NOSVE-NEXT:    fcvt s7, h7
+; NONEON-NOSVE-NEXT:    fcvt s4, h4
+; NONEON-NOSVE-NEXT:    fmaxnm s5, s16, s5
+; NONEON-NOSVE-NEXT:    fcvt s16, h19
+; NONEON-NOSVE-NEXT:    mov h19, v0.h[2]
+; NONEON-NOSVE-NEXT:    fmaxnm s7, s17, s7
+; NONEON-NOSVE-NEXT:    mov h17, v2.h[3]
 ; NONEON-NOSVE-NEXT:    fmaxnm s4, s6, s4
 ; NONEON-NOSVE-NEXT:    fcvt s6, h18
 ; NONEON-NOSVE-NEXT:    fmaxnm s18, s21, s20
-; NONEON-NOSVE-NEXT:    fmaxnm s16, s17, s16
-; NONEON-NOSVE-NEXT:    mov h17, v2.h[3]
+; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h7, s7
+; NONEON-NOSVE-NEXT:    fcvt s17, h17
 ; NONEON-NOSVE-NEXT:    mov h20, v3.h[4]
 ; NONEON-NOSVE-NEXT:    mov h21, v2.h[4]
-; NONEON-NOSVE-NEXT:    fmaxnm s5, s7, s5
-; NONEON-NOSVE-NEXT:    fcvt s7, h19
 ; NONEON-NOSVE-NEXT:    fcvt h4, s4
-; NONEON-NOSVE-NEXT:    mov h19, v0.h[2]
-; NONEON-NOSVE-NEXT:    fcvt h16, s16
-; NONEON-NOSVE-NEXT:    fcvt s17, h17
+; NONEON-NOSVE-NEXT:    fmaxnm s6, s16, s6
+; NONEON-NOSVE-NEXT:    fcvt h16, s18
+; NONEON-NOSVE-NEXT:    mov h18, v1.h[2]
 ; NONEON-NOSVE-NEXT:    fcvt s20, h20
 ; NONEON-NOSVE-NEXT:    fcvt s21, h21
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
-; NONEON-NOSVE-NEXT:    fmaxnm s6, s7, s6
-; NONEON-NOSVE-NEXT:    fcvt h7, s18
-; NONEON-NOSVE-NEXT:    mov h18, v1.h[2]
-; NONEON-NOSVE-NEXT:    mov v4.h[1], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt h5, s6
+; NONEON-NOSVE-NEXT:    mov v5.h[1], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt h4, s6
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[3]
-; NONEON-NOSVE-NEXT:    mov v7.h[1], v16.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s16, h19
+; NONEON-NOSVE-NEXT:    mov v16.h[1], v7.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s7, h19
 ; NONEON-NOSVE-NEXT:    mov h19, v0.h[3]
-; NONEON-NOSVE-NEXT:    mov v4.h[2], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s5, h18
+; NONEON-NOSVE-NEXT:    mov v5.h[2], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s4, h18
 ; NONEON-NOSVE-NEXT:    fcvt s6, h6
 ; NONEON-NOSVE-NEXT:    mov h18, v1.h[3]
 ; NONEON-NOSVE-NEXT:    fcvt s19, h19
-; NONEON-NOSVE-NEXT:    fmaxnm s5, s16, s5
-; NONEON-NOSVE-NEXT:    mov h16, v1.h[4]
+; NONEON-NOSVE-NEXT:    fmaxnm s4, s7, s4
+; NONEON-NOSVE-NEXT:    mov h7, v1.h[4]
 ; NONEON-NOSVE-NEXT:    fmaxnm s6, s17, s6
 ; NONEON-NOSVE-NEXT:    mov h17, v0.h[4]
 ; NONEON-NOSVE-NEXT:    fcvt s18, h18
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
-; NONEON-NOSVE-NEXT:    fcvt s16, h16
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
+; NONEON-NOSVE-NEXT:    fcvt s7, h7
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
 ; NONEON-NOSVE-NEXT:    fcvt h6, s6
 ; NONEON-NOSVE-NEXT:    fmaxnm s18, s19, s18
 ; NONEON-NOSVE-NEXT:    fmaxnm s19, s21, s20
-; NONEON-NOSVE-NEXT:    mov v7.h[2], v5.h[0]
-; NONEON-NOSVE-NEXT:    fmaxnm s5, s17, s16
-; NONEON-NOSVE-NEXT:    fcvt h16, s18
+; NONEON-NOSVE-NEXT:    mov v16.h[2], v4.h[0]
+; NONEON-NOSVE-NEXT:    fmaxnm s4, s17, s7
+; NONEON-NOSVE-NEXT:    fcvt h7, s18
 ; NONEON-NOSVE-NEXT:    mov h17, v1.h[5]
-; NONEON-NOSVE-NEXT:    mov v4.h[3], v6.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[3], v6.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h6, s19
 ; NONEON-NOSVE-NEXT:    mov h18, v0.h[5]
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
 ; NONEON-NOSVE-NEXT:    mov h19, v0.h[6]
-; NONEON-NOSVE-NEXT:    mov v7.h[3], v16.h[0]
-; NONEON-NOSVE-NEXT:    mov h16, v2.h[5]
-; NONEON-NOSVE-NEXT:    mov v4.h[4], v6.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[3], v7.h[0]
+; NONEON-NOSVE-NEXT:    mov h7, v2.h[5]
+; NONEON-NOSVE-NEXT:    mov v5.h[4], v6.h[0]
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[5]
 ; NONEON-NOSVE-NEXT:    fcvt s19, h19
 ; NONEON-NOSVE-NEXT:    mov h0, v0.h[7]
-; NONEON-NOSVE-NEXT:    mov v7.h[4], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s5, h6
-; NONEON-NOSVE-NEXT:    fcvt s6, h16
-; NONEON-NOSVE-NEXT:    fcvt s16, h17
+; NONEON-NOSVE-NEXT:    mov v16.h[4], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s4, h6
+; NONEON-NOSVE-NEXT:    fcvt s6, h7
+; NONEON-NOSVE-NEXT:    fcvt s7, h17
 ; NONEON-NOSVE-NEXT:    fcvt s17, h18
 ; NONEON-NOSVE-NEXT:    mov h18, v1.h[6]
 ; NONEON-NOSVE-NEXT:    mov h1, v1.h[7]
 ; NONEON-NOSVE-NEXT:    fcvt s0, h0
-; NONEON-NOSVE-NEXT:    fmaxnm s5, s6, s5
+; NONEON-NOSVE-NEXT:    fmaxnm s4, s6, s4
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[6]
-; NONEON-NOSVE-NEXT:    fmaxnm s16, s17, s16
+; NONEON-NOSVE-NEXT:    fmaxnm s7, s17, s7
 ; NONEON-NOSVE-NEXT:    mov h17, v2.h[6]
 ; NONEON-NOSVE-NEXT:    fcvt s18, h18
 ; NONEON-NOSVE-NEXT:    mov h3, v3.h[7]
 ; NONEON-NOSVE-NEXT:    mov h2, v2.h[7]
 ; NONEON-NOSVE-NEXT:    fcvt s1, h1
 ; NONEON-NOSVE-NEXT:    fcvt s6, h6
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
-; NONEON-NOSVE-NEXT:    fcvt h16, s16
+; NONEON-NOSVE-NEXT:    fcvt h7, s7
 ; NONEON-NOSVE-NEXT:    fmaxnm s18, s19, s18
 ; NONEON-NOSVE-NEXT:    fcvt s3, h3
 ; NONEON-NOSVE-NEXT:    fcvt s2, h2
 ; NONEON-NOSVE-NEXT:    fmaxnm s0, s0, s1
-; NONEON-NOSVE-NEXT:    mov v4.h[5], v5.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[5], v4.h[0]
 ; NONEON-NOSVE-NEXT:    fmaxnm s6, s17, s6
-; NONEON-NOSVE-NEXT:    mov v7.h[5], v16.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[5], v7.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h1, s18
 ; NONEON-NOSVE-NEXT:    fmaxnm s2, s2, s3
 ; NONEON-NOSVE-NEXT:    fcvt h0, s0
 ; NONEON-NOSVE-NEXT:    fcvt h3, s6
-; NONEON-NOSVE-NEXT:    mov v7.h[6], v1.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[6], v1.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h2, s2
-; NONEON-NOSVE-NEXT:    mov v4.h[6], v3.h[0]
-; NONEON-NOSVE-NEXT:    mov v7.h[7], v0.h[0]
-; NONEON-NOSVE-NEXT:    mov v4.h[7], v2.h[0]
-; NONEON-NOSVE-NEXT:    stp q7, q4, [x0]
+; NONEON-NOSVE-NEXT:    mov v5.h[6], v3.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[7], v0.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[7], v2.h[0]
+; NONEON-NOSVE-NEXT:    stp q16, q5, [x0]
 ; NONEON-NOSVE-NEXT:    ret
   %op1 = load <16 x half>, ptr %a
   %op2 = load <16 x half>, ptr %b
@@ -514,111 +514,111 @@ define void @fminnm_v16f16(ptr %a, ptr %b) {
 ; NONEON-NOSVE-NEXT:    mov h17, v0.h[1]
 ; NONEON-NOSVE-NEXT:    fcvt s21, h0
 ; NONEON-NOSVE-NEXT:    ldp q1, q3, [x1]
-; NONEON-NOSVE-NEXT:    mov h7, v2.h[1]
-; NONEON-NOSVE-NEXT:    fcvt s6, h2
+; NONEON-NOSVE-NEXT:    mov h6, v2.h[1]
+; NONEON-NOSVE-NEXT:    fcvt s16, h2
 ; NONEON-NOSVE-NEXT:    mov h19, v2.h[2]
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
-; NONEON-NOSVE-NEXT:    mov h16, v1.h[1]
+; NONEON-NOSVE-NEXT:    mov h7, v1.h[1]
 ; NONEON-NOSVE-NEXT:    fcvt s20, h1
-; NONEON-NOSVE-NEXT:    fcvt s7, h7
-; NONEON-NOSVE-NEXT:    mov h5, v3.h[1]
-; NONEON-NOSVE-NEXT:    fcvt s4, h3
+; NONEON-NOSVE-NEXT:    fcvt s6, h6
+; NONEON-NOSVE-NEXT:    mov h4, v3.h[1]
+; NONEON-NOSVE-NEXT:    fcvt s5, h3
 ; NONEON-NOSVE-NEXT:    mov h18, v3.h[2]
-; NONEON-NOSVE-NEXT:    fcvt s16, h16
-; NONEON-NOSVE-NEXT:    fcvt s5, h5
+; NONEON-NOSVE-NEXT:    fcvt s7, h7
+; NONEON-NOSVE-NEXT:    fcvt s4, h4
+; NONEON-NOSVE-NEXT:    fminnm s5, s16, s5
+; NONEON-NOSVE-NEXT:    fcvt s16, h19
+; NONEON-NOSVE-NEXT:    mov h19, v0.h[2]
+; NONEON-NOSVE-NEXT:    fminnm s7, s17, s7
+; NONEON-NOSVE-NEXT:    mov h17, v2.h[3]
 ; NONEON-NOSVE-NEXT:    fminnm s4, s6, s4
 ; NONEON-NOSVE-NEXT:    fcvt s6, h18
 ; NONEON-NOSVE-NEXT:    fminnm s18, s21, s20
-; NONEON-NOSVE-NEXT:    fminnm s16, s17, s16
-; NONEON-NOSVE-NEXT:    mov h17, v2.h[3]
+; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h7, s7
+; NONEON-NOSVE-NEXT:    fcvt s17, h17
 ; NONEON-NOSVE-NEXT:    mov h20, v3.h[4]
 ; NONEON-NOSVE-NEXT:    mov h21, v2.h[4]
-; NONEON-NOSVE-NEXT:    fminnm s5, s7, s5
-; NONEON-NOSVE-NEXT:    fcvt s7, h19
 ; NONEON-NOSVE-NEXT:    fcvt h4, s4
-; NONEON-NOSVE-NEXT:    mov h19, v0.h[2]
-; NONEON-NOSVE-NEXT:    fcvt h16, s16
-; NONEON-NOSVE-NEXT:    fcvt s17, h17
+; NONEON-NOSVE-NEXT:    fminnm s6, s16, s6
+; NONEON-NOSVE-NEXT:    fcvt h16, s18
+; NONEON-NOSVE-NEXT:    mov h18, v1.h[2]
 ; NONEON-NOSVE-NEXT:    fcvt s20, h20
 ; NONEON-NOSVE-NEXT:    fcvt s21, h21
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
-; NONEON-NOSVE-NEXT:    fminnm s6, s7, s6
-; NONEON-NOSVE-NEXT:    fcvt h7, s18
-; NONEON-NOSVE-NEXT:    mov h18, v1.h[2]
-; NONEON-NOSVE-NEXT:    mov v4.h[1], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt h5, s6
+; NONEON-NOSVE-NEXT:    mov v5.h[1], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt h4, s6
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[3]
-; NONEON-NOSVE-NEXT:    mov v7.h[1], v16.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s16, h19
+; NONEON-NOSVE-NEXT:    mov v16.h[1], v7.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s7, h19
 ; NONEON-NOSVE-NEXT:    mov h19, v0.h[3]
-; NONEON-NOSVE-NEXT:    mov v4.h[2], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s5, h18
+; NONEON-NOSVE-NEXT:    mov v5.h[2], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s4, h18
 ; NONEON-NOSVE-NEXT:    fcvt s6, h6
 ; NONEON-NOSVE-NEXT:    mov h18, v1.h[3]
 ; NONEON-NOSVE-NEXT:    fcvt s19, h19
-; NONEON-NOSVE-NEXT:    fminnm s5, s16, s5
-; NONEON-NOSVE-NEXT:    mov h16, v1.h[4]
+; NONEON-NOSVE-NEXT:    fminnm s4, s7, s4
+; NONEON-NOSVE-NEXT:    mov h7, v1.h[4]
 ; NONEON-NOSVE-NEXT:    fminnm s6, s17, s6
 ; NONEON-NOSVE-NEXT:    mov h17, v0.h[4]
 ; NONEON-NOSVE-NEXT:    fcvt s18, h18
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
-; NONEON-NOSVE-NEXT:    fcvt s16, h16
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
+; NONEON-NOSVE-NEXT:    fcvt s7, h7
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
 ; NONEON-NOSVE-NEXT:    fcvt h6, s6
 ; NONEON-NOSVE-NEXT:    fminnm s18, s19, s18
 ; NONEON-NOSVE-NEXT:    fminnm s19, s21, s20
-; NONEON-NOSVE-NEXT:    mov v7.h[2], v5.h[0]
-; NONEON-NOSVE-NEXT:    fminnm s5, s17, s16
-; NONEON-NOSVE-NEXT:    fcvt h16, s18
+; NONEON-NOSVE-NEXT:    mov v16.h[2], v4.h[0]
+; NONEON-NOSVE-NEXT:    fminnm s4, s17, s7
+; NONEON-NOSVE-NEXT:    fcvt h7, s18
 ; NONEON-NOSVE-NEXT:    mov h17, v1.h[5]
-; NONEON-NOSVE-NEXT:    mov v4.h[3], v6.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[3], v6.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h6, s19
 ; NONEON-NOSVE-NEXT:    mov h18, v0.h[5]
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
 ; NONEON-NOSVE-NEXT:    mov h19, v0.h[6]
-; NONEON-NOSVE-NEXT:    mov v7.h[3], v16.h[0]
-; NONEON-NOSVE-NEXT:    mov h16, v2.h[5]
-; NONEON-NOSVE-NEXT:    mov v4.h[4], v6.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[3], v7.h[0]
+; NONEON-NOSVE-NEXT:    mov h7, v2.h[5]
+; NONEON-NOSVE-NEXT:    mov v5.h[4], v6.h[0]
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[5]
 ; NONEON-NOSVE-NEXT:    fcvt s19, h19
 ; NONEON-NOSVE-NEXT:    mov h0, v0.h[7]
-; NONEON-NOSVE-NEXT:    mov v7.h[4], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s5, h6
-; NONEON-NOSVE-NEXT:    fcvt s6, h16
-; NONEON-NOSVE-NEXT:    fcvt s16, h17
+; NONEON-NOSVE-NEXT:    mov v16.h[4], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s4, h6
+; NONEON-NOSVE-NEXT:    fcvt s6, h7
+; NONEON-NOSVE-NEXT:    fcvt s7, h17
 ; NONEON-NOSVE-NEXT:    fcvt s17, h18
 ; NONEON-NOSVE-NEXT:    mov h18, v1.h[6]
 ; NONEON-NOSVE-NEXT:    mov h1, v1.h[7]
 ; NONEON-NOSVE-NEXT:    fcvt s0, h0
-; NONEON-NOSVE-NEXT:    fminnm s5, s6, s5
+; NONEON-NOSVE-NEXT:    fminnm s4, s6, s4
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[6]
-; NONEON-NOSVE-NEXT:    fminnm s16, s17, s16
+; NONEON-NOSVE-NEXT:    fminnm s7, s17, s7
 ; NONEON-NOSVE-NEXT:    mov h17, v2.h[6]
 ; NONEON-NOSVE-NEXT:    fcvt s18, h18
 ; NONEON-NOSVE-NEXT:    mov h3, v3.h[7]
 ; NONEON-NOSVE-NEXT:    mov h2, v2.h[7]
 ; NONEON-NOSVE-NEXT:    fcvt s1, h1
 ; NONEON-NOSVE-NEXT:    fcvt s6, h6
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
-; NONEON-NOSVE-NEXT:    fcvt h16, s16
+; NONEON-NOSVE-NEXT:    fcvt h7, s7
 ; NONEON-NOSVE-NEXT:    fminnm s18, s19, s18
 ; NONEON-NOSVE-NEXT:    fcvt s3, h3
 ; NONEON-NOSVE-NEXT:    fcvt s2, h2
 ; NONEON-NOSVE-NEXT:    fminnm s0, s0, s1
-; NONEON-NOSVE-NEXT:    mov v4.h[5], v5.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[5], v4.h[0]
 ; NONEON-NOSVE-NEXT:    fminnm s6, s17, s6
-; NONEON-NOSVE-NEXT:    mov v7.h[5], v16.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[5], v7.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h1, s18
 ; NONEON-NOSVE-NEXT:    fminnm s2, s2, s3
 ; NONEON-NOSVE-NEXT:    fcvt h0, s0
 ; NONEON-NOSVE-NEXT:    fcvt h3, s6
-; NONEON-NOSVE-NEXT:    mov v7.h[6], v1.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[6], v1.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h2, s2
-; NONEON-NOSVE-NEXT:    mov v4.h[6], v3.h[0]
-; NONEON-NOSVE-NEXT:    mov v7.h[7], v0.h[0]
-; NONEON-NOSVE-NEXT:    mov v4.h[7], v2.h[0]
-; NONEON-NOSVE-NEXT:    stp q7, q4, [x0]
+; NONEON-NOSVE-NEXT:    mov v5.h[6], v3.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[7], v0.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[7], v2.h[0]
+; NONEON-NOSVE-NEXT:    stp q16, q5, [x0]
 ; NONEON-NOSVE-NEXT:    ret
   %op1 = load <16 x half>, ptr %a
   %op2 = load <16 x half>, ptr %b
@@ -886,111 +886,111 @@ define void @fmax_v16f16(ptr %a, ptr %b) {
 ; NONEON-NOSVE-NEXT:    mov h17, v0.h[1]
 ; NONEON-NOSVE-NEXT:    fcvt s21, h0
 ; NONEON-NOSVE-NEXT:    ldp q1, q3, [x1]
-; NONEON-NOSVE-NEXT:    mov h7, v2.h[1]
-; NONEON-NOSVE-NEXT:    fcvt s6, h2
+; NONEON-NOSVE-NEXT:    mov h6, v2.h[1]
+; NONEON-NOSVE-NEXT:    fcvt s16, h2
 ; NONEON-NOSVE-NEXT:    mov h19, v2.h[2]
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
-; NONEON-NOSVE-NEXT:    mov h16, v1.h[1]
+; NONEON-NOSVE-NEXT:    mov h7, v1.h[1]
 ; NONEON-NOSVE-NEXT:    fcvt s20, h1
-; NONEON-NOSVE-NEXT:    fcvt s7, h7
-; NONEON-NOSVE-NEXT:    mov h5, v3.h[1]
-; NONEON-NOSVE-NEXT:    fcvt s4, h3
+; NONEON-NOSVE-NEXT:    fcvt s6, h6
+; NONEON-NOSVE-NEXT:    mov h4, v3.h[1]
+; NONEON-NOSVE-NEXT:    fcvt s5, h3
 ; NONEON-NOSVE-NEXT:    mov h18, v3.h[2]
-; NONEON-NOSVE-NEXT:    fcvt s16, h16
-; NONEON-NOSVE-NEXT:    fcvt s5, h5
+; NONEON-NOSVE-NEXT:    fcvt s7, h7
+; NONEON-NOSVE-NEXT:    fcvt s4, h4
+; NONEON-NOSVE-NEXT:    fmax s5, s16, s5
+; NONEON-NOSVE-NEXT:    fcvt s16, h19
+; NONEON-NOSVE-NEXT:    mov h19, v0.h[2]
+; NONEON-NOSVE-NEXT:    fmax s7, s17, s7
+; NONEON-NOSVE-NEXT:    mov h17, v2.h[3]
 ; NONEON-NOSVE-NEXT:    fmax s4, s6, s4
 ; NONEON-NOSVE-NEXT:    fcvt s6, h18
 ; NONEON-NOSVE-NEXT:    fmax s18, s21, s20
-; NONEON-NOSVE-NEXT:    fmax s16, s17, s16
-; NONEON-NOSVE-NEXT:    mov h17, v2.h[3]
+; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h7, s7
+; NONEON-NOSVE-NEXT:    fcvt s17, h17
 ; NONEON-NOSVE-NEXT:    mov h20, v3.h[4]
 ; NONEON-NOSVE-NEXT:    mov h21, v2.h[4]
-; NONEON-NOSVE-NEXT:    fmax s5, s7, s5
-; NONEON-NOSVE-NEXT:    fcvt s7, h19
 ; NONEON-NOSVE-NEXT:    fcvt h4, s4
-; NONEON-NOSVE-NEXT:    mov h19, v0.h[2]
-; NONEON-NOSVE-NEXT:    fcvt h16, s16
-; NONEON-NOSVE-NEXT:    fcvt s17, h17
+; NONEON-NOSVE-NEXT:    fmax s6, s16, s6
+; NONEON-NOSVE-NEXT:    fcvt h16, s18
+; NONEON-NOSVE-NEXT:    mov h18, v1.h[2]
 ; NONEON-NOSVE-NEXT:    fcvt s20, h20
 ; NONEON-NOSVE-NEXT:    fcvt s21, h21
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
-; NONEON-NOSVE-NEXT:    fmax s6, s7, s6
-; NONEON-NOSVE-NEXT:    fcvt h7, s18
-; NONEON-NOSVE-NEXT:    mov h18, v1.h[2]
-; NONEON-NOSVE-NEXT:    mov v4.h[1], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt h5, s6
+; NONEON-NOSVE-NEXT:    mov v5.h[1], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt h4, s6
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[3]
-; NONEON-NOSVE-NEXT:    mov v7.h[1], v16.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s16, h19
+; NONEON-NOSVE-NEXT:    mov v16.h[1], v7.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s7, h19
 ; NONEON-NOSVE-NEXT:    mov h19, v0.h[3]
-; NONEON-NOSVE-NEXT:    mov v4.h[2], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s5, h18
+; NONEON-NOSVE-NEXT:    mov v5.h[2], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s4, h18
 ; NONEON-NOSVE-NEXT:    fcvt s6, h6
 ; NONEON-NOSVE-NEXT:    mov h18, v1.h[3]
 ; NONEON-NOSVE-NEXT:    fcvt s19, h19
-; NONEON-NOSVE-NEXT:    fmax s5, s16, s5
-; NONEON-NOSVE-NEXT:    mov h16, v1.h[4]
+; NONEON-NOSVE-NEXT:    fmax s4, s7, s4
+; NONEON-NOSVE-NEXT:    mov h7, v1.h[4]
 ; NONEON-NOSVE-NEXT:    fmax s6, s17, s6
 ; NONEON-NOSVE-NEXT:    mov h17, v0.h[4]
 ; NONEON-NOSVE-NEXT:    fcvt s18, h18
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
-; NONEON-NOSVE-NEXT:    fcvt s16, h16
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
+; NONEON-NOSVE-NEXT:    fcvt s7, h7
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
 ; NONEON-NOSVE-NEXT:    fcvt h6, s6
 ; NONEON-NOSVE-NEXT:    fmax s18, s19, s18
 ; NONEON-NOSVE-NEXT:    fmax s19, s21, s20
-; NONEON-NOSVE-NEXT:    mov v7.h[2], v5.h[0]
-; NONEON-NOSVE-NEXT:    fmax s5, s17, s16
-; NONEON-NOSVE-NEXT:    fcvt h16, s18
+; NONEON-NOSVE-NEXT:    mov v16.h[2], v4.h[0]
+; NONEON-NOSVE-NEXT:    fmax s4, s17, s7
+; NONEON-NOSVE-NEXT:    fcvt h7, s18
 ; NONEON-NOSVE-NEXT:    mov h17, v1.h[5]
-; NONEON-NOSVE-NEXT:    mov v4.h[3], v6.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[3], v6.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h6, s19
 ; NONEON-NOSVE-NEXT:    mov h18, v0.h[5]
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
 ; NONEON-NOSVE-NEXT:    mov h19, v0.h[6]
-; NONEON-NOSVE-NEXT:    mov v7.h[3], v16.h[0]
-; NONEON-NOSVE-NEXT:    mov h16, v2.h[5]
-; NONEON-NOSVE-NEXT:    mov v4.h[4], v6.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[3], v7.h[0]
+; NONEON-NOSVE-NEXT:    mov h7, v2.h[5]
+; NONEON-NOSVE-NEXT:    mov v5.h[4], v6.h[0]
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[5]
 ; NONEON-NOSVE-NEXT:    fcvt s19, h19
 ; NONEON-NOSVE-NEXT:    mov h0, v0.h[7]
-; NONEON-NOSVE-NEXT:    mov v7.h[4], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s5, h6
-; NONEON-NOSVE-NEXT:    fcvt s6, h16
-; NONEON-NOSVE-NEXT:    fcvt s16, h17
+; NONEON-NOSVE-NEXT:    mov v16.h[4], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s4, h6
+; NONEON-NOSVE-NEXT:    fcvt s6, h7
+; NONEON-NOSVE-NEXT:    fcvt s7, h17
 ; NONEON-NOSVE-NEXT:    fcvt s17, h18
 ; NONEON-NOSVE-NEXT:    mov h18, v1.h[6]
 ; NONEON-NOSVE-NEXT:    mov h1, v1.h[7]
 ; NONEON-NOSVE-NEXT:    fcvt s0, h0
-; NONEON-NOSVE-NEXT:    fmax s5, s6, s5
+; NONEON-NOSVE-NEXT:    fmax s4, s6, s4
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[6]
-; NONEON-NOSVE-NEXT:    fmax s16, s17, s16
+; NONEON-NOSVE-NEXT:    fmax s7, s17, s7
 ; NONEON-NOSVE-NEXT:    mov h17, v2.h[6]
 ; NONEON-NOSVE-NEXT:    fcvt s18, h18
 ; NONEON-NOSVE-NEXT:    mov h3, v3.h[7]
 ; NONEON-NOSVE-NEXT:    mov h2, v2.h[7]
 ; NONEON-NOSVE-NEXT:    fcvt s1, h1
 ; NONEON-NOSVE-NEXT:    fcvt s6, h6
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
-; NONEON-NOSVE-NEXT:    fcvt h16, s16
+; NONEON-NOSVE-NEXT:    fcvt h7, s7
 ; NONEON-NOSVE-NEXT:    fmax s18, s19, s18
 ; NONEON-NOSVE-NEXT:    fcvt s3, h3
 ; NONEON-NOSVE-NEXT:    fcvt s2, h2
 ; NONEON-NOSVE-NEXT:    fmax s0, s0, s1
-; NONEON-NOSVE-NEXT:    mov v4.h[5], v5.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[5], v4.h[0]
 ; NONEON-NOSVE-NEXT:    fmax s6, s17, s6
-; NONEON-NOSVE-NEXT:    mov v7.h[5], v16.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[5], v7.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h1, s18
 ; NONEON-NOSVE-NEXT:    fmax s2, s2, s3
 ; NONEON-NOSVE-NEXT:    fcvt h0, s0
 ; NONEON-NOSVE-NEXT:    fcvt h3, s6
-; NONEON-NOSVE-NEXT:    mov v7.h[6], v1.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[6], v1.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h2, s2
-; NONEON-NOSVE-NEXT:    mov v4.h[6], v3.h[0]
-; NONEON-NOSVE-NEXT:    mov v7.h[7], v0.h[0]
-; NONEON-NOSVE-NEXT:    mov v4.h[7], v2.h[0]
-; NONEON-NOSVE-NEXT:    stp q7, q4, [x0]
+; NONEON-NOSVE-NEXT:    mov v5.h[6], v3.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[7], v0.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[7], v2.h[0]
+; NONEON-NOSVE-NEXT:    stp q16, q5, [x0]
 ; NONEON-NOSVE-NEXT:    ret
   %op1 = load <16 x half>, ptr %a
   %op2 = load <16 x half>, ptr %b
@@ -1258,111 +1258,111 @@ define void @fmin_v16f16(ptr %a, ptr %b) {
 ; NONEON-NOSVE-NEXT:    mov h17, v0.h[1]
 ; NONEON-NOSVE-NEXT:    fcvt s21, h0
 ; NONEON-NOSVE-NEXT:    ldp q1, q3, [x1]
-; NONEON-NOSVE-NEXT:    mov h7, v2.h[1]
-; NONEON-NOSVE-NEXT:    fcvt s6, h2
+; NONEON-NOSVE-NEXT:    mov h6, v2.h[1]
+; NONEON-NOSVE-NEXT:    fcvt s16, h2
 ; NONEON-NOSVE-NEXT:    mov h19, v2.h[2]
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
-; NONEON-NOSVE-NEXT:    mov h16, v1.h[1]
+; NONEON-NOSVE-NEXT:    mov h7, v1.h[1]
 ; NONEON-NOSVE-NEXT:    fcvt s20, h1
-; NONEON-NOSVE-NEXT:    fcvt s7, h7
-; NONEON-NOSVE-NEXT:    mov h5, v3.h[1]
-; NONEON-NOSVE-NEXT:    fcvt s4, h3
+; NONEON-NOSVE-NEXT:    fcvt s6, h6
+; NONEON-NOSVE-NEXT:    mov h4, v3.h[1]
+; NONEON-NOSVE-NEXT:    fcvt s5, h3
 ; NONEON-NOSVE-NEXT:    mov h18, v3.h[2]
-; NONEON-NOSVE-NEXT:    fcvt s16, h16
-; NONEON-NOSVE-NEXT:    fcvt s5, h5
+; NONEON-NOSVE-NEXT:    fcvt s7, h7
+; NONEON-NOSVE-NEXT:    fcvt s4, h4
+; NONEON-NOSVE-NEXT:    fmin s5, s16, s5
+; NONEON-NOSVE-NEXT:    fcvt s16, h19
+; NONEON-NOSVE-NEXT:    mov h19, v0.h[2]
+; NONEON-NOSVE-NEXT:    fmin s7, s17, s7
+; NONEON-NOSVE-NEXT:    mov h17, v2.h[3]
 ; NONEON-NOSVE-NEXT:    fmin s4, s6, s4
 ; NONEON-NOSVE-NEXT:    fcvt s6, h18
 ; NONEON-NOSVE-NEXT:    fmin s18, s21, s20
-; NONEON-NOSVE-NEXT:    fmin s16, s17, s16
-; NONEON-NOSVE-NEXT:    mov h17, v2.h[3]
+; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h7, s7
+; NONEON-NOSVE-NEXT:    fcvt s17, h17
 ; NONEON-NOSVE-NEXT:    mov h20, v3.h[4]
 ; NONEON-NOSVE-NEXT:    mov h21, v2.h[4]
-; NONEON-NOSVE-NEXT:    fmin s5, s7, s5
-; NONEON-NOSVE-NEXT:    fcvt s7, h19
 ; NONEON-NOSVE-NEXT:    fcvt h4, s4
-; NONEON-NOSVE-NEXT:    mov h19, v0.h[2]
-; NONEON-NOSVE-NEXT:    fcvt h16, s16
-; NONEON-NOSVE-NEXT:    fcvt s17, h17
+; NONEON-NOSVE-NEXT:    fmin s6, s16, s6
+; NONEON-NOSVE-NEXT:    fcvt h16, s18
+; NONEON-NOSVE-NEXT:    mov h18, v1.h[2]
 ; NONEON-NOSVE-NEXT:    fcvt s20, h20
 ; NONEON-NOSVE-NEXT:    fcvt s21, h21
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
-; NONEON-NOSVE-NEXT:    fmin s6, s7, s6
-; NONEON-NOSVE-NEXT:    fcvt h7, s18
-; NONEON-NOSVE-NEXT:    mov h18, v1.h[2]
-; NONEON-NOSVE-NEXT:    mov v4.h[1], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt h5, s6
+; NONEON-NOSVE-NEXT:    mov v5.h[1], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt h4, s6
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[3]
-; NONEON-NOSVE-NEXT:    mov v7.h[1], v16.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s16, h19
+; NONEON-NOSVE-NEXT:    mov v16.h[1], v7.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s7, h19
 ; NONEON-NOSVE-NEXT:    mov h19, v0.h[3]
-; NONEON-NOSVE-NEXT:    mov v4.h[2], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s5, h18
+; NONEON-NOSVE-NEXT:    mov v5.h[2], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s4, h18
 ; NONEON-NOSVE-NEXT:    fcvt s6, h6
 ; NONEON-NOSVE-NEXT:    mov h18, v1.h[3]
 ; NONEON-NOSVE-NEXT:    fcvt s19, h19
-; NONEON-NOSVE-NEXT:    fmin s5, s16, s5
-; NONEON-NOSVE-NEXT:    mov h16, v1.h[4]
+; NONEON-NOSVE-NEXT:    fmin s4, s7, s4
+; NONEON-NOSVE-NEXT:    mov h7, v1.h[4]
 ; NONEON-NOSVE-NEXT:    fmin s6, s17, s6
 ; NONEON-NOSVE-NEXT:    mov h17, v0.h[4]
 ; NONEON-NOSVE-NEXT:    fcvt s18, h18
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
-; NONEON-NOSVE-NEXT:    fcvt s16, h16
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
+; NONEON-NOSVE-NEXT:    fcvt s7, h7
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
 ; NONEON-NOSVE-NEXT:    fcvt h6, s6
 ; NONEON-NOSVE-NEXT:    fmin s18, s19, s18
 ; NONEON-NOSVE-NEXT:    fmin s19, s21, s20
-; NONEON-NOSVE-NEXT:    mov v7.h[2], v5.h[0]
-; NONEON-NOSVE-NEXT:    fmin s5, s17, s16
-; NONEON-NOSVE-NEXT:    fcvt h16, s18
+; NONEON-NOSVE-NEXT:    mov v16.h[2], v4.h[0]
+; NONEON-NOSVE-NEXT:    fmin s4, s17, s7
+; NONEON-NOSVE-NEXT:    fcvt h7, s18
 ; NONEON-NOSVE-NEXT:    mov h17, v1.h[5]
-; NONEON-NOSVE-NEXT:    mov v4.h[3], v6.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[3], v6.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h6, s19
 ; NONEON-NOSVE-NEXT:    mov h18, v0.h[5]
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
 ; NONEON-NOSVE-NEXT:    mov h19, v0.h[6]
-; NONEON-NOSVE-NEXT:    mov v7.h[3], v16.h[0]
-; NONEON-NOSVE-NEXT:    mov h16, v2.h[5]
-; NONEON-NOSVE-NEXT:    mov v4.h[4], v6.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[3], v7.h[0]
+; NONEON-NOSVE-NEXT:    mov h7, v2.h[5]
+; NONEON-NOSVE-NEXT:    mov v5.h[4], v6.h[0]
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[5]
 ; NONEON-NOSVE-NEXT:    fcvt s19, h19
 ; NONEON-NOSVE-NEXT:    mov h0, v0.h[7]
-; NONEON-NOSVE-NEXT:    mov v7.h[4], v5.h[0]
-; NONEON-NOSVE-NEXT:    fcvt s5, h6
-; NONEON-NOSVE-NEXT:    fcvt s6, h16
-; NONEON-NOSVE-NEXT:    fcvt s16, h17
+; NONEON-NOSVE-NEXT:    mov v16.h[4], v4.h[0]
+; NONEON-NOSVE-NEXT:    fcvt s4, h6
+; NONEON-NOSVE-NEXT:    fcvt s6, h7
+; NONEON-NOSVE-NEXT:    fcvt s7, h17
 ; NONEON-NOSVE-NEXT:    fcvt s17, h18
 ; NONEON-NOSVE-NEXT:    mov h18, v1.h[6]
 ; NONEON-NOSVE-NEXT:    mov h1, v1.h[7]
 ; NONEON-NOSVE-NEXT:    fcvt s0, h0
-; NONEON-NOSVE-NEXT:    fmin s5, s6, s5
+; NONEON-NOSVE-NEXT:    fmin s4, s6, s4
 ; NONEON-NOSVE-NEXT:    mov h6, v3.h[6]
-; NONEON-NOSVE-NEXT:    fmin s16, s17, s16
+; NONEON-NOSVE-NEXT:    fmin s7, s17, s7
 ; NONEON-NOSVE-NEXT:    mov h17, v2.h[6]
 ; NONEON-NOSVE-NEXT:    fcvt s18, h18
 ; NONEON-NOSVE-NEXT:    mov h3, v3.h[7]
 ; NONEON-NOSVE-NEXT:    mov h2, v2.h[7]
 ; NONEON-NOSVE-NEXT:    fcvt s1, h1
 ; NONEON-NOSVE-NEXT:    fcvt s6, h6
-; NONEON-NOSVE-NEXT:    fcvt h5, s5
+; NONEON-NOSVE-NEXT:    fcvt h4, s4
 ; NONEON-NOSVE-NEXT:    fcvt s17, h17
-; NONEON-NOSVE-NEXT:    fcvt h16, s16
+; NONEON-NOSVE-NEXT:    fcvt h7, s7
 ; NONEON-NOSVE-NEXT:    fmin s18, s19, s18
 ; NONEON-NOSVE-NEXT:    fcvt s3, h3
 ; NONEON-NOSVE-NEXT:    fcvt s2, h2
 ; NONEON-NOSVE-NEXT:    fmin s0, s0, s1
-; NONEON-NOSVE-NEXT:    mov v4.h[5], v5.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[5], v4.h[0]
 ; NONEON-NOSVE-NEXT:    fmin s6, s17, s6
-; NONEON-NOSVE-NEXT:    mov v7.h[5], v16.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[5], v7.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h1, s18
 ; NONEON-NOSVE-NEXT:    fmin s2, s2, s3
 ; NONEON-NOSVE-NEXT:    fcvt h0, s0
 ; NONEON-NOSVE-NEXT:    fcvt h3, s6
-; NONEON-NOSVE-NEXT:    mov v7.h[6], v1.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[6], v1.h[0]
 ; NONEON-NOSVE-NEXT:    fcvt h2, s2
-; NONEON-NOSVE-NEXT:    mov v4.h[6], v3.h[0]
-; NONEON-NOSVE-NEXT:    mov v7.h[7], v0.h[0]
-; NONEON-NOSVE-NEXT:    mov v4.h[7], v2.h[0]
-; NONEON-NOSVE-NEXT:    stp q7, q4, [x0]
+; NONEON-NOSVE-NEXT:    mov v5.h[6], v3.h[0]
+; NONEON-NOSVE-NEXT:    mov v16.h[7], v0.h[0]
+; NONEON-NOSVE-NEXT:    mov v5.h[7], v2.h[0]
+; NONEON-NOSVE-NEXT:    stp q16, q5, [x0]
 ; NONEON-NOSVE-NEXT:    ret
   %op1 = load <16 x half>, ptr %a
   %op2 = load <16 x half>, ptr %b

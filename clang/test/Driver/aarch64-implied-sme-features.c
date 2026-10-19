@@ -47,3 +47,9 @@
 
 // RUN: %clang -target aarch64-linux-gnu -march=armv8-a+nosme+sme-i16i64 %s -### 2>&1 | FileCheck %s --check-prefix=SME-SUBFEATURE-CONFLICT-REV
 // SME-SUBFEATURE-CONFLICT-REV: "-target-feature" "-sme-f64f64" "-target-feature" "+sme-i16i64" "-target-feature" "+sme" "-target-feature" "+bf16"
+
+// RUN: %clang --target=aarch64-linux-gnu -march=armv8-a+sme-tmop %s -### 2>&1 | FileCheck %s --check-prefix=SME-TMOP
+// SME-TMOP: "-target-feature" "+sme-tmop"
+
+// RUN: %clang --target=aarch64-linux-gnu -march=armv8-a+sme-mop4 %s -### 2>&1 | FileCheck %s --check-prefix=SME-MOP4
+// SME-MOP4: "-target-feature" "+sme-mop4"

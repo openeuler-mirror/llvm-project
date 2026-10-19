@@ -1044,7 +1044,7 @@ std::string Intrinsic::getBuiltinTypeStr() {
 
   Type RetT = getReturnType();
   if ((LocalCK == ClassI || LocalCK == ClassW) && RetT.isScalar() &&
-      !RetT.isFloating() && !RetT.isBFloat16())
+      !RetT.isFloating() && !RetT.isBFloat16() && !RetT.isMFloat8())
     RetT.makeInteger(RetT.getElementSizeInBits(), false);
 
   // Since the return value must be one type, return a vector type of the
@@ -1350,8 +1350,13 @@ void Intrinsic::emitBodyAsBuiltinCall() {
   if (!protoHasScalar())
     LocalCK = ClassB;
 
-  if (!getReturnType().isVoid() && !SRet)
-    S += "(" + RetVar.getType().str() + ") ";
+  if (!getReturnType().isVoid() && !SRet) {
+    if (RetVar.getType().isMFloat8())
+      // MFloat8 is not a valid C-cast target, use a bit cast instead.
+      S += "__builtin_bit_cast(" + RetVar.getType().str() + ", ";
+    else
+      S += "(" + RetVar.getType().str() + ") ";
+  }
 
   S += "__builtin_neon_" + mangleName(std::string(N), LocalCK) + "(";
 
@@ -1404,6 +1409,8 @@ void Intrinsic::emitBodyAsBuiltinCall() {
     S.pop_back();
     S.pop_back();
   }
+  if (!getReturnType().isVoid() && !SRet && RetVar.getType().isMFloat8())
+    S += ")";
   S += ");";
 
   std::string RetExpr;
@@ -2041,8 +2048,20 @@ void NeonEmitter::createIntrinsic(Record *R,
   auto &Entry = IntrinsicMap[Name];
 
   for (auto &I : NewTypeSpecs) {
+
+    // MFloat8 type is only available on AArch64. If encountered set ArchGuard
+    // correctly.
+    std::string NewArchGuard = ArchGuard;
+    if (Type(I.first, ".").isMFloat8()) {
+      if (NewArchGuard.empty()) {
+        NewArchGuard = "defined(__aarch64__)";
+      } else if (NewArchGuard.find("defined(__aarch64__)") ==
+                 std::string::npos) {
+        NewArchGuard = "defined(__aarch64__) && (" + NewArchGuard + ")";
+      }
+    }
     Entry.emplace_back(R, Name, Proto, I.first, I.second, CK, Body, *this,
-                       ArchGuard, TargetGuard, IsUnavailable, BigEndianSafe);
+                       NewArchGuard, TargetGuard, IsUnavailable, BigEndianSafe);
     Out.push_back(&Entry.back());
   }
 
@@ -2307,7 +2326,7 @@ static void emitNeonTypeDefs(const std::string& types, raw_ostream &OS) {
   for (auto &TS : TDTypeVec) {
     bool IsA64 = false;
     Type T(TS, ".");
-    if (T.isDouble())
+    if (T.isDouble() || T.isMFloat8())
       IsA64 = true;
 
     if (InIfdef && !IsA64) {
@@ -2340,7 +2359,7 @@ static void emitNeonTypeDefs(const std::string& types, raw_ostream &OS) {
     for (auto &TS : TDTypeVec) {
       bool IsA64 = false;
       Type T(TS, ".");
-      if (T.isDouble())
+      if (T.isDouble() || T.isMFloat8())
         IsA64 = true;
 
       if (InIfdef && !IsA64) {
@@ -2634,8 +2653,6 @@ void NeonEmitter::runVectorTypes(raw_ostream &OS) {
   OS << "#ifdef __aarch64__\n";
   OS << "typedef __MFloat8_t __mfp8;\n";
   OS << "typedef __mfp8 mfloat8_t;\n";
-  OS << "typedef __attribute__((neon_vector_type(8))) mfloat8_t mfloat8x8_t;\n";
-  OS << "typedef __attribute__((neon_vector_type(16))) mfloat8_t mfloat8x16_t;\n";
   OS << "typedef double float64_t;\n";
   OS << "#endif\n\n";
 
@@ -2693,7 +2710,7 @@ __arm_set_fpm_lscale2(fpm_t __fpm, uint64_t __scale) {
 
 )";
 
-  emitNeonTypeDefs("cQcsQsiQilQlUcQUcUsQUsUiQUiUlQUlhQhfQfdQd", OS);
+  emitNeonTypeDefs("cQcsQsiQilQlUcQUcUsQUsUiQUiUlQUlmQmhQhfQfdQd", OS);
 
   emitNeonTypeDefs("bQb", OS);
   OS << "#endif // __ARM_NEON_TYPES_H\n";

@@ -188,19 +188,19 @@ define <16 x i8> @combine_vec_udiv_nonuniform4(<16 x i8> %x) {
 ; GISEL-LABEL: combine_vec_udiv_nonuniform4:
 ; GISEL:       // %bb.0:
 ; GISEL-NEXT:    adrp x8, .LCPI4_2
-; GISEL-NEXT:    adrp x9, .LCPI4_1
+; GISEL-NEXT:    adrp x9, .LCPI4_3
 ; GISEL-NEXT:    ldr q1, [x8, :lo12:.LCPI4_2]
-; GISEL-NEXT:    adrp x8, .LCPI4_3
-; GISEL-NEXT:    ldr q4, [x9, :lo12:.LCPI4_1]
+; GISEL-NEXT:    adrp x8, .LCPI4_1
 ; GISEL-NEXT:    umull2 v2.8h, v0.16b, v1.16b
-; GISEL-NEXT:    ldr q3, [x8, :lo12:.LCPI4_3]
+; GISEL-NEXT:    ldr q3, [x8, :lo12:.LCPI4_1]
 ; GISEL-NEXT:    umull v1.8h, v0.8b, v1.8b
 ; GISEL-NEXT:    adrp x8, .LCPI4_0
-; GISEL-NEXT:    neg v4.16b, v4.16b
+; GISEL-NEXT:    neg v3.16b, v3.16b
+; GISEL-NEXT:    ldr q4, [x8, :lo12:.LCPI4_0]
 ; GISEL-NEXT:    uzp2 v1.16b, v1.16b, v2.16b
-; GISEL-NEXT:    ldr q2, [x8, :lo12:.LCPI4_0]
-; GISEL-NEXT:    cmeq v2.16b, v3.16b, v2.16b
-; GISEL-NEXT:    ushl v1.16b, v1.16b, v4.16b
+; GISEL-NEXT:    ldr q2, [x9, :lo12:.LCPI4_3]
+; GISEL-NEXT:    cmeq v2.16b, v2.16b, v4.16b
+; GISEL-NEXT:    ushl v1.16b, v1.16b, v3.16b
 ; GISEL-NEXT:    bif v0.16b, v1.16b, v2.16b
 ; GISEL-NEXT:    ret
   %div = udiv <16 x i8> %x, <i8 -64, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1>
