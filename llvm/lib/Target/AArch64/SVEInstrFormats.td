@@ -627,6 +627,13 @@ class SVE2p1_Cvt_VG2_Pat<string name, SDPatternOperator intrinsic, ValueType out
     : Pat<(out_vt (intrinsic in_vt:$Zn1, in_vt:$Zn2)),
                   (!cast<Instruction>(name) (REG_SEQUENCE ZPR2Mul2, in_vt:$Zn1, zsub0, in_vt:$Zn2, zsub1))>;
 
+class SVE_LUTI6_VG2_Index_Pat<ValueType vt, SDPatternOperator intrinsic,
+                              Instruction inst>
+    : Pat<(vt (intrinsic vt:$Op1, vt:$Op2, nxv16i8:$Op3,
+                         (i32 timm32_0_1:$Op4))),
+          (vt (inst (REG_SEQUENCE ZPR2, vt:$Op1, zsub0, vt:$Op2, zsub1),
+                    nxv16i8:$Op3, timm32_0_1:$Op4))>;
+
 //===----------------------------------------------------------------------===//
 // SVE pattern match helpers.
 //===----------------------------------------------------------------------===//
@@ -2171,6 +2178,15 @@ multiclass sve_fp_2op_p_zds_fscale<bits<4> opc, string asm,
   def : SVE_3_Op_Pat<nxv8f16, op, nxv8i1, nxv8f16, nxv8i16, !cast<Instruction>(NAME # _H)>;
   def : SVE_3_Op_Pat<nxv4f32, op, nxv4i1, nxv4f32, nxv4i32, !cast<Instruction>(NAME # _S)>;
   def : SVE_3_Op_Pat<nxv2f64, op, nxv2i1, nxv2f64, nxv2i64, !cast<Instruction>(NAME # _D)>;
+}
+
+multiclass sve_fp_2op_p_zds_bfscale<bits<4> opc, string asm, SDPatternOperator op,
+                                    DestructiveInstTypeEnum flags> {
+  let DestructiveInstType = flags in {
+  def _H : sve_fp_2op_p_zds<0b00, opc, asm, ZPR16>;
+  }
+
+  def : SVE_3_Op_Pat<nxv8bf16, op, nxv8i1, nxv8bf16, nxv8i16, !cast<Instruction>(NAME # _H)>;
 }
 
 multiclass sve_fp_2op_p_zds_zeroing_hsd<SDPatternOperator op> {
@@ -10448,6 +10464,12 @@ class sve2_fp8_mmla<bit opc, ZPRRegOp dst_ty, string mnemonic>
   let Uses = [FPMR, FPCR];
 }
 
+multiclass sve2_fp8_fmmla<bits<1> opc, ZPRRegOp zprty, string mnemonic, ValueType ResVT> {
+  def NAME : sve2_fp8_mmla<opc, zprty, mnemonic>;
+  def : Pat<(ResVT (int_aarch64_sve_fp8_fmmla ResVT:$acc, nxv16i8:$zn, nxv16i8:$zm)),
+            (!cast<Instruction>(NAME) $acc, $zn, $zm)>;
+}
+
 class sve_fp8_dot_indexed<bits<4> opc, ZPRRegOp dst_ty, Operand iop_ty, string mnemonic>
 : I<(outs dst_ty:$Zda), (ins dst_ty:$_Zda, ZPR8:$Zn, ZPR3b8:$Zm, iop_ty:$iop),
     mnemonic, "\t$Zda, $Zn, $Zm$iop", "", []>, Sched<[]> {
@@ -10497,7 +10519,7 @@ multiclass sve2_fp8_dot_indexed_s<string asm, SDPatternOperator op> {
   def : SVE_4_Op_Pat<nxv4f32, op, nxv4f32, nxv16i8, nxv16i8, i32, !cast<Instruction>(NAME)>;
 }
 
-// FP8 Look up table
+// Look up table
 class sve2_lut_vector_index<ZPRRegOp zd_ty, RegisterOperand zn_ty,
                             Operand idx_ty, bits<4>opc, string mnemonic>
     : I<(outs zd_ty:$Zd), (ins zn_ty:$Zn, ZPRAny:$Zm, idx_ty:$idx),
@@ -10516,7 +10538,7 @@ class sve2_lut_vector_index<ZPRRegOp zd_ty, RegisterOperand zn_ty,
   let Inst{4-0}   = Zd;
 }
 
-// FP8 Look up table read with 2-bit indices
+// Look up table read with 2-bit indices
 multiclass sve2_luti2_vector_index<string mnemonic> {
   def _B : sve2_lut_vector_index<ZPR8, Z_b, VectorIndexS32b, {?, 0b100}, mnemonic> {
     bits<2> idx;
@@ -10538,7 +10560,7 @@ multiclass sve2_luti2_vector_index<string mnemonic> {
                          i32, timm32_0_7, !cast<Instruction>(NAME # _H)>;
 }
 
-// FP8 Look up table read with 4-bit indices
+// Look up table read with 4-bit indices
 multiclass sve2_luti4_vector_index<string mnemonic> {
   def _B : sve2_lut_vector_index<ZPR8, Z_b, VectorIndexD32b, 0b1001, mnemonic> {
     bit idx;
@@ -10559,7 +10581,7 @@ multiclass sve2_luti4_vector_index<string mnemonic> {
                          i32, timm32_0_3, !cast<Instruction>(NAME # _H)>;
 }
 
-// FP8 Look up table read with 4-bit indices (two contiguous registers)
+// Look up table read with 4-bit indices (two contiguous registers)
 multiclass sve2_luti4_vector_vg2_index<string mnemonic> {
   def NAME : sve2_lut_vector_index<ZPR16, ZZ_h, VectorIndexS32b, {?, 0b101}, mnemonic> {
     bits<2> idx;
@@ -10581,6 +10603,44 @@ multiclass sve2_luti4_vector_vg2_index<string mnemonic> {
             (nxv8bf16 (!cast<Instruction>(NAME) (REG_SEQUENCE ZPR2, nxv8bf16:$Op1, zsub0,
                                                                     nxv8bf16:$Op2, zsub1),
                                                 nxv16i8:$Op3, timm32_0_3:$Op4))>;
+}
+
+// Look up table read with 6-bit indices
+multiclass sve2_luti6_vector_index<string mnemonic, SDPatternOperator intrinsic> {
+  def _H : sve2_lut_vector_index<ZPR16, ZZ_h, VectorIndexD32b, 0b1011, mnemonic> {
+    bit idx;
+    let Inst{23} = idx;
+  }
+
+  def : SVE_LUTI6_VG2_Index_Pat<nxv8i16, intrinsic,
+                                !cast<Instruction>(NAME # _H)>;
+  def : SVE_LUTI6_VG2_Index_Pat<nxv8f16, intrinsic,
+                                !cast<Instruction>(NAME # _H)>;
+  def : SVE_LUTI6_VG2_Index_Pat<nxv8bf16, intrinsic,
+                                !cast<Instruction>(NAME # _H)>;
+}
+
+// Look up table
+class sve2_luti6_vector<string mnemonic>
+    : I<(outs ZPR8:$Zd), (ins ZZ_b:$Zn, ZPRAny:$Zm),
+        mnemonic, "\t$Zd, $Zn, $Zm", "", []>, Sched<[]> {
+  bits<5> Zd;
+  bits<5> Zn;
+  bits<5> Zm;
+  let Inst{31-21} = 0b01000101001;
+  let Inst{20-16} = Zm;
+  let Inst{15-10} = 0b101011;
+  let Inst{9-5}   = Zn;
+  let Inst{4-0}   = Zd;
+}
+
+multiclass sve2_luti6_vector<string mnemonic, SDPatternOperator intrinsic> {
+  def NAME : sve2_luti6_vector<mnemonic>;
+
+  def : Pat<(nxv16i8 (intrinsic nxv16i8:$Op1, nxv16i8:$Op2, nxv16i8:$Op3)),
+            (!cast<Instruction>(NAME) (REG_SEQUENCE ZPR2, nxv16i8:$Op1, zsub0,
+                                                     nxv16i8:$Op2, zsub1),
+                                       nxv16i8:$Op3)>;
 }
 
 //===----------------------------------------------------------------------===//

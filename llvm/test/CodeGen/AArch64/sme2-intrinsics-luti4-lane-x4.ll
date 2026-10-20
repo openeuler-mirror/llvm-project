@@ -48,6 +48,31 @@ define {<vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, <vscal
     ret {<vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>} %res
 }
 
+; Tests multiple identical luti4 intrinsics with side effects interspersed,
+; are not CSD'd.
+define void @test_multiple_luti4_zt_i8(ptr %ptrA, ptr %ptrB, ptr %ptrC, ptr %ptrD, <vscale x 16 x i8> %x) {
+; CHECK-LABEL: test_multiple_luti4_zt_i8:
+; CHECK:       // %bb.0:
+; CHECK-NEXT:    ptrue p0.s
+; CHECK-NEXT:    str wzr, [x0]
+; CHECK-NEXT:    luti4 { z4.s - z7.s }, zt0, z0[1]
+; CHECK-NEXT:    str wzr, [x1]
+; CHECK-NEXT:    luti4 { z0.s - z3.s }, zt0, z0[1]
+; CHECK-NEXT:    st1w { z4.s }, p0, [x2]
+; CHECK-NEXT:    st1w { z0.s }, p0, [x3]
+; CHECK-NEXT:    ret
+  store volatile i32 0, ptr %ptrA
+  %res1 = call {<vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>} @llvm.aarch64.sme.luti4.lane.zt.x4.nxv4f32(i32 0, <vscale x 16 x i8> %x, i32 1)
+  store volatile i32 0, ptr %ptrB
+  %res2 = call {<vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>} @llvm.aarch64.sme.luti4.lane.zt.x4.nxv4f32(i32 0, <vscale x 16 x i8> %x, i32 1)
+
+  %res1.0 = extractvalue {<vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>} %res1, 0
+  store <vscale x 4 x float> %res1.0, ptr %ptrC, align 16
+  %res2.0 = extractvalue {<vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>} %res2, 0
+  store <vscale x 4 x float> %res2.0, ptr %ptrD, align 16
+  ret void
+}
+
 declare {<vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>} @llvm.aarch64.sme.luti4.lane.zt.x4.nxv8i16(i32, <vscale x 16 x i8>, i32)
 declare {<vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>} @llvm.aarch64.sme.luti4.lane.zt.x4.nxv4i32(i32, <vscale x 16 x i8>, i32)
 declare {<vscale x 8 x bfloat>, <vscale x 8 x bfloat>, <vscale x 8 x bfloat>, <vscale x 8 x bfloat>} @llvm.aarch64.sme.luti4.lane.zt.x4.nxv8bf16(i32, <vscale x 16 x i8>, i32)

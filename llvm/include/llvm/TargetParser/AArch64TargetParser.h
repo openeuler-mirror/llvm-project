@@ -189,6 +189,9 @@ enum ArchExtKind : uint64_t {
   AEK_F16F32MM =     86, // FEAT_F16F32MM
   AEK_SME_MOP4 =     87, // FEAT_SME_MOP4
   AEK_SME_TMOP =     88, // FEAT_SME_TMOP
+  AEK_SVE_BFSCALE =  89, // FEAT_SVE_BFSCALE
+  AEK_SVE2P3 =       90, // FEAT_SVE2p3
+  AEK_SME2P3 =       91, // FEAT_SME2p3
   AEK_NUM_EXTENSIONS
 };
 using ExtensionBitset = Bitset<AEK_NUM_EXTENSIONS>;
@@ -320,8 +323,11 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"sve-f16f32mm", AArch64::AEK_SVE_F16F32MM, "+sve-f16f32mm", "-sve-f16f32mm", FEAT_INIT, "+sve-f16f32mm", 0},
     {"sve2p2", AArch64::AEK_SVE2P2, "+sve2p2", "-sve2p2", FEAT_INIT, "+sve2p2", 0},
     {"sve-aes2", AArch64::AEK_SVE_AES2, "+sve-aes2", "-sve-aes2", FEAT_INIT, "+sve-aes2", 0},
+    {"sve-bfscale", AArch64::AEK_SVE_BFSCALE, "+sve-bfscale", "-sve-bfscale", FEAT_INIT, "+sve-bfscale", 0},
     {"ssve-aes", AArch64::AEK_SSVE_AES, "+ssve-aes", "-ssve-aes", FEAT_INIT, "+ssve-aes", 0},
     {"sme2p2", AArch64::AEK_SME2P2, "+sme2p2", "-sme2p2", FEAT_INIT, "+sme2p2", 0},
+    {"sve2p3", AArch64::AEK_SVE2P3, "+sve2p3", "-sve2p3", FEAT_INIT, "+sve2p3", 0},
+    {"sme2p3", AArch64::AEK_SME2P3, "+sme2p3", "-sme2p3", FEAT_INIT, "+sme2p3", 0},
     {"lsfe", AArch64::AEK_LSFE, "+lsfe", "-lsfe", FEAT_INIT, "+lsfe", 0},
     {"fprcvt", AArch64::AEK_FPRCVT, "+fprcvt", "-fprcvt", FEAT_INIT, "+fprcvt", 0},
     {"f16mm", AArch64::AEK_F16MM, "+f16mm", "-f16mm", FEAT_INIT, "+f16mm", 0},

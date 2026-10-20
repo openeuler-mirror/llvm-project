@@ -607,7 +607,10 @@ public:
                                   MachineBasicBlock *BB) const;
 
   MachineBasicBlock *EmitLoweredCatchRet(MachineInstr &MI,
-                                           MachineBasicBlock *BB) const;
+                                         MachineBasicBlock *BB) const;
+
+  MachineBasicBlock *EmitLoweredSetFpmr(MachineInstr &MI,
+                                        MachineBasicBlock *MBB) const;
 
   MachineBasicBlock *EmitTileLoad(unsigned Opc, unsigned BaseReg,
                                   MachineInstr &MI,

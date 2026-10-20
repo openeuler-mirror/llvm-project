@@ -120,10 +120,10 @@ static DecodeStatus DecodeZPR3RegisterClass(MCInst &Inst, unsigned RegNo,
 static DecodeStatus DecodeZPR4RegisterClass(MCInst &Inst, unsigned RegNo,
                                             uint64_t Address,
                                             const MCDisassembler *Decoder);
-template <unsigned Min, unsigned Max>
-static DecodeStatus DecodeZPRMul2_MinMax(MCInst &Inst, unsigned RegNo,
-                                         uint64_t Address,
-                                         const MCDisassembler *Decoder);
+template <unsigned RegClassID, unsigned Multiple, unsigned Min, unsigned Max>
+static DecodeStatus
+DecodeMulMinMaxRegisterClass(MCInst &Inst, unsigned RegNo, uint64_t Address,
+                             const MCDisassembler *Decoder);
 static DecodeStatus DecodeZK(MCInst &Inst, unsigned RegNo, uint64_t Address,
                              const MCDisassembler *Decoder);
 template <unsigned Min, unsigned Max>
@@ -669,15 +669,14 @@ static DecodeStatus DecodeZPR4RegisterClass(MCInst &Inst, unsigned RegNo,
   return Success;
 }
 
-template <unsigned Min, unsigned Max>
-static DecodeStatus DecodeZPRMul2_MinMax(MCInst &Inst, unsigned RegNo,
-                                         uint64_t Address,
-                                         const MCDisassembler *Decoder) {
-  unsigned Reg = (RegNo * 2) + Min;
-  if (Reg < Min || Reg > Max || (Reg & 1))
+template <unsigned RegClassID, unsigned Multiple, unsigned Min, unsigned Max>
+static DecodeStatus
+DecodeMulMinMaxRegisterClass(MCInst &Inst, unsigned RegNo, uint64_t Address,
+                             const MCDisassembler *Decoder) {
+  unsigned Reg = (RegNo * Multiple) + Min;
+  if (Reg < Min || Reg > Max || (Reg % Multiple))
     return Fail;
-  unsigned Register =
-      AArch64MCRegisterClasses[AArch64::ZPRRegClassID].getRegister(Reg);
+  unsigned Register = AArch64MCRegisterClasses[RegClassID].getRegister(Reg);
   Inst.addOperand(MCOperand::createReg(Register));
   return Success;
 }

@@ -120,6 +120,9 @@ def FeaturePsUAO : SubtargetFeature< "uaops", "HasPsUAO", "true",
 def FeatureCCPP : SubtargetFeature<"ccpp", "HasCCPP",
     "true", "Enable v8.2 data Cache Clean to Point of Persistence (FEAT_DPB)" >;
 
+def FeatureSVEBFSCALE : SubtargetFeature<"sve-bfscale", "HasSVEBFSCALE", "true",
+  "Enable Armv9.6-A SVE BFloat16 scaling instructions">;
+
 def FeatureSVE : SubtargetFeature<"sve", "HasSVE", "true",
   "Enable Scalable Vector Extension (SVE) instructions (FEAT_SVE)", [FeatureFullFP16]>;
 
@@ -651,11 +654,17 @@ def FeatureLSFE : SubtargetFeature<"lsfe", "HasLSFE", "true",
 def FeatureSME2p2 : SubtargetFeature<"sme2p2", "HasSME2p2", "true",
   "Enable Armv9.6-A Scalable Matrix Extension 2.2 instructions", [FeatureSME2p1]>;
 
+def FeatureSME2p3 : SubtargetFeature<"sme2p3", "HasSME2p3", "true",
+  "Enable Armv9.7-A Scalable Matrix Extension 2.3 instructions", [FeatureSME2p2]>;
+
 def FeatureSSVE_AES : SubtargetFeature<"ssve-aes", "HasSSVE_AES", "true",
   "Enable Armv9.6-A SVE2 AES support in streaming SVE mode", [FeatureSME2, FeatureSVE2AES]>;
 
 def FeatureSVE2p2 : SubtargetFeature<"sve2p2", "HasSVE2p2", "true",
   "Enable Armv9.6-A Scalable Vector Extension 2.2 instructions", [FeatureSVE2p1]>;
+
+def FeatureSVE2p3 : SubtargetFeature<"sve2p3", "HasSVE2p3", "true",
+  "Enable Armv9.7-A Scalable Vector Extension 2.3 instructions", [FeatureSVE2p2]>;
 
 def FeatureSVEAES2 : SubtargetFeature<"sve-aes2", "HasSVE_AES2", "true",
   "Enable Armv9.6-A SVE multi-vector AES and 128-bit PMULL instructions">;

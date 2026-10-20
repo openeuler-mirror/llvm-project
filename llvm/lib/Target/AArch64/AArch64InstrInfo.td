@@ -225,12 +225,22 @@ def HasSME2p2       : Predicate<"Subtarget->isStreaming() && Subtarget->hasSME2p
                                  AssemblerPredicateWithAll<(all_of FeatureSME2p2), "sme2p2">;
 def HasSVEAES2      : Predicate<"Subtarget->hasSVEAES2()">,
                                  AssemblerPredicateWithAll<(all_of FeatureSVEAES2), "sve-aes2">;
+def HasSVEBFSCALE   : Predicate<"Subtarget->isNonStreamingSVEorSME2Available() && Subtarget->hasSVEBFSCALE()">,
+                                 AssemblerPredicateWithAll<(all_of FeatureSVEBFSCALE), "sve-bfscale">;
 def HasSVE_F16F32MM : Predicate<"Subtarget->isSVEAvailable() && Subtarget->hasSVE_F16F32MM()">,
                                  AssemblerPredicateWithAll<(all_of FeatureSVE_F16F32MM), "sve-f16f32mm">;
 def HasF16MM        : Predicate<"Subtarget->hasF16MM()">,
                                  AssemblerPredicateWithAll<(all_of FeatureF16MM), "f16mm">;
 def HasF16F32MM     : Predicate<"Subtarget->hasF16F32MM()">,
                                  AssemblerPredicateWithAll<(all_of FeatureF16F32MM), "f16f32mm">;
+def HasSVE2p3       : Predicate<"Subtarget->isSVEAvailable() && Subtarget->hasSVE2p3()">,
+                                 AssemblerPredicateWithAll<(all_of FeatureSVE2p3), "sve2p3">;
+def HasSME2p3       : Predicate<"Subtarget->isStreaming() && Subtarget->hasSME2p3()">,
+                                 AssemblerPredicateWithAll<(all_of FeatureSME2p3), "sme2p3">;
+def HasSVE2p3_or_SME2p3
+    : Predicate<"Subtarget->isSVEorStreamingSVEAvailable() && (Subtarget->hasSVE2p3() || Subtarget->hasSME2p3())">,
+                AssemblerPredicateWithAll<(any_of FeatureSME2p3, FeatureSVE2p3),
+                "sme2p3 or sve2p3">;
 // A subset of SVE(2) instructions are legal in Streaming SVE execution mode,
 // they should be enabled if either has been specified.
 def HasSVEorSME
@@ -1758,10 +1768,9 @@ def MSR_FPCR : Pseudo<(outs), (ins GPR64:$val),
                PseudoInstExpansion<(MSR 0xda20, GPR64:$val)>,
                Sched<[WriteSys]>;
 
-let Defs = [FPMR] in
+let Uses = [FPMR], Defs = [FPMR, NZCV], usesCustomInserter = 1 in
 def MSR_FPMR : Pseudo<(outs), (ins GPR64:$val),
                       [(int_aarch64_set_fpmr i64:$val)]>,
-               PseudoInstExpansion<(MSR 0xda22, GPR64:$val)>,
                Sched<[WriteSys]>;
 
 // Generic system instructions
@@ -9564,7 +9573,7 @@ let Predicates = [HasF16F32MM] in
   defm FMMLA : SIMDThreeSameVectorFMLAWiden<"fmmla">;
 
 let Uses = [FPMR, FPCR] in
-  defm FMMLA : SIMDThreeSameVectorFP8MatrixMul<"fmmla">;
+  defm FMMLA : SIMDThreeSameVectorFP8MatrixMul<"fmmla", int_aarch64_neon_fmmla>;
 
 include "AArch64InstrAtomics.td"
 include "AArch64SVEInstrInfo.td"

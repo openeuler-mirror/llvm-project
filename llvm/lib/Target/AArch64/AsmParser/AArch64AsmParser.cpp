@@ -1422,7 +1422,7 @@ public:
 
   template <RegKind VectorKind, unsigned NumRegs, unsigned NumElements,
             unsigned ElementWidth, unsigned RegClass>
-  DiagnosticPredicate isTypedVectorListMultiple() const {
+  DiagnosticPredicate isTypedVectorListInRegClass() const {
     bool Res =
         isTypedVectorList<VectorKind, NumRegs, NumElements, ElementWidth>();
     if (!Res)
@@ -3701,6 +3701,7 @@ static const struct Extension {
     {"ssve-aes", {AArch64::FeatureSSVE_AES}},
     {"sve2p2", {AArch64::FeatureSVE2p2}},
     {"sve-aes2", {AArch64::FeatureSVEAES2}},
+    {"sve-bfscale", {AArch64::FeatureSVEBFSCALE}},
     {"sve-f16f32mm", {AArch64::FeatureSVE_F16F32MM}},
     {"f16mm", {AArch64::FeatureF16MM}},
     {"f16f32mm", {AArch64::FeatureF16F32MM}},
@@ -4551,6 +4552,13 @@ ParseStatus AArch64AsmParser::tryParseVectorList(OperandVector &Operands,
   Operands.push_back(AArch64Operand::CreateVectorList(
       FirstReg, Count, Stride, NumElements, ElementWidth, VectorKind, S,
       getLoc(), getContext()));
+
+  if (getTok().is(AsmToken::LBrac)) {
+    ParseStatus Res = tryParseVectorIndex(Operands);
+    if (Res.isFailure())
+      return ParseStatus::Failure;
+    return ParseStatus::Success;
+  }
 
   return ParseStatus::Success;
 }
@@ -6138,6 +6146,9 @@ bool AArch64AsmParser::showMatchError(SMLoc Loc, unsigned ErrCode,
     return Error(Loc, "Invalid vector list, expected list with 4 consecutive "
                       "SVE vectors, where the first vector is a multiple of 4 "
                       "and with matching element types");
+  case Match_InvalidSVEVectorList3x0_3b:
+    return Error(Loc, "Invalid vector list, expected list with 3 consecutive "
+                      "SVE vectors starting at z0-z7");
   case Match_InvalidLookupTable:
     return Error(Loc, "Invalid lookup table, expected zt0");
   case Match_InvalidSVEVectorListStrided2x8:
@@ -6754,6 +6765,7 @@ bool AArch64AsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   case Match_InvalidSVEVectorList2x16Mul2_Hi:
   case Match_InvalidSVEVectorList2x32Mul2_Hi:
   case Match_InvalidSVEVectorList2x64Mul2_Hi:
+  case Match_InvalidSVEVectorList3x0_3b:
   case Match_InvalidSVEVectorListStrided2x8:
   case Match_InvalidSVEVectorListStrided2x16:
   case Match_InvalidSVEVectorListStrided2x32:

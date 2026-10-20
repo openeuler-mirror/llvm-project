@@ -9609,8 +9609,8 @@ Value *CodeGenFunction::EmitSVEMaskedStore(const CallExpr *E,
   bool IsQuadStore = false;
 
   switch (IntrinsicID) {
-  case Intrinsic::aarch64_sve_st1uwq:
-  case Intrinsic::aarch64_sve_st1udq:
+  case Intrinsic::aarch64_sve_st1wq:
+  case Intrinsic::aarch64_sve_st1dq:
     AddrMemoryTy = llvm::ScalableVectorType::get(MemEltTy, 1);
     PredTy =
         llvm::ScalableVectorType::get(IntegerType::get(getLLVMContext(), 1), 1);
@@ -9759,7 +9759,7 @@ CodeGenFunction::getSVEOverloadTypes(const SVETypeFlags &TypeFlags,
   if (TypeFlags.isOverloadWhileRW())
     return {getSVEPredType(TypeFlags), Ops[0]->getType()};
 
-  if (TypeFlags.isOverloadCvt())
+  if (TypeFlags.isOverloadFirstandLast())
     return {Ops[0]->getType(), Ops.back()->getType()};
 
   if (TypeFlags.isReductionQV() && !ResultType->isScalableTy() &&
@@ -13043,6 +13043,16 @@ Value *CodeGenFunction::EmitAArch64BuiltinExpr(unsigned BuiltinID,
   case NEON::BI__builtin_neon_vdotq_f32_mf8_fpm:
     return EmitFP8NeonFDOTCall(Intrinsic::aarch64_neon_fp8_fdot4, false,
                                FloatTy, Ops, E, "fdot4");
+  case NEON::BI__builtin_neon_vmmlaq_f16_mf8_fpm:
+    return EmitFP8NeonCall(Intrinsic::aarch64_neon_fmmla,
+                           {llvm::FixedVectorType::get(HalfTy, 8),
+                            llvm::FixedVectorType::get(Int8Ty, 16)},
+                           Ops, E, "fmmla");
+  case NEON::BI__builtin_neon_vmmlaq_f32_mf8_fpm:
+    return EmitFP8NeonCall(Intrinsic::aarch64_neon_fmmla,
+                           {llvm::FixedVectorType::get(FloatTy, 4),
+                            llvm::FixedVectorType::get(Int8Ty, 16)},
+                           Ops, E, "fmmla");
   case NEON::BI__builtin_neon_vdot_lane_f32_mf8_fpm:
   case NEON::BI__builtin_neon_vdotq_lane_f32_mf8_fpm:
     ExtendLaneArg = true;

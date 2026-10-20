@@ -66,6 +66,16 @@ class sme_outer_product_pseudo<ZPRRegOp zpr_ty, SMEMatrixTypeEnum za_flag>
   let usesCustomInserter = 1;
 }
 
+class sme_sparse_outer_product_pseudo<RegisterOperand zn_ty, RegisterOperand zm_ty, SMEMatrixTypeEnum za_flag>
+    : Pseudo<(outs), (ins i32imm:$tile, zn_ty:$zn, zm_ty:$zm, ZK:$zk, i32imm:$idx), []>,
+      Sched<[]> {
+  // Translated to the actual instructions in AArch64ISelLowering.cpp
+  let SMEMatrixType = za_flag;
+  let usesCustomInserter = 1;
+  let mayLoad = 1;
+  let mayStore = 1;
+}
+
 class sme2_quarter_tile_outer_product_pseudo<RegisterOperand zn_ty, RegisterOperand zm_ty, SMEMatrixTypeEnum za_flag>
     : Pseudo<(outs), (ins i32imm:$tile,
                           zn_ty:$zn, zm_ty:$zm), []>,
@@ -214,6 +224,12 @@ class SME2_ZA_Tile_Vec_Multi_Single_Pat<string name, SDPatternOperator intrinsic
 class SME2_ZA_Tile_Vec_Multi_Multi_Pat<string name, SDPatternOperator intrinsic, Operand imm_ty, ValueType vt>
     : Pat<(intrinsic imm_ty:$tile, vt:$Zn1, vt:$Zn2, vt:$Zm1, vt:$Zm2),
           (!cast<Instruction>(name # _PSEUDO) $tile, (REG_SEQUENCE ZPR2Mul2, vt:$Zn1, zsub0, vt:$Zn2, zsub1), (REG_SEQUENCE ZPR2Mul2, vt:$Zm1, zsub0, vt:$Zm2, zsub1))>;
+
+class SME2_ZA_TMOP_Pat<string name, SDPatternOperator intrinsic, Operand tile_imm, ValueType vt>
+    : Pat<(intrinsic tile_imm:$tile, vt:$Zn1, vt:$Zn2, vt:$Zm, nxv16i8:$Zk, timm32_0_3:$idx),
+          (!cast<Instruction>(name # _PSEUDO) $tile, (REG_SEQUENCE ZPR2Mul2, vt:$Zn1, zsub0, vt:$Zn2, zsub1), $Zm, $Zk, $idx)>;
+
+
 //===----------------------------------------------------------------------===//
 // SME pattern match helpers.
 //===----------------------------------------------------------------------===//
@@ -3404,6 +3420,87 @@ multiclass  sme2_int_bmopx_tile<string mnemonic, bits<3> op, SDPatternOperator i
   def : SME_ZA_Tile_TwoPred_TwoVec_Pat<NAME, intrinsic, timm32_0_3, nxv4i1, nxv4i32>;
 }
 
+//===----------------------------------------------------------------------===//
+// SME2 Sparse Outer Product and Accumulate
+
+class sme_int_sparse_outer_product_i16<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, string mnemonic>
+    : I<(outs TileOp16:$ZAda),
+        (ins  TileOp16:$_ZAda, zn_ty:$Zn, zm_ty:$Zm, ZK:$Zk, VectorIndexS32b:$imm),
+        mnemonic, "\t$ZAda, $Zn, $Zm, $Zk$imm",
+        "", []>,
+      Sched<[]> {
+  bit ZAda;
+  bits<4> Zn;
+  bits<5> Zm;
+  bits<3> Zk;
+  bits<2> imm;
+  let Inst{31-25} = 0b1000000;
+  let Inst{24}    = opc{4};
+  let Inst{23-22} = 0b01;
+  let Inst{21}    = opc{3};
+  let Inst{20-16} = Zm;
+  let Inst{15}    = opc{2};
+  let Inst{14}    = 0b0;
+  let Inst{13}    = opc{1};
+  let Inst{12-10} = Zk;
+  let Inst{9-6}   = Zn;
+  let Inst{5-4}   = imm;
+  let Inst{3}     = opc{0};
+  let Inst{2-1}   = 0b00;
+  let Inst{0}     = ZAda;
+
+  let Constraints = "$ZAda = $_ZAda";
+}
+
+class sme_int_sparse_outer_product_i32<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, string mnemonic>
+    : I<(outs TileOp32:$ZAda),
+        (ins  TileOp32:$_ZAda, zn_ty:$Zn, zm_ty:$Zm, ZK:$Zk, VectorIndexS32b:$imm),
+        mnemonic, "\t$ZAda, $Zn, $Zm, $Zk$imm",
+        "", []>,
+      Sched<[]> {
+  bits<2> ZAda;
+  bits<4> Zn;
+  bits<5> Zm;
+  bits<3> Zk;
+  bits<2> imm;
+  let Inst{31-25} = 0b1000000;
+  let Inst{24}    = opc{4};
+  let Inst{23-22} = 0b01;
+  let Inst{21}    = opc{3};
+  let Inst{20-16} = Zm;
+  let Inst{15}    = opc{2};
+  let Inst{14}    = 0b0;
+  let Inst{13}    = opc{1};
+  let Inst{12-10} = Zk;
+  let Inst{9-6}   = Zn;
+  let Inst{5-4}   = imm;
+  let Inst{3}     = opc{0};
+  let Inst{2}     = 0b0;
+  let Inst{1-0}   = ZAda;
+
+  let Constraints = "$ZAda = $_ZAda";
+}
+
+multiclass sme_tmopa_16b<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, ValueType vt, string mnemonic, SDPatternOperator intrinsic, list<Register> uses=[]> {
+  def NAME : sme_int_sparse_outer_product_i16<opc, zn_ty, zm_ty, mnemonic>, SMEPseudo2Instr<NAME, 1> {
+    let Uses = uses;
+  }
+
+  def NAME # _PSEUDO : sme_sparse_outer_product_pseudo<zn_ty, zm_ty, SMEMatrixTileH>, SMEPseudo2Instr<NAME, 0>;
+
+  def : SME2_ZA_TMOP_Pat<NAME, intrinsic, timm32_0_1, vt>;
+}
+
+multiclass sme_tmopa_32b<bits<5> opc, RegisterOperand zn_ty, RegisterOperand zm_ty, ValueType vt, string mnemonic, SDPatternOperator intrinsic, list<Register> uses=[]> {
+  def NAME : sme_int_sparse_outer_product_i32<opc, zn_ty, zm_ty, mnemonic>, SMEPseudo2Instr<NAME, 1> {
+    let Uses = uses;
+  }
+
+  def NAME # _PSEUDO : sme_sparse_outer_product_pseudo<zn_ty, zm_ty, SMEMatrixTileS>, SMEPseudo2Instr<NAME, 0>;
+
+  def : SME2_ZA_TMOP_Pat<NAME, intrinsic, timm32_0_3, vt>;
+}
+
 //===----------------------------------------------------------------------===///
 // SME2 Zero Lookup Table.
 class sme2_zero_zt<string mnemonic, bits<4> opc>
@@ -3635,6 +3732,85 @@ class sme2_luti4_vector_vg4_index<bits<2> sz, RegisterOperand vector_ty,
 multiclass sme2_luti4_vector_vg4_index<string mnemonic> {
   def _H : sme2_luti4_vector_vg4_index<0b01, ZZZZ_h_mul_r, mnemonic>;
   def _S : sme2_luti4_vector_vg4_index<0b10, ZZZZ_s_mul_r, mnemonic>;
+}
+
+// 8-bit Look up table
+class sme2_lut_single<string asm>
+    : I<(outs ZPR8:$Zd), (ins ZTR:$ZTt, ZPRAny:$Zn),
+        asm, "\t$Zd, $ZTt, $Zn", "", []>, Sched<[]> {
+  bits<0> ZTt;
+  bits<5> Zd;
+  bits<5> Zn;
+  let Inst{31-10} = 0b1100000011001000010000;
+  let Inst{9-5}   = Zn;
+  let Inst{4-0}   = Zd;
+}
+
+multiclass sme2_lut_single<string asm, SDPatternOperator intrinsic> {
+  def NAME : sme2_lut_single<asm>;
+
+  def : Pat<(nxv16i8 (intrinsic (imm_to_zt untyped:$zt), nxv16i8:$zn)),
+            (!cast<Instruction>(NAME) $zt, nxv16i8:$zn)>;
+}
+
+//===----------------------------------------------------------------------===//
+// Lookup table read with 6-bit indices (8-bit)
+class sme2_luti6_zt_base<RegisterOperand zd_ty, string asm>
+  : I<(outs zd_ty:$Zd), (ins ZTR:$ZTt, ZZZ_Any_3b:$Zn),
+    asm, "\t$Zd, $ZTt, $Zn", "", []>, Sched<[]> {
+  bits<0> ZTt;
+  bits<3> Zd;
+  bits<3> Zn;
+  let Inst{31-21} = 0b11000000100;
+  let Inst{19-10} = 0b1010000000;
+  let Inst{9-7}   = Zn;
+  let Inst{6-5}   = 0b00;
+}
+
+class sme2_luti6_zt_consecutive<string asm>
+  : sme2_luti6_zt_base<ZZZZ_b_mul_r, asm> {
+  let Inst{20}    = 0;
+  let Inst{4-2}   = Zd;
+  let Inst{1-0}   = 0b00;
+}
+
+class sme2_luti6_zt_strided<string asm>
+  : sme2_luti6_zt_base<ZZZZ_b_strided, asm> {
+  let Inst{20}    = 1;
+  let Inst{4}     = Zd{2};
+  let Inst{3-2}   = 0b00;
+  let Inst{1-0}   = Zd{1-0};
+}
+
+//===----------------------------------------------------------------------===//
+// Lookup table read with 6-bit indices (8-bit)
+class sme2_luti6_vector_vg4_base<RegisterOperand zd_ty, string asm>
+  : I<(outs zd_ty:$Zd), (ins ZZ_h:$Zn, ZZ_Any:$Zm, VectorIndexD:$i1),
+    asm, "\t$Zd, $Zn, $Zm$i1", "", []>, Sched<[]> {
+  bits<3> Zd;
+  bits<5> Zn;
+  bits<5> Zm;
+  bits<1> i1;
+  let Inst{31-23} = 0b110000010;
+  let Inst{22}    = i1;
+  let Inst{21}    = 0b1;
+  let Inst{20-16} = Zm;
+  let Inst{9-5}   = Zn;
+}
+
+class sme2_luti6_vector_vg4_consecutive<string asm>
+  : sme2_luti6_vector_vg4_base<ZZZZ_h_mul_r, asm> {
+  let Inst{15-10} = 0b111101;
+  let Inst{4-2}   = Zd;
+  let Inst{1-0}   = 0b00;
+}
+
+class sme2_luti6_vector_vg4_strided<string asm>
+  : sme2_luti6_vector_vg4_base<ZZZZ_h_strided, asm> {
+  let Inst{15-10} = 0b111111;
+  let Inst{4}     = Zd{2};
+  let Inst{3-2}   = 0b00;
+  let Inst{1-0}   = Zd{1-0};
 }
 
 //===----------------------------------------------------------------------===//
@@ -5352,6 +5528,16 @@ multiclass sme2_fp8_fdot_multi_vg1x4<string mnemonic, bits<7> op,
   def : SME2_ZA_TwoOp_VG4_Multi_Multi_Pat<NAME, intrinsic, sme_elm_idx0_7, nxv16i8, tileslice16>;
 }
 
+multiclass sme2_bfscale_single<string mnemonic> {
+  def _2ZZ : sme2_sve_destructive_vector_vg2_single<0b00, 0b0011000, ZZ_h_mul_r, ZPR4b16, mnemonic>;
+  def _4ZZ : sme2_sve_destructive_vector_vg4_single<0b00, 0b0011000, ZZZZ_h_mul_r, ZPR4b16, mnemonic>;
+}
+
+multiclass sme2_bfscale_multi<string mnemonic> {
+  def _2Z2Z : sme2_sve_destructive_vector_vg2_multi<0b00, 0b0011000, ZZ_h_mul_r, mnemonic>;
+  def _4Z4Z : sme2_sve_destructive_vector_vg4_multi<0b00, 0b0011000, ZZZZ_h_mul_r, mnemonic>;
+}
+
 class sme2_bf16_fp32_quarter_tile_outer_product<bit M, bit N, bit S, string mnemonic, RegisterOperand zn_ty, RegisterOperand zm_ty>
     : I<(outs TileOp32:$ZAda),
         (ins TileOp32:$_ZAda, zn_ty:$Zn, zm_ty:$Zm),
@@ -5779,4 +5965,114 @@ multiclass sme2_fmop4a_fp8_fp32_4way<string mnemonic, string op> {
   def NAME # _M2Z2Z_BtoS_PSEUDO : sme2_quarter_tile_outer_product_pseudo<ZZ_b_mul_r_Lo, ZZ_b_mul_r_Hi, SMEMatrixTileS>, SMEPseudo2Instr<NAME # _M2Z2Z_BtoS, 0>;
 
   def : SME2_ZA_Tile_Vec_Multi_Multi_Pat<NAME # _M2Z2Z_BtoS, !cast<SDPatternOperator>(op # "_2x2"), timm32_0_3, nxv16i8>;
+}
+
+class sme2_multi2_fmul_sm<bits<2> size, string mnemonic, RegisterOperand vector_ty, RegisterOperand zpr_ty>
+    : I<(outs vector_ty:$Zd), (ins vector_ty:$Zn, zpr_ty:$Zm),
+        mnemonic, "\t$Zd, $Zn, $Zm",
+        "", []>, Sched<[]> {
+  bits<4> Zd;
+  bits<4> Zn;
+  bits<4> Zm;
+
+  let Inst{31-24} = 0b11000001;
+  let Inst{23-22} = size;
+  let Inst{21}    = 0b1;
+  let Inst{20-17} = Zm;
+  let Inst{16-10} = 0b0111010;
+  let Inst{9-6}   = Zn;
+  let Inst{5}     = 0b0;
+  let Inst{4-1}   = Zd;
+  let Inst{0}     = 0b0;
+}
+
+multiclass sme2_multi2_fmul_sm<string mnemonic> {
+  def _H : sme2_multi2_fmul_sm<0b01, mnemonic, ZZ_h_mul_r, ZPR4b16>;
+  def _S : sme2_multi2_fmul_sm<0b10, mnemonic, ZZ_s_mul_r, ZPR4b32>;
+  def _D : sme2_multi2_fmul_sm<0b11, mnemonic, ZZ_d_mul_r, ZPR4b64>;
+}
+
+class sme2_multi4_fmul_sm<bits<2> size, string mnemonic, RegisterOperand vector_ty, RegisterOperand zpr_ty>
+    : I<(outs vector_ty:$Zd), (ins vector_ty:$Zn, zpr_ty:$Zm),
+        mnemonic, "\t$Zd, $Zn, $Zm",
+        "", []>, Sched<[]> {
+  bits<3> Zd;
+  bits<3> Zn;
+  bits<4> Zm;
+
+  let Inst{31-24} = 0b11000001;
+  let Inst{23-22} = size;
+  let Inst{21}    = 0b1;
+  let Inst{20-17} = Zm;
+  let Inst{16-10} = 0b1111010;
+  let Inst{9-7}   = Zn;
+  let Inst{6-5}   = 0b00;
+  let Inst{4-2}   = Zd;
+  let Inst{1-0}   = 0b00;
+}
+
+multiclass sme2_multi4_fmul_sm<string mnemonic> {
+  def _H : sme2_multi4_fmul_sm<0b01, mnemonic, ZZZZ_h_mul_r, ZPR4b16>;
+  def _S : sme2_multi4_fmul_sm<0b10, mnemonic, ZZZZ_s_mul_r, ZPR4b32>;
+  def _D : sme2_multi4_fmul_sm<0b11, mnemonic, ZZZZ_d_mul_r, ZPR4b64>;
+}
+
+multiclass sme2_bfmul_single<string mnemonic> {
+  def _2ZZ  : sme2_multi2_fmul_sm<0b00, mnemonic, ZZ_h_mul_r,   ZPR4b16>;
+  def _4ZZ  : sme2_multi4_fmul_sm<0b00, mnemonic, ZZZZ_h_mul_r, ZPR4b16>;
+}
+
+class sme2_multi2_fmul_mm<bits<2> size, string mnemonic, RegisterOperand vector_ty>
+    : I<(outs vector_ty:$Zd), (ins vector_ty:$Zn, vector_ty:$Zm),
+        mnemonic, "\t$Zd, $Zn, $Zm",
+        "", []>, Sched<[]> {
+  bits<4> Zd;
+  bits<4> Zn;
+  bits<4> Zm;
+
+  let Inst{31-24} = 0b11000001;
+  let Inst{23-22} = size;
+  let Inst{21}    = 0b1;
+  let Inst{20-17} = Zm;
+  let Inst{16-10} = 0b0111001;
+  let Inst{9-6}   = Zn;
+  let Inst{5}     = 0b0;
+  let Inst{4-1}   = Zd;
+  let Inst{0}     = 0b0;
+}
+
+multiclass sme2_multi2_fmul_mm<string mnemonic> {
+  def _H : sme2_multi2_fmul_mm<0b01, mnemonic, ZZ_h_mul_r>;
+  def _S : sme2_multi2_fmul_mm<0b10, mnemonic, ZZ_s_mul_r>;
+  def _D : sme2_multi2_fmul_mm<0b11, mnemonic, ZZ_d_mul_r>;
+}
+
+class sme2_multi4_fmul_mm<bits<2> size, string mnemonic, RegisterOperand vector_ty>
+    : I<(outs vector_ty:$Zd), (ins vector_ty:$Zn, vector_ty:$Zm),
+        mnemonic, "\t$Zd, $Zn, $Zm",
+        "", []>, Sched<[]> {
+  bits<3> Zd;
+  bits<3> Zn;
+  bits<3> Zm;
+
+  let Inst{31-24} = 0b11000001;
+  let Inst{23-22} = size;
+  let Inst{21}    = 0b1;
+  let Inst{20-18} = Zm;
+  let Inst{17-10} = 0b01111001;
+  let Inst{9-7}   = Zn;
+  let Inst{6-5}   = 0b00;
+  let Inst{4-2}   = Zd;
+  let Inst{1-0}   = 0b00;
+}
+
+multiclass sme2_multi4_fmul_mm<string mnemonic> {
+  def _H : sme2_multi4_fmul_mm<0b01, mnemonic, ZZZZ_h_mul_r>;
+  def _S : sme2_multi4_fmul_mm<0b10, mnemonic, ZZZZ_s_mul_r>;
+  def _D : sme2_multi4_fmul_mm<0b11, mnemonic, ZZZZ_d_mul_r>;
+}
+
+multiclass sme2_bfmul_multi<string mnemonic> {
+  def _2Z2Z : sme2_multi2_fmul_mm<0b00, mnemonic, ZZ_h_mul_r>;
+  def _4Z4Z : sme2_multi4_fmul_mm<0b00, mnemonic, ZZZZ_h_mul_r>;
 }
