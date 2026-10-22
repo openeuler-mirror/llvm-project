@@ -192,6 +192,7 @@ enum ArchExtKind : uint64_t {
   AEK_SVE_BFSCALE =  89, // FEAT_SVE_BFSCALE
   AEK_SVE2P3 =       90, // FEAT_SVE2p3
   AEK_SME2P3 =       91, // FEAT_SME2p3
+  AEK_TLBID =        92, // FEAT_TLBID
   AEK_NUM_EXTENSIONS
 };
 using ExtensionBitset = Bitset<AEK_NUM_EXTENSIONS>;
@@ -334,6 +335,7 @@ inline constexpr ExtensionInfo Extensions[] = {
     {"f16f32mm", AArch64::AEK_F16F32MM, "+f16f32mm", "-f16f32mm", FEAT_INIT, "+f16f32mm", 0},
     {"sme-mop4", AArch64::AEK_SME_MOP4, "+sme-mop4", "-sme-mop4", FEAT_INIT, "+sme-mop4", 0},
     {"sme-tmop", AArch64::AEK_SME_TMOP, "+sme-tmop", "-sme-tmop", FEAT_INIT, "+sme-tmop", 0},
+    {"tlbid", AArch64::AEK_TLBID, "+tlbid", "-tlbid", FEAT_INIT, "", 0},
     // Special cases
     {"none", AArch64::AEK_NONE, {}, {}, FEAT_MAX, "", ExtensionInfo::MaxFMVPriority},
 };

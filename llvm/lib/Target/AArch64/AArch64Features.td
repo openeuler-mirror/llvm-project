@@ -679,6 +679,9 @@ def FeatureLSUI : SubtargetFeature<"lsui", "HasLSUI",
 // Armv9.7 Architecture Extensions
 //===----------------------------------------------------------------------===//
 
+def FeatureTLBID : SubtargetFeature<"tlbid", "HasTLBID", "true",
+  "Enable Armv9.7-A TLBI Domains extension (FEAT_TLBID)">;
+
 def FeatureF16MM : SubtargetFeature<"f16mm", "HasF16MM", "true",
   "Enable non-widening half-precision matrix multiply-accumulate (FEAT_F16MM)",
   [FeatureFullFP16]>;

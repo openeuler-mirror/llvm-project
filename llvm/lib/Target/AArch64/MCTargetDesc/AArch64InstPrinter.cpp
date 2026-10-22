@@ -902,7 +902,8 @@ bool AArch64InstPrinter::printSysAlias(const MCInst *MI,
   Encoding |= CnVal << 7;
   Encoding |= Op1Val << 11;
 
-  bool NeedsReg;
+  bool NeedsReg = false;
+  bool OptionalReg = false;
   std::string Ins;
   std::string Name;
 
@@ -981,20 +982,32 @@ bool AArch64InstPrinter::printSysAlias(const MCInst *MI,
       return false;
 
     NeedsReg = TLBI->NeedsReg;
+    if (STI.hasFeature(AArch64::FeatureAll) ||
+        STI.hasFeature(AArch64::FeatureTLBID))
+      OptionalReg = TLBI->OptionalReg;
     Ins = "tlbi\t";
     Name = std::string(TLBI->Name);
   }
   else
     return false;
 
+  StringRef Reg = getRegisterName(MI->getOperand(4).getReg());
+  bool NotXZR = Reg != "xzr";
+
+  // If a mandatory or optional register is not specified in the TableGen
+  // (i.e. no register operand should be present), and the register value
+  // is not xzr/x31, then disassemble to a SYS alias instead.
+  if (NotXZR && !NeedsReg && !OptionalReg)
+    return false;
+
   std::string Str = Ins + Name;
   std::transform(Str.begin(), Str.end(), Str.begin(), ::tolower);
 
   O << '\t' << Str;
-  if (NeedsReg) {
-    O << ", ";
-    printRegName(O, MI->getOperand(4).getReg());
-  }
+  // For optional registers, don't print the value if it's xzr/x31
+  // since this defaults to xzr/x31 if register is not specified.
+  if (NeedsReg || (OptionalReg && NotXZR))
+    O << ", " << Reg;
 
   return true;
 }
@@ -1035,12 +1048,13 @@ bool AArch64InstPrinter::printSyspAlias(const MCInst *MI,
       Encoding &= ~(1 << 7);
     }
 
-    const AArch64TLBI::TLBI *TLBI = AArch64TLBI::lookupTLBIByEncoding(Encoding);
-    if (!TLBI || !TLBI->haveFeatures(STI.getFeatureBits()))
+    const AArch64TLBIP::TLBIP *TLBIP =
+        AArch64TLBIP::lookupTLBIPByEncoding(Encoding);
+    if (!TLBIP || !TLBIP->haveFeatures(STI.getFeatureBits()))
       return false;
 
     Ins = "tlbip\t";
-    Name = std::string(TLBI->Name);
+    Name = std::string(TLBIP->Name);
     if (CnVal == 9)
       Name += "nXS";
   } else
