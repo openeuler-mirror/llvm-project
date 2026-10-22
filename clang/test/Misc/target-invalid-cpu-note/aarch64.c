@@ -78,6 +78,7 @@
 // CHECK-SAME: {{^}}, gb10
 // CHECK-SAME: {{^}}, generic
 // CHECK-SAME: {{^}}, grace
+// CHECK-SAME: {{^}}, hip12
 // CHECK-SAME: {{^}}, kryo
 // CHECK-SAME: {{^}}, neoverse-512tvb
 // CHECK-SAME: {{^}}, neoverse-e1
