@@ -177,7 +177,7 @@ PR_ID=${prid}
 SOURCE_BRANCH=${branch}
 DEST_BRANCH=${tbranch}
 AUTHOR=${committer}
-PARALLEL_JOBS="16"
+PARALLEL_JOBS="24"
 
 if [ "${ARCH}" = "aarch64" ]; then
   if [ "${DEST_BRANCH}" = "dev_17.0.6" ]; then
