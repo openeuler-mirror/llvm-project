@@ -664,6 +664,293 @@ define void @masked_scatter_v32f16(ptr %a, ptr %b) vscale_range(16,0) #0 {
   ret void
 }
 
+; FIXME: Tests should not be dependant on bf16
+define void @masked_scatter_v2bf16(ptr %a, ptr %b) vscale_range(2,0) "target-features"="+sve,+bf16" {
+; CHECK-LABEL: masked_scatter_v2bf16:
+; CHECK:       // %bb.0:
+; CHECK-NEXT:    ldr s1, [x0]
+; CHECK-NEXT:    movi v0.2d, #0000000000000000
+; CHECK-NEXT:    ptrue p0.d, vl4
+; CHECK-NEXT:    shll v2.4s, v1.4h, #16
+; CHECK-NEXT:    uunpklo z1.s, z1.h
+; CHECK-NEXT:    fcmeq v2.4s, v2.4s, #0.0
+; CHECK-NEXT:    uzp1 v2.4h, v2.4h, v0.4h
+; CHECK-NEXT:    sshll v2.4s, v2.4h, #0
+; CHECK-NEXT:    mov v0.h[0], v2.h[0]
+; CHECK-NEXT:    mov w8, v2.s[1]
+; CHECK-NEXT:    mov v0.h[1], w8
+; CHECK-NEXT:    shl v0.4h, v0.4h, #15
+; CHECK-NEXT:    cmlt v0.4h, v0.4h, #0
+; CHECK-NEXT:    sunpklo z0.s, z0.h
+; CHECK-NEXT:    sunpklo z0.d, z0.s
+; CHECK-NEXT:    cmpne p0.d, p0/z, z0.d, #0
+; CHECK-NEXT:    uunpklo z0.d, z1.s
+; CHECK-NEXT:    ldr q1, [x1]
+; CHECK-NEXT:    st1h { z0.d }, p0, [z1.d]
+; CHECK-NEXT:    ret
+  %vals = load <2 x bfloat>, ptr %a
+  %ptrs = load <2 x ptr>, ptr %b
+  %mask = fcmp oeq <2 x bfloat> %vals, zeroinitializer
+  call void @llvm.masked.scatter.v2bf16(<2 x bfloat> %vals, <2 x ptr> %ptrs, i32 8, <2 x i1> %mask)
+  ret void
+}
+
+define void @masked_scatter_v4bf16(ptr %a, ptr %b) vscale_range(2,0) "target-features"="+sve,+bf16" {
+; CHECK-LABEL: masked_scatter_v4bf16:
+; CHECK:       // %bb.0:
+; CHECK-NEXT:    ldr d0, [x0]
+; CHECK-NEXT:    ptrue p0.d, vl4
+; CHECK-NEXT:    shll v1.4s, v0.4h, #16
+; CHECK-NEXT:    uunpklo z0.s, z0.h
+; CHECK-NEXT:    fcmeq v1.4s, v1.4s, #0.0
+; CHECK-NEXT:    uunpklo z0.d, z0.s
+; CHECK-NEXT:    mov w8, v1.s[1]
+; CHECK-NEXT:    mov v2.16b, v1.16b
+; CHECK-NEXT:    mov w9, v1.s[2]
+; CHECK-NEXT:    mov v2.h[1], w8
+; CHECK-NEXT:    mov w8, v1.s[3]
+; CHECK-NEXT:    mov v2.h[2], w9
+; CHECK-NEXT:    mov v2.h[3], w8
+; CHECK-NEXT:    sunpklo z1.s, z2.h
+; CHECK-NEXT:    sunpklo z1.d, z1.s
+; CHECK-NEXT:    cmpne p1.d, p0/z, z1.d, #0
+; CHECK-NEXT:    ld1d { z1.d }, p0/z, [x1]
+; CHECK-NEXT:    st1h { z0.d }, p1, [z1.d]
+; CHECK-NEXT:    ret
+  %vals = load <4 x bfloat>, ptr %a
+  %ptrs = load <4 x ptr>, ptr %b
+  %mask = fcmp oeq <4 x bfloat> %vals, zeroinitializer
+  call void @llvm.masked.scatter.v4bf16(<4 x bfloat> %vals, <4 x ptr> %ptrs, i32 8, <4 x i1> %mask)
+  ret void
+}
+
+define void @masked_scatter_v8bf16(ptr %a, ptr %b) "target-features"="+sve,+bf16" {
+; VBITS_GE_256-LABEL: masked_scatter_v8bf16:
+; VBITS_GE_256:       // %bb.0:
+; VBITS_GE_256-NEXT:    ldr q0, [x0]
+; VBITS_GE_256-NEXT:    ptrue p0.d, vl4
+; VBITS_GE_256-NEXT:    dup v1.8h, v0.h[7]
+; VBITS_GE_256-NEXT:    dup v2.8h, v0.h[6]
+; VBITS_GE_256-NEXT:    dup v3.8h, v0.h[5]
+; VBITS_GE_256-NEXT:    shll v1.4s, v1.4h, #16
+; VBITS_GE_256-NEXT:    shll v2.4s, v2.4h, #16
+; VBITS_GE_256-NEXT:    shll v3.4s, v3.4h, #16
+; VBITS_GE_256-NEXT:    fcmp s1, #0.0
+; VBITS_GE_256-NEXT:    dup v1.8h, v0.h[4]
+; VBITS_GE_256-NEXT:    csetm w8, eq
+; VBITS_GE_256-NEXT:    fcmp s2, #0.0
+; VBITS_GE_256-NEXT:    dup v2.4h, v0.h[3]
+; VBITS_GE_256-NEXT:    shll v1.4s, v1.4h, #16
+; VBITS_GE_256-NEXT:    csetm w9, eq
+; VBITS_GE_256-NEXT:    fcmp s3, #0.0
+; VBITS_GE_256-NEXT:    dup v3.4h, v0.h[2]
+; VBITS_GE_256-NEXT:    shll v2.4s, v2.4h, #16
+; VBITS_GE_256-NEXT:    csetm w10, eq
+; VBITS_GE_256-NEXT:    fcmp s1, #0.0
+; VBITS_GE_256-NEXT:    dup v1.4h, v0.h[1]
+; VBITS_GE_256-NEXT:    shll v3.4s, v3.4h, #16
+; VBITS_GE_256-NEXT:    csetm w11, eq
+; VBITS_GE_256-NEXT:    fcmp s2, #0.0
+; VBITS_GE_256-NEXT:    shll v2.4s, v0.4h, #16
+; VBITS_GE_256-NEXT:    shll v1.4s, v1.4h, #16
+; VBITS_GE_256-NEXT:    csetm w12, eq
+; VBITS_GE_256-NEXT:    fcmp s3, #0.0
+; VBITS_GE_256-NEXT:    uunpklo z3.s, z0.h
+; VBITS_GE_256-NEXT:    ext v0.16b, v0.16b, v0.16b, #8
+; VBITS_GE_256-NEXT:    csetm w13, eq
+; VBITS_GE_256-NEXT:    fcmp s1, #0.0
+; VBITS_GE_256-NEXT:    uunpklo z3.d, z3.s
+; VBITS_GE_256-NEXT:    uunpklo z0.s, z0.h
+; VBITS_GE_256-NEXT:    csetm w14, eq
+; VBITS_GE_256-NEXT:    fcmp s2, #0.0
+; VBITS_GE_256-NEXT:    fmov s2, w11
+; VBITS_GE_256-NEXT:    csetm w15, eq
+; VBITS_GE_256-NEXT:    mov v2.h[1], w10
+; VBITS_GE_256-NEXT:    uunpklo z0.d, z0.s
+; VBITS_GE_256-NEXT:    fmov s1, w15
+; VBITS_GE_256-NEXT:    mov v1.h[1], w14
+; VBITS_GE_256-NEXT:    mov v2.h[2], w9
+; VBITS_GE_256-NEXT:    mov v1.h[2], w13
+; VBITS_GE_256-NEXT:    mov v2.h[3], w8
+; VBITS_GE_256-NEXT:    mov x8, #4 // =0x4
+; VBITS_GE_256-NEXT:    ld1d { z4.d }, p0/z, [x1, x8, lsl #3]
+; VBITS_GE_256-NEXT:    mov v1.h[3], w12
+; VBITS_GE_256-NEXT:    sunpklo z2.s, z2.h
+; VBITS_GE_256-NEXT:    sunpklo z1.s, z1.h
+; VBITS_GE_256-NEXT:    sunpklo z2.d, z2.s
+; VBITS_GE_256-NEXT:    sunpklo z1.d, z1.s
+; VBITS_GE_256-NEXT:    cmpne p1.d, p0/z, z1.d, #0
+; VBITS_GE_256-NEXT:    ld1d { z1.d }, p0/z, [x1]
+; VBITS_GE_256-NEXT:    cmpne p0.d, p0/z, z2.d, #0
+; VBITS_GE_256-NEXT:    st1h { z3.d }, p1, [z1.d]
+; VBITS_GE_256-NEXT:    st1h { z0.d }, p0, [z4.d]
+; VBITS_GE_256-NEXT:    ret
+;
+; VBITS_GE_512-LABEL: masked_scatter_v8bf16:
+; VBITS_GE_512:       // %bb.0:
+; VBITS_GE_512-NEXT:    ldr q0, [x0]
+; VBITS_GE_512-NEXT:    ptrue p0.d, vl8
+; VBITS_GE_512-NEXT:    dup v1.4h, v0.h[1]
+; VBITS_GE_512-NEXT:    dup v2.4h, v0.h[2]
+; VBITS_GE_512-NEXT:    shll v1.4s, v1.4h, #16
+; VBITS_GE_512-NEXT:    fcmp s1, #0.0
+; VBITS_GE_512-NEXT:    shll v1.4s, v0.4h, #16
+; VBITS_GE_512-NEXT:    csetm w8, eq
+; VBITS_GE_512-NEXT:    fcmp s1, #0.0
+; VBITS_GE_512-NEXT:    shll v1.4s, v2.4h, #16
+; VBITS_GE_512-NEXT:    dup v2.4h, v0.h[3]
+; VBITS_GE_512-NEXT:    csetm w9, eq
+; VBITS_GE_512-NEXT:    fcmp s1, #0.0
+; VBITS_GE_512-NEXT:    fmov s3, w9
+; VBITS_GE_512-NEXT:    shll v1.4s, v2.4h, #16
+; VBITS_GE_512-NEXT:    dup v2.8h, v0.h[4]
+; VBITS_GE_512-NEXT:    mov v3.h[1], w8
+; VBITS_GE_512-NEXT:    csetm w8, eq
+; VBITS_GE_512-NEXT:    fcmp s1, #0.0
+; VBITS_GE_512-NEXT:    shll v1.4s, v2.4h, #16
+; VBITS_GE_512-NEXT:    dup v2.8h, v0.h[5]
+; VBITS_GE_512-NEXT:    mov v3.h[2], w8
+; VBITS_GE_512-NEXT:    csetm w8, eq
+; VBITS_GE_512-NEXT:    fcmp s1, #0.0
+; VBITS_GE_512-NEXT:    shll v1.4s, v2.4h, #16
+; VBITS_GE_512-NEXT:    dup v2.8h, v0.h[6]
+; VBITS_GE_512-NEXT:    mov v3.h[3], w8
+; VBITS_GE_512-NEXT:    csetm w8, eq
+; VBITS_GE_512-NEXT:    fcmp s1, #0.0
+; VBITS_GE_512-NEXT:    shll v1.4s, v2.4h, #16
+; VBITS_GE_512-NEXT:    dup v2.8h, v0.h[7]
+; VBITS_GE_512-NEXT:    uunpklo z0.s, z0.h
+; VBITS_GE_512-NEXT:    mov v3.h[4], w8
+; VBITS_GE_512-NEXT:    csetm w8, eq
+; VBITS_GE_512-NEXT:    fcmp s1, #0.0
+; VBITS_GE_512-NEXT:    shll v1.4s, v2.4h, #16
+; VBITS_GE_512-NEXT:    uunpklo z0.d, z0.s
+; VBITS_GE_512-NEXT:    mov v3.h[5], w8
+; VBITS_GE_512-NEXT:    csetm w8, eq
+; VBITS_GE_512-NEXT:    fcmp s1, #0.0
+; VBITS_GE_512-NEXT:    mov v3.h[6], w8
+; VBITS_GE_512-NEXT:    csetm w8, eq
+; VBITS_GE_512-NEXT:    mov v3.h[7], w8
+; VBITS_GE_512-NEXT:    sunpklo z1.s, z3.h
+; VBITS_GE_512-NEXT:    sunpklo z1.d, z1.s
+; VBITS_GE_512-NEXT:    cmpne p1.d, p0/z, z1.d, #0
+; VBITS_GE_512-NEXT:    ld1d { z1.d }, p0/z, [x1]
+; VBITS_GE_512-NEXT:    st1h { z0.d }, p1, [z1.d]
+; VBITS_GE_512-NEXT:    ret
+  %vals = load <8 x bfloat>, ptr %a
+  %ptrs = load <8 x ptr>, ptr %b
+  %mask = fcmp oeq <8 x bfloat> %vals, zeroinitializer
+  call void @llvm.masked.scatter.v8bf16(<8 x bfloat> %vals, <8 x ptr> %ptrs, i32 8, <8 x i1> %mask)
+  ret void
+}
+
+define void @masked_scatter_v16bf16(ptr %a, ptr %b) vscale_range(8,0) "target-features"="+sve,+bf16" {
+; CHECK-LABEL: masked_scatter_v16bf16:
+; CHECK:       // %bb.0:
+; CHECK-NEXT:    ldr q0, [x0, #16]
+; CHECK-NEXT:    ptrue p0.d, vl8
+; CHECK-NEXT:    ptrue p1.d, vl16
+; CHECK-NEXT:    dup v1.4h, v0.h[1]
+; CHECK-NEXT:    dup v2.4h, v0.h[2]
+; CHECK-NEXT:    shll v3.4s, v0.4h, #16
+; CHECK-NEXT:    dup v4.8h, v0.h[6]
+; CHECK-NEXT:    shll v1.4s, v1.4h, #16
+; CHECK-NEXT:    shll v2.4s, v2.4h, #16
+; CHECK-NEXT:    shll v4.4s, v4.4h, #16
+; CHECK-NEXT:    fcmp s1, #0.0
+; CHECK-NEXT:    dup v1.4h, v0.h[3]
+; CHECK-NEXT:    csetm w8, eq
+; CHECK-NEXT:    fcmp s3, #0.0
+; CHECK-NEXT:    dup v3.8h, v0.h[4]
+; CHECK-NEXT:    shll v1.4s, v1.4h, #16
+; CHECK-NEXT:    csetm w12, eq
+; CHECK-NEXT:    fcmp s2, #0.0
+; CHECK-NEXT:    dup v2.8h, v0.h[5]
+; CHECK-NEXT:    shll v3.4s, v3.4h, #16
+; CHECK-NEXT:    csetm w10, eq
+; CHECK-NEXT:    fcmp s1, #0.0
+; CHECK-NEXT:    shll v2.4s, v2.4h, #16
+; CHECK-NEXT:    ldr q1, [x0]
+; CHECK-NEXT:    csetm w9, eq
+; CHECK-NEXT:    fcmp s3, #0.0
+; CHECK-NEXT:    dup v3.8h, v0.h[7]
+; CHECK-NEXT:    dup v5.8h, v1.h[5]
+; CHECK-NEXT:    uunpklo z0.s, z0.h
+; CHECK-NEXT:    csetm w11, eq
+; CHECK-NEXT:    fcmp s2, #0.0
+; CHECK-NEXT:    dup v2.4h, v1.h[1]
+; CHECK-NEXT:    shll v3.4s, v3.4h, #16
+; CHECK-NEXT:    uunpklo z0.d, z0.s
+; CHECK-NEXT:    csetm w14, eq
+; CHECK-NEXT:    fcmp s4, #0.0
+; CHECK-NEXT:    shll v2.4s, v2.4h, #16
+; CHECK-NEXT:    csetm w13, eq
+; CHECK-NEXT:    fcmp s3, #0.0
+; CHECK-NEXT:    shll v3.4s, v1.4h, #16
+; CHECK-NEXT:    csetm w15, eq
+; CHECK-NEXT:    fcmp s2, #0.0
+; CHECK-NEXT:    dup v2.4h, v1.h[2]
+; CHECK-NEXT:    csetm w16, eq
+; CHECK-NEXT:    fcmp s3, #0.0
+; CHECK-NEXT:    dup v3.4h, v1.h[3]
+; CHECK-NEXT:    shll v2.4s, v2.4h, #16
+; CHECK-NEXT:    csetm w17, eq
+; CHECK-NEXT:    fmov s4, w17
+; CHECK-NEXT:    fcmp s2, #0.0
+; CHECK-NEXT:    shll v2.4s, v3.4h, #16
+; CHECK-NEXT:    dup v3.8h, v1.h[4]
+; CHECK-NEXT:    mov v4.h[1], w16
+; CHECK-NEXT:    csetm w16, eq
+; CHECK-NEXT:    fcmp s2, #0.0
+; CHECK-NEXT:    shll v2.4s, v3.4h, #16
+; CHECK-NEXT:    fmov s3, w12
+; CHECK-NEXT:    mov v3.h[1], w8
+; CHECK-NEXT:    mov v4.h[2], w16
+; CHECK-NEXT:    csetm w8, eq
+; CHECK-NEXT:    fcmp s2, #0.0
+; CHECK-NEXT:    shll v2.4s, v5.4h, #16
+; CHECK-NEXT:    dup v5.8h, v1.h[6]
+; CHECK-NEXT:    mov v3.h[2], w10
+; CHECK-NEXT:    mov v4.h[3], w8
+; CHECK-NEXT:    csetm w8, eq
+; CHECK-NEXT:    fcmp s2, #0.0
+; CHECK-NEXT:    shll v2.4s, v5.4h, #16
+; CHECK-NEXT:    dup v5.8h, v1.h[7]
+; CHECK-NEXT:    uunpklo z1.s, z1.h
+; CHECK-NEXT:    mov v3.h[3], w9
+; CHECK-NEXT:    mov v4.h[4], w8
+; CHECK-NEXT:    csetm w8, eq
+; CHECK-NEXT:    fcmp s2, #0.0
+; CHECK-NEXT:    shll v2.4s, v5.4h, #16
+; CHECK-NEXT:    uunpklo z1.d, z1.s
+; CHECK-NEXT:    mov v3.h[4], w11
+; CHECK-NEXT:    mov v4.h[5], w8
+; CHECK-NEXT:    csetm w8, eq
+; CHECK-NEXT:    fcmp s2, #0.0
+; CHECK-NEXT:    mov v3.h[5], w14
+; CHECK-NEXT:    mov v4.h[6], w8
+; CHECK-NEXT:    csetm w8, eq
+; CHECK-NEXT:    mov v3.h[6], w13
+; CHECK-NEXT:    mov v4.h[7], w8
+; CHECK-NEXT:    mov v3.h[7], w15
+; CHECK-NEXT:    sunpklo z2.s, z4.h
+; CHECK-NEXT:    sunpklo z3.s, z3.h
+; CHECK-NEXT:    sunpklo z2.d, z2.s
+; CHECK-NEXT:    sunpklo z3.d, z3.s
+; CHECK-NEXT:    cmpne p2.d, p0/z, z2.d, #0
+; CHECK-NEXT:    ld1d { z2.d }, p1/z, [x1]
+; CHECK-NEXT:    cmpne p0.d, p0/z, z3.d, #0
+; CHECK-NEXT:    st1h { z1.d }, p2, [z2.d]
+; CHECK-NEXT:    ext z2.b, z2.b, z2.b, #64
+; CHECK-NEXT:    st1h { z0.d }, p0, [z2.d]
+; CHECK-NEXT:    ret
+  %vals = load <16 x bfloat>, ptr %a
+  %ptrs = load <16 x ptr>, ptr %b
+  %mask = fcmp oeq <16 x bfloat> %vals, zeroinitializer
+  call void @llvm.masked.scatter.v16bf16(<16 x bfloat> %vals, <16 x ptr> %ptrs, i32 8, <16 x i1> %mask)
+  ret void
+}
+
 ;
 ; ST1W (float)
 ;
@@ -795,12 +1082,12 @@ define void @masked_scatter_v1f64(ptr %a, ptr %b) vscale_range(8,0) #0 {
 ; CHECK:       // %bb.0:
 ; CHECK-NEXT:    ldr d0, [x0]
 ; CHECK-NEXT:    fcmp d0, #0.0
-; CHECK-NEXT:    b.ne .LBB31_2
+; CHECK-NEXT:    b.ne .LBB35_2
 ; CHECK-NEXT:  // %bb.1: // %cond.store
 ; CHECK-NEXT:    ldr d1, [x1]
 ; CHECK-NEXT:    fmov x8, d1
 ; CHECK-NEXT:    str d0, [x8]
-; CHECK-NEXT:  .LBB31_2: // %else
+; CHECK-NEXT:  .LBB35_2: // %else
 ; CHECK-NEXT:    ret
   %vals = load <1 x double>, ptr %a
   %ptrs = load <1 x ptr>, ptr %b
@@ -1125,12 +1412,12 @@ define void @masked_scatter_bitcast_infinite_loop(ptr %a, ptr %b, i1 %cond) vsca
 ; CHECK:       // %bb.0:
 ; CHECK-NEXT:    ptrue p0.d, vl8
 ; CHECK-NEXT:    ld1d { z0.d }, p0/z, [x0]
-; CHECK-NEXT:    tbz w2, #0, .LBB47_2
+; CHECK-NEXT:    tbz w2, #0, .LBB51_2
 ; CHECK-NEXT:  // %bb.1: // %bb.1
 ; CHECK-NEXT:    fcmeq p1.d, p0/z, z0.d, #0.0
 ; CHECK-NEXT:    ld1d { z1.d }, p0/z, [x1]
 ; CHECK-NEXT:    st1d { z0.d }, p1, [z1.d]
-; CHECK-NEXT:  .LBB47_2: // %bb.2
+; CHECK-NEXT:  .LBB51_2: // %bb.2
 ; CHECK-NEXT:    ret
   %vals = load volatile <8 x double>, ptr %a
   br i1 %cond, label %bb.1, label %bb.2
