@@ -4565,6 +4565,10 @@ SDValue AArch64TargetLowering::LowerFP_ROUND(SDValue Op,
   bool Trunc = Op.getConstantOperandVal(IsStrict ? 2 : 1) == 1;
 
   if (VT.isScalableVector()) {
+    // Let common code split the operation.
+    if (SrcVT == MVT::nxv8f32)
+      return Op;
+
     if (VT.getScalarType() != MVT::bf16)
       return LowerToPredicatedOp(Op, DAG, AArch64ISD::FP_ROUND_MERGE_PASSTHRU);
 
