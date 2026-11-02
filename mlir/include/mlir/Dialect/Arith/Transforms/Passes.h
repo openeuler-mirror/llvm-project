@@ -69,7 +69,8 @@ void populateExpandF8E4M3FNPatterns(RewritePatternSet &patterns);
 void populateExpandF4E2M1Patterns(RewritePatternSet &patterns);
 
 /// Add patterns to expand Arith ops.
-void populateArithExpandOpsPatterns(RewritePatternSet &patterns);
+void populateArithExpandOpsPatterns(RewritePatternSet &patterns,
+                                    bool expandMaxNumF = true);
 
 /// Create a pass to replace signed ops with unsigned ones where they are proven
 /// equivalent.

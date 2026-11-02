@@ -23,6 +23,11 @@ def ArithExpandOpsPass : Pass<"arith-expand"> {
            "Enable the F8E4M3FN expansion patterns">,
     Option<"includeF4E2M1", "include-f4e2m1", "bool", /*default=*/"false",
            "Enable the F4E2M1 expansion patterns">,
+    Option<"expandMaxNumF", "expand-maxnumf", "bool", /*default=*/"true",
+           "Expand MaxNumFOp/MinNumFOp into cmp/select. Disable it on targets "
+           "whose backend can select a maxnum instruction (AArch64 SVE FMAXNM "
+           "for llvm.maxnum), so ArithToLLVM keeps mapping them to "
+           "llvm.maxnum/llvm.minnum instead">,
   ];
 }
 

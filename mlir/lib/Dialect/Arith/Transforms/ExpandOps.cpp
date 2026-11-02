@@ -1196,7 +1196,7 @@ struct ArithExpandOpsPass
     RewritePatternSet patterns(&getContext());
     ConversionTarget target(getContext());
 
-    arith::populateArithExpandOpsPatterns(patterns);
+    arith::populateArithExpandOpsPatterns(patterns, expandMaxNumF);
 
     target.addLegalDialect<arith::ArithDialect>();
     target.addLegalDialect<vector::VectorDialect>();
@@ -1211,10 +1211,14 @@ struct ArithExpandOpsPass
       arith::MinSIOp,
       arith::MinUIOp,
       arith::MaximumFOp,
-      arith::MinimumFOp,
-      arith::MaxNumFOp,
-      arith::MinNumFOp
+      arith::MinimumFOp
     >();
+
+    // MaxNumFOp/MinNumFOp are only illegal when the float-specific expansion
+    // below is enabled: ArithToLLVM converts them to llvm.maxnum/llvm.minnum,
+    // which targets like AArch64 SVE can select directly (FMAXNM/FMINNM).
+    if (expandMaxNumF)
+      target.addIllegalOp<arith::MaxNumFOp, arith::MinNumFOp>();
 
     if (includeBf16)
       arith::populateExpandBFloat16Patterns(patterns);
@@ -1293,7 +1297,8 @@ void mlir::arith::populateExpandF4E2M1Patterns(RewritePatternSet &patterns) {
       patterns.getContext());
 }
 
-void mlir::arith::populateArithExpandOpsPatterns(RewritePatternSet &patterns) {
+void mlir::arith::populateArithExpandOpsPatterns(RewritePatternSet &patterns,
+                                                 bool expandMaxNumF) {
   populateCeilFloorDivExpandOpsPatterns(patterns);
   // clang-format off
   patterns.add<
@@ -1302,9 +1307,11 @@ void mlir::arith::populateArithExpandOpsPatterns(RewritePatternSet &patterns) {
     MaxMinIOpConverter<MinSIOp, arith::CmpIPredicate::slt>,
     MaxMinIOpConverter<MinUIOp, arith::CmpIPredicate::ult>,
     MaximumMinimumFOpConverter<MaximumFOp, arith::CmpFPredicate::UGT>,
-    MaximumMinimumFOpConverter<MinimumFOp, arith::CmpFPredicate::ULT>,
-    MaxNumMinNumFOpConverter<MaxNumFOp, arith::CmpFPredicate::UGT>,
-    MaxNumMinNumFOpConverter<MinNumFOp, arith::CmpFPredicate::ULT>
+    MaximumMinimumFOpConverter<MinimumFOp, arith::CmpFPredicate::ULT>
    >(patterns.getContext());
+  if (expandMaxNumF)
+    patterns.add<MaxNumMinNumFOpConverter<MaxNumFOp, arith::CmpFPredicate::UGT>,
+                 MaxNumMinNumFOpConverter<MinNumFOp, arith::CmpFPredicate::ULT>>(
+        patterns.getContext());
   // clang-format on
 }

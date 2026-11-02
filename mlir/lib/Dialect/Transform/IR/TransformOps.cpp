@@ -3029,7 +3029,22 @@ DiagnosedSilenceableFailure transform::LowerToLLVMNewOp::applyToOne(
       /* armSVE = */ getEnableArmSve(),
       /* x86Vector = */ getEnableX86vector()}));
   pm.addNestedPass<func::FuncOp>(createConvertMathToLLVMPass());
-  pm.addNestedPass<func::FuncOp>(arith::createArithExpandOpsPass());
+  {
+    // `arith-expand` rewrites arith.maxnumf/minnumf into a cmp/select chain.
+    // That keeps ArithToLLVM from forming llvm.maxnum/llvm.minnum, and hence
+    // keeps a target such as AArch64 SVE from selecting a single FMAXNM for
+    // what is a plain element-wise max -- the chain survives all the way to
+    // the assembler as fcmp+select. Targets that can select a maxnum
+    // instruction can set expand_maxnumf=false here.
+    auto arithExpandOps = arith::createArithExpandOpsPass();
+    if (!getExpandMaxnumf())
+      arithExpandOps->initializeOptions(
+          "expand-maxnumf=false", [](const llvm::Twine &msg) {
+            llvm::errs() << msg;
+            return llvm::failure();
+          });
+    pm.addNestedPass<func::FuncOp>(std::move(arithExpandOps));
+  }
   pm.addPass(createFinalizeMemRefToLLVMConversionPass());
   if (getEnableAsync())
     pm.addPass(createConvertAsyncToLLVMPass());

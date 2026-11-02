@@ -1428,7 +1428,8 @@ def LowerToLLVMNewOp : TransformDialectOp<"lower_to_llvm_new",
      DefaultValuedAttr<BoolAttr, "false">:$enable_amx,
      DefaultValuedAttr<BoolAttr, "false">:$enable_x86vector,
      DefaultValuedAttr<BoolAttr, "false">:$enable_async,
-     DefaultValuedAttr<I64Attr, "1">:$vscale_range);
+     DefaultValuedAttr<I64Attr, "1">:$vscale_range,
+     DefaultValuedAttr<BoolAttr, "true">:$expand_maxnumf);
 
   let assemblyFormat = "$target attr-dict `:` type($target)";
 
