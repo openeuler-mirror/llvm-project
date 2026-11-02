@@ -1,0 +1,46 @@
+# RUN: llc -mtriple=aarch64-linux-gnu -mattr=+sve,+sve2 -mcpu=hip12 -run-pass=aarch64-expand-pseudo -verify-machineinstrs %s -o - | FileCheck %s
+
+# Regression test for the mov->movprfx forward scan in AArch64ExpandPseudo.
+# A call (BL) between the `mov zD, zS` and the consuming destructive
+# instruction clobbers the mov's source register ($z3, caller-saved) through
+# its regmask. The scan must detect this regmask clobber; calls/inline-asm
+# clobber via MO_RegisterMask, which an isReg()-only operand scan used to miss.
+#
+# Without the fix the scan believed $z3 was still live and placed the MOVPRFX
+# *after* the call (at the candidate's position), reading the destroyed $z3 and
+# miscompiling. With the fix the scan sees the clobber (MovOrrInst=false) and
+# places the MOVPRFX at the mov's position -- *before* the call -- so it reads
+# $z3 before it is clobbered. The candidate's other operands ($z8/$z9/$z10) are
+# callee-saved under the SVE AAPCS and survive the call, so the candidate-
+# operand check does not bail and the rewrite proceeds at the mov's position.
+
+--- |
+  target triple = "aarch64-linux-gnu"
+  declare void @foo()
+  define void @mov_to_movprfx_call_clobbers_src() nounwind { ret void }
+...
+---
+name:            mov_to_movprfx_call_clobbers_src
+tracksRegLiveness: true
+liveins:
+  - { reg: '$z3' }
+  - { reg: '$z9' }
+  - { reg: '$z10' }
+body:             |
+  bb.0:
+    liveins: $z3, $z9, $z10
+
+    ; CHECK-LABEL: name: mov_to_movprfx_call_clobbers_src
+    ; With the fix the MOVPRFX (bundled with the destructive SDOT) is emitted
+    ; *before* the BL -- reading $z3 before the call clobbers it -- never
+    ; after it. Without the fix the MOVPRFX would be placed after the BL,
+    ; reading the destroyed $z3.
+    ; CHECK: $z8 = MOVPRFX_ZZ $z3
+    ; CHECK: $z8 = SDOT_ZZZ_S
+    ; CHECK: BL @foo
+    ; CHECK-NOT: MOVPRFX
+    $z8 = ORR_ZZZ $z3, $z3
+    BL @foo, csr_aarch64_sve_aapcs, implicit-def dead $lr, implicit $sp, implicit-def $sp
+    $z8 = SDOT_ZZZ_S $z8, $z9, $z10
+    RET_ReallyLR implicit $z8
+...
