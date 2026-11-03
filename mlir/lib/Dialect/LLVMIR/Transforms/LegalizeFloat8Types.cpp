@@ -17,6 +17,7 @@
 #include "mlir/Dialect/LLVMIR/Transforms/LegalizeFloat8Types.h"
 
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
+#include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/MLIRContext.h"
@@ -24,6 +25,8 @@
 #include "mlir/IR/TypeUtilities.h"
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
+#include "llvm/ADT/DenseSet.h"
+#include "llvm/ADT/SmallVector.h"
 
 namespace mlir {
 namespace LLVM {
@@ -41,7 +44,7 @@ static bool isFloat8Type(Type type) {
              Float8E4M3B11FNUZType>(type);
 }
 
-/// Return true if the given type contains a Float8 type (including vectors).
+/// Return true if the given type contains Float8, including vectors and arrays.
 static bool containsFloat8Type(Type type) {
   if (isFloat8Type(type))
     return true;
@@ -51,10 +54,12 @@ static bool containsFloat8Type(Type type) {
     return isFloat8Type(fixedVec.getElementType());
   if (auto scalableVec = dyn_cast<LLVM::LLVMScalableVectorType>(type))
     return isFloat8Type(scalableVec.getElementType());
+  if (auto arrayType = dyn_cast<LLVM::LLVMArrayType>(type))
+    return containsFloat8Type(arrayType.getElementType());
   return false;
 }
 
-/// Replace Float8 element type with IntegerType(8). Preserves vector shape.
+/// Replace Float8 with i8, preserving vector shape and array nesting.
 static Type legalizeType(Type type, MLIRContext *ctx) {
   auto i8Ty = IntegerType::get(ctx, 8);
 
@@ -76,7 +81,70 @@ static Type legalizeType(Type type, MLIRContext *ctx) {
                                               scalableVec.getMinNumElements());
   }
 
+  if (auto arrayType = dyn_cast<LLVM::LLVMArrayType>(type)) {
+    Type elementType = legalizeType(arrayType.getElementType(), ctx);
+    if (elementType != arrayType.getElementType())
+      return LLVM::LLVMArrayType::get(elementType, arrayType.getNumElements());
+  }
+
   return type;
+}
+
+// Detect storage attributes as well as SSA types before rewriting any values.
+static bool hasFloat8StorageType(Operation *op) {
+  for (Type type : op->getResultTypes())
+    if (containsFloat8Type(type))
+      return true;
+  for (Value operand : op->getOperands())
+    if (containsFloat8Type(operand.getType()))
+      return true;
+  if (auto gepOp = dyn_cast<LLVM::GEPOp>(op))
+    return containsFloat8Type(gepOp.getElemType());
+  if (auto allocaOp = dyn_cast<LLVM::AllocaOp>(op))
+    return containsFloat8Type(allocaOp.getElemType());
+  return false;
+}
+
+static bool isSafeFloat8StorageOp(Operation *op) {
+  if (auto constantOp = dyn_cast<LLVM::ConstantOp>(op)) {
+    auto value = dyn_cast<DenseElementsAttr>(constantOp.getValue());
+    return value && isFloat8Type(value.getElementType());
+  }
+
+  // Struct members are not recursively legalized by this pass.
+  Type containerType;
+  if (auto extractOp = dyn_cast<LLVM::ExtractValueOp>(op))
+    containerType = extractOp.getContainer().getType();
+  if (auto insertOp = dyn_cast<LLVM::InsertValueOp>(op))
+    containerType = insertOp.getContainer().getType();
+  if (containerType) {
+    while (auto arrayType = dyn_cast<LLVM::LLVMArrayType>(containerType))
+      containerType = arrayType.getElementType();
+    if (isa<LLVM::LLVMStructType>(containerType))
+      return false;
+
+    // Block arguments and function signatures are not converted by this pass.
+    // Preserve aggregates whose Float8 operands depend on such arguments.
+    SmallVector<Value> worklist(op->operand_begin(), op->operand_end());
+    llvm::SmallDenseSet<Value, 8> visited;
+    while (!worklist.empty()) {
+      Value value = worklist.pop_back_val();
+      if (!visited.insert(value).second)
+        continue;
+      Operation *producer = value.getDefiningOp();
+      if (!producer) {
+        if (containsFloat8Type(value.getType()))
+          return false;
+        continue;
+      }
+      // Bitcasts can hide Float8 dependencies behind integer values.
+      worklist.append(producer->operand_begin(), producer->operand_end());
+    }
+  }
+
+  return isa<LLVM::LoadOp, LLVM::MaskedLoadOp, LLVM::GEPOp, LLVM::AllocaOp,
+             LLVM::UndefOp, LLVM::InsertElementOp, LLVM::ExtractValueOp,
+             LLVM::InsertValueOp, LLVM::ShuffleVectorOp, LLVM::BitcastOp>(op);
 }
 
 namespace {
@@ -89,49 +157,50 @@ struct LegalizeFloat8TypesPass
     MLIRContext *ctx = &getContext();
     bool changed = false;
 
+    auto warnUnexpectedFloat8 = [](Operation *innerOp) {
+      innerOp->emitWarning()
+          << "LegalizeFloat8Types: unexpected Float8 type on op '"
+          << innerOp->getName()
+          << "'; f8 arithmetic should have been emulated to f32 earlier "
+             "in the pipeline";
+    };
+
+    // Reject unsupported users before a producer changes their operand types.
+    // Stores follow their SSA value types and need no explicit rewriting.
+    bool hasUnsupportedFloat8 = false;
     op->walk([&](Operation *innerOp) {
-      // Check if this op has any Float8 types in results, operands, or
-      // attributes.
-      bool opHasFloat8 = false;
-      for (Type t : innerOp->getResultTypes()) {
-        if (containsFloat8Type(t)) {
-          opHasFloat8 = true;
-          break;
-        }
+      if (hasFloat8StorageType(innerOp) &&
+          !isa<LLVM::StoreOp, LLVM::MaskedStoreOp, LLVM::masked_scatter,
+               LLVM::masked_compressstore>(innerOp) &&
+          !isSafeFloat8StorageOp(innerOp)) {
+        warnUnexpectedFloat8(innerOp);
+        hasUnsupportedFloat8 = true;
       }
-      if (!opHasFloat8) {
-        for (Value operand : innerOp->getOperands()) {
-          if (containsFloat8Type(operand.getType())) {
-            opHasFloat8 = true;
-            break;
+    });
+    if (hasUnsupportedFloat8) {
+      markAllAnalysesPreserved();
+      return;
+    }
+
+    op->walk([&](Operation *innerOp) {
+      if (!hasFloat8StorageType(innerOp))
+        return;
+
+      // Preserve the Float8 encoding when changing a dense constant's type.
+      if (auto constantOp = dyn_cast<LLVM::ConstantOp>(innerOp)) {
+        if (auto value = dyn_cast<DenseElementsAttr>(constantOp.getValue())) {
+          if (isFloat8Type(value.getElementType())) {
+            constantOp.setValueAttr(value.bitcast(IntegerType::get(ctx, 8)));
+            for (Value result : constantOp->getResults())
+              result.setType(legalizeType(result.getType(), ctx));
+            changed = true;
+            return;
           }
         }
       }
-      if (!opHasFloat8) {
-        if (auto gepOp = dyn_cast<LLVM::GEPOp>(innerOp)) {
-          if (gepOp.getElemType() && containsFloat8Type(gepOp.getElemType()))
-            opHasFloat8 = true;
-        }
-      }
 
-      if (!opHasFloat8)
-        return;
-
-      // Only legalize known-safe ops where f8→i8 is a valid type
-      // substitution (memory ops and vector packaging ops). These ops treat
-      // f8 as an opaque 8-bit bag of bits — no arithmetic semantics.
-      // If f8 appears on any other op, it means the arithmetic emulation
-      // pipeline failed to promote it to f32 and blindly rewriting to i8
-      // would be semantically wrong.
-      bool isSafeOp = isa<LLVM::LoadOp, LLVM::MaskedLoadOp, LLVM::GEPOp, LLVM::UndefOp,
-                          LLVM::InsertElementOp, LLVM::ShuffleVectorOp,
-                          LLVM::BitcastOp>(innerOp);
-      if (!isSafeOp) {
-        innerOp->emitWarning()
-            << "LegalizeFloat8Types: unexpected Float8 type on op '"
-            << innerOp->getName()
-            << "'; f8 arithmetic should have been emulated to f32 earlier "
-               "in the pipeline";
+      if (!isSafeFloat8StorageOp(innerOp)) {
+        warnUnexpectedFloat8(innerOp);
         return;
       }
 
@@ -144,6 +213,14 @@ struct LegalizeFloat8TypesPass
           Type newElemType = legalizeType(elemType, ctx);
           gepOp.setElemType(newElemType);
         }
+        return;
+      }
+
+      // Alloca stores its element type in an attribute, not its pointer result.
+      if (auto allocaOp = dyn_cast<LLVM::AllocaOp>(innerOp)) {
+        Type elemType = allocaOp.getElemType();
+        if (containsFloat8Type(elemType))
+          allocaOp.setElemType(legalizeType(elemType, ctx));
         return;
       }
 
