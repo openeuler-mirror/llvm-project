@@ -105,6 +105,12 @@ static bool hasFloat8StorageType(Operation *op) {
   return false;
 }
 
+// Stores follow SSA value types and do not require an explicit rewrite.
+static bool isFloat8StoreOp(Operation *op) {
+  return isa<LLVM::StoreOp, LLVM::MaskedStoreOp, LLVM::masked_scatter,
+             LLVM::masked_compressstore>(op);
+}
+
 static bool isSafeFloat8StorageOp(Operation *op) {
   if (auto constantOp = dyn_cast<LLVM::ConstantOp>(op)) {
     auto value = dyn_cast<DenseElementsAttr>(constantOp.getValue());
@@ -122,9 +128,14 @@ static bool isSafeFloat8StorageOp(Operation *op) {
       containerType = arrayType.getElementType();
     if (isa<LLVM::LLVMStructType>(containerType))
       return false;
+  }
 
+  // These vector and aggregate results must agree with their operands in MLIR.
+  // Masked-load passthrough types are handled independently by the exporter.
+  if (isa<LLVM::InsertElementOp, LLVM::ExtractValueOp, LLVM::InsertValueOp,
+          LLVM::ShuffleVectorOp, LLVM::BitcastOp>(op)) {
     // Block arguments and function signatures are not converted by this pass.
-    // Preserve aggregates whose Float8 operands depend on such arguments.
+    // Preserve operations whose Float8 operands depend on such arguments.
     SmallVector<Value> worklist(op->operand_begin(), op->operand_end());
     llvm::SmallDenseSet<Value, 8> visited;
     while (!worklist.empty()) {
@@ -170,8 +181,7 @@ struct LegalizeFloat8TypesPass
     bool hasUnsupportedFloat8 = false;
     op->walk([&](Operation *innerOp) {
       if (hasFloat8StorageType(innerOp) &&
-          !isa<LLVM::StoreOp, LLVM::MaskedStoreOp, LLVM::masked_scatter,
-               LLVM::masked_compressstore>(innerOp) &&
+          !isFloat8StoreOp(innerOp) &&
           !isSafeFloat8StorageOp(innerOp)) {
         warnUnexpectedFloat8(innerOp);
         hasUnsupportedFloat8 = true;
@@ -183,7 +193,7 @@ struct LegalizeFloat8TypesPass
     }
 
     op->walk([&](Operation *innerOp) {
-      if (!hasFloat8StorageType(innerOp))
+      if (!hasFloat8StorageType(innerOp) || isFloat8StoreOp(innerOp))
         return;
 
       // Preserve the Float8 encoding when changing a dense constant's type.

@@ -235,6 +235,7 @@ llvm.func @unsupported_inserted_argument(%value: vector<4xf8E5M2>, %dst: !llvm.p
 // PRESERVED: llvm.insertvalue {{.*}}[0] : !llvm.array<2 x vector<4xf8E5M2>>
 llvm.func @unsupported_indirect_argument(%value: vector<4xf8E5M2>, %dst: !llvm.ptr) {
   %other = llvm.mlir.undef : vector<4xf8E5M2>
+  // expected-warning@+1 {{LegalizeFloat8Types: unexpected Float8 type on op 'llvm.shufflevector'}}
   %shuffled = llvm.shufflevector %value, %other [0, 1, 2, 3] : vector<4xf8E5M2>
   %array = llvm.mlir.undef : !llvm.array<2 x vector<4xf8E5M2>>
   // expected-warning@+1 {{LegalizeFloat8Types: unexpected Float8 type on op 'llvm.insertvalue'}}
@@ -250,7 +251,9 @@ llvm.func @unsupported_indirect_argument(%value: vector<4xf8E5M2>, %dst: !llvm.p
 // PRESERVED: llvm.mlir.undef : !llvm.array<2 x vector<4xf8E5M2>>
 // PRESERVED: llvm.insertvalue {{.*}}[0] : !llvm.array<2 x vector<4xf8E5M2>>
 llvm.func @unsupported_bitcast_roundtrip_argument(%value: vector<4xf8E5M2>, %dst: !llvm.ptr) {
+  // expected-warning@+1 {{LegalizeFloat8Types: unexpected Float8 type on op 'llvm.bitcast'}}
   %bits = llvm.bitcast %value : vector<4xf8E5M2> to vector<4xi8>
+  // expected-warning@+1 {{LegalizeFloat8Types: unexpected Float8 type on op 'llvm.bitcast'}}
   %fp8 = llvm.bitcast %bits : vector<4xi8> to vector<4xf8E5M2>
   %array = llvm.mlir.undef : !llvm.array<2 x vector<4xf8E5M2>>
   // expected-warning@+1 {{LegalizeFloat8Types: unexpected Float8 type on op 'llvm.insertvalue'}}
