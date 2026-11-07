@@ -3042,3 +3042,92 @@ func.func @contiguous_scatter_step(%base: memref<?xf32>,
     memref<?xf32>, vector<16xindex>, vector<16xi1>, vector<16xf32>
   return
 }
+// -----
+
+// The test checks the `InterleaveDeinterleaveFolder` pattern of `vector.interleave`
+// to correctly fold the following identity:
+//  interleave(deinterleave(x).even, deinterleave(x).odd) -> x
+
+// CHECK-LABEL: func @interleave_deinterleave_fold
+//  CHECK-SAME: (%[[ARG0:.*]]: vector<4xf32>)
+//       CHECK: return %[[ARG0]]
+func.func @interleave_deinterleave_fold(%arg0: vector<4xf32>) -> vector<4xf32> {
+  %even, %odd = vector.deinterleave %arg0 : vector<4xf32> -> vector<2xf32>
+  %result = vector.interleave %even, %odd : vector<2xf32> -> vector<4xf32>
+  return %result : vector<4xf32>
+}
+
+// -----
+
+/// Fold the interleave/deinterleave round trip: interleaving the even/odd
+/// halves of a single deinterleave reconstructs the source.
+
+// CHECK-LABEL: @interleave_deinterleave_roundtrip
+//       CHECK-SAME: (%[[SRC:.*]]: vector<[8]xf32>)
+//   CHECK-NOT: vector.interleave
+//       CHECK: return %[[SRC]] : vector<[8]xf32>
+func.func @interleave_deinterleave_roundtrip(%src: vector<[8]xf32>) -> vector<[8]xf32> {
+  %even, %odd = vector.deinterleave %src : vector<[8]xf32> -> vector<[4]xf32>
+  %r = vector.interleave %even, %odd : vector<[4]xf32> -> vector<[8]xf32>
+  return %r : vector<[8]xf32>
+}
+
+// -----
+
+/// Chunked variant: the operands are same-position scalable extracts of the
+/// even/odd halves; the interleave folds to the contiguous double-width
+/// chunk of the pair-packed source.
+
+// CHECK-LABEL: @interleave_deinterleave_roundtrip_chunks
+//       CHECK-SAME: (%[[SRC:.*]]: vector<[16]xf32>)
+//   CHECK-NOT: vector.interleave
+//       CHECK: %[[P:.*]] = vector.scalable.extract %[[SRC]][0] : vector<[8]xf32> from vector<[16]xf32>
+//       CHECK: return %[[P]] : vector<[8]xf32>
+func.func @interleave_deinterleave_roundtrip_chunks(%src: vector<[16]xf32>) -> vector<[8]xf32> {
+  %even, %odd = vector.deinterleave %src : vector<[16]xf32> -> vector<[8]xf32>
+  %e0 = vector.scalable.extract %even[0] : vector<[4]xf32> from vector<[8]xf32>
+  %o0 = vector.scalable.extract %odd[0] : vector<[4]xf32> from vector<[8]xf32>
+  %r = vector.interleave %e0, %o0 : vector<[4]xf32> -> vector<[8]xf32>
+  return %r : vector<[8]xf32>
+}
+
+// -----
+
+/// Negative: swapped halves -- interleave(odd, even) is the swapped
+/// permutation, not the source.
+
+// CHECK-LABEL: @interleave_deinterleave_swapped
+//       CHECK: vector.interleave
+func.func @interleave_deinterleave_swapped(%src: vector<[8]xf32>) -> vector<[8]xf32> {
+  %even, %odd = vector.deinterleave %src : vector<[8]xf32> -> vector<[4]xf32>
+  %r = vector.interleave %odd, %even : vector<[4]xf32> -> vector<[8]xf32>
+  return %r : vector<[8]xf32>
+}
+
+// -----
+
+/// Negative: chunks at different positions are not a contiguous packed
+/// chunk pair.
+
+// CHECK-LABEL: @interleave_deinterleave_chunks_bad_pos
+//       CHECK: vector.interleave
+func.func @interleave_deinterleave_chunks_bad_pos(%src: vector<[16]xf32>) -> vector<[8]xf32> {
+  %even, %odd = vector.deinterleave %src : vector<[16]xf32> -> vector<[8]xf32>
+  %e0 = vector.scalable.extract %even[0] : vector<[4]xf32> from vector<[8]xf32>
+  %o0 = vector.scalable.extract %odd[4] : vector<[4]xf32> from vector<[8]xf32>
+  %r = vector.interleave %e0, %o0 : vector<[4]xf32> -> vector<[8]xf32>
+  return %r : vector<[8]xf32>
+}
+
+// -----
+
+/// Negative: the operands come from different deinterleaves.
+
+// CHECK-LABEL: @interleave_deinterleave_bad_pair
+//       CHECK: vector.interleave
+func.func @interleave_deinterleave_bad_pair(%a: vector<[8]xf32>, %b: vector<[8]xf32>) -> vector<[8]xf32> {
+  %a_even, %a_odd = vector.deinterleave %a : vector<[8]xf32> -> vector<[4]xf32>
+  %b_even, %b_odd = vector.deinterleave %b : vector<[8]xf32> -> vector<[4]xf32>
+  %r = vector.interleave %a_even, %b_odd : vector<[4]xf32> -> vector<[8]xf32>
+  return %r : vector<[8]xf32>
+}

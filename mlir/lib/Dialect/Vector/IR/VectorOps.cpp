@@ -6738,6 +6738,82 @@ Value mlir::vector::selectPassthru(OpBuilder &builder, Value mask,
 }
 
 //===----------------------------------------------------------------------===//
+// InterleaveOp
+//===----------------------------------------------------------------------===//
+
+namespace {
+
+/// This folder works on the following round-trip identity:
+///  interleave(deinterleave(x).even, deinterleave(x).odd) -> x
+///
+/// and the chunked variant, which arises when legalization splits wide rows
+/// into tile-sized chunks:
+///
+///  interleave(scalable_extract(de(x).even, p),
+///             scalable_extract(de(x).odd, p))
+///    -> scalable_extract(x, 2 * p) of twice the chunk length
+///
+/// Both rewrites are exact identities; they remove the round trip (and its
+/// zip/uzp lowering) whenever a pair-packed value is deinterleaved and the
+/// halves are packed back together.
+struct InterleaveDeinterleaveFolder : public OpRewritePattern<InterleaveOp> {
+  using OpRewritePattern<InterleaveOp>::OpRewritePattern;
+
+  LogicalResult matchAndRewrite(InterleaveOp interleaveOp,
+                                PatternRewriter &rewriter) const override {
+    // Round trip: the operands are the even/odd halves of one deinterleave.
+    auto lhsDefOp = interleaveOp.getLhs().getDefiningOp<DeinterleaveOp>();
+    auto rhsDefOp = interleaveOp.getRhs().getDefiningOp<DeinterleaveOp>();
+    if (lhsDefOp && lhsDefOp == rhsDefOp &&
+        interleaveOp.getLhs() == lhsDefOp.getResult(0) &&
+        interleaveOp.getRhs() == lhsDefOp.getResult(1)) {
+      rewriter.replaceOp(interleaveOp, lhsDefOp.getSource());
+      return success();
+    }
+
+    // Chunked: the operands are same-position scalable extracts of the
+    // even/odd halves. The interleave of two consecutive chunks is the
+    // contiguous double-width chunk of the pair-packed source.
+    auto lhsEx =
+        interleaveOp.getLhs().getDefiningOp<vector::ScalableExtractOp>();
+    auto rhsEx =
+        interleaveOp.getRhs().getDefiningOp<vector::ScalableExtractOp>();
+    if (!lhsEx || !rhsEx || lhsEx.getPos() != rhsEx.getPos())
+      return failure();
+    auto lhsDe = lhsEx.getSource().getDefiningOp<DeinterleaveOp>();
+    auto rhsDe = rhsEx.getSource().getDefiningOp<DeinterleaveOp>();
+    if (!lhsDe || lhsDe != rhsDe)
+      return failure();
+    if (lhsEx.getSource() != lhsDe.getResult(0) ||
+        rhsEx.getSource() != rhsDe.getResult(1))
+      return failure();
+
+    auto srcTy = cast<VectorType>(lhsDe.getSource().getType());
+    auto chunkTy = cast<VectorType>(lhsEx.getType());
+    if (chunkTy.getShape().size() != 1 || srcTy.getRank() != 1)
+      return failure();
+    int64_t len = chunkTy.getShape()[0];
+    int64_t pos = static_cast<int64_t>(lhsEx.getPos());
+    if (2 * pos + 2 * len > srcTy.getDimSize(0))
+      return failure();
+
+    // Same type (including the scalable flag) as the interleave it replaces.
+    auto packedTy =
+        VectorType::get({2 * len}, srcTy.getElementType(), chunkTy.isScalable());
+    rewriter.replaceOpWithNewOp<vector::ScalableExtractOp>(
+        interleaveOp, packedTy, lhsDe.getSource(),
+        static_cast<uint64_t>(2 * pos));
+    return success();
+  }
+};
+} // namespace
+
+void InterleaveOp::getCanonicalizationPatterns(RewritePatternSet &results,
+                                               MLIRContext *context) {
+  results.add<InterleaveDeinterleaveFolder>(context);
+}
+
+//===----------------------------------------------------------------------===//
 // TableGen'd op method definitions
 //===----------------------------------------------------------------------===//
 
