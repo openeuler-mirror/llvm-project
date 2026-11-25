@@ -29,6 +29,7 @@
 #include "llvm/CodeGen/LivePhysRegs.h"
 #include "llvm/CodeGen/MachineBranchProbabilityInfo.h"
 #include "llvm/CodeGen/MachineFunctionPass.h"
+#include "llvm/CodeGen/MachineInstrBuilder.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/ProfDataUtils.h"
 #include "llvm/InitializePasses.h"
@@ -69,6 +70,7 @@ public:
   void getAnalysisUsage(AnalysisUsage &AU) const override {
     MachineFunctionPass::getAnalysisUsage(AU);
     AU.addRequired<MachineBranchProbabilityInfoWrapperPass>();
+    AU.setPreservesCFG();
   }
 
 private:
@@ -171,6 +173,9 @@ bool AArch64BiasedBranchOpt::transformCBZ(MachineInstr &MI,
 bool AArch64BiasedBranchOpt::runOnMachineFunction(MachineFunction &MF) {
   auto &Subtarget = MF.getSubtarget<AArch64Subtarget>();
   if (!EnableHBC)
+    return false;
+
+  if (MF.getFunction().hasOptNone())
     return false;
 
   if (!MF.getFunction().hasProfileData())
