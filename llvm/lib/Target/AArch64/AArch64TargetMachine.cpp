@@ -235,6 +235,7 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeAArch64Target() {
   initializeAArch64A53Fix835769Pass(*PR);
   initializeAArch64A57FPLoadBalancingPass(*PR);
   initializeAArch64AdvSIMDScalarPass(*PR);
+  initializeAArch64BiasedBranchOptPass(*PR);
   initializeAArch64BranchTargetsPass(*PR);
   initializeAArch64CollectLOHPass(*PR);
   initializeAArch64CompressJumpTablesPass(*PR);
@@ -882,6 +883,8 @@ void AArch64PassConfig::addPostBBSections() {
   addPass(createAArch64PointerAuthPass());
   if (EnableBranchTargets)
     addPass(createAArch64BranchTargetsPass());
+
+  addPass(createAArch64BiasedBranchOptPass());
   // Relax conditional branch instructions if they're otherwise out of
   // range of their destination.
   if (BranchRelaxation)
