@@ -43,6 +43,7 @@ add_llvm_target(AArch64CodeGen
   AArch64A57FPLoadBalancing.cpp
   AArch64AdvSIMDScalarPass.cpp
   AArch64AsmPrinter.cpp
+  AArch64BiasedBranchOpt.cpp
   AArch64BranchTargets.cpp
   AArch64CallingConvention.cpp
   AArch64CleanupLocalDynamicTLSPass.cpp

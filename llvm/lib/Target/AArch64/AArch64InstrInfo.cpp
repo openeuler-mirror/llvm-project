@@ -170,6 +170,7 @@ static void parseCondBranch(MachineInstr *LastInst, MachineBasicBlock *&Target,
   default:
     llvm_unreachable("Unknown branch instruction?");
   case AArch64::Bcc:
+  case AArch64::BCcc:
     Target = LastInst->getOperand(1).getMBB();
     Cond.push_back(LastInst->getOperand(0));
     break;
@@ -211,6 +212,7 @@ static unsigned getBranchDisplacementBits(unsigned Opc) {
   case AArch64::CBZX:
     return CBZDisplacementBits;
   case AArch64::Bcc:
+  case AArch64::BCcc:
     return BCCDisplacementBits;
   }
 }
@@ -240,6 +242,7 @@ AArch64InstrInfo::getBranchDestBlock(const MachineInstr &MI) const {
   case AArch64::CBZX:
   case AArch64::CBNZX:
   case AArch64::Bcc:
+  case AArch64::BCcc:
     return MI.getOperand(1).getMBB();
   }
 }
@@ -1651,7 +1654,8 @@ findCondCodeUseOperandIdxForBranchOrSelect(const MachineInstr &Instr) {
   default:
     return -1;
 
-  case AArch64::Bcc: {
+  case AArch64::Bcc:
+  case AArch64::BCcc: {
     int Idx = Instr.findRegisterUseOperandIdx(AArch64::NZCV);
     assert(Idx >= 2);
     return Idx - 2;
@@ -7099,6 +7103,7 @@ bool AArch64InstrInfo::optimizeCondBranch(MachineInstr &MI) const {
   default:
     llvm_unreachable("Unknown branch instruction?");
   case AArch64::Bcc:
+  case AArch64::BCcc:
     return false;
   case AArch64::CBZW:
   case AArch64::CBZX:

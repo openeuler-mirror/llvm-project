@@ -1,0 +1,53 @@
+# RUN: llc -run-pass=aarch64-biased-branch-opt -mtriple=aarch64-unknown-linux-gnu -enable-hbc %s -o - 2>&1 | FileCheck %s
+#
+# MIR-level test for transformBcond: verifies that a strongly-biased Bcc with
+# an implicit-killed $nzcv operand is converted to BCcc with the same
+# condition code, target, and implicit-killed $nzcv operand preserved
+# (removeOperand(2) + copyImplicitOps path). Covers the .ll-level test only
+# sees the assembly, so this guards the implicit-operand plumbing directly.
+
+--- |
+  define dso_local i32 @transform_bcond_nzcv_implicit(i32 %a, i32 %b) #0 !prof !1 {
+  entry:
+    %cmp = icmp eq i32 %a, %b
+    br i1 %cmp, label %if.then, label %if.end, !prof !2
+  if.then:
+    ret i32 1
+  if.end:
+    ret i32 0
+  }
+
+  attributes #0 = { nounwind uwtable "target-features"="+hbc" }
+  !1 = !{!"function_entry_count", i64 100}
+  !2 = !{!"branch_weights", i32 2147483647, i32 1}
+...
+---
+name:            transform_bcond_nzcv_implicit
+tracksRegLiveness: true
+liveins:
+  - { reg: '$w0' }
+  - { reg: '$w1' }
+body:             |
+  ; CHECK-LABEL: name: transform_bcond_nzcv_implicit
+  ; CHECK:       bb.0.entry:
+  ; CHECK-NEXT:    successors: %bb.1(0x7fffffff), %bb.2(0x00000001)
+  ; CHECK-NEXT:    liveins: $w0, $w1
+  ; CHECK:         dead $wzr = SUBSWrr killed renamable $w0, killed renamable $w1, implicit-def $nzcv
+  ; CHECK-NEXT:    BCcc 0, %bb.1, implicit killed $nzcv
+  ; CHECK-NOT:     Bcc
+  bb.0.entry:
+    successors: %bb.1(0x7fffffff), %bb.2(0x00000001)
+    liveins: $w0, $w1
+
+    dead $wzr = SUBSWrr killed renamable $w0, killed renamable $w1, implicit-def $nzcv
+    Bcc 0, %bb.1, implicit killed $nzcv
+    B %bb.2
+
+  bb.1.if.then:
+    renamable $w0 = MOVZWi 1, 0
+    RET undef $lr, implicit killed $w0
+
+  bb.2.if.end:
+    renamable $w0 = MOVZWi 0, 0
+    RET undef $lr, implicit killed $w0
+...
