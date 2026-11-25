@@ -10,7 +10,7 @@ target triple = "aarch64-unknown-linux-gnu"
 define dso_local noundef i32 @_Z16CBZTransformTestm(i64 noundef %0) #0 !dbg !10 !prof !73 {
 ; CHECK-COMMON-LABEL: _Z16CBZTransformTestm:
 ; CHECK-COMMON:       .Lfunc_begin0:
-; CHECK-COMMON-NEXT:    .file 1 "/home/w00882830/llvm-project" "original.cpp"
+; CHECK-COMMON-NEXT:    .file 1 "." "original.cpp"
 ; CHECK-COMMON-NEXT:    .loc 1 2 0 // original.cpp:2:0
 ; CHECK-COMMON-NEXT:    .cfi_startproc
 ; CHECK-COMMON-NEXT:  // %bb.0:
@@ -242,7 +242,7 @@ attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memo
 !llvm.ident = !{!9}
 
 !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus_14, file: !1, producer: "clang version 17.0.6", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, splitDebugInlining: false, nameTableKind: None)
-!1 = !DIFile(filename: "original.cpp", directory: "/home/w00882830/llvm-project")
+!1 = !DIFile(filename: "original.cpp", directory: ".")
 !2 = !{i32 7, !"Dwarf Version", i32 4}
 !3 = !{i32 2, !"Debug Info Version", i32 3}
 !4 = !{i32 1, !"wchar_size", i32 4}
