@@ -398,9 +398,7 @@ public:
       const Instruction &I,
       bool &AllowPromotionWithoutCommonHeader) const override;
 
-  bool shouldExpandReduction(const IntrinsicInst *II) const override {
-    return false;
-  }
+  bool shouldExpandReduction(const IntrinsicInst *II) const override;
 
   unsigned getGISelRematGlobalCost() const override { return 2; }
 
