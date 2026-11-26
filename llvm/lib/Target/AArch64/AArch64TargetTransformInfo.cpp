@@ -39,6 +39,10 @@ static cl::opt<bool> EnableFalkorHWPFUnrollFix("enable-falkor-hwpf-unroll-fix",
 static cl::opt<bool> SVEPreferFixedOverScalableIfEqualCost(
     "sve-prefer-fixed-over-scalable-if-equal", cl::Hidden);
 
+static cl::opt<bool> ExpandOrderedFAdd(
+    "aarch64-expand-ordered-fadd", cl::Hidden, cl::init(false),
+    cl::desc("Expand ordered vector fadd reductions into scalar additions"));
+
 static cl::opt<unsigned> SVEGatherOverhead("sve-gather-overhead", cl::init(10),
                                            cl::Hidden);
 
@@ -5161,6 +5165,15 @@ InstructionCost AArch64TTIImpl::getArithmeticReductionCostSVE(
   default:
     return InstructionCost::getInvalid();
   }
+}
+
+bool AArch64TTIImpl::shouldExpandReduction(const IntrinsicInst *II) const {
+  // Expand in lane order before instruction selection would form an SVE FADDA.
+  // Reductions that allow reassociation can still use a parallel reduction.
+  if (ExpandOrderedFAdd)
+    return II->getIntrinsicID() == Intrinsic::vector_reduce_fadd &&
+           !II->getFastMathFlags().allowReassoc();
+  return false;
 }
 
 InstructionCost
