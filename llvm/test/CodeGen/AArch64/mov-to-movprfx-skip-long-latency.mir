@@ -1,0 +1,40 @@
+# RUN: llc -mtriple=aarch64-linux-gnu -mattr=+sve,+sve2 -mcpu=hip12 -run-pass=aarch64-expand-pseudo -verify-machineinstrs %s -o - | FileCheck %s
+
+# Regression test for the mov->movprfx forward scan in AArch64ExpandPseudo.
+# A pre-existing `mov zD, zS` (ORR_ZZZ) followed by a long-latency destructive
+# instruction (fsqrt) must NOT be folded into `movprfx + fsqrt`.
+#
+# expand_DestructiveOp deliberately emits a plain, unbundled MOV for long-latency
+# instructions (see the GenMovForLongLatencyInst branch) so the destructive
+# instruction can schedule independently of the prefix. Folding a pre-existing
+# `mov + fsqrt` back into a bundled `movprfx + fsqrt` here would contradict that
+# choice. The forward scan therefore bails out as soon as the candidate opcode
+# is in LongLatencyInstOpcode (fsqrt), leaving the plain MOV in place.
+#
+# Without the long-latency scan-skip the forward scan rewrites the pair into
+# `MOVPRFX_ZZ $z1` + `FSQRT_ZPmZ_H` (bundled), undoing the long-latency strategy.
+
+--- |
+  target triple = "aarch64-linux-gnu"
+  define void @mov_to_movprfx_skip_long_latency() nounwind { ret void }
+...
+---
+name:            mov_to_movprfx_skip_long_latency
+tracksRegLiveness: true
+liveins:
+  - { reg: '$z1' }
+  - { reg: '$p0' }
+body:             |
+  bb.0:
+    liveins: $z1, $p0
+
+    ; CHECK-LABEL: name: mov_to_movprfx_skip_long_latency
+    ; The MOV must remain a plain ORR_ZZZ (not folded into a MOVPRFX) because
+    ; fsqrt is a long-latency instruction.
+    ; CHECK: $z0 = ORR_ZZZ $z1, $z1
+    ; CHECK: $z0 = FSQRT_ZPmZ_H $z0, $p0, $z1
+    ; CHECK-NOT: MOVPRFX
+    $z0 = ORR_ZZZ $z1, $z1
+    $z0 = FSQRT_ZPmZ_H $z0, $p0, $z1
+    RET_ReallyLR implicit $z0
+...
